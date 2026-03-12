@@ -1,0 +1,41 @@
+{
+  "name": "susu-eng",
+  "owner": {
+    "name": "Eli Mydlarz"
+  },
+  "metadata": {
+    "description": "Claude Code plugins by susu-eng"
+  },
+  "plugins": [
+    {
+      "name": "trunk-sync",
+      "source": "./trunk-sync",
+      "description": "Auto-commit and push every file edit, keeping multiple agents in sync on trunk",
+      "author": {
+        "name": "Eli Mydlarz"
+      },
+      "license": "MIT",
+      "keywords": ["hooks", "git", "multi-agent", "sync", "trunk-based-development"]
+    },
+    {
+      "name": "req-mod-sync",
+      "source": "./req-mod-sync",
+      "description": "Stop hook that prompts Claude to keep CLAUDE.md requirements, mental model, and repo map up to date",
+      "author": {
+        "name": "Eli Mydlarz"
+      },
+      "license": "MIT",
+      "keywords": ["hooks", "documentation", "requirements", "mental-model"]
+    },
+    {
+      "name": "test-trees",
+      "source": "./test-trees",
+      "description": "Enforces test-driven development with human-readable test tree output",
+      "author": {
+        "name": "Eli Mydlarz"
+      },
+      "license": "MIT",
+      "keywords": ["skills", "tdd", "testing", "test-trees"]
+    }
+  ]
+}

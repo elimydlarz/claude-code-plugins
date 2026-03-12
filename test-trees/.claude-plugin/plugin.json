@@ -1,0 +1,5 @@
+{
+  "name": "test-trees",
+  "version": "1.0.0",
+  "description": "Enforces test-driven development with human-readable test tree output"
+}

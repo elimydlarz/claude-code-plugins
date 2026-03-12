@@ -1,0 +1,1 @@
+Never swallow errors with `|| true`, `2>/dev/null`, or warning wrappers. Let commands fail loudly so the failure is visible and forces a fix. If you think a command "might fail" — that's exactly when you need to see the error.

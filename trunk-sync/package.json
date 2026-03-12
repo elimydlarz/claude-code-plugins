@@ -1,0 +1,47 @@
+{
+  "name": "@susu-eng/trunk-sync",
+  "version": "3.0.0",
+  "type": "module",
+  "description": "Maximum continuous integration for multi-agent coding — every edit is committed and pushed to trunk immediately",
+  "bin": {
+    "trunk-sync": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "postbuild": "chmod +x dist/cli.js",
+    "dev": "tsx src/cli.ts",
+    "test": "node --test --test-reporter spec 'dist/**/*.test.js'",
+    "test:e2e": "bash test/trunk-sync.test.sh",
+    "version": "node scripts/sync-plugin-version.js && git add .claude-plugin/plugin.json",
+    "prepublishOnly": "pnpm run build"
+  },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "!dist/**/*.test.*",
+    "scripts/",
+    "hooks/",
+    "rules/",
+    ".claude-plugin/"
+  ],
+  "devDependencies": {
+    "@types/node": "^22",
+    "tsx": "^4",
+    "typescript": "^5"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/elimydlarz/trunk-sync"
+  },
+  "keywords": [
+    "claude-code",
+    "multi-agent",
+    "git",
+    "sync",
+    "trunk-based-development"
+  ],
+  "dependencies": {
+    "@susu-eng/trunk-sync": "^3.0.0"
+  }
+}

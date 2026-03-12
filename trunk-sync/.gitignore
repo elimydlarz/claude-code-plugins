@@ -1,0 +1,5 @@
+.claude/worktrees/
+node_modules/
+dist/**/*.test.js
+dist/**/*.test.d.ts
+dist/**/*.d.ts
