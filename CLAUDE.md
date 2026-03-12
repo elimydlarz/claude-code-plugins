@@ -18,8 +18,9 @@ Note: trunk-sync's `install` command (`trunk-sync/src/commands/install.ts`) curr
 ## Repo Map
 
 ```
+package.json                    — root package with publish scripts (pnpm publish:<project>)
 .claude-plugin/marketplace.json — plugin catalog (name: susu-eng, relative paths to each plugin)
-scripts/publish-trunk-sync.sh   — full publish workflow: build, test, version, npm publish, git push
+scripts/                        — publish scripts and shared helpers (bump-plugin-version.js)
 README.md                       — unified docs for all products
 CLAUDE.md                       — this file
 
@@ -33,36 +34,16 @@ Each subdirectory has its own `CLAUDE.md` with project-specific mental model, re
 
 ## Publishing
 
-### trunk-sync
+All projects publish via pnpm scripts from the repo root:
 
 ```bash
-./scripts/publish-trunk-sync.sh patch   # or minor, major
+pnpm publish:trunk-sync patch    # or minor, major
+pnpm publish:eli-rules patch
+pnpm publish:req-mod-sync patch
+pnpm publish:test-trees patch
 ```
 
-The script operates on `trunk-sync/` and:
-1. Checks for clean source (dist/ staleness is handled automatically)
-2. Builds and runs all tests (unit + e2e)
-3. Commits dist/ if stale
-4. Bumps version via `pnpm version` (lifecycle script syncs plugin.json)
-5. Publishes to npm (`@susu-eng/trunk-sync`)
-6. Pushes to GitHub with tags
-
-Both distribution channels (npm + marketplace) are updated in one command.
-
-### eli-rules
-
-From `eli-rules/`:
-
-```bash
-pnpm version patch
-pnpm publish
-```
-
-Then push this repo to update the marketplace.
-
-### req-mod-sync / test-trees
-
-No build or publish step — installed directly from this repo via the marketplace. Push this repo and users get updates on `claude plugin marketplace update`.
+Each script checks for clean source, runs tests (if any), bumps the version, commits, tags, and pushes. trunk-sync and eli-rules also publish to npm. req-mod-sync and test-trees are marketplace-only — users get updates on `claude plugin marketplace update`.
 
 ## Updating the marketplace
 

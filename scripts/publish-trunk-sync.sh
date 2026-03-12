@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BUMP="${1:-patch}"
+BUMP="${1:-}"
+if [[ ! "$BUMP" =~ ^(patch|minor|major)$ ]]; then
+  echo "Usage: publish-trunk-sync.sh <patch|minor|major>" >&2
+  exit 1
+fi
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 cd "$REPO_ROOT/trunk-sync"
