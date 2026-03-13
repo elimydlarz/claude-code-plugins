@@ -231,6 +231,7 @@ function inspectOrLaunch(fileRef: string, inspect: boolean): void {
   const args = [
     "--resume", rewound.id,
     "--allowedTools", readOnlyTools,
+    "--permission-mode", "plan",
     "--append-system-prompt", systemPrompt,
     prompt,
   ];
