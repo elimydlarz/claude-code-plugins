@@ -50,10 +50,10 @@ Options:
   }
 
   // Add GitHub repo as a marketplace source
-  console.log("Adding trunk-sync marketplace...");
+  console.log("Adding susu-eng marketplace...");
   try {
     execSync(
-      `claude plugin marketplace add elimydlarz/trunk-sync --scope ${scope}`,
+      `claude plugin marketplace add elimydlarz/claude-code-plugins --scope ${scope}`,
       { stdio: "inherit" }
     );
   } catch {
