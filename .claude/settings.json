@@ -1,5 +1,15 @@
 {
   "enabledPlugins": {
-    "trunk-sync@susu-eng": true
+    "trunk-sync@susu-eng": true,
+    "req-mod-sync@susu-eng": true,
+    "test-trees@susu-eng": true
+  },
+  "extraKnownMarketplaces": {
+    "susu-eng": {
+      "source": {
+        "source": "github",
+        "repo": "elimydlarz/claude-code-plugins"
+      }
+    }
   }
 }
