@@ -122,6 +122,39 @@ describe("blame and getCommitBody", () => {
     const result = blame(file, 3, dir);
     assert.equal(result.origLine, 1, "origLine should be 1 (where it was in the first commit)");
   });
+
+  it("returns correct origLine for a newly added line", () => {
+    const file = join(dir, "file.txt");
+    writeFileSync(file, "line A\nline B\nline C\n");
+    execSync("git add file.txt && git commit -m 'first'", { cwd: dir });
+
+    // Insert a new line after line B, pushing line C down
+    writeFileSync(file, "line A\nline B\nnew line inserted\nline C\n");
+    execSync("git add file.txt && git commit -m 'second'", { cwd: dir });
+
+    // Blame the newly inserted line (now at position 3 in current file)
+    const result = blame(file, 3, dir);
+    assert.equal(result.origLine, 3, "origLine should be 3 (where the new line is in the commit that added it)");
+  });
+
+  it("returns correct origLine when a later commit inserts a line above", () => {
+    const file = join(dir, "file.txt");
+    writeFileSync(file, "line A\nline B\nline C\n");
+    execSync("git add file.txt && git commit -m 'first'", { cwd: dir });
+
+    // Add a new line after B (at position 3), pushing C to position 4
+    writeFileSync(file, "line A\nline B\nnew line\nline C\n");
+    execSync("git add file.txt && git commit -m 'second: add new line'", { cwd: dir });
+
+    // A third commit inserts a line above, shifting everything down
+    writeFileSync(file, "line zero\nline A\nline B\nnew line\nline C\n");
+    execSync("git add file.txt && git commit -m 'third: insert at top'", { cwd: dir });
+
+    // 'new line' is now at position 4 in current file, but was at position 3
+    // in the commit that added it (second commit)
+    const result = blame(file, 4, dir);
+    assert.equal(result.origLine, 3, "origLine should be 3 (position in the second commit)");
+  });
 });
 
 describe("getCommitTimestamp", () => {

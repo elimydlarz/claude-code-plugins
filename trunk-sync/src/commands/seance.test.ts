@@ -136,9 +136,19 @@ describe("seance integration", () => {
     writeFileSync(
       join(binDir, "claude"),
       `#!/bin/sh
-echo "cwd=$(pwd)" > "${logFile}"
-echo "args=$*" >> "${logFile}"
-RESUME_ID=$(echo "$*" | sed 's/.*--resume \\([^ ]*\\).*/\\1/')
+printf "cwd=%s\\n" "$(pwd)" > "${logFile}"
+printf "args=" >> "${logFile}"
+printf "%s " "$@" >> "${logFile}"
+printf "\\n" >> "${logFile}"
+RESUME_ID=""
+prev=""
+for arg in "$@"; do
+  if [ "$prev" = "--resume" ]; then
+    RESUME_ID="$arg"
+    break
+  fi
+  prev="$arg"
+done
 WORKTREE_CWD=$(pwd)
 SLUG=$(echo "$WORKTREE_CWD" | sed 's|[/.]|-|g')
 REWOUND_FILE="$HOME/.claude/projects/$SLUG/$RESUME_ID.jsonl"
@@ -198,7 +208,9 @@ exit 0
     writeFileSync(
       join(binDir, "claude"),
       `#!/bin/sh
-echo "args=$*" > "${logFile}"
+printf "args=" > "${logFile}"
+printf "%s " "$@" >> "${logFile}"
+printf "\\n" >> "${logFile}"
 exit 0
 `
     );
@@ -254,10 +266,20 @@ exit 0
     writeFileSync(
       join(binDir, "claude"),
       `#!/bin/sh
-echo "cwd=$(pwd)" > "${logFile}"
-echo "args=$*" >> "${logFile}"
+printf "cwd=%s\\n" "$(pwd)" > "${logFile}"
+printf "args=" >> "${logFile}"
+printf "%s " "$@" >> "${logFile}"
+printf "\\n" >> "${logFile}"
 # Capture the rewound transcript content so we can verify it
-RESUME_ID=$(echo "$*" | sed 's/.*--resume \\([^ ]*\\).*/\\1/')
+RESUME_ID=""
+prev=""
+for arg in "$@"; do
+  if [ "$prev" = "--resume" ]; then
+    RESUME_ID="$arg"
+    break
+  fi
+  prev="$arg"
+done
 # Find the rewound file by looking in the project dir for the worktree
 WORKTREE_CWD=$(pwd)
 SLUG=$(echo "$WORKTREE_CWD" | sed 's|[/.]|-|g')
