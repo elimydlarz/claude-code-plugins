@@ -234,11 +234,14 @@ function inspectOrLaunch(fileRef: string, inspect: boolean): void {
   console.log(`Forking session ${sessionId} (from commit ${shortSha(sha)}: ${subject})`);
   console.log(`Worktree at ${worktreePath}`);
 
-  const readOnlyTools = "Read,Grep,Glob,Bash(git:*),Agent,WebSearch,WebFetch";
+  const readOnlyTools = "Read,Bash(git log:*),Bash(git show:*),Bash(git diff:*)";
   const systemPrompt =
     "You are in SEANCE MODE — a read-only forensic session. You MUST NOT edit, write, or create any files. " +
-    "Your only job is to explain the code: what it does, how it works, and why it was written this way. " +
-    "You do not have access to Edit, Write, or NotebookEdit tools.";
+    "CRITICAL: You have been resumed with the EXACT context you had when you wrote this code. " +
+    "Answer the question IMMEDIATELY from your memory and conversation history — do NOT read files, " +
+    "search code, or do any research before answering. You already know this code because you wrote it. " +
+    "Your restored context IS the answer. Only use tools if the user asks follow-up questions that " +
+    "genuinely require looking something up. Your first response must be a direct explanation with ZERO tool calls.";
 
   const args = [
     "--resume", rewound.id,
