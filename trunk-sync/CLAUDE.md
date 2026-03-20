@@ -79,6 +79,7 @@ test/local-cleanup.sh         — manual test teardown
 - **snapshot-lookup**: seance finds snapshot via `git diff-tree` on the code commit, falls back to derived transcript path (`~/.claude/projects/<slug>/<sessionId>.jsonl`)
 - **version-sync**: `npm version` automatically updates `.claude-plugin/plugin.json` to match `package.json` via the `version` lifecycle script
 - **dist-tracked**: `dist/` is committed to git (excluding tests and `.d.ts`) so marketplace plugin installs have the compiled hook entry point
+- **doc-alignment**: user-facing docs (README, rules, CLI output) must stay consistent with requirements — worktree mode is optional (for multi-agent), not required for single-agent use
 
 ## Development
 
