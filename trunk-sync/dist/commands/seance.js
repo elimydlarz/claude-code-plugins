@@ -146,6 +146,13 @@ function inspectOrLaunch(fileRef, inspect) {
         process.exit(1);
     }
     const worktreePath = join(root, ".claude", "worktrees", `seance-${shortSha(sha)}`);
+    if (existsSync(worktreePath)) {
+        // Stale worktree from a previous seance — remove before recreating
+        try {
+            execSync(`git worktree remove --force "${worktreePath}"`, { stdio: "pipe" });
+        }
+        catch { /* best-effort */ }
+    }
     try {
         execSync(`git worktree add --detach "${worktreePath}" "${sha}"`, { stdio: "pipe" });
     }
