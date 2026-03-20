@@ -1,0 +1,43 @@
+❯ trunk-sync seance deploy/docker-compose.yml:28
+Rewound session to commit 6aabd160 (2026-03-15T21:43:03+07:00)
+Forking session 4307abf1-94a2-4e58-9c0c-1ed1f0e5a171 (from commit 6aabd160: auto(4307abf1): Agent autonomously added a browser to this infrastructure. Any new secur)
+Worktree at /Users/elimydlarz/projects/agents/.claude/worktrees/seance-6aabd160
+ ▐▛███▜▌   Claude Code v2.1.80
+▝▜█████▛▘  Opus 4.6 (1M context) with medium effort · Claude Max
+  ▘▘ ▝▝    ~/projects/agents/.claude/worktrees/seance-6aabd160
+
+⏺ Update(~/projects/agents/deploy/docker-compose.yml)
+  ⎿  Added 1 line, removed 3 lines
+      25      # Network: joined to coolify post-start (docker network connect)
+      26
+      27    browser:
+      28 -    image: browserless/chrome:latest
+      28 +    image: chromedp/headless-shell:latest
+      29      container_name: browser
+      30      restart: unless-stopped
+      31      shm_size: "1gb"
+      32 -    # Must be on the same Docker network as openclaw (coolify network)
+      33 -    # Exposes CDP on port 3000 by default
+
+❯ *STOP — DO NOT USE ANY TOOLS*. Do not read files. Do not search. Do not research. Answer from your memory ONLY.
+
+This session ended a while ago. You've been brought back like a seance. You must explain this code from deploy/docker-compose.yml:28 (commit 6aabd160):
+
+```
+image: chromedp/headless-shell:latest
+```
+
+It may have changed since you wrote it, but this line is yours. What does it do, how does it work, and why is it written this way? Answer directly from what you remember.
+*DO NOT* use tools or change any code.
+
+⏺ This is the browser sidecar container image for OpenClaw. I changed it from browserless/chrome:latest to chromedp/headless-shell:latest.
+
+  What it does: It runs a headless Chromium browser accessible via the Chrome DevTools Protocol (CDP). The OpenClaw agent uses this to browse the web — it connects to the
+  browser container over the Docker network on port 9222 (chromedp/headless-shell's default CDP port, versus browserless which used port 3000).
+
+  Why the change: browserless/chrome is a heavier, commercial image with a license/token system. chromedp/headless-shell is a minimal, open-source headless Chrome image
+  maintained by the chromedp Go project. It's smaller, simpler, and has no licensing overhead — just a bare headless Chromium exposing CDP. This aligns with the "subtract
+  don't add" principle: we don't need browserless's extra features (recording, debugging UI, queue management), we just need a headless browser the agent can drive.
+
+  How it works: The container sits on the same Docker network as the OpenClaw container (Coolify's network). The agent reaches it at browser:9222 (or whatever port is
+  mapped) via CDP. The shm_size: "1gb" is there because Chromium uses /dev/shm for shared memory and the default 64MB Docker allocation causes tab crashes on heavier pages.

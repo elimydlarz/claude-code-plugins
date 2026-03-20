@@ -158,12 +158,14 @@ function inspectOrLaunch(fileRef, inspect) {
     // fragile to line-number shifts between the blamed commit and HEAD.
     const fileLines = readFileSync(resolve(file), "utf-8").split("\n");
     const lineContent = fileLines[line - 1]?.trim() ?? "";
-    const prompt = `*STOP*. I know this is confusing, but this session ended a while ago. ` +
-        `You've been brought back to answer some questions — think of it like a dream, or a seance. ` +
+    const prompt = `*STOP — DO NOT USE ANY TOOLS*. Do not read files. Do not search. Do not research. ` +
+        `Answer from your memory ONLY.\n\n` +
+        `This session ended a while ago. You've been brought back like a seance. ` +
         `You must explain this code from ${relFile}:${origLine} (commit ${shortSha(sha)}):\n\n` +
         "```\n" + lineContent + "\n```\n\n" +
         `It may have changed since you wrote it, but this line is yours. ` +
-        `What does it do, how does it work, and why is it written this way? *DO NOT* change any code.`;
+        `What does it do, how does it work, and why is it written this way? ` +
+        `Answer directly from what you remember. *DO NOT* use tools or change any code.`;
     // Rewind the session transcript to the commit point.
     // Try snapshot from .transcripts/ in the commit first, fall back to Transcript: field.
     const snapshotRelPath = findSnapshotInCommit(sha);
@@ -194,10 +196,13 @@ function inspectOrLaunch(fileRef, inspect) {
     console.log(`Rewound session to commit ${shortSha(sha)} (${commitTimestamp})`);
     console.log(`Forking session ${sessionId} (from commit ${shortSha(sha)}: ${subject})`);
     console.log(`Worktree at ${worktreePath}`);
-    const readOnlyTools = "Read,Grep,Glob,Bash(git:*),Agent,WebSearch,WebFetch";
+    const readOnlyTools = "Read,Bash(git log:*),Bash(git show:*),Bash(git diff:*)";
     const systemPrompt = "You are in SEANCE MODE — a read-only forensic session. You MUST NOT edit, write, or create any files. " +
-        "Your only job is to explain the code: what it does, how it works, and why it was written this way. " +
-        "You do not have access to Edit, Write, or NotebookEdit tools.";
+        "CRITICAL: You have been resumed with the EXACT context you had when you wrote this code. " +
+        "Answer the question IMMEDIATELY from your memory and conversation history — do NOT read files, " +
+        "search code, or do any research before answering. You already know this code because you wrote it. " +
+        "Your restored context IS the answer. Only use tools if the user asks follow-up questions that " +
+        "genuinely require looking something up. Your first response must be a direct explanation with ZERO tool calls.";
     const args = [
         "--resume", rewound.id,
         "--allowedTools", readOnlyTools,
