@@ -51,7 +51,7 @@ Options:
     // Update marketplace to get latest plugin metadata
     console.log("Updating susu-eng marketplace...");
     try {
-        execSync(`claude plugin marketplace update susu-eng --scope ${scope}`, { stdio: "inherit" });
+        execSync(`claude plugin marketplace update susu-eng`, { stdio: "inherit" });
     }
     catch {
         // Non-fatal — install may still work with existing cache
