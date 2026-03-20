@@ -4,7 +4,7 @@ Every file write is auto-committed and pushed by a PostToolUse hook. Every edit 
 
 ## How it works
 
-Each agent runs in its own git worktree (via `claude -w`), isolated from other agents. After every `Edit` or `Write`, the hook:
+After every `Edit` or `Write`, the hook:
 
 1. Commits the changed file with agent context
 2. Pulls from `origin/main` (`--no-rebase`) and pushes to `origin/main`
