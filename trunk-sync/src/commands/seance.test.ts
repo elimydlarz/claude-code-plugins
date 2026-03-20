@@ -129,6 +129,49 @@ describe("seance integration", () => {
     rmSync(binDir, { recursive: true, force: true });
   });
 
+  it("succeeds when stale worktree exists from previous seance", () => {
+    const binDir = mkdtempSync(join(tmpdir(), "seance-bin-"));
+    writeFileSync(
+      join(binDir, "claude"),
+      `#!/bin/sh\nexit 0\n`
+    );
+    chmodSync(join(binDir, "claude"), 0o755);
+
+    const originalSessionId = "stale-worktree-session";
+    const realDir = realpathSync(dir);
+    const repoSlug = realDir.replace(/[/.]/g, "-");
+    const transcriptDir = join(process.env.HOME || "", ".claude", "projects", repoSlug);
+    mkdirSync(transcriptDir, { recursive: true });
+    const transcriptFile = join(transcriptDir, `${originalSessionId}.jsonl`);
+    const transcriptLines = [
+      JSON.stringify({ type: "user", timestamp: "2026-03-01T10:00:00.000Z", sessionId: originalSessionId, cwd: dir, message: { role: "user", content: "task" } }),
+    ];
+    writeFileSync(transcriptFile, transcriptLines.join("\n") + "\n");
+
+    const file = join(dir, "code.ts");
+    writeFileSync(file, "const x = 1;\n");
+    gitIn(dir, "add code.ts");
+    const commitDate = "2026-03-01T10:00:01.000Z";
+    execSync(
+      `git commit -m 'auto(abcd1234): add code' -m 'Session: ${originalSessionId}'`,
+      { cwd: dir, env: { ...process.env, GIT_COMMITTER_DATE: commitDate } }
+    );
+    const commitSha = gitIn(dir, "rev-parse HEAD");
+    const short = commitSha.slice(0, 8);
+
+    // Pre-create a stale worktree at the same path seance will use
+    const worktreePath = join(realDir, ".claude", "worktrees", `seance-${short}`);
+    execSync(`git worktree add --detach "${worktreePath}" "${commitSha}"`, { cwd: dir });
+    assert.ok(existsSync(worktreePath), "stale worktree should exist before seance");
+
+    // Seance should succeed despite the existing worktree
+    const output = runSeance(dir, `${file}:1`, binDir);
+    assert.match(output, /Rewound session to commit/, "seance should succeed with stale worktree");
+
+    rmSync(binDir, { recursive: true, force: true });
+    rmSync(transcriptDir, { recursive: true, force: true });
+  });
+
   it("default mode with .transcripts/ snapshot uses snapshot for rewind", () => {
     const binDir = mkdtempSync(join(tmpdir(), "seance-bin-"));
     const logFile = join(binDir, "claude.log");
