@@ -77,11 +77,15 @@ trunk-sync install --scope user
 
 ### Usage
 
+After every `Edit` or `Write`, trunk-sync commits, pulls, and pushes — automatically. It works on main, on branches, or in worktrees. No git commands, no manual merging.
+
+For multi-agent work, launch each agent in its own worktree so they don't step on each other's working tree:
+
 ```bash
 claude -w    # each invocation gets its own worktree
 ```
 
-Launch as many agents as you need. They all push to the same trunk. After every `Edit` or `Write`, trunk-sync commits, pulls, and pushes — automatically. If two agents edit the same file, trunk-sync tells the agent to resolve the conflict by editing the file normally. No git commands, no manual merging.
+If two agents edit the same file, trunk-sync tells the agent to resolve the conflict by editing the file normally.
 
 ### Seance — talk to dead coding agents
 
