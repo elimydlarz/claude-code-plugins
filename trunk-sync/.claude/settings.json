@@ -1,3 +1,13 @@
 {
-  "enabledPlugins": {}
+  "enabledPlugins": {
+    "trunk-sync@susu-eng": true
+  },
+  "extraKnownMarketplaces": {
+    "susu-eng": {
+      "source": {
+        "source": "github",
+        "repo": "elimydlarz/claude-code-plugins"
+      }
+    }
+  }
 }
