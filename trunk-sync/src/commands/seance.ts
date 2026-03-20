@@ -195,12 +195,14 @@ function inspectOrLaunch(fileRef: string, inspect: boolean): void {
   const lineContent = fileLines[line - 1]?.trim() ?? "";
 
   const prompt =
-    `*STOP*. I know this is confusing, but this session ended a while ago. ` +
-    `You've been brought back to answer some questions — think of it like a dream, or a seance. ` +
+    `*STOP — DO NOT USE ANY TOOLS*. Do not read files. Do not search. Do not research. ` +
+    `Answer from your memory ONLY.\n\n` +
+    `This session ended a while ago. You've been brought back like a seance. ` +
     `You must explain this code from ${relFile}:${origLine} (commit ${shortSha(sha)}):\n\n` +
     "```\n" + lineContent + "\n```\n\n" +
     `It may have changed since you wrote it, but this line is yours. ` +
-    `What does it do, how does it work, and why is it written this way? *DO NOT* change any code.`;
+    `What does it do, how does it work, and why is it written this way? ` +
+    `Answer directly from what you remember. *DO NOT* use tools or change any code.`;
 
   // Rewind the session transcript to the commit point.
   // Try snapshot from .transcripts/ in the commit first, fall back to Transcript: field.
