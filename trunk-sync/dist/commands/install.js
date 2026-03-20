@@ -48,6 +48,14 @@ Options:
     catch {
         // May already be added — continue to install
     }
+    // Update marketplace to get latest plugin metadata
+    console.log("Updating susu-eng marketplace...");
+    try {
+        execSync(`claude plugin marketplace update susu-eng --scope ${scope}`, { stdio: "inherit" });
+    }
+    catch {
+        // Non-fatal — install may still work with existing cache
+    }
     // Install the plugin from the marketplace
     console.log(`Installing trunk-sync plugin (scope: ${scope})...`);
     try {
