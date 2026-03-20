@@ -64,7 +64,7 @@ Options:
   console.log("Updating susu-eng marketplace...");
   try {
     execSync(
-      `claude plugin marketplace update susu-eng --scope ${scope}`,
+      `claude plugin marketplace update susu-eng`,
       { stdio: "inherit" }
     );
   } catch {
