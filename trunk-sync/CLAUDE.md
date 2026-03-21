@@ -61,7 +61,7 @@ test/local-cleanup.sh         — manual test teardown
 - **deletion-sync**: deleted tracked files are staged and committed when the hook fires with no file_path
 - **session-trace**: commit body includes `Session: <uuid>` for seance lookback
 - **transcript-enrich**: commit subject extracted from session transcript's first user message
-- **install-preconditions**: CLI hard-checks jq and claude; warns if no git repo; silently accepts missing remote
+- **install-preconditions**: CLI hard-checks jq and claude; warns if no git repo (project scope only — user scope suppresses since cwd is irrelevant); silently accepts missing remote
 - **graceful-no-git**: hook exits 0 (no-op) when not inside a git repo
 - **graceful-no-remote**: hook commits locally and silently skips pull/push when no remote is configured
 - **install-marketplace**: CLI adds the GitHub repo as marketplace `susu-eng` (not `trunk-sync`, to avoid cache path collision with the plugin name), updates the marketplace to avoid stale cache, then installs `trunk-sync@susu-eng`

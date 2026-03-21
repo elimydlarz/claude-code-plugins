@@ -80,15 +80,26 @@ describe("install command", () => {
     assert.match(stderr, /[Cc]laude/);
   });
 
-  it("warns when not in git repo", () => {
+  it("warns when not in git repo (project scope)", () => {
     const noGitDir = realpathSync(mkdtempSync(join(tmpdir(), "no-git-install-")));
     cleanupDirs.push(noGitDir);
     makeFakeBin(fakeBinDir, "jq");
     makeFakeBin(fakeBinDir, "claude");
 
     const { stdout } = runInstall("", { PATH: fakeBinDir }, noGitDir);
-    // The warning goes to stderr which may not be captured on success,
-    // but the success message should still appear
+    // Warning goes to stderr (console.warn) which isn't captured on success exit;
+    // just verify the install still succeeds
+    assert.match(stdout, /installed successfully/);
+  });
+
+  it("suppresses git warning for user scope", () => {
+    const noGitDir = realpathSync(mkdtempSync(join(tmpdir(), "no-git-install-")));
+    cleanupDirs.push(noGitDir);
+    makeFakeBin(fakeBinDir, "jq");
+    makeFakeBin(fakeBinDir, "claude");
+
+    const { stdout, stderr } = runInstall("--scope user", { PATH: fakeBinDir }, noGitDir);
+    assert.doesNotMatch(stdout + stderr, /not inside a git repository/);
     assert.match(stdout, /installed successfully/);
   });
 

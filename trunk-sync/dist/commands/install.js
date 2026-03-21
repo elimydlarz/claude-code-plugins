@@ -22,7 +22,9 @@ Options:
     // Precondition checks (git repo and remote are soft warnings — trunk-sync
     // works without them, just with reduced functionality)
     if (!getGitRoot()) {
-        console.warn("Warning: not inside a git repository. trunk-sync needs git to auto-commit and sync.");
+        if (scope === "project") {
+            console.warn("Warning: not inside a git repository. trunk-sync needs git to auto-commit and sync.");
+        }
     }
     else {
         try {
