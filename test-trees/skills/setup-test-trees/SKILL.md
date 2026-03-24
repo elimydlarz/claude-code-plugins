@@ -5,11 +5,27 @@ description: "Set up a test framework with tree-style reporter output. Run this 
 
 # Test Framework Setup
 
-Configure the project's test framework to produce tree-style reporter output — nested, human-readable test results that read as a specification.
+Configure the project's test framework for outside-in TDD with tree-style reporter output at every layer — unit tests, functional tests, and mutation testing.
+
+## Principles
+
+The `tdd` skill enforces these — setup must make them possible:
+
+1. **Outside-in, always.** Every behaviour change starts with a failing functional test, then TDDs inward through unit layers.
+2. **Tests are specifications.** Tree output describes operating principles, not case enumerations.
+3. **Two test layers, different jobs.** Functional = end-to-end proof (no mocks). Unit = design driver + fast feedback (mocked collaborators).
+4. **One failing test at a time.** Changed-test runners enable tight feedback loops.
+5. **Mutation testing validates finished work.** Stryker runs at the end, not during development.
+6. **Tree output at every layer.** Nested, indented, readable by default — the most critical setup task.
 
 ## Goal
 
-Ensure that when tests are run, output looks like this:
+Set up a testing environment where:
+
+1. **Unit tests** run fast, test modules in isolation, produce tree-shaped output
+2. **Functional tests** exercise the real system end-to-end, produce tree-shaped output
+3. **Stryker mutation testing** validates that unit tests assert meaningful behaviour
+4. **Every layer** produces nested, human-readable output that reads as a specification:
 
 ```text
 MyModule
@@ -29,17 +45,41 @@ MyModule
    - Detect any existing test framework from project files (package.json, Cargo.toml, go.mod, mix.exs, Gemfile, composer.json, *.csproj, build.gradle, pom.xml, etc.)
    - If no test framework is installed, identify the most suitable options for the project's language
 3. **Suggest** the identified frameworks to the user — present the options with trade-offs and a recommendation, then let the user choose before proceeding
-4. **Determine test strategy** — based on the project review and chosen framework, confirm how the conventions from the `tdd` skill (colocated test files, naming conventions, test tree output format) will apply to this specific project
-5. **Configure the tree-style reporter** — this is the most critical step. You MUST write the reporter/formatter config into the project's test configuration file. The reporter must produce nested, indented, tree-shaped output where `describe` blocks create indentation levels. See the Framework Reference below for the exact config to write for each framework. Do NOT skip this step. Do NOT rely on defaults — explicitly configure the reporter even if it happens to be the default.
-6. **Set up a changed-test runner** — configure a simple way to run only the tests that have changed (or whose subjects have changed) since the last test run. This enables fast feedback during TDD. Approach depends on the framework:
-   - Use built-in support where available (e.g. Vitest `--changed`, Jest `--onlyChanged`)
-   - Otherwise, create a script/command that uses git to detect changed test files and changed source files, maps source files to their colocated test files, and runs only those tests
-   - The command should be simple to invoke (e.g. a package.json script, Makefile target, or shell alias)
-7. **Update the project's CLAUDE.md** — add a section with the actual test commands for this project so the `tdd` skill can use them concretely. Include:
-   - Command to run all tests with tree output
-   - Command to run only changed tests (from step 6)
-   - Any other project-specific testing conventions
-8. **Verify** by running the test suite and confirming output is tree-shaped — nested and indented like the Goal example above, NOT a flat list of test names. If no tests exist yet, create a minimal smoke test with nested `describe`/`it` blocks and run it to confirm tree-shaped output before finishing.
+4. **Determine test strategy** — based on the project review and chosen framework, confirm how the `tdd` skill conventions apply:
+   - Unit tests: colocated with source, named `*.unit.test.*`
+   - Functional tests: in `test/functional/`, named `*.functional.test.*`
+   - Tree-style output at both layers
+5. **Configure the unit test runner** — write the tree-style reporter config into the project's test configuration file. See the Framework Reference below. Do NOT skip this step. Do NOT rely on defaults.
+6. **Configure the functional test runner** — set up a separate test command/config for functional tests:
+   - Functional tests live in `test/functional/` at the project root
+   - They must also produce tree-style output
+   - They should be runnable independently from unit tests (separate command or config)
+   - Configure with the same framework where possible, or a dedicated integration/e2e framework if more appropriate
+7. **Configure Stryker mutation testing** — set up Stryker to run against the unit test suite:
+   - Install the appropriate Stryker package for the project's language
+   - Configure `stryker.config.mjs` (or language-equivalent) with:
+     - Mutator targeting source files (not test files)
+     - Unit test runner and test command
+     - Thresholds: `high: 80, low: 60, break: 50` as starting defaults
+   - Add a script/command to run Stryker (e.g. `npm run test:mutate`, `make mutate`)
+   - See the Stryker Reference below for language-specific setup
+8. **Set up changed-test runners** — configure commands to run only tests that have changed since the last run, for fast TDD feedback at each layer:
+   - Unit: Use built-in support where available (e.g. Vitest `--changed`, Jest `--onlyChanged`), otherwise script with git
+   - Functional: Similar, but scoped to `test/functional/`
+   - The commands should be simple to invoke (e.g. package.json scripts, Makefile targets)
+9. **Update the project's CLAUDE.md** — add a testing section so the `tdd` skill can use concrete commands. Include:
+   - Command to run all unit tests with tree output
+   - Command to run all functional tests with tree output
+   - Command to run only changed unit tests
+   - Command to run only changed functional tests
+   - Command to run Stryker mutation testing
+   - The outside-in TDD workflow: "start with a failing functional test, TDD through unit layers, verify functional test passes, then run Stryker"
+   - An example of the expected test tree structure at both layers for this project
+10. **Verify** each layer by running the test suite and confirming:
+    - Unit test output is tree-shaped
+    - Functional test output is tree-shaped
+    - Stryker runs and produces a mutation score report
+    - If no tests exist yet, create minimal smoke tests at both layers with nested `describe`/`it` blocks and run them to confirm tree-shaped output before finishing
 
 ## Framework Reference
 
@@ -211,3 +251,104 @@ For flat-only frameworks, configure the best available verbose output and be tra
 - **Best available:** Use `swift test --verbose` for verbose flat output. Be honest with the user that Swift CLI test output is currently flat.
 - **Config:** Run with `swift test --verbose`
 - **Docs:** https://github.com/swiftlang/swift-testing
+
+## Stryker Reference
+
+Stryker is a mutation testing framework. It modifies your source code (creates "mutants") and runs your unit tests against each mutant. If tests still pass with a mutation, those tests aren't actually verifying that behaviour — the mutant "survived."
+
+**Always configure Stryker to run against unit tests only** — functional tests are too slow for mutation testing and should be excluded.
+
+### JavaScript / TypeScript
+
+- **Package:** `@stryker-mutator/core` + runner plugin (`@stryker-mutator/vitest-runner`, `@stryker-mutator/jest-runner`, `@stryker-mutator/mocha-runner`)
+- **Install:** `npm install -D @stryker-mutator/core @stryker-mutator/vitest-runner` (or jest/mocha equivalent)
+- **Config:** Create `stryker.config.mjs`:
+  ```js
+  /** @type {import('@stryker-mutator/api/core').PartialStrykerOptions} */
+  export default {
+    testRunner: 'vitest',  // or 'jest', 'mocha'
+    mutate: ['src/**/*.ts', '!src/**/*.test.*', '!src/**/*.d.ts'],
+    reporters: ['clear-text', 'html'],
+    thresholds: { high: 80, low: 60, break: 50 },
+  };
+  ```
+- **Script:** Add to package.json: `"test:mutate": "stryker run"`
+- **Docs:** https://stryker-mutator.io/docs/stryker-js/introduction/
+
+### Python
+
+- **Package:** `mutmut` (Stryker's Python equivalent is less mature; `mutmut` is the standard Python mutation tester)
+- **Install:** `pip install mutmut`
+- **Config:** Write into `pyproject.toml` or `setup.cfg`:
+  ```toml
+  [tool.mutmut]
+  paths_to_mutate = "src/"
+  tests_dir = "."
+  runner = "python -m pytest -x --spec"
+  ```
+- **Script:** Add Makefile target: `mutate: mutmut run`
+- **Docs:** https://github.com/boxed/mutmut
+
+### Ruby
+
+- **Package:** `mutant` gem (or `mutant-rspec` for RSpec integration)
+- **Install:** `gem install mutant-rspec`
+- **Config:** Run with: `bundle exec mutant run --include lib --require your_lib --use rspec 'YourModule*'`
+- **Docs:** https://github.com/mbj/mutant
+
+### Java / Kotlin
+
+- **Package:** PIT (pitest) — the standard JVM mutation testing tool
+- **Gradle:** Add `id 'info.solidsoft.pitest' version '1.15.0'` plugin
+- **Config:** Write into `build.gradle`:
+  ```groovy
+  pitest {
+      targetClasses = ['com.yourpackage.*']
+      targetTests = ['com.yourpackage.*']
+      outputFormats = ['HTML']
+      threads = 4
+      timestampedReports = false
+      mutationThreshold = 50
+  }
+  ```
+- **Docs:** https://pitest.org/
+
+### C# / .NET
+
+- **Package:** `Stryker.NET`
+- **Install:** `dotnet tool install -g dotnet-stryker`
+- **Config:** Create `stryker-config.json`:
+  ```json
+  {
+    "stryker-config": {
+      "reporters": ["cleartext", "html"],
+      "thresholds": { "high": 80, "low": 60, "break": 50 }
+    }
+  }
+  ```
+- **Script:** `dotnet stryker`
+- **Docs:** https://stryker-mutator.io/docs/stryker-net/introduction/
+
+### PHP
+
+- **Package:** `infection/infection`
+- **Install:** `composer require --dev infection/infection`
+- **Config:** Create `infection.json5`:
+  ```json5
+  {
+    "source": { "directories": ["src"] },
+    "logs": { "text": "infection.log", "html": "infection.html" },
+    "minMsi": 50,
+    "minCoveredMsi": 80
+  }
+  ```
+- **Script:** `vendor/bin/infection --threads=4`
+- **Docs:** https://infection.github.io/guide/
+
+### Go / Rust / Elixir / Swift
+
+Mutation testing tooling for these languages is less mature. If the project uses one of these languages:
+- **Go:** `go-mutesting` exists but is experimental. Mention it and let the user decide.
+- **Rust:** `cargo-mutants` is available. `cargo install cargo-mutants && cargo mutants`
+- **Elixir:** No mature mutation testing tool. Skip and note this.
+- **Swift:** No mature mutation testing tool. Skip and note this.

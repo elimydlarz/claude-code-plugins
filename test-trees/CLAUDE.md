@@ -1,27 +1,29 @@
 # test-trees
 
-Claude Code plugin that enforces test-driven development via the `tdd` skill.
+Claude Code plugin that enforces outside-in TDD with test trees at every layer — unit, functional, and mutation testing.
 
 ## Requirements
 
 ### Functional
-- **`tdd` skill** — auto-triggers when Claude changes behaviour, interfaces, or tests. Enforces red/green/refactor TDD cycle with human-readable test tree output that reads as a specification of operating principles.
-- **`setup-test-trees` skill** — user-invoked (`/setup-test-trees`). Reviews the project, identifies and suggests candidate test frameworks, determines how `tdd` skill conventions apply, configures tree-style reporter output, sets up a changed-test runner for fast TDD feedback, updates the project's CLAUDE.md with concrete test commands, and verifies it works.
+- **outside-in-tdd** — `tdd` skill instructs Claude to follow outside-in TDD when changing behaviour, interfaces, or tests. Enforces: failing functional test first → TDD through unit layers → functional test passes → refactor. Mutation testing runs only at the end of completed work, not during the cycle.
+- **test-tree-output** — all test layers produce nested, indented, human-readable tree output that reads as a specification of operating principles.
+- **three-layer-testing** — `setup-test-trees` skill configures unit tests (colocated `*.unit.test.*`), functional tests (`test/functional/*.functional.test.*`), and Stryker mutation testing against unit tests.
+- **fast-feedback** — `setup-test-trees` configures changed-test runners at each layer for tight TDD loops.
+- **project-onboarding** — `setup-test-trees` updates the target project's CLAUDE.md with concrete test commands and the outside-in workflow.
 
 ### Cross-functional
-- Skills are pure Markdown — no runtime code, no dependencies.
-- Plugin must work when installed via marketplace (`claude plugin install`).
+- **pure-markdown** — skills are declarative Markdown, no runtime code or dependencies.
+- **marketplace-install** — plugin works when installed via `claude plugin install` from the marketplace.
 
 ## Mental Model
 
-This is a **Claude Code plugin** — a bundle of skills that extend Claude's behaviour inside a user's project.
+This is a **Claude Code plugin** — declarative Markdown skills (no application code) that extend Claude's behaviour inside a user's project.
 
-- **Plugin manifest** (`plugin.json`) registers the plugin name, version, and description with Claude Code.
-- **Skills** are Markdown files (`SKILL.md`) containing instructions that Claude follows. Each skill has YAML frontmatter (`name`, `description`) and a Markdown body with rules and examples.
-- The `tdd` skill has a `description` that tells Claude when to auto-trigger (behaviour/interface/test changes). It is not invoked via slash command.
-- The `setup-test-trees` skill is invoked explicitly by the user. It references framework-specific configuration docs.
-- **Marketplace metadata** (`marketplace.json`) registers the plugin owner and source for the plugin marketplace.
-- There is no application code — the entire plugin is declarative Markdown and JSON config.
+- **Three test layers:** Functional tests (real system, no mocks, `test/functional/`) prove behaviour works end-to-end. Unit tests (colocated, mocked collaborators) drive internal design. Stryker mutation testing validates that unit tests assert meaningful behaviour.
+- **Outside-in flow:** Every behaviour change starts with a failing functional test, drops to unit-level TDD to build the implementation inward, then rises back up to pass the functional test. This ensures you only build what's needed and catch integration gaps early.
+- **Test trees as specification:** Test output at every layer is nested, indented, tree-shaped — describing *operating principles* (not enumerating cases). These trees are the contract for what the software does.
+- **Two skills:** `tdd` instructs Claude to follow the outside-in cycle when changing behaviour/interfaces/tests (via its frontmatter `description` field — a relevance hint, not a mechanical trigger). `setup-test-trees` is user-invoked to configure a project's test infrastructure across all three layers.
+- **Plugin structure:** `plugin.json` manifest, `marketplace.json` metadata, `SKILL.md` files with YAML frontmatter. Distributed via the Claude Code plugin marketplace.
 
 ## Repo Map
 
@@ -35,8 +37,8 @@ README.md                        — agent-facing docs (Claude reads this)
 .claude/
   settings.json                  — enabled plugins for this project
 skills/
-  tdd/SKILL.md                   — TDD skill (auto-triggers on behaviour changes)
-  setup-test-trees/SKILL.md       — setup skill (configures test framework reporter)
+  tdd/SKILL.md                   — outside-in TDD enforcement (auto-triggers on behaviour changes)
+  setup-test-trees/SKILL.md       — project setup (unit + functional + Stryker + tree reporters)
 test/
   test_helper.bash               — shared helper (loads bats-support + bats-assert)
   *.bats                         — Bats test files
