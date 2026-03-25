@@ -39,6 +39,7 @@ README.md                        — agent-facing docs (Claude reads this)
 skills/
   tdd/SKILL.md                   — outside-in TDD enforcement (auto-triggers on behaviour changes)
   setup-test-trees/SKILL.md       — project setup (unit + functional + Stryker + tree reporters)
+  plan-test-trees/SKILL.md        — plan test trees before writing code (auto-triggers on planning/design)
 test/
   test_helper.bash               — shared helper (loads bats-support + bats-assert)
   *.bats                         — Bats test files
