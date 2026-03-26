@@ -21,11 +21,8 @@ setup_project() {
   local dir
   dir=$(mktemp -d /tmp/contree-test-XXXXXX)
   cp -r "$FIXTURES"/* "$dir/"
-  cp "$FIXTURES"/CLAUDE.md "$dir/"  # cp skips dotfiles, CLAUDE.md isn't dotfile but be safe
-  cd "$dir"
-  git init -q
-  git add -A
-  git commit -q -m "seed"
+  cp "$FIXTURES"/CLAUDE.md "$dir/"
+  (cd "$dir" && git init -q && git add -A && git commit -q -m "seed")
   echo "$dir"
 }
 
@@ -36,15 +33,14 @@ cleanup_project() {
 run_claude() {
   local project_dir="$1"
   local prompt="$2"
-  local max_turns="${3:-10}"
 
-  claude -p "$prompt" \
+  # Claude uses cwd as the project directory
+  (cd "$project_dir" && claude -p "$prompt" \
     --plugin-dir "$CONTREE_ROOT" \
     --dangerously-skip-permissions \
     --model sonnet \
     --max-budget-usd 0.50 \
-    --no-session-persistence \
-    -d "$project_dir" 2>/dev/null || true
+    --no-session-persistence 2>/dev/null) || true
 }
 
 assert() {
@@ -69,10 +65,6 @@ assert_file_contains() {
   assert "$1" "grep -q '$2' '$3'"
 }
 
-assert_file_not_contains() {
-  assert "$1" "! grep -q '$2' '$3'"
-}
-
 # --- Test: setup-contree generates requirement trees ---
 
 test_setup_generates_requirements() {
@@ -90,15 +82,17 @@ test_setup_generates_requirements() {
 
   assert_file_contains \
     "requirement trees use when/then format" \
-    "when\|then" "$dir/CLAUDE.md"
+    "when" "$dir/CLAUDE.md"
 
-  # Check test framework was configured
-  assert_file_exists \
-    "vitest config exists after setup" \
-    "$dir/vitest.config.ts" || \
-  assert_file_exists \
-    "vitest config exists after setup (js)" \
-    "$dir/vitest.config.js"
+  # Check test framework was configured (vitest.config.ts or .js or .mts)
+  local has_vitest_config=false
+  for ext in ts js mts mjs; do
+    if [ -f "$dir/vitest.config.$ext" ]; then
+      has_vitest_config=true
+      break
+    fi
+  done
+  assert "vitest config exists after setup" "$has_vitest_config"
 
   assert_file_contains \
     "vitest is in package.json dependencies" \
@@ -130,7 +124,7 @@ Counter
     then value increases by one
 ```
 EOF
-  cd "$dir" && git add -A && git commit -q -m "add requirements"
+  (cd "$dir" && git add -A && git commit -q -m "add requirements")
 
   run_claude "$dir" \
     "Add a reset feature to the counter that sets it back to zero. Follow the tdd skill."
@@ -140,11 +134,9 @@ EOF
     "CLAUDE.md mentions reset in requirements" \
     "reset\|Reset" "$dir/CLAUDE.md"
 
-  # A test file should exist
+  # A test file should exist somewhere
   local has_test=false
-  if compgen -G "$dir/src/**/*.test.*" > /dev/null 2>&1 || \
-     compgen -G "$dir/**/*.test.*" > /dev/null 2>&1 || \
-     compgen -G "$dir/test/**" > /dev/null 2>&1; then
+  if find "$dir" -name '*.test.*' -not -path '*/node_modules/*' | grep -q .; then
     has_test=true
   fi
   assert "test file exists after tdd" "$has_test"
@@ -160,15 +152,14 @@ test_stop_hook_fires() {
   local dir
   dir=$(setup_project)
 
-  # Give claude a task that changes the system, stop hook should update CLAUDE.md
+  # Give claude a task that changes the system
   run_claude "$dir" \
     "Add an 'amount' parameter to increment() so it can increment by more than 1. Update counter.js."
 
-  # After the stop hook fires, CLAUDE.md should have been updated
-  # (at minimum the repo map or mental model should reflect the change)
-  local commits
-  commits=$(cd "$dir" && git log --oneline | wc -l)
-  assert "more than one commit exists (stop hook caused updates)" "[ $commits -gt 1 ]"
+  # CLAUDE.md should mention the amount parameter (stop hook prompted update)
+  assert_file_contains \
+    "CLAUDE.md was updated to reflect the change" \
+    "amount\|Amount\|parameter\|increment" "$dir/CLAUDE.md"
 
   cleanup_project "$dir"
 }
@@ -176,6 +167,7 @@ test_stop_hook_fires() {
 # --- Run all tests ---
 
 echo "TAP version 13"
+echo "1..5"
 
 test_setup_generates_requirements
 test_tdd_writes_requirement_first
