@@ -24,10 +24,15 @@ Flow: `setup-contree` → generates requirement trees → `tdd` implements them 
 
 - `CLAUDE.md` — this file
 - `.claude-plugin/plugin.json` — plugin manifest (name, version, description)
+- `package.json` — dev dependencies (bats-support, bats-assert) and test scripts
 - `hooks/hooks.json` — Stop hook prompting CLAUDE.md updates (requirement trees, mental model, repo map)
 - `skills/tdd/SKILL.md` — outside-in TDD skill, auto-triggers on behaviour changes
 - `skills/setup-contree/SKILL.md` — project setup: test framework config + initial requirement tree generation
 - `skills/sync-to-requirements/SKILL.md` — completeness audit: requirements vs implementation
+- `test/plugin.bats` — structural tests: plugin manifest, skill files, frontmatter
+- `test/hook.bats` — hook behaviour tests: loop prevention, exit codes, prompt content
+- `test/functional/run.sh` — functional tests: runs Claude with contree loaded against seed project
+- `test/fixtures/seed-project/` — tiny JS counter module used as test target
 
 ## Requirements
 
