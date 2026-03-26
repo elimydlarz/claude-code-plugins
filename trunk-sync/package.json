@@ -41,7 +41,5 @@
     "sync",
     "trunk-based-development"
   ],
-  "dependencies": {
-    "@susu-eng/trunk-sync": "^3.0.0"
-  }
+  "dependencies": {}
 }
