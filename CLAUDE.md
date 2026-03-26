@@ -43,6 +43,7 @@ pnpm publish:trunk-sync patch    # or minor, major
 pnpm publish:eli-rules patch
 pnpm publish:req-mod-sync patch
 pnpm publish:test-trees patch
+pnpm publish:contree patch
 ```
 
 Each script checks for clean source, runs tests (if any), bumps the version, commits, tags, and pushes. trunk-sync and eli-rules also publish to npm. req-mod-sync and test-trees are marketplace-only — users get updates on `claude plugin marketplace update`.
