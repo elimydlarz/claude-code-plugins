@@ -34,8 +34,9 @@ run_claude() {
   local project_dir="$1"
   local prompt="$2"
 
-  # Claude uses cwd as the project directory
-  (cd "$project_dir" && claude -p "$prompt" \
+  # Claude uses cwd as the project directory.
+  # Unset ANTHROPIC_API_KEY so token auth (claude.ai OAuth) is used.
+  (cd "$project_dir" && env -u ANTHROPIC_API_KEY claude -p "$prompt" \
     --plugin-dir "$CONTREE_ROOT" \
     --dangerously-skip-permissions \
     --model sonnet \
