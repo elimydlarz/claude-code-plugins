@@ -77,12 +77,21 @@ stop-hook-sync
 ```
 setup-generates-trees
   when setup-contree is run on an existing project
-    then test framework is configured with tree reporters
+    then existing test config is detected and merged into, not overwritten
+    and tree reporters are configured for both local dev and CI (dual reporters)
+    and unit and functional test layers are configured as separate commands
+    and mutation testing is configured with explicit test file exclusions
+    and changed-test runners are configured with known gotchas addressed
     and requirement trees are generated from existing code
     and trees are written to ## Requirements in CLAUDE.md
   when setup-contree is run on a new project
     then requirement trees are generated from user-described plans
     and tests are NOT implemented yet
+  when the language only supports flat test output
+    then the best available option is configured
+    and the limitation is communicated honestly
+  when tests are colocated with source
+    then mutation testing mutate globs explicitly exclude test file patterns
 ```
 
 ### sync-completes-and-implements
