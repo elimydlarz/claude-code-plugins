@@ -10,15 +10,15 @@ Three mechanisms:
 
 2. **setup-contree skill** — user-invoked. Configures test framework with tree reporters, generates initial requirement trees from existing code/plans, writes them to CLAUDE.md.
 
-3. **sync-requirements skill** — user-invoked. Audits implementation against requirement trees — finds gaps, untested paths, undocumented behaviour, stale requirements. Fixes drift.
+3. **sync-to-requirements skill** — user-invoked. Audits implementation against requirement trees — finds gaps, untested paths, undocumented behaviour, stale requirements. Fixes drift.
 
 4. **Stop hook** — fires after every response, prompting Claude to keep requirement trees, mental model, and repo map in CLAUDE.md current.
 
 ## Mental Model
 
-Test trees serve dual purpose: they are both the specification (in CLAUDE.md) and the test structure (in code). The requirement trees in `## Requirements` use `when/then` format describing operating principles. The `tdd` skill implements against these trees. The `sync-requirements` skill verifies completeness. The stop hook ensures continuous maintenance.
+Test trees serve dual purpose: they are both the specification (in CLAUDE.md) and the test structure (in code). The requirement trees in `## Requirements` use `when/then` format describing operating principles. The `tdd` skill implements against these trees. The `sync-to-requirements` skill verifies completeness. The stop hook ensures continuous maintenance.
 
-Flow: `setup-contree` → generates requirement trees → `tdd` implements them → stop hook maintains them → `sync-requirements` audits completeness.
+Flow: `setup-contree` → generates requirement trees → `tdd` implements them → stop hook maintains them → `sync-to-requirements` audits completeness.
 
 ## Repo Map
 
@@ -27,7 +27,7 @@ Flow: `setup-contree` → generates requirement trees → `tdd` implements them 
 - `hooks/hooks.json` — Stop hook prompting CLAUDE.md updates (requirement trees, mental model, repo map)
 - `skills/tdd/SKILL.md` — outside-in TDD skill, auto-triggers on behaviour changes
 - `skills/setup-contree/SKILL.md` — project setup: test framework config + initial requirement tree generation
-- `skills/sync-requirements/SKILL.md` — completeness audit: requirements vs implementation
+- `skills/sync-to-requirements/SKILL.md` — completeness audit: requirements vs implementation
 
 ## Requirements
 
@@ -89,7 +89,7 @@ setup-generates-trees
 
 ```
 sync-audits-completeness
-  when sync-requirements is run
+  when sync-to-requirements is run
     then every when/then path is checked for implementation and tests
     and undocumented behaviour is identified
     and stale requirements are flagged
