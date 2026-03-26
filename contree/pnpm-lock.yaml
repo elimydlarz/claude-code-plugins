@@ -1,0 +1,48 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    devDependencies:
+      bats-assert:
+        specifier: github:bats-core/bats-assert
+        version: https://codeload.github.com/bats-core/bats-assert/tar.gz/697471b7a89d3ab38571f38c6c7c4b460d1f5e35(bats-support@https://codeload.github.com/bats-core/bats-support/tar.gz/0954abb9925cad550424cebca2b99255d4eabe96(bats@1.13.0))(bats@1.13.0)
+      bats-support:
+        specifier: github:bats-core/bats-support
+        version: https://codeload.github.com/bats-core/bats-support/tar.gz/0954abb9925cad550424cebca2b99255d4eabe96(bats@1.13.0)
+
+packages:
+
+  bats-assert@https://codeload.github.com/bats-core/bats-assert/tar.gz/697471b7a89d3ab38571f38c6c7c4b460d1f5e35:
+    resolution: {tarball: https://codeload.github.com/bats-core/bats-assert/tar.gz/697471b7a89d3ab38571f38c6c7c4b460d1f5e35}
+    version: 2.2.4
+    peerDependencies:
+      bats: 0.4 || ^1
+      bats-support: ^0.3
+
+  bats-support@https://codeload.github.com/bats-core/bats-support/tar.gz/0954abb9925cad550424cebca2b99255d4eabe96:
+    resolution: {tarball: https://codeload.github.com/bats-core/bats-support/tar.gz/0954abb9925cad550424cebca2b99255d4eabe96}
+    version: 0.3.0
+    peerDependencies:
+      bats: 0.4 || ^1
+
+  bats@1.13.0:
+    resolution: {integrity: sha512-giSYKGTOcPZyJDbfbTtzAedLcNWdjCLbXYU3/MwPnjyvDXzu6Dgw8d2M+8jHhZXSmsCMSQqCp+YBsJ603UO4vQ==}
+    hasBin: true
+
+snapshots:
+
+  bats-assert@https://codeload.github.com/bats-core/bats-assert/tar.gz/697471b7a89d3ab38571f38c6c7c4b460d1f5e35(bats-support@https://codeload.github.com/bats-core/bats-support/tar.gz/0954abb9925cad550424cebca2b99255d4eabe96(bats@1.13.0))(bats@1.13.0):
+    dependencies:
+      bats: 1.13.0
+      bats-support: https://codeload.github.com/bats-core/bats-support/tar.gz/0954abb9925cad550424cebca2b99255d4eabe96(bats@1.13.0)
+
+  bats-support@https://codeload.github.com/bats-core/bats-support/tar.gz/0954abb9925cad550424cebca2b99255d4eabe96(bats@1.13.0):
+    dependencies:
+      bats: 1.13.0
+
+  bats@1.13.0: {}
