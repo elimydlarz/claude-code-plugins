@@ -36,6 +36,16 @@
       },
       "license": "MIT",
       "keywords": ["skills", "tdd", "testing", "test-trees"]
+    },
+    {
+      "name": "contree",
+      "source": "./contree",
+      "description": "Test trees as living requirements — TDD with auto-synced specifications in CLAUDE.md",
+      "author": {
+        "name": "Eli Mydlarz"
+      },
+      "license": "MIT",
+      "keywords": ["skills", "hooks", "tdd", "testing", "test-trees", "requirements", "documentation"]
     }
   ]
 }
