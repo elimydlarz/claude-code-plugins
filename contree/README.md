@@ -47,6 +47,26 @@ UserRegistration
 
 Each capability gets its own subsection. Trees describe operating principles (not case enumerations).
 
+## Supported languages
+
+Setup configures tree reporters, test runners, and mutation testing for:
+
+| Language | Tree reporter | Mutation testing |
+|---|---|---|
+| JavaScript/TypeScript | Vitest, Jest, Mocha | Stryker |
+| Python | pytest + pytest-spec | mutmut |
+| Ruby | RSpec | mutant |
+| Java/Kotlin | JUnit 5 + Gradle/Maven | PIT (pitest) |
+| PHP | PHPUnit | Infection |
+| C#/.NET | dotnet test | Stryker.NET |
+| Go | gotestsum (flat) | go-mutesting (experimental) |
+| Rust | cargo nextest (flat) | cargo-mutants |
+| Elixir | ExUnit (flat) | — |
+| Shell/Bash | Bats (flat) | — |
+| Swift | Swift Testing (flat) | — |
+
+Languages marked "flat" don't support nested test output natively — contree uses the best available option and is honest about the limitation.
+
 ## Dependencies
 
 - `jq` on the host system (for the stop hook)
