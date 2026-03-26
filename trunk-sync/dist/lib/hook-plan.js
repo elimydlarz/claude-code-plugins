@@ -17,8 +17,8 @@ export function parseHookInput(json) {
 export function planHook(input, state) {
     const filePath = input.tool_input.file_path ?? null;
     const sync = buildSyncPlan(state);
-    // No file_path and no deleted files → nothing to do
-    if (!filePath && state.deletedFiles.length === 0) {
+    // No file_path and no deleted/modified files → nothing to do
+    if (!filePath && state.deletedFiles.length === 0 && state.modifiedFiles.length === 0) {
         return { action: "skip" };
     }
     // File path provided but outside the repo → skip
@@ -55,14 +55,26 @@ function buildSyncPlan(state) {
 }
 function buildCommitPlan(input, state) {
     const filePath = input.tool_input.file_path ?? null;
-    const action = filePath
-        ? (input.tool_name ?? "update").toLowerCase()
-        : "delete";
-    const relPath = filePath
-        ? state.relPath
-        : summarizeDeletions(state.deletedFiles);
-    const filesToStage = filePath ? [filePath] : [];
+    const filesToStage = filePath ? [filePath] : [...state.modifiedFiles];
     const filesToRemove = filePath ? [] : state.deletedFiles;
+    let action;
+    let relPath;
+    if (filePath) {
+        action = (input.tool_name ?? "update").toLowerCase();
+        relPath = state.relPath;
+    }
+    else if (state.modifiedFiles.length > 0 && state.deletedFiles.length === 0) {
+        action = "update";
+        relPath = summarizeDeletions(state.modifiedFiles);
+    }
+    else if (state.deletedFiles.length > 0 && state.modifiedFiles.length === 0) {
+        action = "delete";
+        relPath = summarizeDeletions(state.deletedFiles);
+    }
+    else {
+        action = "update";
+        relPath = summarizeDeletions([...state.modifiedFiles, ...state.deletedFiles]);
+    }
     const sessionPrefix = buildSessionPrefix(input.session_id);
     const subject = `${sessionPrefix}${action} ${relPath}`;
     const body = buildCommitBody(input, filePath ? relPath : null);
@@ -76,7 +88,9 @@ export function buildCommitPlanWithTask(input, state, task) {
     if (!task)
         return base;
     const filePath = input.tool_input.file_path ?? null;
-    const relPath = filePath ? state.relPath : summarizeDeletions(state.deletedFiles);
+    const relPath = filePath
+        ? state.relPath
+        : summarizeDeletions([...state.modifiedFiles, ...state.deletedFiles]);
     const sessionPrefix = buildSessionPrefix(input.session_id);
     const subject = `${sessionPrefix}${task}`;
     // When task is present, include File: line in body

@@ -1,5 +1,7 @@
 {
-  "enabledPlugins": {},
+  "enabledPlugins": {
+    "trunk-sync@susu-eng": true
+  },
   "extraKnownMarketplaces": {
     "susu-eng": {
       "source": {

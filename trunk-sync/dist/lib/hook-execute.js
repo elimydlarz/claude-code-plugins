@@ -72,6 +72,7 @@ export function gatherRepoState(input) {
         hasStagedChanges = true;
     }
     let deletedFiles = [];
+    let modifiedFiles = [];
     if (!filePath) {
         try {
             const deleted = execSync(`git -C "${repoRoot}" ls-files --deleted`, {
@@ -79,6 +80,19 @@ export function gatherRepoState(input) {
             }).trim();
             if (deleted)
                 deletedFiles = deleted.split("\n");
+        }
+        catch {
+            // ignore
+        }
+        try {
+            const modified = execSync(`git -C "${repoRoot}" diff --name-only`, {
+                encoding: "utf-8",
+            }).trim();
+            if (modified) {
+                // Exclude files already in deletedFiles (diff --name-only includes deletions)
+                const deletedSet = new Set(deletedFiles);
+                modifiedFiles = modified.split("\n").filter((f) => !deletedSet.has(f));
+            }
         }
         catch {
             // ignore
@@ -96,6 +110,7 @@ export function gatherRepoState(input) {
         inMerge,
         hasStagedChanges,
         deletedFiles,
+        modifiedFiles,
     };
 }
 /**

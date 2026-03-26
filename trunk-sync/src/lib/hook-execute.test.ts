@@ -46,6 +46,7 @@ function makeState(dir: string, overrides: Partial<RepoState> = {}): RepoState {
     inMerge: false,
     hasStagedChanges: false,
     deletedFiles: [],
+    modifiedFiles: [],
     ...overrides,
   };
 }
@@ -159,6 +160,39 @@ describe("gatherRepoState", () => {
     process.chdir(origDir);
     assert.ok(state);
     assert.deepEqual(state.deletedFiles, ["file.txt"]);
+  });
+
+  it("detects modified files when no file_path", () => {
+    // Change content of tracked file
+    writeFileSync(join(dir, "file.txt"), "modified\n");
+    const origDir = process.cwd();
+    process.chdir(dir);
+    const state = gatherRepoState(makeInput());
+    process.chdir(origDir);
+    assert.ok(state);
+    assert.deepEqual(state.modifiedFiles, ["file.txt"]);
+  });
+
+  it("detects permission changes when no file_path", () => {
+    execSync(`chmod +x "${join(dir, "file.txt")}"`);
+    const origDir = process.cwd();
+    process.chdir(dir);
+    const state = gatherRepoState(makeInput());
+    process.chdir(origDir);
+    assert.ok(state);
+    assert.deepEqual(state.modifiedFiles, ["file.txt"]);
+  });
+
+  it("does not detect modified files when file_path is provided", () => {
+    writeFileSync(join(dir, "file.txt"), "modified\n");
+    const origDir = process.cwd();
+    process.chdir(dir);
+    const state = gatherRepoState(
+      makeInput({ tool_input: { file_path: join(dir, "file.txt") } }),
+    );
+    process.chdir(origDir);
+    assert.ok(state);
+    assert.deepEqual(state.modifiedFiles, []);
   });
 });
 
@@ -405,6 +439,30 @@ describe("executePlan", () => {
 
     const result = executePlan(plan, input, state);
     assert.ok(result.exitCode !== 0);
+  });
+
+  it("stages and commits modified files (e.g. permission changes)", () => {
+    // Make file executable
+    execSync(`chmod +x "${join(dir, "seed.txt")}"`);
+
+    const plan: HookPlan = {
+      action: "commit-and-sync",
+      commit: {
+        filesToStage: ["seed.txt"],
+        filesToRemove: [],
+        subject: "auto: update seed.txt",
+        body: null,
+      },
+      sync: null,
+    };
+    const input = makeInput();
+    const state = makeState(dir, { modifiedFiles: ["seed.txt"] });
+    const result = executePlan(plan, input, state);
+    assert.equal(result.exitCode, 0);
+    const status = execSync("git status --porcelain", { cwd: dir, encoding: "utf-8" }).trim();
+    assert.equal(status, "");
+    const subject = execSync("git log -1 --format=%s", { cwd: dir, encoding: "utf-8" }).trim();
+    assert.equal(subject, "auto: update seed.txt");
   });
 
   it("enriches commit subject from transcript", () => {

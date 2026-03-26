@@ -60,6 +60,7 @@ test/local-cleanup.sh         — manual test teardown
 - **conflict-resolve**: if MERGE_HEAD exists, the hook completes the merge (agent already edited)
 - **push-retry**: one automatic pull+push retry on push failure
 - **deletion-sync**: deleted tracked files are staged and committed when the hook fires with no file_path
+- **modification-sync**: modified tracked files (including permission-only changes) are staged and committed when the hook fires with no file_path — covers chmod and other Bash-caused changes to tracked files
 - **session-trace**: commit body includes `Session: <uuid>` for seance lookback
 - **transcript-enrich**: commit subject extracted from session transcript's first user message
 - **install-preconditions**: CLI hard-checks jq and claude; warns if no git repo (project scope only — user scope suppresses since cwd is irrelevant); silently accepts missing remote

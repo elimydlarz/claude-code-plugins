@@ -28,6 +28,8 @@ export interface RepoState {
   hasStagedChanges: boolean;
   /** tracked files that have been deleted from the working tree */
   deletedFiles: string[];
+  /** tracked files with modifications (content or permissions) in the working tree */
+  modifiedFiles: string[];
 }
 
 export interface SyncPlan {

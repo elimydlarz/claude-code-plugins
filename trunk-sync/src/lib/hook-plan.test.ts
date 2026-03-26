@@ -36,6 +36,7 @@ function makeState(overrides: Partial<RepoState> = {}): RepoState {
     inMerge: false,
     hasStagedChanges: false,
     deletedFiles: [],
+    modifiedFiles: [],
     ...overrides,
   };
 }
@@ -73,9 +74,9 @@ describe("parseHookInput", () => {
 // ── planHook: skip conditions ────────────────────────────────────────
 
 describe("planHook skip conditions", () => {
-  it("skips when no file_path and no deletions", () => {
+  it("skips when no file_path and no deletions and no modifications", () => {
     const input = makeInput({ tool_input: {} });
-    const state = makeState({ deletedFiles: [] });
+    const state = makeState({ deletedFiles: [], modifiedFiles: [] });
     const plan = planHook(input, state);
     assert.equal(plan.action, "skip");
   });
@@ -177,6 +178,34 @@ describe("planHook normal commit", () => {
     assert.deepEqual(plan.commit.filesToStage, []);
     assert.deepEqual(plan.commit.filesToRemove, ["old.ts", "stale.ts", "gone.ts"]);
     assert.match(plan.commit.subject, /delete old\.ts \(\+2 more\)/);
+  });
+
+  it("handles modified files (e.g. permission changes) when no file_path", () => {
+    const input = makeInput({ tool_input: {} });
+    const state = makeState({
+      modifiedFiles: ["script.sh"],
+      relPath: null,
+    });
+    const plan = planHook(input, state);
+    assert.equal(plan.action, "commit-and-sync");
+    if (plan.action !== "commit-and-sync") return;
+    assert.deepEqual(plan.commit.filesToStage, ["script.sh"]);
+    assert.deepEqual(plan.commit.filesToRemove, []);
+    assert.match(plan.commit.subject, /update script\.sh/);
+  });
+
+  it("handles both deletions and modifications together", () => {
+    const input = makeInput({ tool_input: {} });
+    const state = makeState({
+      deletedFiles: ["gone.ts"],
+      modifiedFiles: ["changed.sh"],
+      relPath: null,
+    });
+    const plan = planHook(input, state);
+    assert.equal(plan.action, "commit-and-sync");
+    if (plan.action !== "commit-and-sync") return;
+    assert.deepEqual(plan.commit.filesToStage, ["changed.sh"]);
+    assert.deepEqual(plan.commit.filesToRemove, ["gone.ts"]);
   });
 
   it("sync is null when no remote", () => {
