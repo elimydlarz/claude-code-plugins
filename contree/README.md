@@ -10,7 +10,7 @@ Three skills:
 
 - **`/setup-contree`** — Configures your test framework with tree reporters and generates initial requirement trees from your existing codebase (or plans). Run once per project.
 - **`tdd`** — Auto-triggers on behaviour changes. Enforces outside-in TDD: confirms requirement tree exists → failing functional test → unit TDD inward → functional passes → updates requirements if needed.
-- **`/sync-requirements`** — Audits implementation against requirement trees. Finds gaps, untested paths, undocumented behaviour, stale requirements.
+- **`/sync-to-requirements`** — Audits implementation against requirement trees. Finds gaps, untested paths, undocumented behaviour, stale requirements.
 
 Plus a **stop hook** that prompts Claude to keep requirement trees, mental model, and repo map in `CLAUDE.md` current after every response.
 
@@ -26,7 +26,7 @@ claude plugin install contree@susu-eng --scope project
 1. Run `/setup-contree` — sets up test framework, generates requirement trees in `CLAUDE.md`
 2. When you change behaviour, the `tdd` skill auto-triggers and implements against requirement trees
 3. The stop hook keeps `CLAUDE.md` current after every response
-4. Run `/sync-requirements` periodically to verify completeness
+4. Run `/sync-to-requirements` periodically to verify completeness
 
 ## Requirements format
 
