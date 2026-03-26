@@ -4,11 +4,12 @@
 
 This is the **susu-eng** monorepo — source code, plugin marketplace, and documentation for all Claude Code plugins and packages. The individual repos (`elimydlarz/trunk-sync`, `elimydlarz/req-mod-sync`, `elimydlarz/test-trees`, `elimydlarz/eli-rules`) are deprecated and point here.
 
-Four products live in this repo:
+Five products live in this repo:
 
 - **trunk-sync** — multi-agent sync hook + seance CLI (Claude Code plugin + npm package `@susu-eng/trunk-sync`)
 - **req-mod-sync** — auto-sync CLAUDE.md documentation (Claude Code plugin)
 - **test-trees** — TDD enforcement + test framework setup (Claude Code plugin, pure Markdown skills)
+- **contree** — test trees as living requirements: combines test-trees TDD + req-mod-sync sync into unified plugin (Claude Code plugin, pure Markdown skills + stop hook)
 - **eli-rules** — shared coding rules (npm package `@susu-eng/eli-rules`, not a marketplace plugin)
 
 Users add this repo as a marketplace (`claude plugin marketplace add elimydlarz/claude-code-plugins`), then install individual plugins. The marketplace uses relative paths (`"source": "./trunk-sync"`) so plugins are installed directly from this repo. eli-rules is distributed via npm, not the plugin marketplace.
