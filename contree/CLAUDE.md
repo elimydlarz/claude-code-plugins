@@ -85,19 +85,19 @@ setup-generates-trees
     and tests are NOT implemented yet
 ```
 
-### sync-audits-completeness
+### sync-completes-and-implements
 
 ```
-sync-audits-completeness
+sync-completes-and-implements
   when sync-to-requirements is run
     then every when/then path is checked for implementation and tests
-    and undocumented behaviour is identified
-    and stale requirements are flagged
-  when gaps are found
-    then requirement trees are extended
-    and missing tests are noted for tdd implementation
-  when undocumented behaviour is found
-    then new requirement trees are added to CLAUDE.md
+    and undocumented behaviour gets new requirement trees in CLAUDE.md
+    and incomplete trees are extended with missing when/then paths
+    and stale requirements are removed
+  when gaps exist after trees are completed
+    then each gap is implemented using the tdd skill's outside-in cycle
+  when all gaps are implemented
+    then every when/then path has a passing functional test
 ```
 
 ### composable-testing
