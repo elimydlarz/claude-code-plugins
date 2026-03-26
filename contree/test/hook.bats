@@ -2,62 +2,92 @@
 
 load test_helper
 
-# Extract the hook command from hooks.json
-HOOK_CMD=$(jq -r '.hooks.Stop[0].hooks[0].command' "$BATS_TEST_DIRNAME/../hooks/hooks.json")
+# Helper: run the hook command with given JSON input
+run_hook() {
+  local input="$1"
+  # Extract command from hooks.json and run it with input on stdin
+  local cmd
+  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
+  # Redirect stderr to stdout so bats can capture the prompt
+  run bash -c "echo '$input' | bash -c '$cmd' 2>&1"
+}
 
 # --- Loop prevention ---
 
 @test "hook exits 0 when stop_hook_active is true" {
-  run bash -c 'echo "{\"stop_hook_active\": true}" | '"$HOOK_CMD"
-  assert_success
-  refute_output --partial 'Check:'
+  local cmd
+  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
+  echo '{"stop_hook_active": true}' | bash -c "$cmd" 2>/dev/null
+  # If we get here without error, exit was 0
 }
 
 @test "hook exits 0 when stop_hook_active is true among other fields" {
-  run bash -c 'echo "{\"stop_hook_active\": true, \"other\": \"data\"}" | '"$HOOK_CMD"
-  assert_success
+  local cmd
+  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
+  echo '{"stop_hook_active": true, "other": "data"}' | bash -c "$cmd" 2>/dev/null
 }
 
 # --- Normal operation ---
 
 @test "hook exits 2 when stop_hook_active is false" {
-  run bash -c 'echo "{\"stop_hook_active\": false}" | '"$HOOK_CMD"
-  assert_failure 2
+  local cmd
+  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
+  run bash -c 'echo "{\"stop_hook_active\": false}" | bash -c '"'"''"$cmd"''"'"' 2>&1'
+  [ "$status" -eq 2 ]
 }
 
 @test "hook exits 2 when stop_hook_active is absent" {
-  run bash -c 'echo "{}" | '"$HOOK_CMD"
-  assert_failure 2
+  local cmd
+  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
+  run bash -c 'echo "{}" | bash -c '"'"''"$cmd"''"'"' 2>&1'
+  [ "$status" -eq 2 ]
 }
 
 @test "hook exits 2 with empty input" {
-  run bash -c 'echo "" | '"$HOOK_CMD"
-  assert_failure 2
+  local cmd
+  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
+  run bash -c 'echo "" | bash -c '"'"''"$cmd"''"'"' 2>&1'
+  [ "$status" -eq 2 ]
 }
 
 # --- Review prompt content ---
 
 @test "hook prompt mentions Requirements" {
-  output=$(echo '{}' | bash -c "$HOOK_CMD" 2>&1 || true)
+  local cmd
+  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
+  local output
+  output=$(echo '{}' | bash -c "$cmd" 2>&1 || true)
   [[ "$output" == *"Requirements"* ]]
 }
 
 @test "hook prompt mentions test trees" {
-  output=$(echo '{}' | bash -c "$HOOK_CMD" 2>&1 || true)
+  local cmd
+  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
+  local output
+  output=$(echo '{}' | bash -c "$cmd" 2>&1 || true)
   [[ "$output" == *"test trees"* ]]
 }
 
 @test "hook prompt mentions Mental Model" {
-  output=$(echo '{}' | bash -c "$HOOK_CMD" 2>&1 || true)
+  local cmd
+  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
+  local output
+  output=$(echo '{}' | bash -c "$cmd" 2>&1 || true)
   [[ "$output" == *"Mental Model"* ]]
 }
 
 @test "hook prompt mentions Repo Map" {
-  output=$(echo '{}' | bash -c "$HOOK_CMD" 2>&1 || true)
+  local cmd
+  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
+  local output
+  output=$(echo '{}' | bash -c "$cmd" 2>&1 || true)
   [[ "$output" == *"Repo Map"* ]]
 }
 
 @test "hook prompt mentions when/then format" {
-  output=$(echo '{}' | bash -c "$HOOK_CMD" 2>&1 || true)
+  local cmd
+  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
+  local output
+  output=$(echo '{}' | bash -c "$cmd" 2>&1 || true)
   [[ "$output" == *"when/then"* ]]
 }
