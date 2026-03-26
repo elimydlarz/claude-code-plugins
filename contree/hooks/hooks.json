@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "INPUT=$(cat); if printf '%s' \"$INPUT\" | jq -e '.stop_hook_active' 2>/dev/null | grep -q true; then exit 0; fi; echo 'Check: (1) Does ## Requirements in CLAUDE.md need updating? Requirements are test trees — nested when/then specs describing what the system does. Each top-level tree names a capability. Add missing capabilities, extend incomplete trees, remove stale ones. (2) Are key concepts, operating principles, or domain objects missing from ## Mental Model? Can the mental model be simplified within requirements? (3) Does ## Repo Map need updating? (key files/directories with brief descriptions) (4) Does the rest of CLAUDE.md need updating? (procedures, rules, conventions). Update whichever need it. If none, reply only with 0.' >&2; exit 2"
+          }
+        ]
+      }
+    ]
+  }
+}
