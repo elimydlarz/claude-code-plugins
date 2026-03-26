@@ -4,6 +4,7 @@
     "publish:trunk-sync": "./scripts/publish-trunk-sync.sh",
     "publish:eli-rules": "./scripts/publish-eli-rules.sh",
     "publish:req-mod-sync": "./scripts/publish-req-mod-sync.sh",
-    "publish:test-trees": "./scripts/publish-test-trees.sh"
+    "publish:test-trees": "./scripts/publish-test-trees.sh",
+    "publish:contree": "./scripts/publish-contree.sh"
   }
 }
