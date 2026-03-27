@@ -62,19 +62,19 @@ claude -w    # each invocation gets its own worktree
 
 If two agents edit the same file, trunk-sync tells the agent to resolve the conflict by editing the file normally.
 
-### Roster — who's clocked in
+### Clocking In — who else is working
 
-When multiple agents work in the same repo, each one clocks in by writing a timecard to `.trunk-sync/roster/`. Timecards are committed and pushed alongside code, so agents on different machines see each other too.
+When multiple agents work in the same repo, each one clocks in by writing a timecard to `.trunk-sync/timeclock/`. Timecards are committed and pushed alongside code, so agents on different machines see each other too.
 
 Each timecard records the agent's branch and current task (extracted from the conversation). When another agent is clocked in, the hook tells you:
 
 ```
-TRUNK-SYNC ROSTER: 1 other agent clocked in.
+TRUNK-SYNC CLOCK-IN: 1 other agent clocked in.
 - abc12345 on dev-macbook (branch: main, 30s ago) — "Fix the login bug"
 Consider potential resource conflicts: ports, build locks, test databases.
 ```
 
-Agents with dead processes are automatically clocked out. Remote agents that haven't checked in for 5 minutes are clocked out too. The roster message is throttled to once every 5 minutes to avoid noise.
+Agents with dead processes are automatically clocked out. Remote agents that haven't checked in for 5 minutes are clocked out too. The message is throttled to once every 5 minutes to avoid noise.
 
 ### Seance — talk to dead coding agents
 
