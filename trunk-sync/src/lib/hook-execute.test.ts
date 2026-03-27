@@ -1096,12 +1096,12 @@ describe("executePlan with session awareness", () => {
 
     // Clear any existing throttle
     const throttlePath = join(process.env.TMPDIR || "/tmp", "trunk-sync-warning-my-session");
-    try { rmSync(throttlePath); } catch { /* ignore */ }
+    try { unlinkSync(throttlePath); } catch { /* ignore */ }
 
     const result = executePlan(plan, input, state);
-    assert.equal(result.exitCode, 2);
-    assert.ok(result.stderr?.includes("TRUNK-SYNC INFO"));
-    assert.ok(result.stderr?.includes("other-se")); // truncated to 8 chars
+    assert.equal(result.exitCode, 2, `expected exit 2, got ${result.exitCode}. stderr: ${result.stderr}`);
+    assert.ok(result.stderr?.includes("TRUNK-SYNC INFO"), `expected TRUNK-SYNC INFO in: ${result.stderr}`);
+    assert.ok(result.stderr?.includes("other-se"), `expected other-se in: ${result.stderr}`); // truncated to 8 chars
     assert.ok(result.stderr?.includes("resource conflicts"));
   });
 
