@@ -272,6 +272,7 @@ describe("executePlan", () => {
         body: null,
       },
       sync: null,
+      session: null,
     };
     const input = makeInput({ tool_input: { file_path: filePath } });
     const state = makeState(dir);
