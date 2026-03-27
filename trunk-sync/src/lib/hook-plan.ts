@@ -4,6 +4,9 @@ import type {
   HookPlan,
   CommitPlan,
   SyncPlan,
+  SessionPlan,
+  SessionHeartbeat,
+  RuntimeContext,
 } from "./hook-types.js";
 
 /**
