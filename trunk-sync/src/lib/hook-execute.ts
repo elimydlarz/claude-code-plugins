@@ -253,7 +253,7 @@ function executeClockIn(
       // best-effort
     }
 
-    // Check throttle before returning roster message
+    // Check throttle before returning clock-in message
     if (clockedIn.length > 0) {
       const lastWarning = readThrottleTimestamp(plan.timecard.sessionId);
       const nowMs = now.getTime();
