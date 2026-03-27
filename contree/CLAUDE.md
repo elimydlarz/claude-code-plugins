@@ -16,9 +16,9 @@ Mechanisms:
 
 ## Mental Model
 
-Test trees serve dual purpose: they are both the specification (in CLAUDE.md) and the test structure (in code). The test trees in `## Requirements` use `when/then` format describing operating principles. The `change` skill writes them. The `tdd` skill implements against them. The `sync` skill audits completeness. The stop hook ensures continuous maintenance. Coding rules enforce principles (simplicity, expressiveness, fail-fast) across all work.
+Test trees serve dual purpose: they are both the specification (in CLAUDE.md) and the test structure (in code). The test trees in `## Requirements` use `when/then` format describing operating principles. The `change` skill writes them. The `tdd` skill implements against them. The `sync` skill audits completeness. Test trees are the contract with the user — they are never modified silently. The stop hook detects drift and asks the user how to resolve it. Coding rules enforce principles (simplicity, expressiveness, fail-fast) across all work.
 
-Flow: `setup` → configures test infrastructure → `change` writes/modifies test trees → `sync` audits and identifies gaps → `tdd` implements gaps. Or use `workflow` to run the full sequence without pausing. Stop hook maintains trees continuously. Rules apply throughout.
+Flow: `setup` → configures test infrastructure → `change` writes/modifies test trees → `sync` audits and identifies gaps → `tdd` implements gaps. Or use `workflow` to run the full sequence without pausing. Stop hook detects drift and maintains mental model. Rules apply throughout.
 
 ## Repo Map
 
