@@ -1111,7 +1111,7 @@ describe("executePlan with session awareness", () => {
     writeFileSync(join(sessDir, "dead-session.json"), JSON.stringify({
       sessionId: "dead-session",
       pid: 999999999, // dead PID
-      hostname: require("node:os").hostname(), // local hostname
+      hostname: hostname(), // local hostname
       startedAt: new Date().toISOString(),
       lastActiveAt: new Date().toISOString(),
       branch: "main",
@@ -1125,7 +1125,7 @@ describe("executePlan with session awareness", () => {
       heartbeat: {
         sessionId: "my-session",
         pid: process.pid,
-        hostname: require("node:os").hostname(),
+        hostname: hostname(),
         startedAt: new Date().toISOString(),
         lastActiveAt: new Date().toISOString(),
         branch: "main",
