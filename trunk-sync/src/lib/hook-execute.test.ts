@@ -13,8 +13,8 @@ import {
 import { join } from "node:path";
 import { tmpdir, hostname } from "node:os";
 import { execSync } from "node:child_process";
-import type { HookInput, RepoState, HookPlan, SyncPlan, SessionPlan, SessionHeartbeat } from "./hook-types.js";
-import { gatherRepoState, findWorktreeForBranch, executePlan, executeSync, writeSessionHeartbeat, readAllSessions, isProcessAlive, pruneStaleSessionFiles } from "./hook-execute.js";
+import type { HookInput, RepoState, HookPlan, SyncPlan, ClockInPlan, Timecard } from "./hook-types.js";
+import { gatherRepoState, findWorktreeForBranch, executePlan, executeSync, clockIn, readRoster, isProcessAlive, clockOutStale } from "./hook-execute.js";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
