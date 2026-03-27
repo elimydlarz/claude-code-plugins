@@ -76,7 +76,7 @@ Fix the requirement trees in CLAUDE.md directly:
 
 After this step, `## Requirements` should be a complete and truthful description of the system — both what's already built and what still needs building.
 
-### 6. IMPLEMENT GAPS
+### 7. IMPLEMENT GAPS
 
 For each `when/then` path that has a requirement tree but no implementation or tests, implement it using the `tdd` skill's process:
 
