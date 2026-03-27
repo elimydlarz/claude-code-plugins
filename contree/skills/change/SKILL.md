@@ -1,6 +1,6 @@
 ---
 name: change
-description: "Write or modify test trees in CLAUDE.md. TRIGGER when: planning or describing a behaviour change, before any code is written."
+description: "Set expected behaviour by writing or modifying test trees — the contract that says what the system should do before any code exists. TRIGGER when: planning or describing a behaviour change, before any code is written."
 ---
 
 # Change
