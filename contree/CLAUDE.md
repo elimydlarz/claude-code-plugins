@@ -33,6 +33,7 @@ Flow: `setup-contree` → generates requirement trees → `plan-test-trees` desi
 - `hooks/hooks.json` — Stop hook prompting CLAUDE.md updates (requirement trees, mental model, repo map)
 - `skills/tdd/SKILL.md` — outside-in TDD skill, auto-triggers on behaviour changes
 - `skills/setup-contree/SKILL.md` — project setup: test framework config + initial requirement tree generation
+- `skills/plan-test-trees/SKILL.md` — plans test trees before code: functional → unit decomposition
 - `skills/sync-to-requirements/SKILL.md` — completeness audit: requirements vs implementation
 - `test/plugin.bats` — structural tests: plugin manifest, skill files, frontmatter
 - `test/hook.bats` — hook behaviour tests: loop prevention, exit codes, prompt content
