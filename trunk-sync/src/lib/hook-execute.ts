@@ -5,7 +5,7 @@ import { homedir, hostname } from "node:os";
 import { readConfig } from "../commands/config.js";
 import type { HookInput, RepoState, HookPlan, SyncPlan, ClockInPlan, Timecard, RuntimeContext } from "./hook-types.js";
 import { HOOK_EXPLAINER } from "./hook-types.js";
-import { extractTaskFromTranscript, buildCommitPlanWithTask, classifyRoster, formatRosterMessage } from "./hook-plan.js";
+import { extractTaskFromTranscript, buildCommitPlanWithTask, classifyTimecards, formatRosterMessage } from "./hook-plan.js";
 
 /**
  * Gather the current git repo state needed for planning.
@@ -232,7 +232,7 @@ function executeRoster(
     clockIn(state.repoRoot, plan, task);
     const allTimecards = readRoster(state.repoRoot);
     const now = new Date();
-    const { clockedIn, clockedOut } = classifyRoster(
+    const { clockedIn, clockedOut } = classifyTimecards(
       plan.timecard.sessionId,
       allTimecards,
       now,
