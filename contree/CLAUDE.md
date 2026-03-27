@@ -18,7 +18,7 @@ Mechanisms:
 
 Test trees are the living contract between intent and implementation — both the specification (in CLAUDE.md) and the test structure (in code). They use `when/then` format describing operating principles. `change` sets expected behaviour. `sync` identifies where reality has drifted. `tdd` closes gaps. The stop hook guards the contract — drift is never resolved silently. Coding rules enforce principles (simplicity, expressiveness, fail-fast) across all work.
 
-Flow: `setup` → configures test infrastructure → `change` writes/modifies test trees → `sync` audits and identifies gaps → `tdd` implements gaps. Or use `workflow` to run the full sequence without pausing. Stop hook detects drift and maintains mental model. Rules apply throughout.
+Flow: `setup` prepares the project for test-tree-driven development → `change` sets expected behaviour → `sync` identifies gaps and cruft → `tdd` closes gaps. Or use `workflow` for the full arc without pausing. The stop hook guards the contract throughout. Rules apply always.
 
 ## Repo Map
 
