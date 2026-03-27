@@ -262,6 +262,9 @@ export function executePlan(
   if (plan.action === "skip") return { exitCode: 0 };
 
   if (plan.action === "commit-merge") {
+    // Session awareness (heartbeat + prune + stage)
+    const awarenessMsg = plan.session ? executeSessionAwareness(plan.session, state) : null;
+
     // Stage the file if provided
     const filePath = input.tool_input.file_path;
     if (filePath) {
@@ -274,12 +277,18 @@ export function executePlan(
       const code = getExitCode(e);
       return { exitCode: code, stderr: getStdout(e) };
     }
-    if (plan.sync) return executeSync(plan.sync);
+    if (plan.sync) {
+      const syncResult = executeSync(plan.sync);
+      if (syncResult.exitCode !== 0) return syncResult;
+      if (awarenessMsg) return { exitCode: 2, stderr: awarenessMsg };
+      return syncResult;
+    }
+    if (awarenessMsg) return { exitCode: 2, stderr: awarenessMsg };
     return { exitCode: 0 };
   }
 
   // commit-and-sync
-  const { commit, sync } = plan;
+  const { commit, sync, session } = plan;
 
   // Stage deletions
   for (const file of commit.filesToRemove) {
@@ -296,6 +305,9 @@ export function executePlan(
   for (const file of commit.filesToStage) {
     execSync(`git add -- "${file}"`);
   }
+
+  // Session awareness: write heartbeat, prune stale, stage session dir
+  const awarenessMsg = session ? executeSessionAwareness(session, state) : null;
 
   // Check if there's anything staged (may have been a no-op)
   try {
@@ -332,7 +344,13 @@ export function executePlan(
   // Snapshot transcript into the commit (opt-in via config)
   amendWithTranscriptSnapshot(input, state);
 
-  if (sync) return executeSync(sync);
+  if (sync) {
+    const syncResult = executeSync(sync);
+    if (syncResult.exitCode !== 0) return syncResult;
+    if (awarenessMsg) return { exitCode: 2, stderr: awarenessMsg };
+    return syncResult;
+  }
+  if (awarenessMsg) return { exitCode: 2, stderr: awarenessMsg };
   return { exitCode: 0 };
 }
 
