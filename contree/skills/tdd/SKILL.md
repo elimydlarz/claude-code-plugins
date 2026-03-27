@@ -1,6 +1,6 @@
 ---
 name: tdd
-description: "Enforces test-driven development against test tree requirements in CLAUDE.md. TRIGGER when: changing behaviour, interfaces, or tests."
+description: "Enforces test-driven development against test trees in CLAUDE.md. TRIGGER when: implementing behaviour, writing code, or writing tests."
 ---
 
 # TDD — Test-Driven Development
@@ -8,31 +8,32 @@ description: "Enforces test-driven development against test tree requirements in
 ## Principles
 
 1. **Outside-in, always** — start with a failing functional test, TDD inward through unit layers
-2. **Test trees are the requirements** — the `## Requirements` section in CLAUDE.md contains test trees that specify what the system does. Every test you write traces back to a requirement tree
+2. **Test trees are the requirements** — the `## Requirements` section in CLAUDE.md contains test trees that specify what the system does. Every test you write traces back to a test tree
 3. **Two test layers** — functional (real system, no mocks) and unit (isolated, mocked collaborators)
 4. **One failing test at a time** — at your current layer, only one test should be red
 5. **Mutation testing validates finished work** — run Stryker at the end, never during the cycle
 6. **Tree output at every layer** — test output is nested, indented, human-readable
+7. **Don't change existing trees** — TDD may discover new test cases, but existing trees are the spec. Add new cases as you discover them, but don't modify or remove existing `when/then` paths
 
 ## Before You Start
 
 Read `## Requirements` in the project's CLAUDE.md. The test trees there are your specification. You are implementing against them.
 
-If no requirement tree covers the behaviour you're about to change, **stop and write the requirement tree first** — add it to `## Requirements` in CLAUDE.md before writing any code or tests.
+If no test tree covers the behaviour you're about to implement, **stop and suggest running `change` first** to write the test tree before writing any code or tests.
 
 ## Process
 
-### 1. CONFIRM REQUIREMENT
+### 1. CONFIRM TEST TREE
 
-Identify which requirement tree in `## Requirements` covers this behaviour. State it explicitly:
+Identify which test tree in `## Requirements` covers this behaviour. State it explicitly:
 
-> Implementing against requirement tree: `UserRegistration`
+> Implementing against test tree: `UserRegistration`
 
-If the requirement tree is incomplete (missing scenarios you know you'll need), extend it in CLAUDE.md first.
+If the test tree seems incomplete, note it but proceed with what's there. Don't modify existing trees — you can add newly discovered cases as you go.
 
 ### 2. RED (functional)
 
-Write a failing functional test that describes the desired behaviour from the consumer's perspective. This test should map directly to a `when/then` path in the requirement tree.
+Write a failing functional test that describes the desired behaviour from the consumer's perspective. This test should map directly to a `when/then` path in the test tree.
 
 - Exercise the real system through its public surface
 - No mocks, no stubs
@@ -64,15 +65,15 @@ With all tests green, rework for simplicity and expressiveness. Ensure test tree
 
 ### 9. REPEAT
 
-Go to step 1 for the next behaviour (next `when/then` path in the requirement tree).
+Go to step 1 for the next behaviour (next `when/then` path in the test tree).
 
 ### 10. MUTATE (end of work)
 
 When all behaviours for current work are complete, run Stryker as final validation. Do NOT run mutation testing during the TDD cycle.
 
-### 11. SYNC REQUIREMENTS
+### 11. SUGGEST SYNC
 
-After implementation is complete, check: does the requirement tree in CLAUDE.md still accurately describe the system? Update it if the implementation revealed new understanding.
+After implementation is complete, suggest the user runs `sync` to verify test trees and implementation are aligned.
 
 ## Test Tree Format
 
