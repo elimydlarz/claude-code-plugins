@@ -26,7 +26,7 @@ Flow: `setup` → configures test infrastructure → `change` writes/modifies te
 - `.claude-plugin/plugin.json` — plugin manifest (name, version, description)
 - `package.json` — dev dependencies (bats-support, bats-assert) and test scripts
 - `rules/` — coding principles (one rule per file, plain prose, no frontmatter)
-- `hooks/hooks.json` — Stop hook prompting CLAUDE.md updates (test trees, mental model, repo map)
+- `hooks/hooks.json` — Stop hook detecting drift and prompting mental model updates
 - `skills/setup/SKILL.md` — project setup: test framework config + initial test tree generation
 - `skills/change/SKILL.md` — write or modify test trees in CLAUDE.md, plan decomposition
 - `skills/sync/SKILL.md` — completeness audit: test trees vs implementation, TDD gaps
