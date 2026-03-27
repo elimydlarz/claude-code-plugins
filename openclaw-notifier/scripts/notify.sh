@@ -6,7 +6,7 @@ set -euo pipefail
 
 INPUT=$(cat)
 
-CURL_ARGS=(-s -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json')
+CURL_ARGS=(-s -o /dev/null -w '%{http_code}' --connect-timeout 5 --max-time 10 -X POST -H 'Content-Type: application/json')
 [ -n "${OPENCLAW_TOKEN:-}" ] && CURL_ARGS+=(-H "Authorization: Bearer ${OPENCLAW_TOKEN}")
 
 HTTP_CODE=$(curl "${CURL_ARGS[@]}" -d "$INPUT" "${OPENCLAW_URL}/api/subagent-complete" 2>/dev/null) || true
