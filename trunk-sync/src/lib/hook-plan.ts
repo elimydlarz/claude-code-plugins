@@ -4,8 +4,8 @@ import type {
   HookPlan,
   CommitPlan,
   SyncPlan,
-  SessionPlan,
-  SessionHeartbeat,
+  ClockInPlan,
+  Timecard,
   RuntimeContext,
 } from "./hook-types.js";
 
@@ -29,7 +29,7 @@ export function parseHookInput(json: string): HookInput {
 export function planHook(input: HookInput, state: RepoState, runtime?: RuntimeContext): HookPlan {
   const filePath = input.tool_input.file_path ?? null;
   const sync = buildSyncPlan(state);
-  const session = runtime ? buildSessionPlan(input, state, runtime) : null;
+  const clockIn = runtime ? buildClockInPlan(input, state, runtime) : null;
 
   // No file_path and no deleted/modified files → nothing to do
   if (!filePath && state.deletedFiles.length === 0 && state.modifiedFiles.length === 0) {
@@ -56,13 +56,13 @@ export function planHook(input: HookInput, state: RepoState, runtime?: RuntimeCo
       action: "commit-merge",
       message,
       sync,
-      session,
+      clockIn,
     };
   }
 
   // Normal commit path
   const commit = buildCommitPlan(input, state);
-  return { action: "commit-and-sync", commit, sync, session };
+  return { action: "commit-and-sync", commit, sync, clockIn };
 }
 
 function buildSyncPlan(state: RepoState): SyncPlan | null {
@@ -209,82 +209,85 @@ export function summarizeDeletions(files: string[]): string {
   return `${first} (+${files.length - 1} more)`;
 }
 
-// --- Session awareness ---
+// --- Roster: agents clock in/out and see who else is working ---
 
 /**
- * Build a session plan for heartbeat file creation.
+ * Build a clock-in plan for this agent's timecard.
  * Pure: needs runtime context (pid, hostname) passed in.
+ * Task is populated later in the execute layer (requires transcript I/O).
  */
-export function buildSessionPlan(
+export function buildClockInPlan(
   input: HookInput,
   state: RepoState,
   runtime: RuntimeContext,
-): SessionPlan | null {
+): ClockInPlan | null {
   if (!input.session_id) return null;
   const now = new Date().toISOString();
   return {
-    heartbeatPath: `.trunk-sync/sessions/${input.session_id}.json`,
-    heartbeat: {
+    timecardPath: `.trunk-sync/roster/${input.session_id}.json`,
+    timecard: {
       sessionId: input.session_id,
       pid: runtime.pid,
       hostname: runtime.hostname,
-      startedAt: now,
+      clockedInAt: now,
       lastActiveAt: now,
       branch: state.currentBranch || "detached",
+      task: null, // enriched in execute layer from transcript
     },
   };
 }
 
 /**
- * Classify sessions as active or stale. Own session is excluded from both lists.
- * Local sessions (same hostname) with dead PIDs are stale.
- * Remote sessions with old timestamps are stale.
+ * Classify timecards as clocked-in or clocked-out. Own session is excluded.
+ * Local agents (same hostname) with dead PIDs are clocked out.
+ * Remote agents with old timestamps are clocked out.
  */
-export function classifySessions(
+export function classifyRoster(
   ownSessionId: string | null,
-  sessions: SessionHeartbeat[],
+  timecards: Timecard[],
   now: Date,
   localHostname: string,
   isLocalPidAlive: (pid: number) => boolean,
   staleMinutes: number = 5,
-): { active: SessionHeartbeat[]; stale: string[] } {
+): { clockedIn: Timecard[]; clockedOut: string[] } {
   const staleThreshold = staleMinutes * 60 * 1000;
-  const active: SessionHeartbeat[] = [];
-  const stale: string[] = [];
+  const clockedIn: Timecard[] = [];
+  const clockedOut: string[] = [];
 
-  for (const s of sessions) {
-    if (s.sessionId === ownSessionId) continue;
+  for (const tc of timecards) {
+    if (tc.sessionId === ownSessionId) continue;
 
-    const age = now.getTime() - new Date(s.lastActiveAt).getTime();
-    const isLocal = s.hostname === localHostname;
+    const age = now.getTime() - new Date(tc.lastActiveAt).getTime();
+    const isLocal = tc.hostname === localHostname;
 
-    if (isLocal && !isLocalPidAlive(s.pid)) {
-      stale.push(s.sessionId);
+    if (isLocal && !isLocalPidAlive(tc.pid)) {
+      clockedOut.push(tc.sessionId);
     } else if (age > staleThreshold) {
-      stale.push(s.sessionId);
+      clockedOut.push(tc.sessionId);
     } else {
-      active.push(s);
+      clockedIn.push(tc);
     }
   }
 
-  return { active, stale };
+  return { clockedIn, clockedOut };
 }
 
 /**
- * Format an awareness warning message for the agent.
- * Returns null if no other active sessions.
+ * Format a roster message showing who else is clocked in.
+ * Returns null if no other agents are working.
  */
-export function formatAwarenessMessage(active: SessionHeartbeat[], now: Date): string | null {
-  if (active.length === 0) return null;
+export function formatRosterMessage(clockedIn: Timecard[], now: Date): string | null {
+  if (clockedIn.length === 0) return null;
 
-  const lines = active.map((s) => {
-    const age = now.getTime() - new Date(s.lastActiveAt).getTime();
+  const lines = clockedIn.map((tc) => {
+    const age = now.getTime() - new Date(tc.lastActiveAt).getTime();
     const agoStr = formatAge(age);
-    return `- ${s.sessionId.slice(0, 8)} on ${s.hostname} (branch: ${s.branch}, ${agoStr} ago)`;
+    const taskStr = tc.task ? ` — "${tc.task}"` : "";
+    return `- ${tc.sessionId.slice(0, 8)} on ${tc.hostname} (branch: ${tc.branch}, ${agoStr} ago)${taskStr}`;
   });
 
   return [
-    `TRUNK-SYNC INFO: ${active.length} other session${active.length > 1 ? "s" : ""} active in this repo.`,
+    `TRUNK-SYNC ROSTER: ${clockedIn.length} other agent${clockedIn.length > 1 ? "s" : ""} clocked in.`,
     ...lines,
     "Consider potential resource conflicts: ports, build locks, test databases.",
   ].join("\n");
