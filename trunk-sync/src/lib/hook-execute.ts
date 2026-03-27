@@ -3,9 +3,9 @@ import { existsSync, readFileSync, realpathSync, mkdirSync, copyFileSync, writeF
 import { join } from "node:path";
 import { homedir, hostname } from "node:os";
 import { readConfig } from "../commands/config.js";
-import type { HookInput, RepoState, HookPlan, SyncPlan, SessionPlan, SessionHeartbeat, RuntimeContext } from "./hook-types.js";
+import type { HookInput, RepoState, HookPlan, SyncPlan, ClockInPlan, Timecard, RuntimeContext } from "./hook-types.js";
 import { HOOK_EXPLAINER } from "./hook-types.js";
-import { extractTaskFromTranscript, buildCommitPlanWithTask, classifySessions, formatAwarenessMessage } from "./hook-plan.js";
+import { extractTaskFromTranscript, buildCommitPlanWithTask, classifyRoster, formatRosterMessage } from "./hook-plan.js";
 
 /**
  * Gather the current git repo state needed for planning.
@@ -118,43 +118,45 @@ export function gatherRepoState(input: HookInput): RepoState | null {
   };
 }
 
-// --- Session awareness I/O ---
+// --- Roster: agents clock in/out ---
 
 export function getRuntimeContext(): RuntimeContext {
   return { pid: process.pid, hostname: hostname() };
 }
 
-export function writeSessionHeartbeat(repoRoot: string, plan: SessionPlan): void {
-  const dir = join(repoRoot, ".trunk-sync", "sessions");
+/** Clock in: write or update this agent's timecard in the roster. */
+export function clockIn(repoRoot: string, plan: ClockInPlan, task: string | null): void {
+  const dir = join(repoRoot, ".trunk-sync", "roster");
   mkdirSync(dir, { recursive: true });
-  // Preserve startedAt from existing heartbeat if present
-  const filePath = join(repoRoot, plan.heartbeatPath);
-  let heartbeat = plan.heartbeat;
+  const filePath = join(repoRoot, plan.timecardPath);
+  // Preserve clockedInAt from existing timecard if present
+  let timecard = { ...plan.timecard, task };
   try {
-    const existing = JSON.parse(readFileSync(filePath, "utf-8")) as SessionHeartbeat;
-    if (existing.startedAt) {
-      heartbeat = { ...heartbeat, startedAt: existing.startedAt };
+    const existing = JSON.parse(readFileSync(filePath, "utf-8")) as Timecard;
+    if (existing.clockedInAt) {
+      timecard = { ...timecard, clockedInAt: existing.clockedInAt };
     }
   } catch {
-    // No existing file — use plan's startedAt
+    // No existing file — use plan's clockedInAt
   }
-  writeFileSync(filePath, JSON.stringify(heartbeat, null, 2) + "\n");
+  writeFileSync(filePath, JSON.stringify(timecard, null, 2) + "\n");
 }
 
-export function readAllSessions(repoRoot: string): SessionHeartbeat[] {
-  const dir = join(repoRoot, ".trunk-sync", "sessions");
+/** Read all timecards from the roster directory. */
+export function readRoster(repoRoot: string): Timecard[] {
+  const dir = join(repoRoot, ".trunk-sync", "roster");
   if (!existsSync(dir)) return [];
   const files = readdirSync(dir).filter((f) => f.endsWith(".json"));
-  const sessions: SessionHeartbeat[] = [];
+  const timecards: Timecard[] = [];
   for (const file of files) {
     try {
       const content = readFileSync(join(dir, file), "utf-8");
-      sessions.push(JSON.parse(content) as SessionHeartbeat);
+      timecards.push(JSON.parse(content) as Timecard);
     } catch {
       // Skip unparseable files
     }
   }
-  return sessions;
+  return timecards;
 }
 
 export function isProcessAlive(pid: number): boolean {
@@ -166,10 +168,11 @@ export function isProcessAlive(pid: number): boolean {
   }
 }
 
-export function pruneStaleSessionFiles(repoRoot: string, staleIds: string[]): string[] {
+/** Clock out stale agents by removing their timecards. */
+export function clockOutStale(repoRoot: string, staleIds: string[]): string[] {
   const removed: string[] = [];
   for (const id of staleIds) {
-    const filePath = join(repoRoot, ".trunk-sync", "sessions", `${id}.json`);
+    const filePath = join(repoRoot, ".trunk-sync", "roster", `${id}.json`);
     try {
       unlinkSync(filePath);
       removed.push(filePath);
@@ -181,7 +184,7 @@ export function pruneStaleSessionFiles(repoRoot: string, staleIds: string[]): st
 }
 
 function readThrottleTimestamp(sessionId: string): number | null {
-  const path = join(tmpdir(), `trunk-sync-warning-${sessionId}`);
+  const path = join(tmpdir(), `trunk-sync-roster-${sessionId}`);
   try {
     return parseInt(readFileSync(path, "utf-8"), 10);
   } catch {
@@ -190,7 +193,7 @@ function readThrottleTimestamp(sessionId: string): number | null {
 }
 
 function writeThrottleTimestamp(sessionId: string, now: number): void {
-  const path = join(tmpdir(), `trunk-sync-warning-${sessionId}`);
+  const path = join(tmpdir(), `trunk-sync-roster-${sessionId}`);
   writeFileSync(path, String(now));
 }
 
@@ -201,51 +204,68 @@ function tmpdir(): string {
 const THROTTLE_MS = 5 * 60 * 1000; // 5 minutes
 
 /**
- * Run session awareness: write heartbeat, prune stale, check for others.
- * Returns awareness message if other sessions are active and throttle allows.
+ * Extract the agent's current task from the transcript (same logic as commit enrichment).
+ * Returns null if transcript is unavailable or unparseable.
  */
-function executeSessionAwareness(
-  session: SessionPlan,
+function extractTask(input: HookInput): string | null {
+  if (!input.transcript_path) return null;
+  const expanded = input.transcript_path.replace(/^~/, homedir());
+  try {
+    const content = readFileSync(expanded, "utf-8");
+    return extractTaskFromTranscript(content);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Manage the roster: clock in, clock out stale agents, check who else is working.
+ * Returns a roster message if other agents are clocked in and throttle allows.
+ */
+function executeRoster(
+  plan: ClockInPlan,
+  input: HookInput,
   state: RepoState,
 ): string | null {
   try {
-    writeSessionHeartbeat(state.repoRoot, session);
-    const allSessions = readAllSessions(state.repoRoot);
+    const task = extractTask(input);
+    clockIn(state.repoRoot, plan, task);
+    const allTimecards = readRoster(state.repoRoot);
     const now = new Date();
-    const { active, stale } = classifySessions(
-      session.heartbeat.sessionId,
-      allSessions,
+    const { clockedIn, clockedOut } = classifyRoster(
+      plan.timecard.sessionId,
+      allTimecards,
       now,
-      session.heartbeat.hostname,
+      plan.timecard.hostname,
       isProcessAlive,
     );
 
-    // Prune stale sessions
-    if (stale.length > 0) {
-      pruneStaleSessionFiles(state.repoRoot, stale);
+    // Clock out stale agents
+    if (clockedOut.length > 0) {
+      clockOutStale(state.repoRoot, clockedOut);
     }
 
-    // Stage session directory (heartbeat + any removals)
-    const sessionsDir = join(state.repoRoot, ".trunk-sync", "sessions");
+    // Stage roster directory (timecard + any removals)
+    const rosterDir = join(state.repoRoot, ".trunk-sync", "roster");
     try {
-      execSync(`git add -- "${sessionsDir}"`, { cwd: state.repoRoot, stdio: "ignore" });
+      execSync(`git add -- "${rosterDir}"`, { cwd: state.repoRoot, stdio: "ignore" });
     } catch {
       // best-effort
     }
 
-    // Check throttle before returning awareness message
-    if (active.length > 0) {
-      const lastWarning = readThrottleTimestamp(session.heartbeat.sessionId);
+    // Check throttle before returning roster message
+    if (clockedIn.length > 0) {
+      const lastWarning = readThrottleTimestamp(plan.timecard.sessionId);
       const nowMs = now.getTime();
       if (lastWarning === null || (nowMs - lastWarning) >= THROTTLE_MS) {
-        writeThrottleTimestamp(session.heartbeat.sessionId, nowMs);
-        return formatAwarenessMessage(active, now);
+        writeThrottleTimestamp(plan.timecard.sessionId, nowMs);
+        return formatRosterMessage(clockedIn, now);
       }
     }
 
     return null;
   } catch {
-    // Session awareness is best-effort — never fail the hook
+    // Roster is best-effort — never fail the hook
     return null;
   }
 }
@@ -262,8 +282,8 @@ export function executePlan(
   if (plan.action === "skip") return { exitCode: 0 };
 
   if (plan.action === "commit-merge") {
-    // Session awareness (heartbeat + prune + stage)
-    const awarenessMsg = plan.session ? executeSessionAwareness(plan.session, state) : null;
+    // Clock in and check roster
+    const rosterMsg = plan.clockIn ? executeRoster(plan.clockIn, input, state) : null;
 
     // Stage the file if provided
     const filePath = input.tool_input.file_path;
@@ -280,15 +300,15 @@ export function executePlan(
     if (plan.sync) {
       const syncResult = executeSync(plan.sync);
       if (syncResult.exitCode !== 0) return syncResult;
-      if (awarenessMsg) return { exitCode: 2, stderr: awarenessMsg };
+      if (rosterMsg) return { exitCode: 2, stderr: rosterMsg };
       return syncResult;
     }
-    if (awarenessMsg) return { exitCode: 2, stderr: awarenessMsg };
+    if (rosterMsg) return { exitCode: 2, stderr: rosterMsg };
     return { exitCode: 0 };
   }
 
   // commit-and-sync
-  const { commit, sync, session } = plan;
+  const { commit, sync, clockIn: clockInPlan } = plan;
 
   // Stage deletions
   for (const file of commit.filesToRemove) {
@@ -306,8 +326,8 @@ export function executePlan(
     execSync(`git add -- "${file}"`);
   }
 
-  // Session awareness: write heartbeat, prune stale, stage session dir
-  const awarenessMsg = session ? executeSessionAwareness(session, state) : null;
+  // Clock in and check roster
+  const rosterMsg = clockInPlan ? executeRoster(clockInPlan, input, state) : null;
 
   // Check if there's anything staged (may have been a no-op)
   try {
@@ -347,10 +367,10 @@ export function executePlan(
   if (sync) {
     const syncResult = executeSync(sync);
     if (syncResult.exitCode !== 0) return syncResult;
-    if (awarenessMsg) return { exitCode: 2, stderr: awarenessMsg };
+    if (rosterMsg) return { exitCode: 2, stderr: rosterMsg };
     return syncResult;
   }
-  if (awarenessMsg) return { exitCode: 2, stderr: awarenessMsg };
+  if (rosterMsg) return { exitCode: 2, stderr: rosterMsg };
   return { exitCode: 0 };
 }
 
