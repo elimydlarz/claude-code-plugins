@@ -222,7 +222,7 @@ function extractTask(input: HookInput): string | null {
  * Manage the roster: clock in, clock out stale agents, check who else is working.
  * Returns a roster message if other agents are clocked in and throttle allows.
  */
-function executeRoster(
+function executeClockIn(
   plan: ClockInPlan,
   input: HookInput,
   state: RepoState,
@@ -283,7 +283,7 @@ export function executePlan(
 
   if (plan.action === "commit-merge") {
     // Clock in and check roster
-    const rosterMsg = plan.clockIn ? executeRoster(plan.clockIn, input, state) : null;
+    const rosterMsg = plan.clockIn ? executeClockIn(plan.clockIn, input, state) : null;
 
     // Stage the file if provided
     const filePath = input.tool_input.file_path;
@@ -327,7 +327,7 @@ export function executePlan(
   }
 
   // Clock in and check roster
-  const rosterMsg = clockInPlan ? executeRoster(clockInPlan, input, state) : null;
+  const rosterMsg = clockInPlan ? executeClockIn(clockInPlan, input, state) : null;
 
   // Check if there's anything staged (may have been a no-op)
   try {
