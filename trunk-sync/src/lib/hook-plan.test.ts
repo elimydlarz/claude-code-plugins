@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import type { HookInput, RepoState, SessionHeartbeat, RuntimeContext } from "./hook-types.js";
+import type { HookInput, RepoState, Timecard, RuntimeContext } from "./hook-types.js";
 import {
   parseHookInput,
   planHook,
@@ -9,9 +9,9 @@ import {
   buildCommitBody,
   extractTaskFromTranscript,
   summarizeDeletions,
-  buildSessionPlan,
-  classifySessions,
-  formatAwarenessMessage,
+  buildClockInPlan,
+  classifyRoster,
+  formatRosterMessage,
 } from "./hook-plan.js";
 
 // ── Helpers ──────────────────────────────────────────────────────────
