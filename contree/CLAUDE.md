@@ -14,9 +14,11 @@ Six mechanisms:
 
 4. **sync skill** — user-invoked. Audits implementation against test trees — finds gaps, untested paths, undocumented behaviour, stale trees. Fixes drift, then TDDs gaps.
 
-5. **tdd skill** — auto-triggers on behaviour changes. Enforces outside-in TDD (functional test → unit TDD → functional pass) where every test traces back to a test tree in CLAUDE.md.
+5. **tdd skill** — auto-triggers when implementing behaviour. Enforces outside-in TDD (functional test → unit TDD → functional pass) where every test traces back to a test tree in CLAUDE.md.
 
-6. **Stop hook** — fires after every response, prompting Claude to keep test trees, mental model, and repo map in CLAUDE.md current.
+6. **workflow skill** — user-invoked. Runs `change` → `sync` → `tdd` end to end without pausing for review.
+
+7. **Stop hook** — fires after every response, prompting Claude to keep test trees, mental model, and repo map in CLAUDE.md current.
 
 ## Mental Model
 
