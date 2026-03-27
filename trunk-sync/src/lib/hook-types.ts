@@ -49,7 +49,7 @@ export type HookPlan =
   | { action: "commit-and-sync"; commit: CommitPlan; sync: SyncPlan | null; clockIn: ClockInPlan | null }
   | { action: "commit-merge"; message: string; sync: SyncPlan | null; clockIn: ClockInPlan | null };
 
-/** An agent's timecard — persisted to .trunk-sync/roster/<session-id>.json */
+/** An agent's timecard — persisted to .trunk-sync/timeclock/<session-id>.json */
 export interface Timecard {
   sessionId: string;
   pid: number;
@@ -62,7 +62,7 @@ export interface Timecard {
 
 /** Plan for clocking in (writing/updating a timecard) */
 export interface ClockInPlan {
-  /** Relative path: .trunk-sync/roster/<session-id>.json */
+  /** Relative path: .trunk-sync/timeclock/<session-id>.json */
   timecardPath: string;
   timecard: Timecard;
 }
