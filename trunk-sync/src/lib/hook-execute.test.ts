@@ -851,13 +851,13 @@ describe("amendWithTranscriptSnapshot", () => {
   });
 });
 
-// ── Roster I/O ─────────────────────────────────────────────────────────
+// ── Clock-in I/O ─────────────────────────────────────────────────────────
 
 describe("clockIn", () => {
   let dir: string;
 
   beforeEach(() => {
-    dir = realpathSync(mkdtempSync(join(tmpdir(), "ts-roster-")));
+    dir = realpathSync(mkdtempSync(join(tmpdir(), "ts-clockin-")));
     initRepo(dir);
     writeFileSync(join(dir, "init.txt"), "init\n");
     execSync("git add . && git commit -m init", { cwd: dir, stdio: "ignore" });
@@ -867,9 +867,9 @@ describe("clockIn", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  it("creates roster directory and writes valid timecard", () => {
+  it("creates timeclock directory and writes valid timecard", () => {
     const plan: ClockInPlan = {
-      timecardPath: ".trunk-sync/roster/test-session.json",
+      timecardPath: ".trunk-sync/timeclock/test-session.json",
       timecard: {
         sessionId: "test-session",
         pid: process.pid,
@@ -881,7 +881,7 @@ describe("clockIn", () => {
       },
     };
     clockIn(dir, plan, "Fix the login bug");
-    const filePath = join(dir, ".trunk-sync", "roster", "test-session.json");
+    const filePath = join(dir, ".trunk-sync", "timeclock", "test-session.json");
     assert.ok(existsSync(filePath));
     const content = JSON.parse(readFileSync(filePath, "utf-8")) as Timecard;
     assert.equal(content.sessionId, "test-session");
@@ -892,7 +892,7 @@ describe("clockIn", () => {
 
   it("preserves clockedInAt from existing timecard", () => {
     const plan: ClockInPlan = {
-      timecardPath: ".trunk-sync/roster/test-session.json",
+      timecardPath: ".trunk-sync/timeclock/test-session.json",
       timecard: {
         sessionId: "test-session",
         pid: process.pid,
@@ -904,9 +904,9 @@ describe("clockIn", () => {
       },
     };
     // Write first timecard
-    const rosterDir = join(dir, ".trunk-sync", "roster");
-    mkdirSync(rosterDir, { recursive: true });
-    writeFileSync(join(rosterDir, "test-session.json"), JSON.stringify({
+    const timeclockDir = join(dir, ".trunk-sync", "timeclock");
+    mkdirSync(timeclockDir, { recursive: true });
+    writeFileSync(join(timeclockDir, "test-session.json"), JSON.stringify({
       sessionId: "test-session",
       pid: process.pid,
       hostname: "test-host",
@@ -917,7 +917,7 @@ describe("clockIn", () => {
     }));
     // Update timecard
     clockIn(dir, plan, null);
-    const content = JSON.parse(readFileSync(join(rosterDir, "test-session.json"), "utf-8")) as Timecard;
+    const content = JSON.parse(readFileSync(join(timeclockDir, "test-session.json"), "utf-8")) as Timecard;
     assert.equal(content.clockedInAt, "2026-03-27T10:00:00.000Z");
     assert.equal(content.lastActiveAt, "2026-03-27T10:05:00.000Z");
   });
@@ -927,31 +927,31 @@ describe("readTimecards", () => {
   let dir: string;
 
   beforeEach(() => {
-    dir = realpathSync(mkdtempSync(join(tmpdir(), "ts-roster-")));
+    dir = realpathSync(mkdtempSync(join(tmpdir(), "ts-clockin-")));
   });
 
   afterEach(() => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  it("returns empty when no roster directory", () => {
+  it("returns empty when no timeclock directory", () => {
     assert.deepEqual(readTimecards(dir), []);
   });
 
   it("reads multiple timecards", () => {
-    const rosterDir = join(dir, ".trunk-sync", "roster");
-    mkdirSync(rosterDir, { recursive: true });
-    writeFileSync(join(rosterDir, "a.json"), JSON.stringify({ sessionId: "a", pid: 1, hostname: "h", clockedInAt: "", lastActiveAt: "", branch: "main", task: null }));
-    writeFileSync(join(rosterDir, "b.json"), JSON.stringify({ sessionId: "b", pid: 2, hostname: "h", clockedInAt: "", lastActiveAt: "", branch: "main", task: null }));
+    const timeclockDir = join(dir, ".trunk-sync", "timeclock");
+    mkdirSync(timeclockDir, { recursive: true });
+    writeFileSync(join(timeclockDir, "a.json"), JSON.stringify({ sessionId: "a", pid: 1, hostname: "h", clockedInAt: "", lastActiveAt: "", branch: "main", task: null }));
+    writeFileSync(join(timeclockDir, "b.json"), JSON.stringify({ sessionId: "b", pid: 2, hostname: "h", clockedInAt: "", lastActiveAt: "", branch: "main", task: null }));
     const timecards = readTimecards(dir);
     assert.equal(timecards.length, 2);
   });
 
   it("skips malformed files", () => {
-    const rosterDir = join(dir, ".trunk-sync", "roster");
-    mkdirSync(rosterDir, { recursive: true });
-    writeFileSync(join(rosterDir, "good.json"), JSON.stringify({ sessionId: "good", pid: 1, hostname: "h", clockedInAt: "", lastActiveAt: "", branch: "main", task: null }));
-    writeFileSync(join(rosterDir, "bad.json"), "not json");
+    const timeclockDir = join(dir, ".trunk-sync", "timeclock");
+    mkdirSync(timeclockDir, { recursive: true });
+    writeFileSync(join(timeclockDir, "good.json"), JSON.stringify({ sessionId: "good", pid: 1, hostname: "h", clockedInAt: "", lastActiveAt: "", branch: "main", task: null }));
+    writeFileSync(join(timeclockDir, "bad.json"), "not json");
     const timecards = readTimecards(dir);
     assert.equal(timecards.length, 1);
     assert.equal(timecards[0].sessionId, "good");
@@ -973,11 +973,11 @@ describe("clockOutStale", () => {
 
   beforeEach(() => {
     dir = realpathSync(mkdtempSync(join(tmpdir(), "ts-prune-")));
-    const rosterDir = join(dir, ".trunk-sync", "roster");
-    mkdirSync(rosterDir, { recursive: true });
-    writeFileSync(join(rosterDir, "stale-1.json"), "{}");
-    writeFileSync(join(rosterDir, "stale-2.json"), "{}");
-    writeFileSync(join(rosterDir, "keep.json"), "{}");
+    const timeclockDir = join(dir, ".trunk-sync", "timeclock");
+    mkdirSync(timeclockDir, { recursive: true });
+    writeFileSync(join(timeclockDir, "stale-1.json"), "{}");
+    writeFileSync(join(timeclockDir, "stale-2.json"), "{}");
+    writeFileSync(join(timeclockDir, "keep.json"), "{}");
   });
 
   afterEach(() => {
@@ -987,9 +987,9 @@ describe("clockOutStale", () => {
   it("removes stale timecards and returns paths", () => {
     const removed = clockOutStale(dir, ["stale-1", "stale-2"]);
     assert.equal(removed.length, 2);
-    assert.ok(!existsSync(join(dir, ".trunk-sync", "roster", "stale-1.json")));
-    assert.ok(!existsSync(join(dir, ".trunk-sync", "roster", "stale-2.json")));
-    assert.ok(existsSync(join(dir, ".trunk-sync", "roster", "keep.json")));
+    assert.ok(!existsSync(join(dir, ".trunk-sync", "timeclock", "stale-1.json")));
+    assert.ok(!existsSync(join(dir, ".trunk-sync", "timeclock", "stale-2.json")));
+    assert.ok(existsSync(join(dir, ".trunk-sync", "timeclock", "keep.json")));
   });
 
   it("handles already-removed files", () => {
@@ -998,13 +998,13 @@ describe("clockOutStale", () => {
   });
 });
 
-describe("executePlan with roster", () => {
+describe("executePlan with clock-in", () => {
   let dir: string;
   let origDir: string;
   const origHome = process.env.HOME;
 
   beforeEach(() => {
-    dir = realpathSync(mkdtempSync(join(tmpdir(), "ts-roster-exec-")));
+    dir = realpathSync(mkdtempSync(join(tmpdir(), "ts-clockin-exec-")));
     initRepo(dir);
     writeFileSync(join(dir, "init.txt"), "init\n");
     execSync("git add . && git commit -m init", { cwd: dir, stdio: "ignore" });
@@ -1026,7 +1026,7 @@ describe("executePlan with roster", () => {
     const filePath = join(dir, "code.txt");
     writeFileSync(filePath, "code\n");
     const clockInPlan: ClockInPlan = {
-      timecardPath: ".trunk-sync/roster/my-session.json",
+      timecardPath: ".trunk-sync/timeclock/my-session.json",
       timecard: {
         sessionId: "my-session",
         pid: process.pid,
@@ -1055,15 +1055,15 @@ describe("executePlan with roster", () => {
 
     // Timecard should be in the commit
     const files = execSync("git diff-tree --no-commit-id --name-only -r HEAD", { cwd: dir, encoding: "utf-8" }).trim();
-    assert.ok(files.includes(".trunk-sync/roster/my-session.json"));
+    assert.ok(files.includes(".trunk-sync/timeclock/my-session.json"));
     assert.ok(files.includes("code.txt"));
   });
 
-  it("returns exit 2 with roster message when other agents clocked in", () => {
+  it("returns exit 2 with clock-in message when other agents clocked in", () => {
     // Create another agent's timecard
-    const rosterDir = join(dir, ".trunk-sync", "roster");
-    mkdirSync(rosterDir, { recursive: true });
-    writeFileSync(join(rosterDir, "other-session.json"), JSON.stringify({
+    const timeclockDir = join(dir, ".trunk-sync", "timeclock");
+    mkdirSync(timeclockDir, { recursive: true });
+    writeFileSync(join(timeclockDir, "other-session.json"), JSON.stringify({
       sessionId: "other-session",
       pid: process.pid, // use own PID so it appears alive
       hostname: "test-host",
@@ -1077,7 +1077,7 @@ describe("executePlan with roster", () => {
     const filePath = join(dir, "code.txt");
     writeFileSync(filePath, "code\n");
     const clockInPlan: ClockInPlan = {
-      timecardPath: ".trunk-sync/roster/my-session.json",
+      timecardPath: ".trunk-sync/timeclock/my-session.json",
       timecard: {
         sessionId: "my-session",
         pid: process.pid,
@@ -1103,21 +1103,21 @@ describe("executePlan with roster", () => {
     const state = makeState(dir);
 
     // Clear any existing throttle
-    const throttlePath = join(process.env.TMPDIR || "/tmp", "trunk-sync-roster-my-session");
+    const throttlePath = join(process.env.TMPDIR || "/tmp", "trunk-sync-clockin-my-session");
     try { unlinkSync(throttlePath); } catch { /* ignore */ }
 
     const result = executePlan(plan, input, state);
     assert.equal(result.exitCode, 2, `expected exit 2, got ${result.exitCode}. stderr: ${result.stderr}`);
-    assert.ok(result.stderr?.includes("TRUNK-SYNC ROSTER"), `expected TRUNK-SYNC ROSTER in: ${result.stderr}`);
+    assert.ok(result.stderr?.includes("TRUNK-SYNC CLOCK-IN"), `expected TRUNK-SYNC CLOCK-IN in: ${result.stderr}`);
     assert.ok(result.stderr?.includes("other-se"), `expected other-se in: ${result.stderr}`);
     assert.ok(result.stderr?.includes("Refactoring auth"));
     assert.ok(result.stderr?.includes("resource conflicts"));
   });
 
   it("clocks out agents with dead PIDs", () => {
-    const rosterDir = join(dir, ".trunk-sync", "roster");
-    mkdirSync(rosterDir, { recursive: true });
-    writeFileSync(join(rosterDir, "dead-session.json"), JSON.stringify({
+    const timeclockDir = join(dir, ".trunk-sync", "timeclock");
+    mkdirSync(timeclockDir, { recursive: true });
+    writeFileSync(join(timeclockDir, "dead-session.json"), JSON.stringify({
       sessionId: "dead-session",
       pid: 999999999, // dead PID
       hostname: hostname(), // local hostname
@@ -1131,7 +1131,7 @@ describe("executePlan with roster", () => {
     const filePath = join(dir, "code.txt");
     writeFileSync(filePath, "code\n");
     const clockInPlan: ClockInPlan = {
-      timecardPath: ".trunk-sync/roster/my-session.json",
+      timecardPath: ".trunk-sync/timeclock/my-session.json",
       timecard: {
         sessionId: "my-session",
         pid: process.pid,
@@ -1158,8 +1158,8 @@ describe("executePlan with roster", () => {
     executePlan(plan, input, state);
 
     // Dead agent's timecard should be removed
-    assert.ok(!existsSync(join(rosterDir, "dead-session.json")));
+    assert.ok(!existsSync(join(timeclockDir, "dead-session.json")));
     // Own timecard should exist
-    assert.ok(existsSync(join(rosterDir, "my-session.json")));
+    assert.ok(existsSync(join(timeclockDir, "my-session.json")));
   });
 });
