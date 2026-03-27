@@ -26,9 +26,10 @@ export function parseHookInput(json: string): HookInput {
  * Pure decision logic: given parsed input and repo state, decide what to do.
  * No I/O, no git commands — only data in, plan out.
  */
-export function planHook(input: HookInput, state: RepoState): HookPlan {
+export function planHook(input: HookInput, state: RepoState, runtime?: RuntimeContext): HookPlan {
   const filePath = input.tool_input.file_path ?? null;
   const sync = buildSyncPlan(state);
+  const session = runtime ? buildSessionPlan(input, state, runtime) : null;
 
   // No file_path and no deleted/modified files → nothing to do
   if (!filePath && state.deletedFiles.length === 0 && state.modifiedFiles.length === 0) {
@@ -55,12 +56,13 @@ export function planHook(input: HookInput, state: RepoState): HookPlan {
       action: "commit-merge",
       message,
       sync,
+      session,
     };
   }
 
   // Normal commit path
   const commit = buildCommitPlan(input, state);
-  return { action: "commit-and-sync", commit, sync };
+  return { action: "commit-and-sync", commit, sync, session };
 }
 
 function buildSyncPlan(state: RepoState): SyncPlan | null {
