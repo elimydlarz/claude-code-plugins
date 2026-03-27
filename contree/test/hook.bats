@@ -91,3 +91,19 @@ run_hook() {
   output=$(echo '{}' | bash -c "$cmd" 2>&1 || true)
   [[ "$output" == *"never modify them silently"* ]]
 }
+
+@test "hook prompt mentions CLAUDE.md" {
+  local cmd
+  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
+  local output
+  output=$(echo '{}' | bash -c "$cmd" 2>&1 || true)
+  [[ "$output" == *"CLAUDE.md"* ]]
+}
+
+@test "hook prompt mentions README.md" {
+  local cmd
+  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
+  local output
+  output=$(echo '{}' | bash -c "$cmd" 2>&1 || true)
+  [[ "$output" == *"README.md"* ]]
+}
