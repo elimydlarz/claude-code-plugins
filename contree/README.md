@@ -25,10 +25,11 @@ claude plugin install contree@susu-eng --scope project
 
 ## How it works
 
-1. Run `/setup-contree` — sets up test framework, generates requirement trees in `CLAUDE.md`
-2. When you change behaviour, the `tdd` skill auto-triggers and implements against requirement trees
-3. The stop hook keeps `CLAUDE.md` current after every response
-4. Run `/sync-to-requirements` periodically to verify completeness
+1. Run `/contree:setup` — sets up test framework, generates requirement trees in `CLAUDE.md`
+2. When you plan a behaviour change, `/contree:change` writes or modifies test trees first
+3. `/contree:tdd` auto-triggers during implementation — outside-in TDD against requirement trees
+4. The stop hook keeps `CLAUDE.md` and `README.md` current after every response
+5. Run `/contree:sync` periodically to verify completeness, or `/contree:workflow` for the full cycle
 
 ## Requirements format
 
