@@ -4,15 +4,17 @@
 
 A Claude Code plugin that unifies test-tree-driven development with living requirements. Test trees ARE the requirements — they live in `## Requirements` of the project's CLAUDE.md, describe what the system does using `when/then` specifications, and are kept in sync with implementation automatically.
 
-Three mechanisms:
+Five mechanisms:
 
-1. **tdd skill** — auto-triggers on behaviour changes. Enforces outside-in TDD (functional test → unit TDD → functional pass) where every test traces back to a requirement tree in CLAUDE.md.
+1. **Rules** — coding principles loaded automatically when the plugin is active (simplicity, expressiveness, fail-fast, no fake code, etc.).
 
-2. **setup-contree skill** — user-invoked. Configures test framework with tree reporters, generates initial requirement trees from existing code/plans, writes them to CLAUDE.md.
+2. **tdd skill** — auto-triggers on behaviour changes. Enforces outside-in TDD (functional test → unit TDD → functional pass) where every test traces back to a requirement tree in CLAUDE.md.
 
-3. **sync-to-requirements skill** — user-invoked. Audits implementation against requirement trees — finds gaps, untested paths, undocumented behaviour, stale requirements. Fixes drift.
+3. **setup-contree skill** — user-invoked. Configures test framework with tree reporters, generates initial requirement trees from existing code/plans, writes them to CLAUDE.md.
 
-4. **Stop hook** — fires after every response, prompting Claude to keep requirement trees, mental model, and repo map in CLAUDE.md current.
+4. **sync-to-requirements skill** — user-invoked. Audits implementation against requirement trees — finds gaps, untested paths, undocumented behaviour, stale requirements. Fixes drift.
+
+5. **Stop hook** — fires after every response, prompting Claude to keep requirement trees, mental model, and repo map in CLAUDE.md current.
 
 ## Mental Model
 
