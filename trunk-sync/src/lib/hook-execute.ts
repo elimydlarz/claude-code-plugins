@@ -265,7 +265,7 @@ function executeClockIn(
 
     return null;
   } catch {
-    // Roster is best-effort — never fail the hook
+    // Clock-in is best-effort — never fail the hook
     return null;
   }
 }
