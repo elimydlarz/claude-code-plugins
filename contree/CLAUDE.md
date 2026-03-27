@@ -59,14 +59,21 @@ test-trees-as-requirements
 
 ```
 outside-in-tdd
-  when implementing a requirement
+  when implementing a test tree
     then start with a failing functional test matching a when/then path
     and TDD inward through unit layers
     and only one failing test exists at the current layer at a time
+    and existing test trees are not modified
+  when TDD discovers new test cases
+    then new cases are added to the tree
+    but existing when/then paths are not changed or removed
+  when no test tree covers the behaviour
+    then suggest the user runs change first
   when all unit tests pass
     then the functional test should pass
   when all behaviours are complete
     then run mutation testing as final validation
+    and suggest the user runs sync
 ```
 
 ### stop-hook-sync
