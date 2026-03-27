@@ -33,15 +33,16 @@ If the test tree seems incomplete, note it but proceed with what's there. Don't 
 
 ### 2. RED (functional)
 
-Write a failing functional test that describes the desired behaviour from the consumer's perspective. This test should map directly to a `when/then` path in the test tree.
+Write **one** failing functional test that describes the desired behaviour from the consumer's perspective. This test should map directly to a single `when/then` path in the test tree.
 
 - Exercise the real system through its public surface
 - No mocks, no stubs
 - The test WILL fail — that's the point
+- **Write exactly one test. Run it. See it fail. Then proceed.**
 
 ### 3. RED (unit)
 
-Write a failing unit test for the outermost component that needs to change.
+Write **one** failing unit test for the outermost component that needs to change. Do not write tests for multiple behaviours or layers — just the single next thing that needs to fail.
 
 ### 4. IMPLEMENT
 
