@@ -49,5 +49,28 @@ export type HookPlan =
   | { action: "commit-and-sync"; commit: CommitPlan; sync: SyncPlan | null }
   | { action: "commit-merge"; message: string; sync: SyncPlan | null };
 
+/** Persisted session heartbeat file content */
+export interface SessionHeartbeat {
+  sessionId: string;
+  pid: number;
+  hostname: string;
+  startedAt: string; // ISO 8601
+  lastActiveAt: string; // ISO 8601
+  branch: string;
+}
+
+/** Plan for session heartbeat file operations */
+export interface SessionPlan {
+  /** Relative path: .trunk-sync/sessions/<session-id>.json */
+  heartbeatPath: string;
+  heartbeat: SessionHeartbeat;
+}
+
+/** Runtime context not available in RepoState (I/O-derived) */
+export interface RuntimeContext {
+  pid: number;
+  hostname: string;
+}
+
 export const HOOK_EXPLAINER =
   "A PostToolUse hook automatically commits and syncs every file change to keep multiple agents in sync on trunk.";
