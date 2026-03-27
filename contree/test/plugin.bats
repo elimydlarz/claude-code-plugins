@@ -91,6 +91,16 @@ load test_helper
   assert_output --partial 'name: sync'
 }
 
+@test "workflow skill exists" {
+  run test -f "$PROJECT_ROOT/skills/workflow/SKILL.md"
+  assert_success
+}
+
+@test "workflow skill has name in frontmatter" {
+  run head -5 "$PROJECT_ROOT/skills/workflow/SKILL.md"
+  assert_output --partial 'name: workflow'
+}
+
 # --- Hook ---
 
 @test "hooks.json exists" {
