@@ -4,16 +4,13 @@
 
 This is the **susu-eng** monorepo — source code, plugin marketplace, and documentation for all Claude Code plugins and packages. The individual repos (`elimydlarz/trunk-sync`, `elimydlarz/req-mod-sync`, `elimydlarz/test-trees`, `elimydlarz/eli-rules`) are deprecated and point here.
 
-Six products live in this repo:
+Three products live in this repo:
 
 - **trunk-sync** — multi-agent sync hook + seance CLI (Claude Code plugin + npm package `@susu-eng/trunk-sync`)
-- **req-mod-sync** — auto-sync CLAUDE.md documentation (Claude Code plugin)
-- **test-trees** — TDD enforcement + test framework setup (Claude Code plugin, pure Markdown skills)
 - **contree** — test trees as living requirements: setup, change, sync, and TDD skills with stop hook + coding rules (Claude Code plugin, pure Markdown skills + stop hook)
 - **openclaw-notifier** — notifies OpenClaw when a subagent completes a task (Claude Code plugin, SubagentStop hook)
-- **eli-rules** — shared coding rules (npm package `@susu-eng/eli-rules`, not a marketplace plugin)
 
-Users add this repo as a marketplace (`claude plugin marketplace add elimydlarz/claude-code-plugins`), then install individual plugins. The marketplace uses relative paths (`"source": "./trunk-sync"`) so plugins are installed directly from this repo. eli-rules is distributed via npm, not the plugin marketplace.
+Users add this repo as a marketplace (`claude plugin marketplace add elimydlarz/claude-code-plugins`), then install individual plugins. The marketplace uses relative paths (`"source": "./trunk-sync"`) so plugins are installed directly from this repo.
 
 Note: trunk-sync's `install` command (`trunk-sync/src/commands/install.ts`) currently adds the old trunk-sync repo as the marketplace source — this needs updating to point to `elimydlarz/claude-code-plugins`.
 
