@@ -496,7 +496,7 @@ describe("classifyTimecards", () => {
   it("handles mix of clocked-in and clocked-out agents", () => {
     const timecards = [
       makeTimecard({ sessionId: "active-1", hostname: "other", lastActiveAt: "2026-03-27T10:04:00.000Z" }),
-      makeTimecard({ sessionId: "stale-1", hostname: "other", lastActiveAt: "2026-03-27T09:50:00.000Z" }),
+      makeTimecard({ sessionId: "stale-1", hostname: "other", lastActiveAt: "2026-03-27T09:30:00.000Z" }),
       makeTimecard({ sessionId: "stale-local", hostname: "my-macbook", pid: 11111 }),
     ];
     const result = classifyTimecards("my-session", timecards, now, "my-macbook", (pid) => pid !== 11111);
