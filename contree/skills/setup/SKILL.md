@@ -5,7 +5,7 @@ description: "Prepare the project for ongoing test-tree-driven development — c
 
 # Setup Contree
 
-Sets up a project for test-tree-driven development: configures the test framework, generates initial requirement trees in CLAUDE.md, and prepares the project for the `tdd` and `sync` skills.
+Prepares the project for ongoing test-tree-driven development. Configures the test framework, generates initial test trees in CLAUDE.md, and establishes the contract between intent and implementation that the other skills maintain.
 
 ## Critical Rules
 
