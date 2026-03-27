@@ -184,7 +184,7 @@ export function clockOutStale(repoRoot: string, staleIds: string[]): string[] {
 }
 
 function readThrottleTimestamp(sessionId: string): number | null {
-  const path = join(tmpdir(), `trunk-sync-roster-${sessionId}`);
+  const path = join(tmpdir(), `trunk-sync-clockin-${sessionId}`);
   try {
     return parseInt(readFileSync(path, "utf-8"), 10);
   } catch {
@@ -193,7 +193,7 @@ function readThrottleTimestamp(sessionId: string): number | null {
 }
 
 function writeThrottleTimestamp(sessionId: string, now: number): void {
-  const path = join(tmpdir(), `trunk-sync-roster-${sessionId}`);
+  const path = join(tmpdir(), `trunk-sync-clockin-${sessionId}`);
   writeFileSync(path, String(now));
 }
 
