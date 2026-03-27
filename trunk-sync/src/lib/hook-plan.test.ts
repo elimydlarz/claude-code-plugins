@@ -373,6 +373,193 @@ describe("summarizeDeletions", () => {
   });
 });
 
+// ── buildSessionPlan ─────────────────────────────────────────────────
+
+const runtime: RuntimeContext = { pid: 12345, hostname: "my-macbook" };
+
+describe("buildSessionPlan", () => {
+  it("returns session plan with heartbeat path", () => {
+    const input = makeInput();
+    const state = makeState();
+    const plan = buildSessionPlan(input, state, runtime);
+    assert.notEqual(plan, null);
+    assert.equal(plan!.heartbeatPath, ".trunk-sync/sessions/abcdef12-3456-7890-abcd-ef1234567890.json");
+    assert.equal(plan!.heartbeat.sessionId, "abcdef12-3456-7890-abcd-ef1234567890");
+    assert.equal(plan!.heartbeat.pid, 12345);
+    assert.equal(plan!.heartbeat.hostname, "my-macbook");
+    assert.equal(plan!.heartbeat.branch, "main");
+  });
+
+  it("returns null when session_id is null", () => {
+    const input = makeInput({ session_id: null });
+    const state = makeState();
+    assert.equal(buildSessionPlan(input, state, runtime), null);
+  });
+
+  it("uses 'detached' when currentBranch is empty", () => {
+    const input = makeInput();
+    const state = makeState({ currentBranch: "" });
+    const plan = buildSessionPlan(input, state, runtime);
+    assert.equal(plan!.heartbeat.branch, "detached");
+  });
+});
+
+// ── planHook session plan ────────────────────────────────────────────
+
+describe("planHook session plan", () => {
+  it("includes session plan when runtime context provided", () => {
+    const input = makeInput();
+    const state = makeState();
+    const plan = planHook(input, state, runtime);
+    if (plan.action !== "commit-and-sync") return;
+    assert.notEqual(plan.session, null);
+    assert.equal(plan.session!.heartbeat.pid, 12345);
+  });
+
+  it("session is null without runtime context", () => {
+    const input = makeInput();
+    const state = makeState();
+    const plan = planHook(input, state);
+    if (plan.action !== "commit-and-sync") return;
+    assert.equal(plan.session, null);
+  });
+
+  it("includes session plan on commit-merge", () => {
+    const input = makeInput();
+    const state = makeState({ inMerge: true });
+    const plan = planHook(input, state, runtime);
+    if (plan.action !== "commit-merge") return;
+    assert.notEqual(plan.session, null);
+  });
+});
+
+// ── classifySessions ─────────────────────────────────────────────────
+
+describe("classifySessions", () => {
+  const now = new Date("2026-03-27T10:05:00.000Z");
+
+  function makeHeartbeat(overrides: Partial<SessionHeartbeat> = {}): SessionHeartbeat {
+    return {
+      sessionId: "other-session-id",
+      pid: 99999,
+      hostname: "my-macbook",
+      startedAt: "2026-03-27T10:00:00.000Z",
+      lastActiveAt: "2026-03-27T10:04:00.000Z",
+      branch: "main",
+      ...overrides,
+    };
+  }
+
+  it("excludes own session from both lists", () => {
+    const sessions = [makeHeartbeat({ sessionId: "my-session" })];
+    const result = classifySessions("my-session", sessions, now, "my-macbook", () => true);
+    assert.equal(result.active.length, 0);
+    assert.equal(result.stale.length, 0);
+  });
+
+  it("marks local session with dead PID as stale", () => {
+    const sessions = [makeHeartbeat({ hostname: "my-macbook", pid: 99999 })];
+    const result = classifySessions("my-session", sessions, now, "my-macbook", () => false);
+    assert.equal(result.stale.length, 1);
+    assert.equal(result.active.length, 0);
+  });
+
+  it("marks local session with live PID as active", () => {
+    const sessions = [makeHeartbeat({ hostname: "my-macbook", pid: 99999 })];
+    const result = classifySessions("my-session", sessions, now, "my-macbook", () => true);
+    assert.equal(result.active.length, 1);
+    assert.equal(result.stale.length, 0);
+  });
+
+  it("marks remote session with old timestamp as stale", () => {
+    const sessions = [makeHeartbeat({
+      hostname: "other-machine",
+      lastActiveAt: "2026-03-27T09:55:00.000Z", // 10 min ago
+    })];
+    const result = classifySessions("my-session", sessions, now, "my-macbook", () => true);
+    assert.equal(result.stale.length, 1);
+    assert.equal(result.active.length, 0);
+  });
+
+  it("marks remote session with recent timestamp as active", () => {
+    const sessions = [makeHeartbeat({
+      hostname: "other-machine",
+      lastActiveAt: "2026-03-27T10:03:00.000Z", // 2 min ago
+    })];
+    const result = classifySessions("my-session", sessions, now, "my-macbook", () => true);
+    assert.equal(result.active.length, 1);
+    assert.equal(result.stale.length, 0);
+  });
+
+  it("handles mix of active and stale sessions", () => {
+    const sessions = [
+      makeHeartbeat({ sessionId: "active-1", hostname: "other", lastActiveAt: "2026-03-27T10:04:00.000Z" }),
+      makeHeartbeat({ sessionId: "stale-1", hostname: "other", lastActiveAt: "2026-03-27T09:50:00.000Z" }),
+      makeHeartbeat({ sessionId: "stale-local", hostname: "my-macbook", pid: 11111 }),
+    ];
+    const result = classifySessions("my-session", sessions, now, "my-macbook", (pid) => pid !== 11111);
+    assert.equal(result.active.length, 1);
+    assert.equal(result.active[0].sessionId, "active-1");
+    assert.equal(result.stale.length, 2);
+  });
+});
+
+// ── formatAwarenessMessage ───────────────────────────────────────────
+
+describe("formatAwarenessMessage", () => {
+  const now = new Date("2026-03-27T10:05:00.000Z");
+
+  it("returns null for empty active sessions", () => {
+    assert.equal(formatAwarenessMessage([], now), null);
+  });
+
+  it("formats single session", () => {
+    const sessions: SessionHeartbeat[] = [{
+      sessionId: "abcdef12-3456-7890-abcd-ef1234567890",
+      pid: 123,
+      hostname: "my-macbook",
+      startedAt: "2026-03-27T10:00:00.000Z",
+      lastActiveAt: "2026-03-27T10:04:30.000Z",
+      branch: "main",
+    }];
+    const msg = formatAwarenessMessage(sessions, now)!;
+    assert.match(msg, /1 other session active/);
+    assert.match(msg, /abcdef12 on my-macbook/);
+    assert.match(msg, /branch: main/);
+    assert.match(msg, /30s ago/);
+    assert.match(msg, /resource conflicts/);
+  });
+
+  it("formats multiple sessions", () => {
+    const sessions: SessionHeartbeat[] = [
+      {
+        sessionId: "aaaa0000-0000-0000-0000-000000000000",
+        pid: 1, hostname: "mac-1", startedAt: "2026-03-27T10:00:00.000Z",
+        lastActiveAt: "2026-03-27T10:04:00.000Z", branch: "main",
+      },
+      {
+        sessionId: "bbbb0000-0000-0000-0000-000000000000",
+        pid: 2, hostname: "mac-2", startedAt: "2026-03-27T10:00:00.000Z",
+        lastActiveAt: "2026-03-27T10:02:00.000Z", branch: "feature",
+      },
+    ];
+    const msg = formatAwarenessMessage(sessions, now)!;
+    assert.match(msg, /2 other sessions active/);
+    assert.match(msg, /aaaa0000 on mac-1/);
+    assert.match(msg, /bbbb0000 on mac-2/);
+  });
+
+  it("formats minutes correctly", () => {
+    const sessions: SessionHeartbeat[] = [{
+      sessionId: "abcdef12-0000-0000-0000-000000000000",
+      pid: 1, hostname: "h", startedAt: "2026-03-27T10:00:00.000Z",
+      lastActiveAt: "2026-03-27T10:02:00.000Z", branch: "main",
+    }];
+    const msg = formatAwarenessMessage(sessions, now)!;
+    assert.match(msg, /3m ago/);
+  });
+});
+
 // ── Helper ───────────────────────────────────────────────────────────
 
 function jsonl(...objects: unknown[]): string {
