@@ -48,15 +48,15 @@ Read the codebase to understand what's actually implemented:
 - Existing tests — what's already covered?
 - Test output — run tests and read the tree output
 
-### 3. COMPARE: REQUIREMENTS → IMPLEMENTATION
+### 4. COMPARE: REQUIREMENTS → IMPLEMENTATION
 
 For each requirement tree, check whether every `when/then` path has working code and a passing test.
 
-### 4. COMPARE: IMPLEMENTATION → REQUIREMENTS
+### 5. COMPARE: IMPLEMENTATION → REQUIREMENTS
 
 Check the reverse — does the implementation do things no requirement tree describes?
 
-### 5. COMPLETE THE TREES
+### 6. COMPLETE THE TREES
 
 Fix the requirement trees in CLAUDE.md directly:
 
