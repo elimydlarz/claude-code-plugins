@@ -11,7 +11,7 @@ import {
   summarizeDeletions,
   buildClockInPlan,
   classifyTimecards,
-  formatRosterMessage,
+  formatClockInMessage,
 } from "./hook-plan.js";
 
 // ── Helpers ──────────────────────────────────────────────────────────
@@ -506,13 +506,13 @@ describe("classifyTimecards", () => {
   });
 });
 
-// ── formatRosterMessage ──────────────────────────────────────────────
+// ── formatClockInMessage ──────────────────────────────────────────────
 
-describe("formatRosterMessage", () => {
+describe("formatClockInMessage", () => {
   const now = new Date("2026-03-27T10:05:00.000Z");
 
   it("returns null when no agents clocked in", () => {
-    assert.equal(formatRosterMessage([], now), null);
+    assert.equal(formatClockInMessage([], now), null);
   });
 
   it("formats single agent without task", () => {
@@ -523,7 +523,7 @@ describe("formatRosterMessage", () => {
       lastActiveAt: "2026-03-27T10:04:30.000Z",
       branch: "main", task: null,
     }];
-    const msg = formatRosterMessage(timecards, now)!;
+    const msg = formatClockInMessage(timecards, now)!;
     assert.match(msg, /1 other agent clocked in/);
     assert.match(msg, /abcdef12 on my-macbook/);
     assert.match(msg, /branch: main/);
@@ -539,7 +539,7 @@ describe("formatRosterMessage", () => {
       lastActiveAt: "2026-03-27T10:04:30.000Z",
       branch: "main", task: "Fix the login bug",
     }];
-    const msg = formatRosterMessage(timecards, now)!;
+    const msg = formatClockInMessage(timecards, now)!;
     assert.match(msg, /"Fix the login bug"/);
   });
 
@@ -556,7 +556,7 @@ describe("formatRosterMessage", () => {
         lastActiveAt: "2026-03-27T10:02:00.000Z", branch: "feature", task: null,
       },
     ];
-    const msg = formatRosterMessage(timecards, now)!;
+    const msg = formatClockInMessage(timecards, now)!;
     assert.match(msg, /2 other agents clocked in/);
     assert.match(msg, /aaaa0000 on mac-1/);
     assert.match(msg, /bbbb0000 on mac-2/);
@@ -569,7 +569,7 @@ describe("formatRosterMessage", () => {
       pid: 1, hostname: "h", clockedInAt: "2026-03-27T10:00:00.000Z",
       lastActiveAt: "2026-03-27T10:02:00.000Z", branch: "main", task: null,
     }];
-    const msg = formatRosterMessage(timecards, now)!;
+    const msg = formatClockInMessage(timecards, now)!;
     assert.match(msg, /3m ago/);
   });
 });
