@@ -15,11 +15,8 @@ Then install what you need:
 | Tool | Install | What it does |
 |------|---------|--------------|
 | trunk-sync | `npm i -g trunk-sync && trunk-sync install` | Auto-commit every edit to trunk — run multiple agents in parallel |
-| req-mod-sync | `claude plugin install req-mod-sync@susu-eng` | Keep CLAUDE.md requirements and mental model in sync with code |
-| test-trees | `claude plugin install test-trees@susu-eng` | Enforce TDD with human-readable test tree output |
-| eli-rules | `pnpm add -D @susu-eng/eli-rules` | Shared coding rules synced to `.claude/rules/` |
-
-The marketplace is needed for trunk-sync, req-mod-sync, and test-trees. eli-rules is an npm package — install it directly.
+| contree | `claude plugin install contree@susu-eng` | Test trees as living requirements — TDD with auto-synced specs in CLAUDE.md |
+| openclaw-notifier | `claude plugin install openclaw-notifier@susu-eng` | Notify OpenClaw when a subagent completes a task |
 
 ### Migrating from individual repos
 
