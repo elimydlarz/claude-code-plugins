@@ -276,7 +276,7 @@ export function classifyTimecards(
  * Format a roster message showing who else is clocked in.
  * Returns null if no other agents are working.
  */
-export function formatRosterMessage(clockedIn: Timecard[], now: Date): string | null {
+export function formatClockInMessage(clockedIn: Timecard[], now: Date): string | null {
   if (clockedIn.length === 0) return null;
 
   const lines = clockedIn.map((tc) => {
