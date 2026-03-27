@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { homedir, hostname } from "node:os";
 import { readConfig } from "../commands/config.js";
 import { HOOK_EXPLAINER } from "./hook-types.js";
-import { extractTaskFromTranscript, buildCommitPlanWithTask, classifySessions, formatAwarenessMessage } from "./hook-plan.js";
+import { extractTaskFromTranscript, buildCommitPlanWithTask, classifyTimecards, formatClockInMessage } from "./hook-plan.js";
 /**
  * Gather the current git repo state needed for planning.
  * Runs git commands — this is the I/O boundary.
@@ -113,43 +113,45 @@ export function gatherRepoState(input) {
         modifiedFiles,
     };
 }
-// --- Session awareness I/O ---
+// --- Clocking in/out ---
 export function getRuntimeContext() {
     return { pid: process.pid, hostname: hostname() };
 }
-export function writeSessionHeartbeat(repoRoot, plan) {
-    const dir = join(repoRoot, ".trunk-sync", "sessions");
+/** Clock in: write or update this agent's timecard on the timeclock. */
+export function clockIn(repoRoot, plan, task) {
+    const dir = join(repoRoot, ".trunk-sync", "timeclock");
     mkdirSync(dir, { recursive: true });
-    // Preserve startedAt from existing heartbeat if present
-    const filePath = join(repoRoot, plan.heartbeatPath);
-    let heartbeat = plan.heartbeat;
+    const filePath = join(repoRoot, plan.timecardPath);
+    // Preserve clockedInAt from existing timecard if present
+    let timecard = { ...plan.timecard, task };
     try {
         const existing = JSON.parse(readFileSync(filePath, "utf-8"));
-        if (existing.startedAt) {
-            heartbeat = { ...heartbeat, startedAt: existing.startedAt };
+        if (existing.clockedInAt) {
+            timecard = { ...timecard, clockedInAt: existing.clockedInAt };
         }
     }
     catch {
-        // No existing file — use plan's startedAt
+        // No existing file — use plan's clockedInAt
     }
-    writeFileSync(filePath, JSON.stringify(heartbeat, null, 2) + "\n");
+    writeFileSync(filePath, JSON.stringify(timecard, null, 2) + "\n");
 }
-export function readAllSessions(repoRoot) {
-    const dir = join(repoRoot, ".trunk-sync", "sessions");
+/** Read all timecards from the timeclock directory. */
+export function readTimecards(repoRoot) {
+    const dir = join(repoRoot, ".trunk-sync", "timeclock");
     if (!existsSync(dir))
         return [];
     const files = readdirSync(dir).filter((f) => f.endsWith(".json"));
-    const sessions = [];
+    const timecards = [];
     for (const file of files) {
         try {
             const content = readFileSync(join(dir, file), "utf-8");
-            sessions.push(JSON.parse(content));
+            timecards.push(JSON.parse(content));
         }
         catch {
             // Skip unparseable files
         }
     }
-    return sessions;
+    return timecards;
 }
 export function isProcessAlive(pid) {
     try {
@@ -160,10 +162,11 @@ export function isProcessAlive(pid) {
         return false;
     }
 }
-export function pruneStaleSessionFiles(repoRoot, staleIds) {
+/** Clock out stale agents by removing their timecards. */
+export function clockOutStale(repoRoot, staleIds) {
     const removed = [];
     for (const id of staleIds) {
-        const filePath = join(repoRoot, ".trunk-sync", "sessions", `${id}.json`);
+        const filePath = join(repoRoot, ".trunk-sync", "timeclock", `${id}.json`);
         try {
             unlinkSync(filePath);
             removed.push(filePath);
@@ -175,7 +178,7 @@ export function pruneStaleSessionFiles(repoRoot, staleIds) {
     return removed;
 }
 function readThrottleTimestamp(sessionId) {
-    const path = join(tmpdir(), `trunk-sync-warning-${sessionId}`);
+    const path = join(tmpdir(), `trunk-sync-clockin-${sessionId}`);
     try {
         return parseInt(readFileSync(path, "utf-8"), 10);
     }
@@ -184,7 +187,7 @@ function readThrottleTimestamp(sessionId) {
     }
 }
 function writeThrottleTimestamp(sessionId, now) {
-    const path = join(tmpdir(), `trunk-sync-warning-${sessionId}`);
+    const path = join(tmpdir(), `trunk-sync-clockin-${sessionId}`);
     writeFileSync(path, String(now));
 }
 function tmpdir() {
@@ -192,40 +195,57 @@ function tmpdir() {
 }
 const THROTTLE_MS = 5 * 60 * 1000; // 5 minutes
 /**
- * Run session awareness: write heartbeat, prune stale, check for others.
- * Returns awareness message if other sessions are active and throttle allows.
+ * Extract the agent's current task from the transcript (same logic as commit enrichment).
+ * Returns null if transcript is unavailable or unparseable.
  */
-function executeSessionAwareness(session, state) {
+function extractTask(input) {
+    if (!input.transcript_path)
+        return null;
+    const expanded = input.transcript_path.replace(/^~/, homedir());
     try {
-        writeSessionHeartbeat(state.repoRoot, session);
-        const allSessions = readAllSessions(state.repoRoot);
+        const content = readFileSync(expanded, "utf-8");
+        return extractTaskFromTranscript(content);
+    }
+    catch {
+        return null;
+    }
+}
+/**
+ * Clock in, clock out stale agents, check who else is working.
+ * Returns a message if other agents are clocked in and throttle allows.
+ */
+function executeClockIn(plan, input, state) {
+    try {
+        const task = extractTask(input);
+        clockIn(state.repoRoot, plan, task);
+        const allTimecards = readTimecards(state.repoRoot);
         const now = new Date();
-        const { active, stale } = classifySessions(session.heartbeat.sessionId, allSessions, now, session.heartbeat.hostname, isProcessAlive);
-        // Prune stale sessions
-        if (stale.length > 0) {
-            pruneStaleSessionFiles(state.repoRoot, stale);
+        const { clockedIn, clockedOut } = classifyTimecards(plan.timecard.sessionId, allTimecards, now, plan.timecard.hostname, isProcessAlive);
+        // Clock out stale agents
+        if (clockedOut.length > 0) {
+            clockOutStale(state.repoRoot, clockedOut);
         }
-        // Stage session directory (heartbeat + any removals)
-        const sessionsDir = join(state.repoRoot, ".trunk-sync", "sessions");
+        // Stage timeclock directory (timecard + any removals)
+        const timeclockDir = join(state.repoRoot, ".trunk-sync", "timeclock");
         try {
-            execSync(`git add -- "${sessionsDir}"`, { cwd: state.repoRoot, stdio: "ignore" });
+            execSync(`git add -- "${timeclockDir}"`, { cwd: state.repoRoot, stdio: "ignore" });
         }
         catch {
             // best-effort
         }
-        // Check throttle before returning awareness message
-        if (active.length > 0) {
-            const lastWarning = readThrottleTimestamp(session.heartbeat.sessionId);
+        // Check throttle before returning clock-in message
+        if (clockedIn.length > 0) {
+            const lastWarning = readThrottleTimestamp(plan.timecard.sessionId);
             const nowMs = now.getTime();
             if (lastWarning === null || (nowMs - lastWarning) >= THROTTLE_MS) {
-                writeThrottleTimestamp(session.heartbeat.sessionId, nowMs);
-                return formatAwarenessMessage(active, now);
+                writeThrottleTimestamp(plan.timecard.sessionId, nowMs);
+                return formatClockInMessage(clockedIn, now);
             }
         }
         return null;
     }
     catch {
-        // Session awareness is best-effort — never fail the hook
+        // Clock-in is best-effort — never fail the hook
         return null;
     }
 }
@@ -237,8 +257,8 @@ export function executePlan(plan, input, state) {
     if (plan.action === "skip")
         return { exitCode: 0 };
     if (plan.action === "commit-merge") {
-        // Session awareness (heartbeat + prune + stage)
-        const awarenessMsg = plan.session ? executeSessionAwareness(plan.session, state) : null;
+        // Clock in and check who else is working
+        const clockInMsg = plan.clockIn ? executeClockIn(plan.clockIn, input, state) : null;
         // Stage the file if provided
         const filePath = input.tool_input.file_path;
         if (filePath) {
@@ -256,16 +276,16 @@ export function executePlan(plan, input, state) {
             const syncResult = executeSync(plan.sync);
             if (syncResult.exitCode !== 0)
                 return syncResult;
-            if (awarenessMsg)
-                return { exitCode: 2, stderr: awarenessMsg };
+            if (clockInMsg)
+                return { exitCode: 2, stderr: clockInMsg };
             return syncResult;
         }
-        if (awarenessMsg)
-            return { exitCode: 2, stderr: awarenessMsg };
+        if (clockInMsg)
+            return { exitCode: 2, stderr: clockInMsg };
         return { exitCode: 0 };
     }
     // commit-and-sync
-    const { commit, sync, session } = plan;
+    const { commit, sync, clockIn: clockInPlan } = plan;
     // Stage deletions
     for (const file of commit.filesToRemove) {
         try {
@@ -281,8 +301,8 @@ export function executePlan(plan, input, state) {
     for (const file of commit.filesToStage) {
         execSync(`git add -- "${file}"`);
     }
-    // Session awareness: write heartbeat, prune stale, stage session dir
-    const awarenessMsg = session ? executeSessionAwareness(session, state) : null;
+    // Clock in and check who else is working
+    const clockInMsg = clockInPlan ? executeClockIn(clockInPlan, input, state) : null;
     // Check if there's anything staged (may have been a no-op)
     try {
         execSync("git diff --cached --quiet", { stdio: "ignore" });
@@ -319,12 +339,12 @@ export function executePlan(plan, input, state) {
         const syncResult = executeSync(sync);
         if (syncResult.exitCode !== 0)
             return syncResult;
-        if (awarenessMsg)
-            return { exitCode: 2, stderr: awarenessMsg };
+        if (clockInMsg)
+            return { exitCode: 2, stderr: clockInMsg };
         return syncResult;
     }
-    if (awarenessMsg)
-        return { exitCode: 2, stderr: awarenessMsg };
+    if (clockInMsg)
+        return { exitCode: 2, stderr: clockInMsg };
     return { exitCode: 0 };
 }
 function amendWithTranscriptSnapshot(input, state) {
