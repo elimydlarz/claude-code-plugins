@@ -149,6 +149,20 @@ sync-audits-and-resolves
     then the user is suggested to run tdd to implement them
 ```
 
+### workflow-runs-end-to-end
+
+```
+workflow-runs-end-to-end
+  when workflow is run with an idea
+    then change, sync, and tdd run in sequence without pausing
+  when change completes
+    then sync runs immediately
+  when sync identifies gaps
+    then tdd implements each gap immediately
+  when all gaps are implemented
+    then all test trees have passing tests
+```
+
 ### composable-testing
 
 ```
