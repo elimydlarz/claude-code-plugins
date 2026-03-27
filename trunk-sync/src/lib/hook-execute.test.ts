@@ -1101,7 +1101,7 @@ describe("executePlan with session awareness", () => {
     const result = executePlan(plan, input, state);
     assert.equal(result.exitCode, 2);
     assert.ok(result.stderr?.includes("TRUNK-SYNC INFO"));
-    assert.ok(result.stderr?.includes("other-session"));
+    assert.ok(result.stderr?.includes("other-se")); // truncated to 8 chars
     assert.ok(result.stderr?.includes("resource conflicts"));
   });
 
