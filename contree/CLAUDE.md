@@ -22,7 +22,7 @@ Six mechanisms:
 
 Test trees serve dual purpose: they are both the specification (in CLAUDE.md) and the test structure (in code). The requirement trees in `## Requirements` use `when/then` format describing operating principles. The `tdd` skill implements against these trees. The `sync-to-requirements` skill verifies completeness. The stop hook ensures continuous maintenance. Coding rules enforce principles (simplicity, expressiveness, fail-fast) across all work.
 
-Flow: `setup-contree` → generates requirement trees → `tdd` implements them → stop hook maintains them → `sync-to-requirements` audits completeness. Rules apply throughout.
+Flow: `setup-contree` → generates requirement trees → `plan-test-trees` designs trees before code → `tdd` implements them → stop hook maintains them → `sync-to-requirements` audits completeness. Rules apply throughout.
 
 ## Repo Map
 
