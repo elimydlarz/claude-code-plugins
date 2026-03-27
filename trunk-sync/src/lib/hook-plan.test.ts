@@ -10,7 +10,7 @@ import {
   extractTaskFromTranscript,
   summarizeDeletions,
   buildClockInPlan,
-  classifyRoster,
+  classifyTimecards,
   formatRosterMessage,
 } from "./hook-plan.js";
 
@@ -434,9 +434,9 @@ describe("planHook clock-in plan", () => {
   });
 });
 
-// ── classifyRoster ───────────────────────────────────────────────────
+// ── classifyTimecards ───────────────────────────────────────────────────
 
-describe("classifyRoster", () => {
+describe("classifyTimecards", () => {
   const now = new Date("2026-03-27T10:05:00.000Z");
 
   function makeTimecard(overrides: Partial<Timecard> = {}): Timecard {
@@ -454,21 +454,21 @@ describe("classifyRoster", () => {
 
   it("excludes own session from both lists", () => {
     const timecards = [makeTimecard({ sessionId: "my-session" })];
-    const result = classifyRoster("my-session", timecards, now, "my-macbook", () => true);
+    const result = classifyTimecards("my-session", timecards, now, "my-macbook", () => true);
     assert.equal(result.clockedIn.length, 0);
     assert.equal(result.clockedOut.length, 0);
   });
 
   it("clocks out local agent with dead PID", () => {
     const timecards = [makeTimecard({ hostname: "my-macbook", pid: 99999 })];
-    const result = classifyRoster("my-session", timecards, now, "my-macbook", () => false);
+    const result = classifyTimecards("my-session", timecards, now, "my-macbook", () => false);
     assert.equal(result.clockedOut.length, 1);
     assert.equal(result.clockedIn.length, 0);
   });
 
   it("keeps local agent with live PID clocked in", () => {
     const timecards = [makeTimecard({ hostname: "my-macbook", pid: 99999 })];
-    const result = classifyRoster("my-session", timecards, now, "my-macbook", () => true);
+    const result = classifyTimecards("my-session", timecards, now, "my-macbook", () => true);
     assert.equal(result.clockedIn.length, 1);
     assert.equal(result.clockedOut.length, 0);
   });
@@ -478,7 +478,7 @@ describe("classifyRoster", () => {
       hostname: "other-machine",
       lastActiveAt: "2026-03-27T09:55:00.000Z", // 10 min ago
     })];
-    const result = classifyRoster("my-session", timecards, now, "my-macbook", () => true);
+    const result = classifyTimecards("my-session", timecards, now, "my-macbook", () => true);
     assert.equal(result.clockedOut.length, 1);
     assert.equal(result.clockedIn.length, 0);
   });
@@ -488,7 +488,7 @@ describe("classifyRoster", () => {
       hostname: "other-machine",
       lastActiveAt: "2026-03-27T10:03:00.000Z", // 2 min ago
     })];
-    const result = classifyRoster("my-session", timecards, now, "my-macbook", () => true);
+    const result = classifyTimecards("my-session", timecards, now, "my-macbook", () => true);
     assert.equal(result.clockedIn.length, 1);
     assert.equal(result.clockedOut.length, 0);
   });
@@ -499,7 +499,7 @@ describe("classifyRoster", () => {
       makeTimecard({ sessionId: "stale-1", hostname: "other", lastActiveAt: "2026-03-27T09:50:00.000Z" }),
       makeTimecard({ sessionId: "stale-local", hostname: "my-macbook", pid: 11111 }),
     ];
-    const result = classifyRoster("my-session", timecards, now, "my-macbook", (pid) => pid !== 11111);
+    const result = classifyTimecards("my-session", timecards, now, "my-macbook", (pid) => pid !== 11111);
     assert.equal(result.clockedIn.length, 1);
     assert.equal(result.clockedIn[0].sessionId, "active-1");
     assert.equal(result.clockedOut.length, 2);
