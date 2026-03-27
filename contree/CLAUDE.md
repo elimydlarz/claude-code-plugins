@@ -78,12 +78,14 @@ outside-in-tdd
 ```
 stop-hook-sync
   when Claude stops after any response
-    then it checks whether test trees need updating
+    then it checks whether implementation has drifted from test trees
     and checks whether mental model needs updating
-    and checks whether repo map needs updating
+  when drift is detected between implementation and test trees
+    then Claude asks the user: update test trees and tests to reflect implementation, or pare implementation back to match test trees
+    and never modifies test trees silently
   when stop_hook_active is true
     then the hook exits silently to prevent infinite loops
-  when nothing needs updating
+  when nothing needs attention
     then Claude replies with 0
 ```
 
