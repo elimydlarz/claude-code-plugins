@@ -9,7 +9,7 @@ Six products live in this repo:
 - **trunk-sync** — multi-agent sync hook + seance CLI (Claude Code plugin + npm package `@susu-eng/trunk-sync`)
 - **req-mod-sync** — auto-sync CLAUDE.md documentation (Claude Code plugin)
 - **test-trees** — TDD enforcement + test framework setup (Claude Code plugin, pure Markdown skills)
-- **contree** — test trees as living requirements: combines test-trees TDD + req-mod-sync sync into unified plugin (Claude Code plugin, pure Markdown skills + stop hook + coding rules)
+- **contree** — test trees as living requirements: setup, change, sync, and TDD skills with stop hook + coding rules (Claude Code plugin, pure Markdown skills + stop hook)
 - **openclaw-notifier** — notifies OpenClaw when a subagent completes a task (Claude Code plugin, SubagentStop hook)
 - **eli-rules** — shared coding rules (npm package `@susu-eng/eli-rules`, not a marketplace plugin)
 
