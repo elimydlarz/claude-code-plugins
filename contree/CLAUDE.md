@@ -12,7 +12,7 @@ Mechanisms:
 - **sync skill** — user-invoked. Audits implementation against test trees — finds gaps, untested paths, undocumented behaviour, stale trees. Suggests running `tdd` to implement gaps.
 - **tdd skill** — auto-triggers when implementing behaviour. Enforces outside-in TDD (functional test → unit TDD → functional pass) where every test traces back to a test tree in CLAUDE.md.
 - **workflow skill** — user-invoked. Runs `change` → `sync` → `tdd` end to end without pausing for review.
-- **Stop hook** — fires after every response, prompting Claude to keep test trees, mental model, and repo map in CLAUDE.md current.
+- **Stop hook** — fires after every response, checking for drift between implementation and test trees, and prompting mental model updates.
 
 ## Mental Model
 
