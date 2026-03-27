@@ -224,7 +224,7 @@ export function buildClockInPlan(
   if (!input.session_id) return null;
   const now = new Date().toISOString();
   return {
-    timecardPath: `.trunk-sync/roster/${input.session_id}.json`,
+    timecardPath: `.trunk-sync/timeclock/${input.session_id}.json`,
     timecard: {
       sessionId: input.session_id,
       pid: runtime.pid,
