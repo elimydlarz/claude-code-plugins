@@ -1,6 +1,6 @@
 ---
 name: sync
-description: "Complete test trees in CLAUDE.md to match implementation, then TDD any gaps. Find drift, fix it, implement it."
+description: "Identify gaps and cruft — where intent and implementation have drifted apart. Compares test trees against code in both directions, then hands gaps to tdd."
 ---
 
 # Sync
