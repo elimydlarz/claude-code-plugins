@@ -5,7 +5,7 @@ description: "Set up test framework with tree reporters and generate initial tes
 
 # Setup Contree
 
-Sets up a project for test-tree-driven development: configures the test framework, generates initial requirement trees in CLAUDE.md, and prepares the project for the `tdd` and `sync-to-requirements` skills.
+Sets up a project for test-tree-driven development: configures the test framework, generates initial requirement trees in CLAUDE.md, and prepares the project for the `tdd` and `sync` skills.
 
 ## Critical Rules
 
