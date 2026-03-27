@@ -5,7 +5,7 @@ description: "The full arc from idea to verified working software — set expect
 
 # Workflow
 
-Takes a behaviour change from idea to working software. Runs the full contree sequence without pausing for review.
+Carries an idea through the full arc: from intent to contract to verified implementation. Sets expected behaviour, identifies where reality diverges, and closes every gap — without pausing for review.
 
 ## When to Use
 
