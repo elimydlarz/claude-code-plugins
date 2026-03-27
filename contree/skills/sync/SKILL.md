@@ -39,39 +39,25 @@ For each test tree, check whether every `when/then` path has working code and a 
 
 Check the reverse — does the implementation do things no test tree describes?
 
-### 5. COMPLETE THE TREES
+### 5. RESOLVE DRIFT
 
-Fix the test trees in CLAUDE.md directly:
+**Implementation missing for a tree path** (test tree exists, no code):
+- Flag as a gap to implement. These are the priority.
 
-**Undocumented behaviour** (code exists, no test tree):
-- Write new test trees describing the existing behaviour as operating principles
-- Add them as new subsections under `## Requirements`
-
-**Incomplete trees** (test tree doesn't capture all behaviour the implementation handles):
-- Extend the tree with missing `when/then` paths
+**Implementation exists without a tree** (code exists, no test tree):
+- Discuss with the user. The implementation may be accidental scope creep that should be removed, or it may be a legitimate capability that needs a tree. Don't assume either way.
 
 **Stale trees** (test tree for capabilities that no longer exist):
-- Remove the tree from CLAUDE.md
-- Confirm with user before removing if unsure
+- Discuss with the user before removing.
 
-**Dead paths** (a `when/then` path in a tree that no longer reflects reality):
-- Rewrite the path to match current behaviour, or remove it
+**Dead paths** (a `when/then` path that no longer reflects reality):
+- Discuss with the user. The path may need updating or the implementation may be wrong.
 
-After this step, `## Requirements` should be a complete and truthful description of the system — both what's already built and what still needs building.
+After this step, test trees and implementation intent should be aligned.
 
 ### 6. IMPLEMENT GAPS
 
-For each `when/then` path that has a test tree but no implementation or tests, implement it using the `tdd` skill's process:
-
-1. Confirm test tree (already done — it's in CLAUDE.md)
-2. RED (functional) — failing functional test matching the `when/then` path
-3. RED (unit) — failing unit test for outermost component
-4. IMPLEMENT — enough code to pass
-5. GREEN — unit then functional
-6. REFACTOR
-7. Next gap
-
-Work through gaps one at a time. Each gap follows the full outside-in TDD cycle.
+For each `when/then` path that has a test tree but no implementation or tests, suggest the user runs `tdd` to implement it. Present the gaps so they can prioritise.
 
 ### 7. VERIFY
 
