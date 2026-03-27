@@ -75,7 +75,7 @@ test_setup_generates_requirements() {
   dir=$(setup_project)
 
   run_claude "$dir" \
-    "Run /setup-contree on this project. It's a simple JS counter module. Use Vitest. Don't implement any tests yet — just configure the framework and generate requirement trees."
+    "Run /setup on this project. It's a simple JS counter module. Use Vitest. Don't implement any tests yet — just configure the framework and generate requirement trees."
 
   assert_file_contains \
     "CLAUDE.md has ## Requirements section after setup" \
