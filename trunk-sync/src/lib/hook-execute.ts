@@ -142,7 +142,7 @@ export function clockIn(repoRoot: string, plan: ClockInPlan, task: string | null
   writeFileSync(filePath, JSON.stringify(timecard, null, 2) + "\n");
 }
 
-/** Read all timecards from the roster directory. */
+/** Read all timecards from the timeclock directory. */
 export function readRoster(repoRoot: string): Timecard[] {
   const dir = join(repoRoot, ".trunk-sync", "timeclock");
   if (!existsSync(dir)) return [];
