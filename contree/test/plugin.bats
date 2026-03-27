@@ -39,13 +39,18 @@ load test_helper
   assert_success
 }
 
-@test "setup-contree skill exists" {
-  run test -f "$PROJECT_ROOT/skills/setup-contree/SKILL.md"
+@test "setup skill exists" {
+  run test -f "$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_success
 }
 
-@test "sync-to-requirements skill exists" {
-  run test -f "$PROJECT_ROOT/skills/sync-to-requirements/SKILL.md"
+@test "change skill exists" {
+  run test -f "$PROJECT_ROOT/skills/change/SKILL.md"
+  assert_success
+}
+
+@test "sync skill exists" {
+  run test -f "$PROJECT_ROOT/skills/sync/SKILL.md"
   assert_success
 }
 
@@ -61,19 +66,29 @@ load test_helper
   assert_output --partial 'TRIGGER when'
 }
 
-@test "setup-contree skill has name in frontmatter" {
-  run head -5 "$PROJECT_ROOT/skills/setup-contree/SKILL.md"
-  assert_output --partial 'name: setup-contree'
+@test "setup skill has name in frontmatter" {
+  run head -5 "$PROJECT_ROOT/skills/setup/SKILL.md"
+  assert_output --partial 'name: setup'
 }
 
-@test "setup-contree skill auto-triggers on missing requirements" {
-  run head -5 "$PROJECT_ROOT/skills/setup-contree/SKILL.md"
+@test "setup skill auto-triggers on missing requirements" {
+  run head -5 "$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial 'TRIGGER when'
 }
 
-@test "sync-to-requirements skill has name in frontmatter" {
-  run head -5 "$PROJECT_ROOT/skills/sync-to-requirements/SKILL.md"
-  assert_output --partial 'name: sync-to-requirements'
+@test "change skill has name in frontmatter" {
+  run head -5 "$PROJECT_ROOT/skills/change/SKILL.md"
+  assert_output --partial 'name: change'
+}
+
+@test "change skill auto-triggers on behaviour changes" {
+  run head -5 "$PROJECT_ROOT/skills/change/SKILL.md"
+  assert_output --partial 'TRIGGER when'
+}
+
+@test "sync skill has name in frontmatter" {
+  run head -5 "$PROJECT_ROOT/skills/sync/SKILL.md"
+  assert_output --partial 'name: sync'
 }
 
 # --- Hook ---
