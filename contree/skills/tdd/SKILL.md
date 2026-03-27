@@ -1,6 +1,6 @@
 ---
 name: tdd
-description: "Enforces test-driven development against test trees in CLAUDE.md. TRIGGER when: implementing behaviour, writing code, or writing tests."
+description: "Close gaps between intent and implementation — one failing test at a time, outside-in, until the contract is fulfilled. TRIGGER when: implementing behaviour, writing code, or writing tests."
 ---
 
 # TDD — Test-Driven Development
