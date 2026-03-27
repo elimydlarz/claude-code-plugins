@@ -125,7 +125,8 @@ change-writes-trees
   when removing a capability
     then the tree is removed after user confirmation
   when trees are complete
-    then they are presented to the user for alignment before implementation
+    then they are presented to the user for alignment
+    and the user is suggested to run sync
 ```
 
 ### sync-completes-and-implements
