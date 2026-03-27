@@ -14,9 +14,10 @@ export function parseHookInput(json) {
  * Pure decision logic: given parsed input and repo state, decide what to do.
  * No I/O, no git commands — only data in, plan out.
  */
-export function planHook(input, state) {
+export function planHook(input, state, runtime) {
     const filePath = input.tool_input.file_path ?? null;
     const sync = buildSyncPlan(state);
+    const session = runtime ? buildSessionPlan(input, state, runtime) : null;
     // No file_path and no deleted/modified files → nothing to do
     if (!filePath && state.deletedFiles.length === 0 && state.modifiedFiles.length === 0) {
         return { action: "skip" };
@@ -39,11 +40,12 @@ export function planHook(input, state) {
             action: "commit-merge",
             message,
             sync,
+            session,
         };
     }
     // Normal commit path
     const commit = buildCommitPlan(input, state);
-    return { action: "commit-and-sync", commit, sync };
+    return { action: "commit-and-sync", commit, sync, session };
 }
 function buildSyncPlan(state) {
     if (!state.hasRemote)
@@ -186,4 +188,79 @@ export function summarizeDeletions(files) {
     if (files.length === 1)
         return first;
     return `${first} (+${files.length - 1} more)`;
+}
+// --- Session awareness ---
+/**
+ * Build a session plan for heartbeat file creation.
+ * Pure: needs runtime context (pid, hostname) passed in.
+ */
+export function buildSessionPlan(input, state, runtime) {
+    if (!input.session_id)
+        return null;
+    const now = new Date().toISOString();
+    return {
+        heartbeatPath: `.trunk-sync/sessions/${input.session_id}.json`,
+        heartbeat: {
+            sessionId: input.session_id,
+            pid: runtime.pid,
+            hostname: runtime.hostname,
+            startedAt: now,
+            lastActiveAt: now,
+            branch: state.currentBranch || "detached",
+        },
+    };
+}
+/**
+ * Classify sessions as active or stale. Own session is excluded from both lists.
+ * Local sessions (same hostname) with dead PIDs are stale.
+ * Remote sessions with old timestamps are stale.
+ */
+export function classifySessions(ownSessionId, sessions, now, localHostname, isLocalPidAlive, staleMinutes = 5) {
+    const staleThreshold = staleMinutes * 60 * 1000;
+    const active = [];
+    const stale = [];
+    for (const s of sessions) {
+        if (s.sessionId === ownSessionId)
+            continue;
+        const age = now.getTime() - new Date(s.lastActiveAt).getTime();
+        const isLocal = s.hostname === localHostname;
+        if (isLocal && !isLocalPidAlive(s.pid)) {
+            stale.push(s.sessionId);
+        }
+        else if (age > staleThreshold) {
+            stale.push(s.sessionId);
+        }
+        else {
+            active.push(s);
+        }
+    }
+    return { active, stale };
+}
+/**
+ * Format an awareness warning message for the agent.
+ * Returns null if no other active sessions.
+ */
+export function formatAwarenessMessage(active, now) {
+    if (active.length === 0)
+        return null;
+    const lines = active.map((s) => {
+        const age = now.getTime() - new Date(s.lastActiveAt).getTime();
+        const agoStr = formatAge(age);
+        return `- ${s.sessionId.slice(0, 8)} on ${s.hostname} (branch: ${s.branch}, ${agoStr} ago)`;
+    });
+    return [
+        `TRUNK-SYNC INFO: ${active.length} other session${active.length > 1 ? "s" : ""} active in this repo.`,
+        ...lines,
+        "Consider potential resource conflicts: ports, build locks, test databases.",
+    ].join("\n");
+}
+function formatAge(ms) {
+    const seconds = Math.floor(ms / 1000);
+    if (seconds < 60)
+        return `${seconds}s`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60)
+        return `${minutes}m`;
+    const hours = Math.floor(minutes / 60);
+    return `${hours}h`;
 }
