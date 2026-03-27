@@ -995,6 +995,7 @@ describe("pruneStaleSessionFiles", () => {
 
 describe("executePlan with session awareness", () => {
   let dir: string;
+  let origDir: string;
   const origHome = process.env.HOME;
 
   beforeEach(() => {
@@ -1002,10 +1003,13 @@ describe("executePlan with session awareness", () => {
     initRepo(dir);
     writeFileSync(join(dir, "init.txt"), "init\n");
     execSync("git add . && git commit -m init", { cwd: dir, stdio: "ignore" });
+    origDir = process.cwd();
+    process.chdir(dir);
     process.env.HOME = mkdtempSync(join(tmpdir(), "ts-home-"));
   });
 
   afterEach(() => {
+    process.chdir(origDir);
     rmSync(dir, { recursive: true, force: true });
     if (process.env.HOME && process.env.HOME !== origHome) {
       rmSync(process.env.HOME, { recursive: true, force: true });
