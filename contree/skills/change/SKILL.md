@@ -66,6 +66,8 @@ Every `then` in the tree should be traceable through the functional and unit lay
 
 Share the trees with the user before moving to implementation. The trees are the contract — get agreement before building.
 
+Once aligned, suggest the user runs `sync` to audit completeness and implement gaps.
+
 ## Tree Format Rules
 
 - **`when` describes conditions** — what triggers or sets up the behaviour. Nest with `and` for compound conditions.
