@@ -10,7 +10,7 @@ import {
   existsSync,
 } from "node:fs";
 import { join } from "node:path";
-import { tmpdir } from "node:os";
+import { tmpdir, hostname } from "node:os";
 import { execSync } from "node:child_process";
 import type { HookInput, RepoState, HookPlan, SyncPlan, SessionPlan, SessionHeartbeat } from "./hook-types.js";
 import { gatherRepoState, findWorktreeForBranch, executePlan, executeSync, writeSessionHeartbeat, readAllSessions, isProcessAlive, pruneStaleSessionFiles } from "./hook-execute.js";
