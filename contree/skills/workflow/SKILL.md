@@ -1,6 +1,6 @@
 ---
 name: workflow
-description: "End-to-end: idea → test trees → implementation. Runs change, sync, and tdd in sequence without pausing."
+description: "The full arc from idea to verified working software — set expected behaviour, identify gaps, close them. Runs without pausing."
 ---
 
 # Workflow
