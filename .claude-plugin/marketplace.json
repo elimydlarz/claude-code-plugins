@@ -46,6 +46,16 @@
       },
       "license": "MIT",
       "keywords": ["skills", "hooks", "tdd", "testing", "test-trees", "requirements", "documentation"]
+    },
+    {
+      "name": "openclaw-notifier",
+      "source": "./openclaw-notifier",
+      "description": "Notifies OpenClaw when a subagent completes a task via SubagentStop hook",
+      "author": {
+        "name": "Eli Mydlarz"
+      },
+      "license": "MIT",
+      "keywords": ["hooks", "openclaw", "subagent", "notification", "multi-agent"]
     }
   ]
 }
