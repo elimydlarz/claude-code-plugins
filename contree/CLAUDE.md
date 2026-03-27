@@ -120,6 +120,20 @@ sync-completes-and-implements
     then every when/then path has a passing functional test
 ```
 
+### plan-before-code
+
+```
+plan-before-code
+  when planning or designing a behaviour change
+    then test trees are written before any code or tests
+    and functional trees are written first from the consumer's perspective
+    and unit trees are decomposed inward from functional trees
+  when trees are complete
+    then they are presented to the user for alignment before implementation
+  when a component's behaviour is trivial
+    then it is mentioned but not forced into a tree
+```
+
 ### composable-testing
 
 ```
