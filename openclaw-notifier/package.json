@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "devDependencies": {
+    "bats-support": "github:bats-core/bats-support",
+    "bats-assert": "github:bats-core/bats-assert"
+  },
+  "scripts": {
+    "test": "bats --pretty test/",
+    "test:functional": "node test/functional/run.mjs"
+  }
+}
