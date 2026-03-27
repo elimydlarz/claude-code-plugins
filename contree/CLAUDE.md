@@ -4,25 +4,25 @@
 
 A Claude Code plugin that unifies test-tree-driven development with living requirements. Test trees ARE the requirements — they live in `## Requirements` of the project's CLAUDE.md, describe what the system does using `when/then` specifications, and are kept in sync with implementation automatically.
 
-Six mechanisms:
+Five mechanisms:
 
 1. **Rules** — coding principles loaded automatically when the plugin is active (simplicity, expressiveness, fail-fast, no fake code, etc.).
 
-2. **tdd skill** — auto-triggers on behaviour changes. Enforces outside-in TDD (functional test → unit TDD → functional pass) where every test traces back to a requirement tree in CLAUDE.md.
+2. **setup skill** — user-invoked. Configures test framework with tree reporters, generates initial test trees from existing code/plans, writes them to CLAUDE.md.
 
-3. **setup-contree skill** — user-invoked. Configures test framework with tree reporters, generates initial requirement trees from existing code/plans, writes them to CLAUDE.md.
+3. **change skill** — auto-triggers on behaviour changes. Talks through the change, writes or modifies test trees in CLAUDE.md, plans functional → unit decomposition.
 
-4. **sync-to-requirements skill** — user-invoked. Audits implementation against requirement trees — finds gaps, untested paths, undocumented behaviour, stale requirements. Fixes drift.
+4. **sync skill** — user-invoked. Audits implementation against test trees — finds gaps, untested paths, undocumented behaviour, stale trees. Fixes drift, then TDDs gaps.
 
-5. **plan-test-trees skill** — auto-triggers during planning/design. Plans test trees (functional → unit) before writing code, ensuring outside-in decomposition is visible and agreed on.
+5. **tdd skill** — auto-triggers on behaviour changes. Enforces outside-in TDD (functional test → unit TDD → functional pass) where every test traces back to a test tree in CLAUDE.md.
 
-6. **Stop hook** — fires after every response, prompting Claude to keep requirement trees, mental model, and repo map in CLAUDE.md current.
+6. **Stop hook** — fires after every response, prompting Claude to keep test trees, mental model, and repo map in CLAUDE.md current.
 
 ## Mental Model
 
-Test trees serve dual purpose: they are both the specification (in CLAUDE.md) and the test structure (in code). The requirement trees in `## Requirements` use `when/then` format describing operating principles. The `tdd` skill implements against these trees. The `sync-to-requirements` skill verifies completeness. The stop hook ensures continuous maintenance. Coding rules enforce principles (simplicity, expressiveness, fail-fast) across all work.
+Test trees serve dual purpose: they are both the specification (in CLAUDE.md) and the test structure (in code). The test trees in `## Requirements` use `when/then` format describing operating principles. The `change` skill writes them. The `tdd` skill implements against them. The `sync` skill audits completeness. The stop hook ensures continuous maintenance. Coding rules enforce principles (simplicity, expressiveness, fail-fast) across all work.
 
-Flow: `setup-contree` → generates requirement trees → `plan-test-trees` designs trees before code → `tdd` implements them → stop hook maintains them → `sync-to-requirements` audits completeness. Rules apply throughout.
+Flow: `setup` → configures test infrastructure → `change` writes/modifies test trees → `sync` audits and TDDs gaps → stop hook maintains trees. Rules apply throughout.
 
 ## Repo Map
 
@@ -30,11 +30,11 @@ Flow: `setup-contree` → generates requirement trees → `plan-test-trees` desi
 - `.claude-plugin/plugin.json` — plugin manifest (name, version, description)
 - `package.json` — dev dependencies (bats-support, bats-assert) and test scripts
 - `rules/` — coding principles (one rule per file, plain prose, no frontmatter)
-- `hooks/hooks.json` — Stop hook prompting CLAUDE.md updates (requirement trees, mental model, repo map)
+- `hooks/hooks.json` — Stop hook prompting CLAUDE.md updates (test trees, mental model, repo map)
+- `skills/setup/SKILL.md` — project setup: test framework config + initial test tree generation
+- `skills/change/SKILL.md` — write or modify test trees in CLAUDE.md, plan decomposition
+- `skills/sync/SKILL.md` — completeness audit: test trees vs implementation, TDD gaps
 - `skills/tdd/SKILL.md` — outside-in TDD skill, auto-triggers on behaviour changes
-- `skills/setup-contree/SKILL.md` — project setup: test framework config + initial requirement tree generation
-- `skills/plan-test-trees/SKILL.md` — plans test trees before code: functional → unit decomposition
-- `skills/sync-to-requirements/SKILL.md` — completeness audit: requirements vs implementation
 - `test/plugin.bats` — structural tests: plugin manifest, skill files, frontmatter
 - `test/hook.bats` — hook behaviour tests: loop prevention, exit codes, prompt content
 - `test/functional/run.sh` — functional tests: runs Claude with contree loaded against seed project
@@ -50,9 +50,9 @@ test-trees-as-requirements
     then requirements in CLAUDE.md are test trees in when/then format
     and each capability has its own subsection under ## Requirements
   when a behaviour change is needed
-    then the requirement tree must exist before implementation starts
+    then the test tree must exist before implementation starts
   when implementation reveals new understanding
-    then the requirement tree is updated to reflect reality
+    then the test tree is updated to reflect reality
 ```
 
 ### outside-in-tdd
@@ -74,7 +74,7 @@ outside-in-tdd
 ```
 stop-hook-sync
   when Claude stops after any response
-    then it checks whether requirement trees need updating
+    then it checks whether test trees need updating
     and checks whether mental model needs updating
     and checks whether repo map needs updating
   when stop_hook_active is true
@@ -87,16 +87,16 @@ stop-hook-sync
 
 ```
 setup-generates-trees
-  when setup-contree is run on an existing project
+  when setup is run on an existing project
     then existing test config is detected and merged into, not overwritten
     and tree reporters are configured for both local dev and CI (dual reporters)
     and unit and functional test layers are configured as separate commands
     and mutation testing is configured with explicit test file exclusions
     and changed-test runners are configured with known gotchas addressed
-    and requirement trees are generated from existing code
+    and test trees are generated from existing code
     and trees are written to ## Requirements in CLAUDE.md
-  when setup-contree is run on a new project
-    then requirement trees are generated from user-described plans
+  when setup is run on a new project
+    then test trees are generated from user-described plans
     and tests are NOT implemented yet
   when the language only supports flat test output
     then the best available option is configured
@@ -105,33 +105,35 @@ setup-generates-trees
     then mutation testing mutate globs explicitly exclude test file patterns
 ```
 
+### change-writes-trees
+
+```
+change-writes-trees
+  when a behaviour change is needed
+    then the change is discussed with the user before modifying trees
+    and test trees are written from the consumer's perspective
+    and functional → unit decomposition is planned
+  when modifying existing behaviour
+    then only affected when/then paths are changed
+  when removing a capability
+    then the tree is removed after user confirmation
+  when trees are complete
+    then they are presented to the user for alignment before implementation
+```
+
 ### sync-completes-and-implements
 
 ```
 sync-completes-and-implements
-  when sync-to-requirements is run
+  when sync is run
     then every when/then path is checked for implementation and tests
-    and undocumented behaviour gets new requirement trees in CLAUDE.md
+    and undocumented behaviour gets new test trees in CLAUDE.md
     and incomplete trees are extended with missing when/then paths
-    and stale requirements are removed
+    and stale trees are removed
   when gaps exist after trees are completed
     then each gap is implemented using the tdd skill's outside-in cycle
   when all gaps are implemented
     then every when/then path has a passing functional test
-```
-
-### plan-before-code
-
-```
-plan-before-code
-  when planning or designing a behaviour change
-    then test trees are written before any code or tests
-    and functional trees are written first from the consumer's perspective
-    and unit trees are decomposed inward from functional trees
-  when trees are complete
-    then they are presented to the user for alignment before implementation
-  when a component's behaviour is trivial
-    then it is mentioned but not forced into a tree
 ```
 
 ### composable-testing
