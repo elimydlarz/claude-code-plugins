@@ -143,7 +143,7 @@ export function clockIn(repoRoot: string, plan: ClockInPlan, task: string | null
 }
 
 /** Read all timecards from the timeclock directory. */
-export function readRoster(repoRoot: string): Timecard[] {
+export function readTimecards(repoRoot: string): Timecard[] {
   const dir = join(repoRoot, ".trunk-sync", "timeclock");
   if (!existsSync(dir)) return [];
   const files = readdirSync(dir).filter((f) => f.endsWith(".json"));
@@ -230,7 +230,7 @@ function executeClockIn(
   try {
     const task = extractTask(input);
     clockIn(state.repoRoot, plan, task);
-    const allTimecards = readRoster(state.repoRoot);
+    const allTimecards = readTimecards(state.repoRoot);
     const now = new Date();
     const { clockedIn, clockedOut } = classifyTimecards(
       plan.timecard.sessionId,
