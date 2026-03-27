@@ -7,12 +7,12 @@ A Claude Code plugin that unifies test-tree-driven development with living requi
 Mechanisms:
 
 - **Rules** — coding principles loaded automatically when the plugin is active (simplicity, expressiveness, fail-fast, no fake code, etc.).
-- **setup skill** — user-invoked. Configures test framework with tree reporters, generates initial test trees from existing code/plans, writes them to CLAUDE.md.
-- **change skill** — auto-triggers on behaviour changes. Talks through the change, writes or modifies test trees in CLAUDE.md, plans functional → unit decomposition.
-- **sync skill** — user-invoked. Audits implementation against test trees — finds gaps, untested paths, undocumented behaviour, stale trees. Suggests running `tdd` to implement gaps.
-- **tdd skill** — auto-triggers when implementing behaviour. Enforces outside-in TDD (functional test → unit TDD → functional pass) where every test traces back to a test tree in CLAUDE.md.
-- **workflow skill** — user-invoked. Runs `change` → `sync` → `tdd` end to end without pausing for review.
-- **Stop hook** — fires after every response, checking for drift between implementation and test trees, and prompting mental model updates.
+- **setup skill** — prepare the project for ongoing test-tree-driven development. Configures test framework with tree reporters, generates initial test trees, establishes the contract.
+- **change skill** — set expected behaviour. Talks through the change, writes or modifies test trees before code exists.
+- **sync skill** — identify gaps and cruft. Compares test trees against implementation in both directions — surfaces drift, staleness, and missing coverage.
+- **tdd skill** — close gaps. Outside-in TDD where every test traces back to a test tree — one failing test at a time until the contract is fulfilled.
+- **workflow skill** — the full arc. Runs `change` → `sync` → `tdd` end to end — from idea to verified working software.
+- **Stop hook** — guard the contract. Fires after every response, detecting drift between intent and implementation.
 
 ## Mental Model
 
