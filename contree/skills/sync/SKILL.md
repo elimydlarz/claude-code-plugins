@@ -5,7 +5,7 @@ description: "Identify gaps and cruft — where intent and implementation have d
 
 # Sync
 
-Makes test trees in CLAUDE.md complete and truthful, then implements any gaps using the `tdd` skill. This is not a report — it's an action that leaves the project fully synced.
+Finds where the contract has drifted from reality. Compares test trees against implementation in both directions — surfacing gaps (intent without code), cruft (code without intent), and staleness (trees that no longer reflect the system). Resolves drift with the user, then hands gaps to `tdd`.
 
 ## When to Use
 
