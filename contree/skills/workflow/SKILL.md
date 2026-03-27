@@ -27,7 +27,7 @@ Run the `sync` skill process: load the test trees, inventory the implementation,
 
 Do not pause to present gaps — proceed directly to implementation.
 
-### 3. TDD
+### 3. TDD — close gaps
 
 For each gap identified by sync, run the `tdd` skill process: confirm test tree, RED functional, RED unit, implement, GREEN unit, GREEN functional, refactor. Repeat for each `when/then` path.
 
