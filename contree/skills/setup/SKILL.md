@@ -1,6 +1,6 @@
 ---
 name: setup
-description: "Set up test framework with tree reporters and generate initial test trees in CLAUDE.md. TRIGGER when: project has no test framework configured, no ## Requirements section in CLAUDE.md, or user is starting a new project. Run once per project."
+description: "Prepare the project for ongoing test-tree-driven development — configures test framework with tree reporters and generates initial test trees in CLAUDE.md. TRIGGER when: project has no test framework configured, no ## Requirements section in CLAUDE.md, or user is starting a new project. Run once per project."
 ---
 
 # Setup Contree
