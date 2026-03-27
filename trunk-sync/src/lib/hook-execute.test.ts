@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   mkdtempSync,
   writeFileSync,
+  readFileSync,
   rmSync,
   mkdirSync,
   realpathSync,
