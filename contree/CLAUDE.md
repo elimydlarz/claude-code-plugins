@@ -27,11 +27,11 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `package.json` — dev dependencies (bats-support, bats-assert) and test scripts
 - `rules/` — coding principles (one rule per file, plain prose, no frontmatter)
 - `hooks/hooks.json` — Stop hook detecting drift and prompting mental model updates
-- `skills/setup/SKILL.md` — project setup: test framework config + initial test tree generation
-- `skills/change/SKILL.md` — write or modify test trees in CLAUDE.md, plan decomposition
-- `skills/sync/SKILL.md` — completeness audit: test trees vs implementation, TDD gaps
-- `skills/tdd/SKILL.md` — outside-in TDD skill, auto-triggers when implementing behaviour
-- `skills/workflow/SKILL.md` — end-to-end: runs change → sync → tdd without pausing
+- `skills/setup/SKILL.md` — prepare the project for test-tree-driven development: framework, reporters, initial trees
+- `skills/change/SKILL.md` — set expected behaviour: write or modify test trees before code exists
+- `skills/sync/SKILL.md` — identify gaps and cruft: test trees vs implementation in both directions
+- `skills/tdd/SKILL.md` — close gaps: outside-in TDD, one failing test at a time
+- `skills/workflow/SKILL.md` — the full arc: idea → contract → verified implementation
 - `test/plugin.bats` — structural tests: plugin manifest, skill files, frontmatter
 - `test/hook.bats` — hook behaviour tests: loop prevention, exit codes, prompt content
 - `test/functional/run.sh` — functional tests: runs Claude with contree loaded against seed project
