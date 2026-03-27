@@ -46,8 +46,8 @@ export interface CommitPlan {
 
 export type HookPlan =
   | { action: "skip" }
-  | { action: "commit-and-sync"; commit: CommitPlan; sync: SyncPlan | null }
-  | { action: "commit-merge"; message: string; sync: SyncPlan | null };
+  | { action: "commit-and-sync"; commit: CommitPlan; sync: SyncPlan | null; session: SessionPlan | null }
+  | { action: "commit-merge"; message: string; sync: SyncPlan | null; session: SessionPlan | null };
 
 /** Persisted session heartbeat file content */
 export interface SessionHeartbeat {
