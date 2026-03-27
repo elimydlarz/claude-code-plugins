@@ -15,9 +15,9 @@ trunk-sync has two independent layers that share one git repo:
 
 The hook writes `Session: <uuid>` into every commit body. Seance reads it back and derives the transcript path (`~/.claude/projects/<project-slug>/<uuid>.jsonl`) from the repo root and session ID. This is the only coupling between the two layers. When `commit-transcripts=true` in `~/.trunk-sync`, the hook also snapshots the transcript into `.transcripts/` and amends the code commit — seance finds these via `git diff-tree`, falling back to the derived filesystem path.
 
-**Roster layer** — agents clock in and out of work. On every commit, the hook writes a timecard to `.trunk-sync/roster/<session-id>.json` recording who the agent is, what branch it's on, and what task it's working on (extracted from the transcript). Timecards are committed and pushed alongside code changes, giving cross-machine visibility. Agents with dead PIDs (local) or stale timestamps (remote, 5 min) are automatically clocked out. When other agents are clocked in, the hook surfaces a throttled roster message (exit 2, once per 5 min) so the agent can reason about resource conflicts (ports, build locks, test databases).
+**Clocking in** — agents clock in and out of work. On every commit, the hook writes a timecard to `.trunk-sync/timeclock/<session-id>.json` recording who the agent is, what branch it's on, and what task it's working on (extracted from the transcript). Timecards are committed and pushed alongside code changes, giving cross-machine visibility. Agents with dead PIDs (local) or stale timestamps (remote, 5 min) are automatically clocked out. When other agents are clocked in, the hook surfaces a throttled message (exit 2, once per 5 min) so the agent can reason about resource conflicts (ports, build locks, test databases).
 
-Key domain concepts: worktree (optional, via `claude -w` — needed for multi-agent to isolate working trees), trunk (always `origin/main`), session ID (links commits to Claude conversations), timecard (`.trunk-sync/roster/<id>.json` — who's clocked in, what they're working on).
+Key domain concepts: worktree (optional, via `claude -w` — needed for multi-agent to isolate working trees), trunk (always `origin/main`), session ID (links commits to Claude conversations), timecard (`.trunk-sync/timeclock/<id>.json` — who's clocked in, what they're working on).
 
 ## Repo Map
 
