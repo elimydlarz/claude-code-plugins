@@ -476,7 +476,7 @@ describe("classifyTimecards", () => {
   it("clocks out remote agent with old timestamp", () => {
     const timecards = [makeTimecard({
       hostname: "other-machine",
-      lastActiveAt: "2026-03-27T09:55:00.000Z", // 10 min ago
+      lastActiveAt: "2026-03-27T09:30:00.000Z", // 35 min ago
     })];
     const result = classifyTimecards("my-session", timecards, now, "my-macbook", () => true);
     assert.equal(result.clockedOut.length, 1);
