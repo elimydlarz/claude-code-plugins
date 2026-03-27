@@ -848,3 +848,302 @@ describe("amendWithTranscriptSnapshot", () => {
     assert.equal(subject, "auto: write fail-snap.txt");
   });
 });
+
+// ── Session awareness I/O ──────────────────────────────────────────────
+
+describe("writeSessionHeartbeat", () => {
+  let dir: string;
+
+  beforeEach(() => {
+    dir = realpathSync(mkdtempSync(join(tmpdir(), "ts-session-")));
+    initRepo(dir);
+    writeFileSync(join(dir, "init.txt"), "init\n");
+    execSync("git add . && git commit -m init", { cwd: dir, stdio: "ignore" });
+  });
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("creates directory and writes valid JSON", () => {
+    const plan: SessionPlan = {
+      heartbeatPath: ".trunk-sync/sessions/test-session.json",
+      heartbeat: {
+        sessionId: "test-session",
+        pid: process.pid,
+        hostname: "test-host",
+        startedAt: "2026-03-27T10:00:00.000Z",
+        lastActiveAt: "2026-03-27T10:05:00.000Z",
+        branch: "main",
+      },
+    };
+    writeSessionHeartbeat(dir, plan);
+    const filePath = join(dir, ".trunk-sync", "sessions", "test-session.json");
+    assert.ok(existsSync(filePath));
+    const content = JSON.parse(readFileSync(filePath, "utf-8")) as SessionHeartbeat;
+    assert.equal(content.sessionId, "test-session");
+    assert.equal(content.pid, process.pid);
+    assert.equal(content.hostname, "test-host");
+  });
+
+  it("preserves startedAt from existing heartbeat", () => {
+    const plan: SessionPlan = {
+      heartbeatPath: ".trunk-sync/sessions/test-session.json",
+      heartbeat: {
+        sessionId: "test-session",
+        pid: process.pid,
+        hostname: "test-host",
+        startedAt: "2026-03-27T10:05:00.000Z",
+        lastActiveAt: "2026-03-27T10:05:00.000Z",
+        branch: "main",
+      },
+    };
+    // Write first heartbeat
+    const sessDir = join(dir, ".trunk-sync", "sessions");
+    mkdirSync(sessDir, { recursive: true });
+    writeFileSync(join(sessDir, "test-session.json"), JSON.stringify({
+      sessionId: "test-session",
+      pid: process.pid,
+      hostname: "test-host",
+      startedAt: "2026-03-27T10:00:00.000Z",
+      lastActiveAt: "2026-03-27T10:00:00.000Z",
+      branch: "main",
+    }));
+    // Write updated heartbeat
+    writeSessionHeartbeat(dir, plan);
+    const content = JSON.parse(readFileSync(join(sessDir, "test-session.json"), "utf-8")) as SessionHeartbeat;
+    assert.equal(content.startedAt, "2026-03-27T10:00:00.000Z");
+    assert.equal(content.lastActiveAt, "2026-03-27T10:05:00.000Z");
+  });
+});
+
+describe("readAllSessions", () => {
+  let dir: string;
+
+  beforeEach(() => {
+    dir = realpathSync(mkdtempSync(join(tmpdir(), "ts-session-")));
+  });
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("returns empty when no sessions directory", () => {
+    assert.deepEqual(readAllSessions(dir), []);
+  });
+
+  it("reads multiple session files", () => {
+    const sessDir = join(dir, ".trunk-sync", "sessions");
+    mkdirSync(sessDir, { recursive: true });
+    writeFileSync(join(sessDir, "a.json"), JSON.stringify({ sessionId: "a", pid: 1, hostname: "h", startedAt: "", lastActiveAt: "", branch: "main" }));
+    writeFileSync(join(sessDir, "b.json"), JSON.stringify({ sessionId: "b", pid: 2, hostname: "h", startedAt: "", lastActiveAt: "", branch: "main" }));
+    const sessions = readAllSessions(dir);
+    assert.equal(sessions.length, 2);
+  });
+
+  it("skips malformed files", () => {
+    const sessDir = join(dir, ".trunk-sync", "sessions");
+    mkdirSync(sessDir, { recursive: true });
+    writeFileSync(join(sessDir, "good.json"), JSON.stringify({ sessionId: "good", pid: 1, hostname: "h", startedAt: "", lastActiveAt: "", branch: "main" }));
+    writeFileSync(join(sessDir, "bad.json"), "not json");
+    const sessions = readAllSessions(dir);
+    assert.equal(sessions.length, 1);
+    assert.equal(sessions[0].sessionId, "good");
+  });
+});
+
+describe("isProcessAlive", () => {
+  it("returns true for own process", () => {
+    assert.ok(isProcessAlive(process.pid));
+  });
+
+  it("returns false for non-existent process", () => {
+    assert.ok(!isProcessAlive(999999999));
+  });
+});
+
+describe("pruneStaleSessionFiles", () => {
+  let dir: string;
+
+  beforeEach(() => {
+    dir = realpathSync(mkdtempSync(join(tmpdir(), "ts-prune-")));
+    const sessDir = join(dir, ".trunk-sync", "sessions");
+    mkdirSync(sessDir, { recursive: true });
+    writeFileSync(join(sessDir, "stale-1.json"), "{}");
+    writeFileSync(join(sessDir, "stale-2.json"), "{}");
+    writeFileSync(join(sessDir, "keep.json"), "{}");
+  });
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("removes stale files and returns paths", () => {
+    const removed = pruneStaleSessionFiles(dir, ["stale-1", "stale-2"]);
+    assert.equal(removed.length, 2);
+    assert.ok(!existsSync(join(dir, ".trunk-sync", "sessions", "stale-1.json")));
+    assert.ok(!existsSync(join(dir, ".trunk-sync", "sessions", "stale-2.json")));
+    assert.ok(existsSync(join(dir, ".trunk-sync", "sessions", "keep.json")));
+  });
+
+  it("handles already-removed files", () => {
+    const removed = pruneStaleSessionFiles(dir, ["nonexistent"]);
+    assert.equal(removed.length, 0);
+  });
+});
+
+describe("executePlan with session awareness", () => {
+  let dir: string;
+  const origHome = process.env.HOME;
+
+  beforeEach(() => {
+    dir = realpathSync(mkdtempSync(join(tmpdir(), "ts-awareness-")));
+    initRepo(dir);
+    writeFileSync(join(dir, "init.txt"), "init\n");
+    execSync("git add . && git commit -m init", { cwd: dir, stdio: "ignore" });
+    process.env.HOME = mkdtempSync(join(tmpdir(), "ts-home-"));
+  });
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+    if (process.env.HOME && process.env.HOME !== origHome) {
+      rmSync(process.env.HOME, { recursive: true, force: true });
+    }
+    process.env.HOME = origHome;
+  });
+
+  it("commits heartbeat file alongside code change", () => {
+    const filePath = join(dir, "code.txt");
+    writeFileSync(filePath, "code\n");
+    const session: SessionPlan = {
+      heartbeatPath: ".trunk-sync/sessions/my-session.json",
+      heartbeat: {
+        sessionId: "my-session",
+        pid: process.pid,
+        hostname: "test-host",
+        startedAt: new Date().toISOString(),
+        lastActiveAt: new Date().toISOString(),
+        branch: "main",
+      },
+    };
+    const plan: HookPlan = {
+      action: "commit-and-sync",
+      commit: {
+        filesToStage: [filePath],
+        filesToRemove: [],
+        subject: "auto: write code.txt",
+        body: null,
+      },
+      sync: null,
+      session,
+    };
+    const input = makeInput({ tool_input: { file_path: filePath } });
+    const state = makeState(dir);
+    const result = executePlan(plan, input, state);
+    assert.equal(result.exitCode, 0);
+
+    // Heartbeat file should be in the commit
+    const files = execSync("git diff-tree --no-commit-id --name-only -r HEAD", { cwd: dir, encoding: "utf-8" }).trim();
+    assert.ok(files.includes(".trunk-sync/sessions/my-session.json"));
+    assert.ok(files.includes("code.txt"));
+  });
+
+  it("returns exit 2 with awareness message when other sessions active", () => {
+    // Create another session's heartbeat (simulating another agent)
+    const sessDir = join(dir, ".trunk-sync", "sessions");
+    mkdirSync(sessDir, { recursive: true });
+    writeFileSync(join(sessDir, "other-session.json"), JSON.stringify({
+      sessionId: "other-session",
+      pid: process.pid, // use own PID so it appears alive
+      hostname: "test-host",
+      startedAt: new Date().toISOString(),
+      lastActiveAt: new Date().toISOString(),
+      branch: "feature",
+    }));
+    execSync("git add . && git commit -m 'add other session'", { cwd: dir, stdio: "ignore" });
+
+    const filePath = join(dir, "code.txt");
+    writeFileSync(filePath, "code\n");
+    const session: SessionPlan = {
+      heartbeatPath: ".trunk-sync/sessions/my-session.json",
+      heartbeat: {
+        sessionId: "my-session",
+        pid: process.pid,
+        hostname: "test-host",
+        startedAt: new Date().toISOString(),
+        lastActiveAt: new Date().toISOString(),
+        branch: "main",
+      },
+    };
+    const plan: HookPlan = {
+      action: "commit-and-sync",
+      commit: {
+        filesToStage: [filePath],
+        filesToRemove: [],
+        subject: "auto: write code.txt",
+        body: null,
+      },
+      sync: null,
+      session,
+    };
+    const input = makeInput({ tool_input: { file_path: filePath } });
+    const state = makeState(dir);
+
+    // Clear any existing throttle
+    const throttlePath = join(process.env.TMPDIR || "/tmp", "trunk-sync-warning-my-session");
+    try { rmSync(throttlePath); } catch { /* ignore */ }
+
+    const result = executePlan(plan, input, state);
+    assert.equal(result.exitCode, 2);
+    assert.ok(result.stderr?.includes("TRUNK-SYNC INFO"));
+    assert.ok(result.stderr?.includes("other-session"));
+    assert.ok(result.stderr?.includes("resource conflicts"));
+  });
+
+  it("prunes stale sessions with dead PIDs", () => {
+    const sessDir = join(dir, ".trunk-sync", "sessions");
+    mkdirSync(sessDir, { recursive: true });
+    writeFileSync(join(sessDir, "dead-session.json"), JSON.stringify({
+      sessionId: "dead-session",
+      pid: 999999999, // dead PID
+      hostname: require("node:os").hostname(), // local hostname
+      startedAt: new Date().toISOString(),
+      lastActiveAt: new Date().toISOString(),
+      branch: "main",
+    }));
+    execSync("git add . && git commit -m 'add dead session'", { cwd: dir, stdio: "ignore" });
+
+    const filePath = join(dir, "code.txt");
+    writeFileSync(filePath, "code\n");
+    const session: SessionPlan = {
+      heartbeatPath: ".trunk-sync/sessions/my-session.json",
+      heartbeat: {
+        sessionId: "my-session",
+        pid: process.pid,
+        hostname: require("node:os").hostname(),
+        startedAt: new Date().toISOString(),
+        lastActiveAt: new Date().toISOString(),
+        branch: "main",
+      },
+    };
+    const plan: HookPlan = {
+      action: "commit-and-sync",
+      commit: {
+        filesToStage: [filePath],
+        filesToRemove: [],
+        subject: "auto: write code.txt",
+        body: null,
+      },
+      sync: null,
+      session,
+    };
+    const input = makeInput({ tool_input: { file_path: filePath } });
+    const state = makeState(dir);
+    executePlan(plan, input, state);
+
+    // Dead session file should be removed
+    assert.ok(!existsSync(join(sessDir, "dead-session.json")));
+    // Own session file should exist
+    assert.ok(existsSync(join(sessDir, "my-session.json")));
+  });
+});
