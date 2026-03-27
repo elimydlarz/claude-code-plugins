@@ -1,0 +1,2 @@
+- Mock external only, not DB and not our own code
+- *Do not* use environment variables to vary behaviour between test and runtime
