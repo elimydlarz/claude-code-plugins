@@ -287,7 +287,7 @@ export function formatClockInMessage(clockedIn: Timecard[], now: Date): string |
   });
 
   return [
-    `TRUNK-SYNC ROSTER: ${clockedIn.length} other agent${clockedIn.length > 1 ? "s" : ""} clocked in.`,
+    `TRUNK-SYNC CLOCK-IN: ${clockedIn.length} other agent${clockedIn.length > 1 ? "s" : ""} clocked in.`,
     ...lines,
     "Consider potential resource conflicts: ports, build locks, test databases.",
   ].join("\n");
