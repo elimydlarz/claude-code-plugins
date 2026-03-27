@@ -14,7 +14,9 @@ Six mechanisms:
 
 4. **sync-to-requirements skill** — user-invoked. Audits implementation against requirement trees — finds gaps, untested paths, undocumented behaviour, stale requirements. Fixes drift.
 
-5. **Stop hook** — fires after every response, prompting Claude to keep requirement trees, mental model, and repo map in CLAUDE.md current.
+5. **plan-test-trees skill** — auto-triggers during planning/design. Plans test trees (functional → unit) before writing code, ensuring outside-in decomposition is visible and agreed on.
+
+6. **Stop hook** — fires after every response, prompting Claude to keep requirement trees, mental model, and repo map in CLAUDE.md current.
 
 ## Mental Model
 
