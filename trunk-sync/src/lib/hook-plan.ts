@@ -238,8 +238,8 @@ export function buildClockInPlan(
 }
 
 /**
- * Classify timecards as clocked-in or clocked-out. Own session is excluded.
- * Local agents (same hostname) with dead PIDs are clocked out.
+ * Classify timecards: who's still clocked in vs who should be clocked out.
+ * Own session is excluded. Local agents with dead PIDs are clocked out.
  * Remote agents with old timestamps are clocked out.
  */
 export function classifyTimecards(
