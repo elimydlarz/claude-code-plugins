@@ -14,7 +14,7 @@ import { join } from "node:path";
 import { tmpdir, hostname } from "node:os";
 import { execSync } from "node:child_process";
 import type { HookInput, RepoState, HookPlan, SyncPlan, ClockInPlan, Timecard } from "./hook-types.js";
-import { gatherRepoState, findWorktreeForBranch, executePlan, executeSync, clockIn, readRoster, isProcessAlive, clockOutStale } from "./hook-execute.js";
+import { gatherRepoState, findWorktreeForBranch, executePlan, executeSync, clockIn, readTimecards, isProcessAlive, clockOutStale } from "./hook-execute.js";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -923,7 +923,7 @@ describe("clockIn", () => {
   });
 });
 
-describe("readRoster", () => {
+describe("readTimecards", () => {
   let dir: string;
 
   beforeEach(() => {
@@ -935,7 +935,7 @@ describe("readRoster", () => {
   });
 
   it("returns empty when no roster directory", () => {
-    assert.deepEqual(readRoster(dir), []);
+    assert.deepEqual(readTimecards(dir), []);
   });
 
   it("reads multiple timecards", () => {
@@ -943,7 +943,7 @@ describe("readRoster", () => {
     mkdirSync(rosterDir, { recursive: true });
     writeFileSync(join(rosterDir, "a.json"), JSON.stringify({ sessionId: "a", pid: 1, hostname: "h", clockedInAt: "", lastActiveAt: "", branch: "main", task: null }));
     writeFileSync(join(rosterDir, "b.json"), JSON.stringify({ sessionId: "b", pid: 2, hostname: "h", clockedInAt: "", lastActiveAt: "", branch: "main", task: null }));
-    const timecards = readRoster(dir);
+    const timecards = readTimecards(dir);
     assert.equal(timecards.length, 2);
   });
 
@@ -952,7 +952,7 @@ describe("readRoster", () => {
     mkdirSync(rosterDir, { recursive: true });
     writeFileSync(join(rosterDir, "good.json"), JSON.stringify({ sessionId: "good", pid: 1, hostname: "h", clockedInAt: "", lastActiveAt: "", branch: "main", task: null }));
     writeFileSync(join(rosterDir, "bad.json"), "not json");
-    const timecards = readRoster(dir);
+    const timecards = readTimecards(dir);
     assert.equal(timecards.length, 1);
     assert.equal(timecards[0].sessionId, "good");
   });
