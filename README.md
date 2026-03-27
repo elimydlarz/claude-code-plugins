@@ -18,28 +18,6 @@ Then install what you need:
 | contree | `claude plugin install contree@susu-eng` | Test trees as living requirements — TDD with auto-synced specs in CLAUDE.md |
 | openclaw-notifier | `claude plugin install openclaw-notifier@susu-eng` | Notify OpenClaw when a subagent completes a task |
 
-### Migrating from individual repos
-
-If you previously added a marketplace from one of the individual repos (`elimydlarz/trunk-sync`, `elimydlarz/req-mod-sync`, or `elimydlarz/test-trees`), remove it and switch to this one:
-
-```sh
-# Remove old marketplace sources
-claude plugin marketplace remove trunk-sync
-claude plugin marketplace remove req-mod-sync
-claude plugin marketplace remove test-trees
-
-# Uninstall plugins installed from old sources
-claude plugin uninstall trunk-sync@susu-eng
-claude plugin uninstall req-mod-sync@susu-eng
-claude plugin uninstall test-trees@test-trees
-
-# Add the unified marketplace and reinstall
-claude plugin marketplace add elimydlarz/claude-code-plugins
-claude plugin install trunk-sync@susu-eng
-claude plugin install req-mod-sync@susu-eng
-claude plugin install test-trees@susu-eng
-```
-
 ---
 
 ## trunk-sync
