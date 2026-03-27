@@ -25,6 +25,7 @@ Flow: `setup-contree` → generates requirement trees → `tdd` implements them 
 - `CLAUDE.md` — this file
 - `.claude-plugin/plugin.json` — plugin manifest (name, version, description)
 - `package.json` — dev dependencies (bats-support, bats-assert) and test scripts
+- `rules/` — coding principles (one rule per file, plain prose, no frontmatter)
 - `hooks/hooks.json` — Stop hook prompting CLAUDE.md updates (requirement trees, mental model, repo map)
 - `skills/tdd/SKILL.md` — outside-in TDD skill, auto-triggers on behaviour changes
 - `skills/setup-contree/SKILL.md` — project setup: test framework config + initial requirement tree generation
