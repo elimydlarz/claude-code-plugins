@@ -126,7 +126,7 @@ change-writes-trees
     and the user is suggested to run sync
 ```
 
-### sync-completes-and-implements
+### sync-audits-and-resolves
 
 ```
 sync-audits-and-resolves
