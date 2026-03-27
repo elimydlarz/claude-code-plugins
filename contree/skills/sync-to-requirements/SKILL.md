@@ -23,7 +23,24 @@ Read `## Requirements` in the project's CLAUDE.md. Parse each test tree — ever
 
 If `## Requirements` doesn't exist or has no test trees, stop and suggest running `setup-contree` first.
 
-### 2. INVENTORY IMPLEMENTATION
+### 2. PLAN TEST DECOMPOSITION
+
+For each requirement tree, plan how it decomposes into functional and unit tests using consumer-driven thinking:
+
+**Functional tests** describe consumer-visible behaviour. Use the consumer's vocabulary — if the consumer says "register", the test says "registers", not "calls POST /api/users".
+
+**Unit tests** describe a single component's responsibilities. Each component is consumed by the layer above — write from the perspective of *its* consumer.
+
+For each requirement tree:
+
+1. **Identify the consumer.** Who or what consumes this behaviour? A user? An API client? Another module?
+2. **Map `when/then` paths to functional tests.** Each path in the requirement tree becomes a functional test case. No implementation details — just what the consumer observes.
+3. **Decompose inward to unit tests.** Ask: what internal components need to exist to make this work? Each component gets unit tests showing what it does when called by its consumer. Mock collaborators — each unit test describes one component's responsibilities, not the whole chain.
+4. **Stop decomposing when it's obvious.** Not every internal function needs unit tests. If a component's behaviour is trivial, skip it.
+
+Every `then` in the requirement tree should be traceable through the functional and unit test plan.
+
+### 3. INVENTORY IMPLEMENTATION
 
 Read the codebase to understand what's actually implemented:
 
