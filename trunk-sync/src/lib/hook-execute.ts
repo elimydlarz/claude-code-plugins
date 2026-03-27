@@ -1,11 +1,11 @@
 import { execSync } from "node:child_process";
-import { existsSync, readFileSync, realpathSync, mkdirSync, copyFileSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync, mkdirSync, copyFileSync, writeFileSync, readdirSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
-import { homedir } from "node:os";
+import { homedir, hostname } from "node:os";
 import { readConfig } from "../commands/config.js";
-import type { HookInput, RepoState, HookPlan, SyncPlan } from "./hook-types.js";
+import type { HookInput, RepoState, HookPlan, SyncPlan, SessionPlan, SessionHeartbeat, RuntimeContext } from "./hook-types.js";
 import { HOOK_EXPLAINER } from "./hook-types.js";
-import { extractTaskFromTranscript, buildCommitPlanWithTask } from "./hook-plan.js";
+import { extractTaskFromTranscript, buildCommitPlanWithTask, classifySessions, formatAwarenessMessage } from "./hook-plan.js";
 
 /**
  * Gather the current git repo state needed for planning.
