@@ -209,7 +209,7 @@ export function summarizeDeletions(files: string[]): string {
   return `${first} (+${files.length - 1} more)`;
 }
 
-// --- Roster: agents clock in/out and see who else is working ---
+// --- Clocking in: agents clock in/out and see who else is working ---
 
 /**
  * Build a clock-in plan for this agent's timecard.
