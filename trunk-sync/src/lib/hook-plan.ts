@@ -248,7 +248,7 @@ export function classifyTimecards(
   now: Date,
   localHostname: string,
   isLocalPidAlive: (pid: number) => boolean,
-  staleMinutes: number = 5,
+  staleMinutes: number = 30,
 ): { clockedIn: Timecard[]; clockedOut: string[] } {
   const staleThreshold = staleMinutes * 60 * 1000;
   const clockedIn: Timecard[] = [];
