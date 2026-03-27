@@ -1,6 +1,6 @@
 ---
 name: change
-description: "Write or modify test trees in CLAUDE.md. TRIGGER when: adding a new capability, changing existing behaviour, or removing a feature."
+description: "Write or modify test trees in CLAUDE.md. TRIGGER when: planning or describing a behaviour change, before any code is written."
 ---
 
 # Change
