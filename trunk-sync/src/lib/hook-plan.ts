@@ -242,7 +242,7 @@ export function buildClockInPlan(
  * Local agents (same hostname) with dead PIDs are clocked out.
  * Remote agents with old timestamps are clocked out.
  */
-export function classifyRoster(
+export function classifyTimecards(
   ownSessionId: string | null,
   timecards: Timecard[],
   now: Date,
