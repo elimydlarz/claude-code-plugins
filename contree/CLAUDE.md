@@ -132,16 +132,18 @@ change-writes-trees
 ### sync-completes-and-implements
 
 ```
-sync-completes-and-implements
+sync-audits-and-resolves
   when sync is run
     then every when/then path is checked for implementation and tests
-    and undocumented behaviour gets new test trees in CLAUDE.md
-    and incomplete trees are extended with missing when/then paths
-    and stale trees are removed
-  when gaps exist after trees are completed
-    then each gap is implemented using the tdd skill's outside-in cycle
-  when all gaps are implemented
-    then every when/then path has a passing functional test
+    and drift between trees and implementation is identified
+  when implementation exists without a tree
+    then it is discussed with the user — may need a tree or may need removing
+  when a tree exists without implementation
+    then it is flagged as a gap to implement
+  when stale trees or dead paths are found
+    then they are discussed with the user before removal
+  when gaps are identified
+    then the user is suggested to run tdd to implement them
 ```
 
 ### composable-testing
