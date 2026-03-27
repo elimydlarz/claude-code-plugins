@@ -76,18 +76,18 @@ run_hook() {
   [[ "$output" == *"Mental Model"* ]]
 }
 
-@test "hook prompt mentions Repo Map" {
+@test "hook prompt mentions drift" {
   local cmd
   cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
   local output
   output=$(echo '{}' | bash -c "$cmd" 2>&1 || true)
-  [[ "$output" == *"Repo Map"* ]]
+  [[ "$output" == *"drifted"* ]]
 }
 
-@test "hook prompt mentions when/then format" {
+@test "hook prompt mentions never modify silently" {
   local cmd
   cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
   local output
   output=$(echo '{}' | bash -c "$cmd" 2>&1 || true)
-  [[ "$output" == *"when/then"* ]]
+  [[ "$output" == *"never modify them silently"* ]]
 }
