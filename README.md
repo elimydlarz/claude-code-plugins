@@ -111,20 +111,6 @@ trunk-sync config commit-transcripts false
 
 Single command: builds, tests (unit + e2e), bumps version, publishes to npm, pushes to GitHub. Both distribution channels (npm package + marketplace plugin) updated together.
 
-### eli-rules
-
-From the `eli-rules` directory:
-
-```bash
-pnpm version patch
-pnpm publish
-git push origin main --follow-tags
-```
-
-### req-mod-sync / test-trees
-
-No build or publish step — installed directly from GitHub via the marketplace. Push to the repo and users get updates on `claude plugin marketplace update`.
-
 ## License
 
 MIT
