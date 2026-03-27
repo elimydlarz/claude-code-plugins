@@ -19,7 +19,7 @@ export function startServer({ statusCode = 200, port = 0 } = {}) {
   });
 
   return new Promise((resolve) => {
-    server.listen(port, '127.0.0.1', () => {
+    server.listen(port, () => {
       const { port: assignedPort } = server.address();
       resolve({
         port: assignedPort,
