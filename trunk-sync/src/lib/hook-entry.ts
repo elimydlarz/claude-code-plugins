@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { parseHookInput, planHook } from "./hook-plan.js";
-import { gatherRepoState, executePlan } from "./hook-execute.js";
+import { gatherRepoState, executePlan, getRuntimeContext } from "./hook-execute.js";
 
 function main(): void {
   let rawInput = "";
@@ -16,7 +16,8 @@ function main(): void {
   // Not in a git repo — no-op
   if (!state) process.exit(0);
 
-  const plan = planHook(input, state);
+  const runtime = getRuntimeContext();
+  const plan = planHook(input, state, runtime);
   const result = executePlan(plan, input, state);
 
   if (result.stderr) {
