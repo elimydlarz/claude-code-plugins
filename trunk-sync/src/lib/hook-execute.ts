@@ -245,7 +245,7 @@ function executeClockIn(
       clockOutStale(state.repoRoot, clockedOut);
     }
 
-    // Stage roster directory (timecard + any removals)
+    // Stage timeclock directory (timecard + any removals)
     const timeclockDir = join(state.repoRoot, ".trunk-sync", "timeclock");
     try {
       execSync(`git add -- "${timeclockDir}"`, { cwd: state.repoRoot, stdio: "ignore" });
