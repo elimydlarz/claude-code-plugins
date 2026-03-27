@@ -30,6 +30,7 @@ trunk-sync/                     — multi-agent sync plugin + seance CLI (has it
 req-mod-sync/                   — CLAUDE.md documentation sync plugin (has its own CLAUDE.md)
 test-trees/                     — TDD enforcement plugin (has its own CLAUDE.md)
 contree/                        — test trees as living requirements plugin (has its own CLAUDE.md)
+openclaw-notifier/              — OpenClaw subagent completion notifier (has its own CLAUDE.md)
 eli-rules/                      — shared coding rules npm package (has its own CLAUDE.md)
 ```
 
