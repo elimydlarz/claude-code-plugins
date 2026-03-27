@@ -283,7 +283,7 @@ export function executePlan(
 
   if (plan.action === "commit-merge") {
     // Clock in and check roster
-    const rosterMsg = plan.clockIn ? executeClockIn(plan.clockIn, input, state) : null;
+    const clockInMsg = plan.clockIn ? executeClockIn(plan.clockIn, input, state) : null;
 
     // Stage the file if provided
     const filePath = input.tool_input.file_path;
@@ -300,10 +300,10 @@ export function executePlan(
     if (plan.sync) {
       const syncResult = executeSync(plan.sync);
       if (syncResult.exitCode !== 0) return syncResult;
-      if (rosterMsg) return { exitCode: 2, stderr: rosterMsg };
+      if (clockInMsg) return { exitCode: 2, stderr: clockInMsg };
       return syncResult;
     }
-    if (rosterMsg) return { exitCode: 2, stderr: rosterMsg };
+    if (clockInMsg) return { exitCode: 2, stderr: clockInMsg };
     return { exitCode: 0 };
   }
 
@@ -327,7 +327,7 @@ export function executePlan(
   }
 
   // Clock in and check roster
-  const rosterMsg = clockInPlan ? executeClockIn(clockInPlan, input, state) : null;
+  const clockInMsg = clockInPlan ? executeClockIn(clockInPlan, input, state) : null;
 
   // Check if there's anything staged (may have been a no-op)
   try {
@@ -367,10 +367,10 @@ export function executePlan(
   if (sync) {
     const syncResult = executeSync(sync);
     if (syncResult.exitCode !== 0) return syncResult;
-    if (rosterMsg) return { exitCode: 2, stderr: rosterMsg };
+    if (clockInMsg) return { exitCode: 2, stderr: clockInMsg };
     return syncResult;
   }
-  if (rosterMsg) return { exitCode: 2, stderr: rosterMsg };
+  if (clockInMsg) return { exitCode: 2, stderr: clockInMsg };
   return { exitCode: 0 };
 }
 
