@@ -1,10 +1,10 @@
 import { execSync } from "node:child_process";
-import { existsSync, readFileSync, realpathSync, mkdirSync, copyFileSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync, mkdirSync, copyFileSync, writeFileSync, readdirSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
-import { homedir } from "node:os";
+import { homedir, hostname } from "node:os";
 import { readConfig } from "../commands/config.js";
 import { HOOK_EXPLAINER } from "./hook-types.js";
-import { extractTaskFromTranscript, buildCommitPlanWithTask } from "./hook-plan.js";
+import { extractTaskFromTranscript, buildCommitPlanWithTask, classifySessions, formatAwarenessMessage } from "./hook-plan.js";
 /**
  * Gather the current git repo state needed for planning.
  * Runs git commands — this is the I/O boundary.
@@ -113,6 +113,122 @@ export function gatherRepoState(input) {
         modifiedFiles,
     };
 }
+// --- Session awareness I/O ---
+export function getRuntimeContext() {
+    return { pid: process.pid, hostname: hostname() };
+}
+export function writeSessionHeartbeat(repoRoot, plan) {
+    const dir = join(repoRoot, ".trunk-sync", "sessions");
+    mkdirSync(dir, { recursive: true });
+    // Preserve startedAt from existing heartbeat if present
+    const filePath = join(repoRoot, plan.heartbeatPath);
+    let heartbeat = plan.heartbeat;
+    try {
+        const existing = JSON.parse(readFileSync(filePath, "utf-8"));
+        if (existing.startedAt) {
+            heartbeat = { ...heartbeat, startedAt: existing.startedAt };
+        }
+    }
+    catch {
+        // No existing file — use plan's startedAt
+    }
+    writeFileSync(filePath, JSON.stringify(heartbeat, null, 2) + "\n");
+}
+export function readAllSessions(repoRoot) {
+    const dir = join(repoRoot, ".trunk-sync", "sessions");
+    if (!existsSync(dir))
+        return [];
+    const files = readdirSync(dir).filter((f) => f.endsWith(".json"));
+    const sessions = [];
+    for (const file of files) {
+        try {
+            const content = readFileSync(join(dir, file), "utf-8");
+            sessions.push(JSON.parse(content));
+        }
+        catch {
+            // Skip unparseable files
+        }
+    }
+    return sessions;
+}
+export function isProcessAlive(pid) {
+    try {
+        process.kill(pid, 0);
+        return true;
+    }
+    catch {
+        return false;
+    }
+}
+export function pruneStaleSessionFiles(repoRoot, staleIds) {
+    const removed = [];
+    for (const id of staleIds) {
+        const filePath = join(repoRoot, ".trunk-sync", "sessions", `${id}.json`);
+        try {
+            unlinkSync(filePath);
+            removed.push(filePath);
+        }
+        catch {
+            // Already gone
+        }
+    }
+    return removed;
+}
+function readThrottleTimestamp(sessionId) {
+    const path = join(tmpdir(), `trunk-sync-warning-${sessionId}`);
+    try {
+        return parseInt(readFileSync(path, "utf-8"), 10);
+    }
+    catch {
+        return null;
+    }
+}
+function writeThrottleTimestamp(sessionId, now) {
+    const path = join(tmpdir(), `trunk-sync-warning-${sessionId}`);
+    writeFileSync(path, String(now));
+}
+function tmpdir() {
+    return process.env.TMPDIR || "/tmp";
+}
+const THROTTLE_MS = 5 * 60 * 1000; // 5 minutes
+/**
+ * Run session awareness: write heartbeat, prune stale, check for others.
+ * Returns awareness message if other sessions are active and throttle allows.
+ */
+function executeSessionAwareness(session, state) {
+    try {
+        writeSessionHeartbeat(state.repoRoot, session);
+        const allSessions = readAllSessions(state.repoRoot);
+        const now = new Date();
+        const { active, stale } = classifySessions(session.heartbeat.sessionId, allSessions, now, session.heartbeat.hostname, isProcessAlive);
+        // Prune stale sessions
+        if (stale.length > 0) {
+            pruneStaleSessionFiles(state.repoRoot, stale);
+        }
+        // Stage session directory (heartbeat + any removals)
+        const sessionsDir = join(state.repoRoot, ".trunk-sync", "sessions");
+        try {
+            execSync(`git add -- "${sessionsDir}"`, { cwd: state.repoRoot, stdio: "ignore" });
+        }
+        catch {
+            // best-effort
+        }
+        // Check throttle before returning awareness message
+        if (active.length > 0) {
+            const lastWarning = readThrottleTimestamp(session.heartbeat.sessionId);
+            const nowMs = now.getTime();
+            if (lastWarning === null || (nowMs - lastWarning) >= THROTTLE_MS) {
+                writeThrottleTimestamp(session.heartbeat.sessionId, nowMs);
+                return formatAwarenessMessage(active, now);
+            }
+        }
+        return null;
+    }
+    catch {
+        // Session awareness is best-effort — never fail the hook
+        return null;
+    }
+}
 /**
  * Execute a hook plan: stage files, commit, sync.
  * Returns exit code and optional stderr for agent feedback.
@@ -121,6 +237,8 @@ export function executePlan(plan, input, state) {
     if (plan.action === "skip")
         return { exitCode: 0 };
     if (plan.action === "commit-merge") {
+        // Session awareness (heartbeat + prune + stage)
+        const awarenessMsg = plan.session ? executeSessionAwareness(plan.session, state) : null;
         // Stage the file if provided
         const filePath = input.tool_input.file_path;
         if (filePath) {
@@ -134,12 +252,20 @@ export function executePlan(plan, input, state) {
             const code = getExitCode(e);
             return { exitCode: code, stderr: getStdout(e) };
         }
-        if (plan.sync)
-            return executeSync(plan.sync);
+        if (plan.sync) {
+            const syncResult = executeSync(plan.sync);
+            if (syncResult.exitCode !== 0)
+                return syncResult;
+            if (awarenessMsg)
+                return { exitCode: 2, stderr: awarenessMsg };
+            return syncResult;
+        }
+        if (awarenessMsg)
+            return { exitCode: 2, stderr: awarenessMsg };
         return { exitCode: 0 };
     }
     // commit-and-sync
-    const { commit, sync } = plan;
+    const { commit, sync, session } = plan;
     // Stage deletions
     for (const file of commit.filesToRemove) {
         try {
@@ -155,6 +281,8 @@ export function executePlan(plan, input, state) {
     for (const file of commit.filesToStage) {
         execSync(`git add -- "${file}"`);
     }
+    // Session awareness: write heartbeat, prune stale, stage session dir
+    const awarenessMsg = session ? executeSessionAwareness(session, state) : null;
     // Check if there's anything staged (may have been a no-op)
     try {
         execSync("git diff --cached --quiet", { stdio: "ignore" });
@@ -187,8 +315,16 @@ export function executePlan(plan, input, state) {
     }
     // Snapshot transcript into the commit (opt-in via config)
     amendWithTranscriptSnapshot(input, state);
-    if (sync)
-        return executeSync(sync);
+    if (sync) {
+        const syncResult = executeSync(sync);
+        if (syncResult.exitCode !== 0)
+            return syncResult;
+        if (awarenessMsg)
+            return { exitCode: 2, stderr: awarenessMsg };
+        return syncResult;
+    }
+    if (awarenessMsg)
+        return { exitCode: 2, stderr: awarenessMsg };
     return { exitCode: 0 };
 }
 function amendWithTranscriptSnapshot(input, state) {
