@@ -69,7 +69,7 @@ Go to step 1 for the next behaviour (next `when/then` path in the test tree).
 
 ### 10. MUTATE (end of work)
 
-When all behaviours for current work are complete, run Stryker as final validation. Do NOT run mutation testing during the TDD cycle.
+When all behaviours for current work are complete, run mutation testing as final validation. Do NOT run mutation testing during the TDD cycle.
 
 ### 11. SUGGEST SYNC
 
