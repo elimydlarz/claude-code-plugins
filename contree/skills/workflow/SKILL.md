@@ -21,7 +21,7 @@ Run the `change` skill process: understand the behaviour, identify the consumer,
 
 Do not pause for alignment — proceed directly.
 
-### 2. SYNC
+### 2. SYNC — identify gaps and cruft
 
 Run the `sync` skill process: load the test trees, inventory the implementation, compare both directions, resolve drift, identify gaps.
 
