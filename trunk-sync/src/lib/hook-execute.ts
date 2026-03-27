@@ -118,6 +118,138 @@ export function gatherRepoState(input: HookInput): RepoState | null {
   };
 }
 
+// --- Session awareness I/O ---
+
+export function getRuntimeContext(): RuntimeContext {
+  return { pid: process.pid, hostname: hostname() };
+}
+
+export function writeSessionHeartbeat(repoRoot: string, plan: SessionPlan): void {
+  const dir = join(repoRoot, ".trunk-sync", "sessions");
+  mkdirSync(dir, { recursive: true });
+  // Preserve startedAt from existing heartbeat if present
+  const filePath = join(repoRoot, plan.heartbeatPath);
+  let heartbeat = plan.heartbeat;
+  try {
+    const existing = JSON.parse(readFileSync(filePath, "utf-8")) as SessionHeartbeat;
+    if (existing.startedAt) {
+      heartbeat = { ...heartbeat, startedAt: existing.startedAt };
+    }
+  } catch {
+    // No existing file — use plan's startedAt
+  }
+  writeFileSync(filePath, JSON.stringify(heartbeat, null, 2) + "\n");
+}
+
+export function readAllSessions(repoRoot: string): SessionHeartbeat[] {
+  const dir = join(repoRoot, ".trunk-sync", "sessions");
+  if (!existsSync(dir)) return [];
+  const files = readdirSync(dir).filter((f) => f.endsWith(".json"));
+  const sessions: SessionHeartbeat[] = [];
+  for (const file of files) {
+    try {
+      const content = readFileSync(join(dir, file), "utf-8");
+      sessions.push(JSON.parse(content) as SessionHeartbeat);
+    } catch {
+      // Skip unparseable files
+    }
+  }
+  return sessions;
+}
+
+export function isProcessAlive(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function pruneStaleSessionFiles(repoRoot: string, staleIds: string[]): string[] {
+  const removed: string[] = [];
+  for (const id of staleIds) {
+    const filePath = join(repoRoot, ".trunk-sync", "sessions", `${id}.json`);
+    try {
+      unlinkSync(filePath);
+      removed.push(filePath);
+    } catch {
+      // Already gone
+    }
+  }
+  return removed;
+}
+
+function readThrottleTimestamp(sessionId: string): number | null {
+  const path = join(tmpdir(), `trunk-sync-warning-${sessionId}`);
+  try {
+    return parseInt(readFileSync(path, "utf-8"), 10);
+  } catch {
+    return null;
+  }
+}
+
+function writeThrottleTimestamp(sessionId: string, now: number): void {
+  const path = join(tmpdir(), `trunk-sync-warning-${sessionId}`);
+  writeFileSync(path, String(now));
+}
+
+function tmpdir(): string {
+  return process.env.TMPDIR || "/tmp";
+}
+
+const THROTTLE_MS = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Run session awareness: write heartbeat, prune stale, check for others.
+ * Returns awareness message if other sessions are active and throttle allows.
+ */
+function executeSessionAwareness(
+  session: SessionPlan,
+  state: RepoState,
+): string | null {
+  try {
+    writeSessionHeartbeat(state.repoRoot, session);
+    const allSessions = readAllSessions(state.repoRoot);
+    const now = new Date();
+    const { active, stale } = classifySessions(
+      session.heartbeat.sessionId,
+      allSessions,
+      now,
+      session.heartbeat.hostname,
+      isProcessAlive,
+    );
+
+    // Prune stale sessions
+    if (stale.length > 0) {
+      pruneStaleSessionFiles(state.repoRoot, stale);
+    }
+
+    // Stage session directory (heartbeat + any removals)
+    const sessionsDir = join(state.repoRoot, ".trunk-sync", "sessions");
+    try {
+      execSync(`git add -- "${sessionsDir}"`, { cwd: state.repoRoot, stdio: "ignore" });
+    } catch {
+      // best-effort
+    }
+
+    // Check throttle before returning awareness message
+    if (active.length > 0) {
+      const lastWarning = readThrottleTimestamp(session.heartbeat.sessionId);
+      const nowMs = now.getTime();
+      if (lastWarning === null || (nowMs - lastWarning) >= THROTTLE_MS) {
+        writeThrottleTimestamp(session.heartbeat.sessionId, nowMs);
+        return formatAwarenessMessage(active, now);
+      }
+    }
+
+    return null;
+  } catch {
+    // Session awareness is best-effort — never fail the hook
+    return null;
+  }
+}
+
 /**
  * Execute a hook plan: stage files, commit, sync.
  * Returns exit code and optional stderr for agent feedback.
