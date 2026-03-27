@@ -5,7 +5,7 @@ description: "Set expected behaviour by writing or modifying test trees — the 
 
 # Change
 
-Talk through a behaviour change with the user and reflect it in the test trees in `## Requirements` of the project's CLAUDE.md. Test trees are the requirements — they describe what the system does using `when/then` format.
+Sets expected behaviour before code exists. Talks through a behaviour change with the user and writes it into the test trees in `## Requirements` of the project's CLAUDE.md — making intent explicit and agreed before implementation begins.
 
 ## When to Use
 
