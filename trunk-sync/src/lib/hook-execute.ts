@@ -219,8 +219,8 @@ function extractTask(input: HookInput): string | null {
 }
 
 /**
- * Manage the roster: clock in, clock out stale agents, check who else is working.
- * Returns a roster message if other agents are clocked in and throttle allows.
+ * Clock in, clock out stale agents, check who else is working.
+ * Returns a message if other agents are clocked in and throttle allows.
  */
 function executeClockIn(
   plan: ClockInPlan,
