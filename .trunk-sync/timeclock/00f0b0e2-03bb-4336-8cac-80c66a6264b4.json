@@ -1,9 +1,0 @@
-{
-  "sessionId": "00f0b0e2-03bb-4336-8cac-80c66a6264b4",
-  "pid": 5852,
-  "hostname": "Eli Mydlarz",
-  "clockedInAt": "2026-03-27T11:11:45.505Z",
-  "lastActiveAt": "2026-03-27T11:15:40.011Z",
-  "branch": "main",
-  "task": "uninstall old versions of trunk-sync from project claude config"
-}
