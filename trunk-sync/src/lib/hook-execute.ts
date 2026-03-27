@@ -124,7 +124,7 @@ export function getRuntimeContext(): RuntimeContext {
   return { pid: process.pid, hostname: hostname() };
 }
 
-/** Clock in: write or update this agent's timecard in the roster. */
+/** Clock in: write or update this agent's timecard on the timeclock. */
 export function clockIn(repoRoot: string, plan: ClockInPlan, task: string | null): void {
   const dir = join(repoRoot, ".trunk-sync", "timeclock");
   mkdirSync(dir, { recursive: true });
