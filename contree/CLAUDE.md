@@ -36,7 +36,8 @@ Flow: `setup` → configures test infrastructure → `change` writes/modifies te
 - `skills/setup/SKILL.md` — project setup: test framework config + initial test tree generation
 - `skills/change/SKILL.md` — write or modify test trees in CLAUDE.md, plan decomposition
 - `skills/sync/SKILL.md` — completeness audit: test trees vs implementation, TDD gaps
-- `skills/tdd/SKILL.md` — outside-in TDD skill, auto-triggers on behaviour changes
+- `skills/tdd/SKILL.md` — outside-in TDD skill, auto-triggers when implementing behaviour
+- `skills/workflow/SKILL.md` — end-to-end: runs change → sync → tdd without pausing
 - `test/plugin.bats` — structural tests: plugin manifest, skill files, frontmatter
 - `test/hook.bats` — hook behaviour tests: loop prevention, exit codes, prompt content
 - `test/functional/run.sh` — functional tests: runs Claude with contree loaded against seed project
