@@ -90,7 +90,7 @@ For each `when/then` path that has a requirement tree but no implementation or t
 
 Work through gaps one at a time. Each gap follows the full outside-in TDD cycle.
 
-### 7. VERIFY
+### 8. VERIFY
 
 After all gaps are implemented:
 
