@@ -33,6 +33,6 @@ For each gap identified by sync, run the `tdd` skill process: confirm test tree,
 
 Run mutation testing at the end.
 
-### 4. DONE
+### 4. DONE — intent and implementation are one
 
 All test trees in `## Requirements` should now have passing tests and working implementation.
