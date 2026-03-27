@@ -10,7 +10,7 @@ description: "Enforces test-driven development against test trees in CLAUDE.md. 
 1. **Outside-in, always** — start with a failing functional test, TDD inward through unit layers
 2. **Test trees are the requirements** — the `## Requirements` section in CLAUDE.md contains test trees that specify what the system does. Every test you write traces back to a test tree
 3. **Two test layers** — functional (real system, no mocks) and unit (isolated, mocked collaborators)
-4. **One failing test at a time** — at your current layer, only one test should be red
+4. **One failing test at a time** — write exactly one failing test, make it pass, then write the next. Never write multiple failing tests in a single step. If you catch yourself writing more than one `it`/`test` block before running tests, stop and delete all but the first
 5. **Mutation testing validates finished work** — run mutation testing at the end, never during the cycle
 6. **Tree output at every layer** — test output is nested, indented, human-readable
 7. **Don't change existing trees** — TDD may discover new test cases, but existing trees are the spec. Add new cases as you discover them, but don't modify or remove existing `when/then` paths
