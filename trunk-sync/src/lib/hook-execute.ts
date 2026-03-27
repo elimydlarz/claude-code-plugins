@@ -126,7 +126,7 @@ export function getRuntimeContext(): RuntimeContext {
 
 /** Clock in: write or update this agent's timecard in the roster. */
 export function clockIn(repoRoot: string, plan: ClockInPlan, task: string | null): void {
-  const dir = join(repoRoot, ".trunk-sync", "roster");
+  const dir = join(repoRoot, ".trunk-sync", "timeclock");
   mkdirSync(dir, { recursive: true });
   const filePath = join(repoRoot, plan.timecardPath);
   // Preserve clockedInAt from existing timecard if present
@@ -144,7 +144,7 @@ export function clockIn(repoRoot: string, plan: ClockInPlan, task: string | null
 
 /** Read all timecards from the roster directory. */
 export function readRoster(repoRoot: string): Timecard[] {
-  const dir = join(repoRoot, ".trunk-sync", "roster");
+  const dir = join(repoRoot, ".trunk-sync", "timeclock");
   if (!existsSync(dir)) return [];
   const files = readdirSync(dir).filter((f) => f.endsWith(".json"));
   const timecards: Timecard[] = [];
@@ -172,7 +172,7 @@ export function isProcessAlive(pid: number): boolean {
 export function clockOutStale(repoRoot: string, staleIds: string[]): string[] {
   const removed: string[] = [];
   for (const id of staleIds) {
-    const filePath = join(repoRoot, ".trunk-sync", "roster", `${id}.json`);
+    const filePath = join(repoRoot, ".trunk-sync", "timeclock", `${id}.json`);
     try {
       unlinkSync(filePath);
       removed.push(filePath);
@@ -246,7 +246,7 @@ function executeRoster(
     }
 
     // Stage roster directory (timecard + any removals)
-    const rosterDir = join(state.repoRoot, ".trunk-sync", "roster");
+    const rosterDir = join(state.repoRoot, ".trunk-sync", "timeclock");
     try {
       execSync(`git add -- "${rosterDir}"`, { cwd: state.repoRoot, stdio: "ignore" });
     } catch {
