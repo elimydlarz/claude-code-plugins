@@ -282,7 +282,7 @@ export function executePlan(
   if (plan.action === "skip") return { exitCode: 0 };
 
   if (plan.action === "commit-merge") {
-    // Clock in and check roster
+    // Clock in and check who else is working
     const clockInMsg = plan.clockIn ? executeClockIn(plan.clockIn, input, state) : null;
 
     // Stage the file if provided
@@ -326,7 +326,7 @@ export function executePlan(
     execSync(`git add -- "${file}"`);
   }
 
-  // Clock in and check roster
+  // Clock in and check who else is working
   const clockInMsg = clockInPlan ? executeClockIn(clockInPlan, input, state) : null;
 
   // Check if there's anything staged (may have been a no-op)
