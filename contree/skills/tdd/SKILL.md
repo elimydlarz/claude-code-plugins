@@ -54,7 +54,7 @@ Confirm unit tests pass.
 
 ### 6. REPEAT (unit)
 
-Continue inward — one failing test at a time. Identify the next layer down, write a failing unit test, implement, pass. Repeat until the outermost component is complete.
+Continue inward — **one failing test at a time**. Write one test, run it, see it fail, implement, see it pass. Then and only then write the next test. Never batch multiple tests into a single step, even if you know what they all need to be.
 
 ### 7. GREEN (functional)
 
