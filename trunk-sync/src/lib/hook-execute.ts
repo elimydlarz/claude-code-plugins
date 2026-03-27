@@ -118,7 +118,7 @@ export function gatherRepoState(input: HookInput): RepoState | null {
   };
 }
 
-// --- Roster: agents clock in/out ---
+// --- Clocking in/out ---
 
 export function getRuntimeContext(): RuntimeContext {
   return { pid: process.pid, hostname: hostname() };
