@@ -46,24 +46,25 @@ export interface CommitPlan {
 
 export type HookPlan =
   | { action: "skip" }
-  | { action: "commit-and-sync"; commit: CommitPlan; sync: SyncPlan | null; session: SessionPlan | null }
-  | { action: "commit-merge"; message: string; sync: SyncPlan | null; session: SessionPlan | null };
+  | { action: "commit-and-sync"; commit: CommitPlan; sync: SyncPlan | null; clockIn: ClockInPlan | null }
+  | { action: "commit-merge"; message: string; sync: SyncPlan | null; clockIn: ClockInPlan | null };
 
-/** Persisted session heartbeat file content */
-export interface SessionHeartbeat {
+/** An agent's timecard — persisted to .trunk-sync/roster/<session-id>.json */
+export interface Timecard {
   sessionId: string;
   pid: number;
   hostname: string;
-  startedAt: string; // ISO 8601
+  clockedInAt: string; // ISO 8601
   lastActiveAt: string; // ISO 8601
   branch: string;
+  task: string | null; // what the agent is working on (from transcript)
 }
 
-/** Plan for session heartbeat file operations */
-export interface SessionPlan {
-  /** Relative path: .trunk-sync/sessions/<session-id>.json */
-  heartbeatPath: string;
-  heartbeat: SessionHeartbeat;
+/** Plan for clocking in (writing/updating a timecard) */
+export interface ClockInPlan {
+  /** Relative path: .trunk-sync/roster/<session-id>.json */
+  timecardPath: string;
+  timecard: Timecard;
 }
 
 /** Runtime context not available in RepoState (I/O-derived) */
