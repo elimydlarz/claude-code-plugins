@@ -2,9 +2,9 @@
 
 ## Mental Model
 
-A Claude Code plugin that notifies OpenClaw when a subagent completes a task. The parent agent's SubagentStop hook fires a POST to the OpenClaw API with the subagent completion payload (session_id, transcript_path, etc.). Fire-and-forget — notification failures never block the agent.
+A Claude Code plugin that notifies OpenClaw when a subagent completes a task. The SubagentStop hook extracts agent info from the event payload, wraps it into a `/hooks/agent` message (via `jq`), and POSTs it to the OpenClaw gateway. This wakes the parent agent session so it can act on the completed subagent's results. Fire-and-forget — notification failures never block the agent.
 
-Two env vars control behaviour: `OPENCLAW_URL` (required, base URL) and `OPENCLAW_TOKEN` (optional, Bearer auth). When `OPENCLAW_URL` is unset the hook is a silent no-op, so the plugin is safe to install in non-OpenClaw sessions.
+Two env vars control behaviour: `OPENCLAW_URL` (required, gateway base URL) and `OPENCLAW_TOKEN` (optional, the `hooks.token` Bearer token — NOT the gateway auth token). When `OPENCLAW_URL` is unset the hook is a silent no-op, so the plugin is safe to install in non-OpenClaw sessions.
 
 ## Repo Map
 
@@ -31,7 +31,8 @@ pnpm run test:functional # functional tests (node) — real HTTP behaviour
 ```
 SubagentNotification
   when OPENCLAW_URL is set and a subagent completes
-    then POSTs the SubagentStop payload to OPENCLAW_URL/api/subagent-complete
+    then POSTs a message to OPENCLAW_URL/hooks/agent with name "subagent-complete"
+    and the message contains agent_type, agent_id, and reason
     and exits 0
   when OPENCLAW_URL is not set
     then exits 0 without making any HTTP request

@@ -43,11 +43,13 @@ console.log('SubagentNotification');
 console.log('  when OPENCLAW_URL is set and a subagent completes');
 {
   const srv = await startServer();
-  const payload = JSON.stringify({ session_id: 'abc-123', transcript_path: '/tmp/t.jsonl' });
+  const payload = JSON.stringify({ session_id: 'abc-123', transcript_path: '/tmp/t.jsonl', agent_type: 'coding', agent_id: 'agent-1', reason: 'Task appears complete' });
   const result = await run({ OPENCLAW_URL: srv.url }, payload);
 
-  assert('then POSTs the SubagentStop payload to /api/subagent-complete', srv.requests.length === 1 && srv.requests[0].url === '/api/subagent-complete');
-  assert('and sends the payload as JSON body', srv.requests[0]?.body === payload);
+  assert('then POSTs to /hooks/agent', srv.requests.length === 1 && srv.requests[0].url === '/hooks/agent');
+  const body = JSON.parse(srv.requests[0]?.body || '{}');
+  assert('and sends a message containing agent info', body.message?.includes('coding') && body.message?.includes('agent-1'));
+  assert('and sets name to subagent-complete', body.name === 'subagent-complete');
   assert('and sends Content-Type application/json', srv.requests[0]?.headers['content-type'] === 'application/json');
   assert('and exits 0', result.exitCode === 0);
   await srv.close();
