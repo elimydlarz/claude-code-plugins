@@ -57,7 +57,7 @@ test/local-cleanup.sh         — manual test teardown
 
 - **auto-commit**: every Edit/Write fires the hook, which stages and commits the changed file (works on any branch, not just main)
 - **auto-sync**: after commit, pull from origin's default branch (--no-rebase) then push HEAD to it; silently skipped when no remote is configured
-- **git-block**: PreToolUse hook on Bash rejects any `git` command before execution, with feedback directing the agent to use Edit instead — `git clone` is allowed through
+- **git-block**: PreToolUse hook on Bash rejects any `git` command before execution, with feedback directing the agent to use Edit instead — `git clone`, `git diff`, and `git log` are allowed through (read-only commands agents need for inspecting changes)
 - **conflict-feedback**: merge conflicts exit 2 with self-contained instructions for the agent
 - **conflict-resolve**: if MERGE_HEAD exists, the hook completes the merge (agent already edited)
 - **push-retry**: one automatic pull+push retry on push failure
