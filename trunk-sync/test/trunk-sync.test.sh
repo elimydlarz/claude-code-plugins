@@ -660,7 +660,8 @@ assert_contains "$CONFLICT_STDERR" "TRUNK-SYNC CONFLICT" "concurrent conflict: l
 # --- Git-block (PreToolUse) ---
 
 # Extract the PreToolUse command from hooks.json so we test the real hook logic
-GIT_BLOCK_CMD=$(jq -r '.hooks.PreToolUse[0].hooks[0].command' "$(cd "$(dirname "$0")/.." && pwd)/hooks/hooks.json")
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+GIT_BLOCK_CMD=$(jq -r '.hooks.PreToolUse[0].hooks[0].command' "$REPO_ROOT/hooks/hooks.json")
 
 make_bash_input() {
   local cmd="$1"
