@@ -657,6 +657,70 @@ if [[ "$HOOK_EXIT_A" -eq 2 ]]; then CONFLICT_STDERR="$STDERR_A"; fi
 if [[ "$HOOK_EXIT_B" -eq 2 ]]; then CONFLICT_STDERR="$STDERR_B"; fi
 assert_contains "$CONFLICT_STDERR" "TRUNK-SYNC CONFLICT" "concurrent conflict: loser gets conflict message"
 
+# --- Git-block (PreToolUse) ---
+
+# Extract the PreToolUse command from hooks.json so we test the real hook logic
+GIT_BLOCK_CMD=$(jq -r '.hooks.PreToolUse[0].hooks[0].command' "$(cd "$(dirname "$0")/.." && pwd)/hooks/hooks.json")
+
+make_bash_input() {
+  local cmd="$1"
+  jq -n --arg c "$cmd" '{tool_input:{command:$c}}'
+}
+
+run_git_block() {
+  local input="$1"
+  HOOK_EXIT=0
+  HOOK_STDERR=""
+  local stderr_file="$TMPDIR_BASE/stderr-gitblock"
+  printf '%s' "$input" | bash -c "$GIT_BLOCK_CMD" >/dev/null 2>"$stderr_file" || HOOK_EXIT=$?
+  HOOK_STDERR=$(cat "$stderr_file")
+}
+
+# 28b. git clone is allowed
+run_git_block "$(make_bash_input "git clone https://github.com/foo/bar")"
+assert_exit 0 "git-block: git clone is allowed"
+
+# 28c. git diff is allowed
+run_git_block "$(make_bash_input "git diff")"
+assert_exit 0 "git-block: git diff is allowed"
+
+# 28d. git diff with args is allowed
+run_git_block "$(make_bash_input "git diff --stat origin/main")"
+assert_exit 0 "git-block: git diff --stat is allowed"
+
+# 28e. git log is allowed
+run_git_block "$(make_bash_input "git log")"
+assert_exit 0 "git-block: git log is allowed"
+
+# 28f. git log with args is allowed
+run_git_block "$(make_bash_input "git log --oneline -10")"
+assert_exit 0 "git-block: git log --oneline is allowed"
+
+# 28g. git push is blocked
+run_git_block "$(make_bash_input "git push origin main")"
+assert_exit 2 "git-block: git push is blocked"
+assert_contains "$HOOK_STDERR" "TRUNK-SYNC" "git-block: push gets TRUNK-SYNC feedback"
+
+# 28h. git commit is blocked
+run_git_block "$(make_bash_input "git commit -m 'manual'")"
+assert_exit 2 "git-block: git commit is blocked"
+
+# 28i. git add is blocked
+run_git_block "$(make_bash_input "git add .")"
+assert_exit 2 "git-block: git add is blocked"
+
+# 28j. git checkout is blocked
+run_git_block "$(make_bash_input "git checkout main")"
+assert_exit 2 "git-block: git checkout is blocked"
+
+# 28k. git status is blocked
+run_git_block "$(make_bash_input "git status")"
+assert_exit 2 "git-block: git status is blocked"
+
+# 28l. non-git command passes through
+run_git_block "$(make_bash_input "ls -la")"
+assert_exit 0 "git-block: non-git command passes through"
+
 # --- Transcript snapshots ---
 
 # 28. Default: no .transcripts/ created
