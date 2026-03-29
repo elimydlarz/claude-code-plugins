@@ -6,6 +6,7 @@ set -euo pipefail
 # Output: TAP (Test Anything Protocol)
 
 HOOK="$(cd "$(dirname "$0")/../scripts" && pwd)/trunk-sync.sh"
+HOOKS_JSON="$(cd "$(dirname "$0")/../hooks" && pwd)/hooks.json"
 PASS=0
 FAIL=0
 TEST_NUM=0
