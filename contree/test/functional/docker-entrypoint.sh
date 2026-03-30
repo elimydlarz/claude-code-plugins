@@ -91,7 +91,7 @@ VERIFY
 
   setup-generates-requirements)
     # Verifies: setup-generates-trees / when setup is run on an existing project
-    seed_project "$FIXTURES/seed-project"
+    seed_project "seed-project"
 
     echo "Running: setup-generates-requirements — /setup on existing project"
     run_claude \
@@ -112,7 +112,7 @@ VERIFY
 
   tdd-writes-requirement-first)
     # Verifies: outside-in-tdd / when TDD discovers new test cases
-    seed_project "$FIXTURES/seed-project"
+    seed_project "seed-project"
     cat >> "$PROJECT_DIR/CLAUDE.md" << 'EOF'
 
 ## Requirements
@@ -147,7 +147,7 @@ VERIFY
 
   stop-hook-fires)
     # Verifies: stop-hook-sync / when Claude stops after any response
-    seed_project "$FIXTURES/seed-project"
+    seed_project "seed-project"
 
     echo "Running: stop-hook-fires — stop hook prompts CLAUDE.md update"
     run_claude \
@@ -165,7 +165,7 @@ VERIFY
 
   setup-docker-testing)
     # Verifies: setup-generates-trees / when the project needs external services
-    seed_project "$FIXTURES/seed-project"
+    seed_project "seed-project"
     cat >> "$PROJECT_DIR/CLAUDE.md" << 'EOF'
 
 ## Mental Model
