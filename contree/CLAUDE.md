@@ -66,6 +66,10 @@ outside-in-tdd
     but existing when/then paths are not changed or removed
   when no test tree covers the behaviour
     then suggest the user runs change first
+  when an expected-red test passes incidentally
+    then break the implementation intentionally
+    and observe the test failing
+    then fix the implementation, observe the test passing, and move on
   when all unit tests pass
     then the functional test should pass
   when all behaviours are complete
