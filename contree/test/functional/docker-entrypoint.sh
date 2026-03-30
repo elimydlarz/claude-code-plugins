@@ -29,7 +29,12 @@ if [ -f "$ENV_FILE" ]; then
 fi
 FIXTURES="$CONTREE_ROOT/test/fixtures"
 PROJECT_DIR="/tmp/contree-test-project"
-TRANSCRIPT_FILE="/output/${TEST_NAME}-transcript.jsonl"
+# Transcripts go next to this script (host) or /output (Docker)
+OUTPUT_DIR="$CONTREE_ROOT/test/functional"
+if [ -d "/output" ]; then
+  OUTPUT_DIR="/output"
+fi
+TRANSCRIPT_FILE="$OUTPUT_DIR/${TEST_NAME}-transcript.jsonl"
 
 # --- Helpers ---
 
