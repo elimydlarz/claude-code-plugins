@@ -53,4 +53,5 @@ else
 fi
 
 echo ""
-echo "Done. Run ./analyse.sh to verify transcripts."
+echo "Done. Transcripts in: $SCRIPT_DIR/*-transcript.jsonl"
+echo "Ask Claude to read and analyse them against the VERIFY criteria."
