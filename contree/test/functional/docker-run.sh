@@ -30,8 +30,7 @@ ALL_TESTS=(
 )
 
 if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
-  echo "Error: ANTHROPIC_API_KEY must be set" >&2
-  exit 1
+  echo "Warning: ANTHROPIC_API_KEY not set — claude will attempt token auth inside Docker" >&2
 fi
 
 # Tear down on exit
