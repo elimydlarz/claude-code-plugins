@@ -9,7 +9,7 @@ set -euo pipefail
 #   ./analyse.sh incidental-pass     # analyse one
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 IMAGE_NAME="contree-functional-test"
 CONTAINER_NAME="contree-analyse-$$"
 
