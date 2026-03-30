@@ -137,11 +137,11 @@ For each numbered criterion, report PASS or FAIL with a one-line justification. 
 EOF
 
   local verdict
-  verdict="$(env -u ANTHROPIC_API_KEY claude -p "$(cat "$prompt_file")" \
+  # Run from /tmp to avoid loading any plugins from the project directory
+  verdict="$(cd /tmp && env -u ANTHROPIC_API_KEY claude -p "$(cat "$prompt_file")" \
     --model haiku \
     --max-budget-usd 0.25 \
     --no-session-persistence \
-    --allowedTools '' \
     2>/dev/null)" || true
   rm -f "$prompt_file"
 
