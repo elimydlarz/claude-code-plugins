@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Runs a single functional test inside the Docker container.
-# Called by docker-run.sh — not meant to be run directly.
+# Runs a single functional test.
+# Works both inside Docker (called by docker-run.sh) and directly on the host.
 #
 # Expects:
-#   - ANTHROPIC_API_KEY in environment
-#   - /work/contree/ contains the plugin source
-#   - /output/ is mounted for transcript output
+#   - ANTHROPIC_API_KEY in environment or in .env file
 #   - $1 is the test name (e.g. "incidental-pass")
 
 TEST_NAME="${1:?Usage: docker-entrypoint.sh <test-name>}"
