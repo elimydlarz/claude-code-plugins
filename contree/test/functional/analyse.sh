@@ -10,7 +10,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-[ -f "$SCRIPT_DIR/.env" ] && set -a && . "$SCRIPT_DIR/.env" && set +a
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+for env_file in "$SCRIPT_DIR/.env" "$REPO_ROOT/.env"; do
+  [ -f "$env_file" ] && set -a && . "$env_file" && set +a
+done
 
 if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
   echo "Error: ANTHROPIC_API_KEY must be set (in .env or environment)" >&2
