@@ -16,7 +16,9 @@ IMAGE_NAME="contree-functional-test"
 CONTAINER_NAME="contree-functional-test-$$"
 
 # Load .env if present
-[ -f "$SCRIPT_DIR/.env" ] && set -a && . "$SCRIPT_DIR/.env" && set +a
+for env_file in "$SCRIPT_DIR/.env" "$REPO_ROOT/.env"; do
+  [ -f "$env_file" ] && set -a && . "$env_file" && set +a
+done
 
 ALL_TESTS=(incidental-pass setup-generates-requirements tdd-writes-requirement-first stop-hook-fires setup-docker-testing)
 
