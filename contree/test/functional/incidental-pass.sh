@@ -50,6 +50,14 @@ echo ""
 echo "--- Done ---"
 echo "Transcript saved to: $TRANSCRIPT_FILE"
 echo "Project dir (preserved): $PROJECT_DIR"
+
+# Extract readable summary: assistant text messages and tool calls
+echo ""
+echo "=== Assistant messages ==="
+grep -o '{"type":"assistant"[^}]*"message":"[^"]*"' "$TRANSCRIPT_FILE" 2>/dev/null || true
+echo ""
+echo "=== Tool uses (name only) ==="
+jq -r 'select(.type == "tool_use") | .tool' "$TRANSCRIPT_FILE" 2>/dev/null || true
 echo ""
 echo "To analyse: read the transcript and verify the agent:"
 echo "  1. Wrote a test for 'when reset after incrementing'"
