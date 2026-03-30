@@ -97,6 +97,14 @@ Separate test command/config:
 - Same framework where possible
 - Higher timeouts (functional tests hit real systems)
 
+**Determine whether a Docker harness is needed.** See the Docker Harness Reference below. The key question: does this software need external processes (databases, queues, HTTP servers, other services) to exercise its real behaviour? If yes, set up a Docker Compose harness alongside the functional test runner. If the software is a pure library or CLI that only touches the filesystem, Docker is unnecessary overhead — run functional tests directly on the host.
+
+When configuring Docker:
+- `docker-compose.yml` lives at project root (or `test/functional/docker-compose.yml` if the project root is already crowded)
+- Functional test scripts start compose, wait for readiness, run tests, tear down
+- Add a `test:functional` script that orchestrates the full lifecycle
+- Never assume Docker services are already running — the harness must be self-contained
+
 ### 7. CONFIGURE MUTATION TESTING
 
 Install appropriate mutation testing tool (see Mutation Testing Reference below). Configure with:
