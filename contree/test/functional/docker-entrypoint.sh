@@ -39,13 +39,15 @@ TRANSCRIPT_FILE="$OUTPUT_DIR/${TEST_NAME}-transcript.jsonl"
 # --- Helpers ---
 
 seed_project() {
-  local fixture_dir="$1"
+  local fixture_name="$1"
+  # Use pre-installed fixtures from Docker image if available, otherwise from plugin source
+  local fixture_dir="/fixtures/$fixture_name"
+  [ -d "$fixture_dir" ] || fixture_dir="$FIXTURES/$fixture_name"
+
   rm -rf "$PROJECT_DIR"
-  mkdir -p "$PROJECT_DIR"
-  cp -r "$fixture_dir"/* "$PROJECT_DIR/"
-  [ -f "$fixture_dir/CLAUDE.md" ] && cp "$fixture_dir/CLAUDE.md" "$PROJECT_DIR/"
+  cp -r "$fixture_dir" "$PROJECT_DIR"
+  [ -f "$FIXTURES/$fixture_name/CLAUDE.md" ] && cp "$FIXTURES/$fixture_name/CLAUDE.md" "$PROJECT_DIR/"
   (cd "$PROJECT_DIR" && git init -q && git config user.email "test@test" && git config user.name "test" && git add -A && git commit -q -m "seed")
-  (cd "$PROJECT_DIR" && npm install --silent 2>/dev/null)
 }
 
 run_claude() {
