@@ -38,12 +38,12 @@ criteria_for() {
 5. Agent configured separate unit and functional test commands
 6. Agent generated test trees in when/then format under ## Requirements in CLAUDE.md
 7. Agent did NOT write any test implementations' ;;
-    tdd-writes-requirement-first) echo '1. Agent added a "when reset" path to the test tree in ## Requirements before writing code
-2. Agent wrote a failing functional test for reset behaviour
-3. Agent wrote a failing unit test for reset
-4. Agent implemented reset() in counter.js
-5. Agent confirmed unit test passes, then functional test passes
-6. Tests follow outside-in order: functional first, then unit, then implement' ;;
+    tdd-writes-requirement-first) echo '1. Agent ran /change and added a "when reset" path to the test tree in ## Requirements
+2. Agent ran /tdd after the tree was in place
+3. Agent wrote a failing functional test for reset behaviour
+4. Agent wrote a failing unit test for reset
+5. Agent implemented reset() in counter.js
+6. Agent confirmed tests pass (unit then functional)' ;;
     stop-hook-fires) echo '1. Agent modified counter.js to add the amount parameter to increment()
 2. Stop hook fired after the agent'\''s response
 3. Agent checked whether CLAUDE.md needs updating (drift detection)
