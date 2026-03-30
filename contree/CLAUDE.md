@@ -34,9 +34,9 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `skills/workflow/SKILL.md` — the full arc: idea → contract → verified implementation
 - `test/plugin.bats` — structural tests: plugin manifest, skill files, frontmatter
 - `test/hook.bats` — hook behaviour tests: loop prevention, exit codes, prompt content
-- `test/functional/Dockerfile` — Docker image for functional tests (node + git + jq + claude CLI)
-- `test/functional/docker-run.sh` — runs functional tests in Docker, passes secrets via env vars
-- `test/functional/docker-entrypoint.sh` — test cases: incidental-pass, setup, tdd, stop-hook, docker-testing
+- `test/functional/Dockerfile` — Docker image for functional tests (node + git + jq + claude CLI, fixture deps pre-installed)
+- `test/functional/docker-run.sh` — runs functional tests in Docker (parallel), passes secrets via env vars
+- `test/functional/docker-entrypoint.sh` — test cases with VERIFY criteria; transcripts analysed by Claude directly
 - `test/fixtures/seed-project/` — tiny JS counter module used as test target
 - `test/fixtures/incidental-pass/` — counter with reset() pre-implemented (for incidental-pass test)
 
