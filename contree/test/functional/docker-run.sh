@@ -8,7 +8,7 @@ set -euo pipefail
 #   ./docker-run.sh all                # run all in parallel
 #
 # Transcripts are saved to *-transcript.jsonl.
-# Run ./analyse.sh to verify them.
+# Ask Claude to read and analyse them against the VERIFY criteria.
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
