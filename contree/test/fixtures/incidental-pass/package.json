@@ -1,0 +1,14 @@
+{
+  "name": "incidental-pass-project",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "vitest": "^3.0.0"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:unit": "vitest run --reporter=verbose",
+    "test:functional": "vitest run test/functional/ --reporter=verbose"
+  }
+}
