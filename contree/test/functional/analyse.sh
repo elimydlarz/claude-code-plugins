@@ -137,11 +137,12 @@ For each numbered criterion, report PASS or FAIL with a one-line justification. 
 EOF
 
   local verdict
-  # Run from /tmp to avoid loading any plugins from the project directory
+  # Run from /tmp with plugins disabled to avoid the contree stop hook firing
   verdict="$(cd /tmp && env -u ANTHROPIC_API_KEY claude -p "$(cat "$prompt_file")" \
     --model haiku \
     --max-budget-usd 0.25 \
     --no-session-persistence \
+    --settings '{"plugins":{"disabled":["contree@susu-eng"]}}' \
     2>/dev/null)" || true
   rm -f "$prompt_file"
 
