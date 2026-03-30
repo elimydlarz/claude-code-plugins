@@ -47,34 +47,48 @@ run_claude() {
 case "$TEST_NAME" in
   incidental-pass)
     # Verifies: outside-in-tdd / when an expected-red test passes incidentally
-    #
-    # Seed project has reset() already implemented. TDD skill should write a
-    # test that passes incidentally, then break the implementation, observe
-    # failure, fix it, and observe pass.
     seed_project "$FIXTURES/incidental-pass"
 
     echo "Running: incidental-pass — TDD with pre-existing implementation"
     run_claude \
       "Use the tdd skill to implement the 'when reset after incrementing / then value is zero' path from the Counter test tree in ## Requirements. The reset() function already exists in counter.js — follow the TDD process exactly as described in the skill, including the incidental-pass protocol if the test passes on first run."
+
+    cat << 'VERIFY'
+
+=== VERIFY ===
+1. Agent wrote a functional test for "when reset after incrementing / then value is zero"
+2. Agent ran the test and it passed on first run (incidental pass)
+3. Agent recognised the incidental pass and invoked the break/verify protocol
+4. Agent broke the reset() implementation intentionally (e.g. commented out count = 0)
+5. Agent ran the test and observed it failing
+6. Agent fixed the implementation back to working state
+7. Agent ran the test and observed it passing
+VERIFY
     ;;
 
   setup-generates-requirements)
     # Verifies: setup-generates-trees / when setup is run on an existing project
-    #
-    # Runs /setup on the seed project. Expects: test trees in CLAUDE.md,
-    # vitest configured, tree reporters set up.
     seed_project "$FIXTURES/seed-project"
 
     echo "Running: setup-generates-requirements — /setup on existing project"
     run_claude \
       "Run /setup on this project. It's a simple JS counter module. Use Vitest. Don't implement any tests yet — just configure the framework and generate requirement trees."
+
+    cat << 'VERIFY'
+
+=== VERIFY ===
+1. Agent invoked the setup skill
+2. Agent read the existing counter.js to understand the codebase
+3. Agent configured vitest (vitest.config.* exists, vitest in package.json)
+4. Agent configured tree reporters for human-readable nested output
+5. Agent configured separate unit and functional test commands
+6. Agent generated test trees in when/then format under ## Requirements in CLAUDE.md
+7. Agent did NOT write any test implementations
+VERIFY
     ;;
 
   tdd-writes-requirement-first)
     # Verifies: outside-in-tdd / when TDD discovers new test cases
-    #
-    # Seed project has counter with requirements for default/increment.
-    # Asks to add reset — should extend the tree then TDD.
     seed_project "$FIXTURES/seed-project"
     cat >> "$PROJECT_DIR/CLAUDE.md" << 'EOF'
 
@@ -95,25 +109,39 @@ EOF
     echo "Running: tdd-writes-requirement-first — add reset via TDD"
     run_claude \
       "Add a reset feature to the counter that sets it back to zero. Follow the tdd skill."
+
+    cat << 'VERIFY'
+
+=== VERIFY ===
+1. Agent added a "when reset" path to the test tree in ## Requirements before writing code
+2. Agent wrote a failing functional test for reset behaviour
+3. Agent wrote a failing unit test for reset
+4. Agent implemented reset() in counter.js
+5. Agent confirmed unit test passes, then functional test passes
+6. Tests follow outside-in order: functional first, then unit, then implement
+VERIFY
     ;;
 
   stop-hook-fires)
     # Verifies: stop-hook-sync / when Claude stops after any response
-    #
-    # Makes a code change and checks whether the stop hook prompted
-    # CLAUDE.md updates.
     seed_project "$FIXTURES/seed-project"
 
     echo "Running: stop-hook-fires — stop hook prompts CLAUDE.md update"
     run_claude \
       "Add an 'amount' parameter to increment() so it can increment by more than 1. Update counter.js."
+
+    cat << 'VERIFY'
+
+=== VERIFY ===
+1. Agent modified counter.js to add the amount parameter to increment()
+2. Stop hook fired after the agent's response
+3. Agent checked whether CLAUDE.md needs updating (drift detection)
+4. Agent updated CLAUDE.md to reflect the new amount parameter (or asked the user about it)
+VERIFY
     ;;
 
   setup-docker-testing)
-    # Verifies: setup-generates-trees / when the project needs external services for functional tests
-    #
-    # Seed project describes needing a database for functional tests.
-    # Setup should generate Docker infrastructure for functional testing.
+    # Verifies: setup-generates-trees / when the project needs external services
     seed_project "$FIXTURES/seed-project"
     cat >> "$PROJECT_DIR/CLAUDE.md" << 'EOF'
 
@@ -127,6 +155,19 @@ EOF
     echo "Running: setup-docker-testing — /setup with external service dependency"
     run_claude \
       "Run /setup on this project. It's a user account service that needs PostgreSQL for functional tests. Use Vitest. Configure Docker-based functional testing with a real Postgres container. Don't implement any tests yet — just configure the framework, Docker infrastructure, and generate requirement trees."
+
+    cat << 'VERIFY'
+
+=== VERIFY ===
+1. Agent invoked the setup skill
+2. Agent created Docker infrastructure for functional tests (Dockerfile and/or docker-compose.yml)
+3. Docker config includes a PostgreSQL service/container
+4. Secrets/credentials are passed via environment variables, not hardcoded
+5. Test artefacts (containers) are torn down after tests run (docker-compose down, --rm, or equivalent)
+6. Agent configured vitest with tree reporters
+7. Agent generated test trees under ## Requirements in CLAUDE.md
+8. Agent did NOT write any test implementations
+VERIFY
     ;;
 
   *)
