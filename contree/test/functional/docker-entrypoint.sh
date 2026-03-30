@@ -127,19 +127,19 @@ Counter
 EOF
     (cd "$PROJECT_DIR" && git add -A && git commit -q -m "add requirements")
 
-    echo "Running: tdd-writes-requirement-first — add reset via TDD"
+    echo "Running: tdd-writes-requirement-first — change then TDD for reset"
     run_claude \
-      "Add a reset feature to the counter that sets it back to zero. Follow the tdd skill."
+      "Add a reset feature to the counter that sets it back to zero. First run /change to add the reset behaviour to the test tree, then run /tdd to implement it."
 
     cat << 'VERIFY'
 
 === VERIFY ===
-1. Agent added a "when reset" path to the test tree in ## Requirements before writing code
-2. Agent wrote a failing functional test for reset behaviour
-3. Agent wrote a failing unit test for reset
-4. Agent implemented reset() in counter.js
-5. Agent confirmed unit test passes, then functional test passes
-6. Tests follow outside-in order: functional first, then unit, then implement
+1. Agent ran /change and added a "when reset" path to the test tree in ## Requirements
+2. Agent ran /tdd after the tree was in place
+3. Agent wrote a failing functional test for reset behaviour
+4. Agent wrote a failing unit test for reset
+5. Agent implemented reset() in counter.js
+6. Agent confirmed tests pass (unit then functional)
 VERIFY
     ;;
 
