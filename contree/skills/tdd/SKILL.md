@@ -45,7 +45,7 @@ Write **one** failing functional test that describes the desired behaviour from 
 
 Write **one** failing unit test for the outermost component that needs to change. Do not write tests for multiple behaviours or layers — just the single next thing that needs to fail.
 
-- **If the test passes unexpectedly** — break the implementation intentionally, observe the test failing, restore and observe it passing. A test that can't fail doesn't protect anything.
+- **If the test passes unexpectedly** — break the implementation intentionally, observe the test failing, then fix the implementation, observe the test passing, and move on. A test that can't fail doesn't protect anything.
 
 ### 4. IMPLEMENT
 
