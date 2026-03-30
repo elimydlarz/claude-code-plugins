@@ -52,6 +52,7 @@ run_test() {
     bash -c "
       # Copy contree plugin to a writable location (mounted read-only)
       cp -r /repo/contree /work/contree
+      chmod +x /work/contree/test/functional/*.sh
 
       # Run the test script adapted for Docker
       /work/contree/test/functional/docker-entrypoint.sh $test_basename
