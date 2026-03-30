@@ -1146,3 +1146,368 @@ No mutation testing tool for Bash. Be honest about this.
 **Output:** `swift test --verbose` is flat.
 
 No mature mutation testing tool. Be honest about this.
+
+---
+
+## Docker Harness Reference
+
+### When Docker is needed vs not
+
+**Docker IS needed when** functional tests must exercise the software against real external processes:
+- Database-backed applications (Postgres, MySQL, Redis, MongoDB, etc.)
+- Web APIs/servers that need to be started and hit over HTTP
+- Message queue consumers (RabbitMQ, Kafka, SQS)
+- Multi-service systems where the software under test calls other services
+- Software that depends on specific system-level tooling (e.g., `ffmpeg`, `imagemagick`, `wkhtmltopdf`)
+
+**Docker is NOT needed when:**
+- The software is a pure library with no I/O beyond function calls
+- The software is a CLI tool that only reads/writes files — test directly on host
+- The software's only external dependency is the filesystem
+- Tests already use in-process fakes that are adequate (e.g., SQLite for a SQL-based app where the production DB is also SQLite)
+
+**Rule of thumb:** if you need to `docker run` or `brew install` something before tests can pass, that dependency belongs in a Docker harness so the test suite is self-contained.
+
+---
+
+### Harness Structure
+
+Every Docker harness follows the same lifecycle:
+
+```
+start dependencies → wait for readiness → run tests → tear down
+```
+
+The harness lives alongside the functional tests:
+
+```
+test/functional/
+  docker-compose.yml      # service definitions
+  wait-for-ready.sh       # readiness checks (or use healthchecks in compose)
+  *.functional.test.*     # test files
+```
+
+Or, for projects where `docker-compose.yml` belongs at root (e.g., the project already has one for dev):
+
+```
+docker-compose.test.yml   # test-specific overrides
+test/functional/
+  *.functional.test.*
+```
+
+---
+
+### docker-compose.yml Patterns
+
+#### Database-backed application (e.g., Postgres)
+
+```yaml
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: test
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+    ports:
+      - "5433:5432"   # non-default port to avoid clashing with local Postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+    tmpfs:
+      - /var/lib/postgresql/data   # RAM-backed storage — fast, disposable
+```
+
+Key decisions:
+- **Non-default host port** (5433 not 5432) — avoids conflicts with a developer's local Postgres
+- **`tmpfs`** — data lives in RAM, tests are faster, nothing persists between runs
+- **`healthcheck`** — compose knows when the service is actually ready, not just started
+- Pass connection details to tests via environment variables, never hardcode
+
+#### Web API under test
+
+When the software itself IS the server being tested:
+
+```yaml
+services:
+  db:
+    image: postgres:17-alpine
+    # ... same as above ...
+
+  app:
+    build:
+      context: ../..           # project root
+      dockerfile: Dockerfile   # or Dockerfile.test if different from prod
+    environment:
+      DATABASE_URL: postgres://test:test@db:5432/test
+      PORT: "3000"
+    ports:
+      - "3001:3000"            # non-default host port
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+```
+
+Tests run on the host and hit `http://localhost:3001`. The app container connects to db via the compose network (`db:5432`).
+
+**When to build the app in Docker vs run on host:**
+- Build in Docker when the app needs compiled artifacts, specific runtime versions, or system deps
+- Run on host when the app is interpreted (Node, Python, Ruby) and you just need the backing services — this is simpler and gives faster feedback during TDD
+
+#### Message queue consumer
+
+```yaml
+services:
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    ports:
+      - "5673:5672"    # AMQP
+      - "15673:15672"  # management UI (useful for debugging)
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+```
+
+#### Redis
+
+```yaml
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+```
+
+#### Multiple services (e.g., API + worker + database + queue)
+
+```yaml
+services:
+  db:
+    image: postgres:17-alpine
+    # ...
+  redis:
+    image: redis:7-alpine
+    # ...
+  app:
+    build: ../..
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    # ...
+  worker:
+    build: ../..
+    command: ["node", "worker.js"]
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    # ...
+```
+
+---
+
+### Orchestrating the Test Lifecycle
+
+#### Shell wrapper (works with any test framework)
+
+```bash
+#!/usr/bin/env bash
+# test/functional/run-docker.sh
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yml"
+
+cleanup() {
+  docker compose -f "$COMPOSE_FILE" down --volumes --remove-orphans 2>/dev/null || true
+}
+trap cleanup EXIT
+
+# Start services and wait for health
+docker compose -f "$COMPOSE_FILE" up -d --wait
+
+# Export connection details for tests
+export DATABASE_URL="postgres://test:test@localhost:5433/test"
+export REDIS_URL="redis://localhost:6380"
+
+# Run migrations if needed
+# npm run db:migrate  (or equivalent)
+
+# Run functional tests
+npm run test:functional
+```
+
+#### package.json scripts (Node.js)
+
+```json
+{
+  "test:functional": "vitest run --project functional",
+  "test:functional:docker": "bash test/functional/run-docker.sh",
+  "test:functional:ci": "bash test/functional/run-docker.sh"
+}
+```
+
+#### Makefile (language-agnostic)
+
+```makefile
+.PHONY: test-functional
+test-functional:
+	docker compose -f test/functional/docker-compose.yml up -d --wait
+	DATABASE_URL=postgres://test:test@localhost:5433/test \
+	  pytest tests/functional/ || (docker compose -f test/functional/docker-compose.yml down -v; exit 1)
+	docker compose -f test/functional/docker-compose.yml down -v
+```
+
+---
+
+### Writing Functional Tests Against Docker Services
+
+The tests themselves should not know about Docker — they connect to services via environment variables or config, same as they would in production.
+
+**Node.js/TypeScript example:**
+```typescript
+// test/functional/user-registration.functional.test.ts
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { createApp } from '../../src/app'
+
+describe('UserRegistration', () => {
+  let app: ReturnType<typeof createApp>
+
+  beforeAll(async () => {
+    // Uses DATABASE_URL from environment (set by run-docker.sh)
+    app = createApp()
+    await app.db.migrate()
+  })
+
+  afterAll(async () => {
+    await app.close()
+  })
+
+  describe('when a new user registers with valid details', () => {
+    it('creates the user account', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/users',
+        payload: { email: 'new@example.com', password: 'secret123' },
+      })
+      expect(res.statusCode).toBe(201)
+    })
+  })
+})
+```
+
+**Python example:**
+```python
+# tests/functional/test_user_registration.py
+import os
+import pytest
+import httpx
+
+BASE_URL = os.environ.get("APP_URL", "http://localhost:3001")
+
+def describe_user_registration():
+    def describe_when_valid_details():
+        def it_creates_account():
+            resp = httpx.post(f"{BASE_URL}/users", json={
+                "email": "new@example.com",
+                "password": "secret123",
+            })
+            assert resp.status_code == 201
+```
+
+**Go example:**
+```go
+// test/functional/user_test.go
+//go:build integration
+
+package functional
+
+import (
+    "net/http"
+    "os"
+    "testing"
+)
+
+func TestUserRegistration_ValidDetails_CreatesAccount(t *testing.T) {
+    baseURL := os.Getenv("APP_URL")
+    if baseURL == "" {
+        baseURL = "http://localhost:3001"
+    }
+    // ...
+}
+```
+
+---
+
+### Project-Type Recipes
+
+#### Web API (Node/Python/Ruby/Go/Java)
+
+1. Docker Compose with database + any backing services
+2. App runs on host (or in container if it needs compilation)
+3. Tests hit the API over HTTP via `localhost:<port>`
+4. Each test suite resets database state (truncate tables, run seeds) in `beforeAll`/`setup`
+5. Migrations run as part of the harness startup
+
+#### CLI tool that talks to external services
+
+1. Docker Compose provides the services the CLI talks to (APIs, databases)
+2. CLI runs on the host — tests invoke it as a subprocess
+3. Assert on exit codes, stdout/stderr, and side effects (files created, database state)
+
+```bash
+# Bats example for a CLI that talks to a database
+@test "import command loads CSV into database" {
+  run ./mycli import --file fixtures/data.csv --db "$DATABASE_URL"
+  [ "$status" -eq 0 ]
+  # Verify data landed in the database
+  count=$(psql "$DATABASE_URL" -t -c "SELECT count(*) FROM imports")
+  [ "$(echo "$count" | tr -d ' ')" -eq 42 ]
+}
+```
+
+#### Library with database adapter
+
+1. Docker Compose provides the database
+2. Tests import the library directly (no HTTP, no subprocess)
+3. Each test gets a clean transaction (rollback after each test) or a fresh schema
+
+#### Static site generator / build tool
+
+Usually no Docker needed. Functional tests:
+1. Run the build command against a fixture project
+2. Assert on the output files (existence, content, structure)
+3. If the tool has a dev server mode, start it and hit it with HTTP requests
+
+#### Mobile/desktop app backend
+
+Same as Web API, but also consider:
+1. Mock the mobile client's requests using recorded fixtures
+2. Test push notification delivery to a mock push service (add it to compose)
+
+---
+
+### Gotchas
+
+- **Port conflicts:** Always use non-default host ports. Two developers running tests simultaneously, or a local dev database, will collide on default ports.
+- **Data persistence:** Use `tmpfs` for databases in test compose files. Without it, data survives `docker compose down` if volumes aren't explicitly removed, causing flaky tests.
+- **Startup race conditions:** Always use `healthcheck` + `depends_on: condition: service_healthy`. Never use `sleep` to wait for services — it's fragile and slow.
+- **CI layer:** In CI, Docker-in-Docker or a Docker-capable runner is required. GitHub Actions runners have Docker pre-installed. GitLab CI needs `services:` or a DinD sidecar.
+- **Cleanup on failure:** Use `trap cleanup EXIT` in shell wrappers so services are torn down even when tests fail. Without this, orphaned containers accumulate.
+- **Image pinning:** Pin to specific major versions (`postgres:17-alpine`, not `postgres:latest`) to avoid surprise breakage when upstream releases a new major version.
+- **Build context:** When building the app in Docker, the build context (`context: ../..`) must reach the project root. Use `.dockerignore` to keep the context small.
+- **ARM vs x86:** On Apple Silicon, some images don't have ARM builds. Add `platform: linux/amd64` to the service if you hit `exec format error`. This is slower (Rosetta emulation) but works.
+- **Test isolation:** Each test run should start with clean state. Either truncate tables in `beforeAll`, use transactions that rollback, or recreate the database. Never depend on state from a previous test run.
