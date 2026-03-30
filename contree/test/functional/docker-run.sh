@@ -20,8 +20,10 @@ done
 
 ALL_TESTS=(incidental-pass setup-generates-requirements tdd-writes-requirement-first stop-hook-fires setup-docker-testing)
 
+TEST_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
 echo "Building test image..."
-docker build -q -t "$IMAGE_NAME" "$SCRIPT_DIR"
+docker build -q -t "$IMAGE_NAME" -f "$SCRIPT_DIR/Dockerfile" "$TEST_DIR"
 
 run_test() {
   local name="$1"
