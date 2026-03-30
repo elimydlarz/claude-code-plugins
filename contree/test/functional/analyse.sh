@@ -106,7 +106,9 @@ EOF
   verdict="$(env -u ANTHROPIC_API_KEY claude -p "$(cat "$prompt_file")" \
     --model haiku \
     --max-budget-usd 0.25 \
-    --bare 2>/dev/null)" || true
+    --no-session-persistence \
+    --system-prompt 'You are a test transcript analyser. Respond only with PASS/FAIL verdicts.' \
+    2>/dev/null)" || true
   rm -f "$prompt_file"
 
   echo "$verdict"
