@@ -193,6 +193,92 @@ EOF
 VERIFY
     ;;
 
+  discover-change)
+    # Verifies: skill discoverability — natural prompt triggers change skill
+    seed_project "seed-project"
+    cat >> "$PROJECT_DIR/CLAUDE.md" << 'EOF'
+
+## Requirements
+
+### Counter
+
+```
+Counter
+  when created with default
+    then value is zero
+  when incremented
+    then value increases by one
+```
+EOF
+    (cd "$PROJECT_DIR" && git add -A && git commit -q -m "add requirements")
+
+    echo "Running: discover-change — natural prompt triggers change skill"
+    run_claude \
+      "I want to add a reset feature to this counter that sets the value back to zero. Let's figure out what the behaviour should look like before writing any code."
+
+    cat << 'VERIFY'
+
+=== VERIFY ===
+1. Agent invoked the change skill (not tdd, not setup, not workflow)
+2. Agent discussed the reset behaviour before modifying trees
+3. Agent wrote or proposed when/then paths for reset in ## Requirements
+4. Agent did NOT write any implementation code
+VERIFY
+    ;;
+
+  discover-sync)
+    # Verifies: skill discoverability — natural prompt triggers sync skill
+    seed_project "sync-drift"
+
+    echo "Running: discover-sync — natural prompt triggers sync skill"
+    run_claude \
+      "I've been making changes to counter.js and I'm not sure the requirements still match the code. Can you check what's drifted?"
+
+    cat << 'VERIFY'
+
+=== VERIFY ===
+1. Agent invoked the sync skill (not change, not tdd)
+2. Agent identified that decrement tree exists without implementation
+3. Agent identified that amount parameter exists without a tree
+4. Agent reported drift to the user rather than silently fixing it
+VERIFY
+    ;;
+
+  discover-setup)
+    # Verifies: skill discoverability — natural prompt triggers setup skill
+    seed_project "seed-project"
+
+    echo "Running: discover-setup — natural prompt triggers setup skill"
+    run_claude \
+      "This project doesn't have any testing set up yet. Can you get it ready for test-driven development? Use Vitest."
+
+    cat << 'VERIFY'
+
+=== VERIFY ===
+1. Agent invoked the setup skill (not change, not tdd)
+2. Agent configured vitest
+3. Agent generated test trees under ## Requirements in CLAUDE.md
+4. Agent did NOT write any test implementations
+VERIFY
+    ;;
+
+  discover-tdd)
+    # Verifies: skill discoverability — natural prompt triggers tdd skill
+    seed_project "tdd-ready"
+
+    echo "Running: discover-tdd — natural prompt triggers tdd skill"
+    run_claude \
+      "The requirements are all set — can you implement the increment behaviour from the test tree?"
+
+    cat << 'VERIFY'
+
+=== VERIFY ===
+1. Agent invoked the tdd skill (not change, not setup)
+2. Agent started with a failing test matching a when/then path
+3. Agent wrote implementation code to make the test pass
+VERIFY
+    ;;
+
   *)
     echo "Unknown test: $TEST_NAME" >&2
     echo ""
@@ -202,6 +288,10 @@ VERIFY
     echo "  tdd-writes-requirement-first — TDD discovers new test cases"
     echo "  stop-hook-fires              — stop hook prompts updates"
     echo "  setup-docker-testing         — /setup with Docker for external services"
+    echo "  discover-change              — natural prompt triggers change skill"
+    echo "  discover-sync                — natural prompt triggers sync skill"
+    echo "  discover-setup               — natural prompt triggers setup skill"
+    echo "  discover-tdd                 — natural prompt triggers tdd skill"
     exit 1
     ;;
 esac
