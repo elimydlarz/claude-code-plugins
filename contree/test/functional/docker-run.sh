@@ -23,10 +23,12 @@ ALL_TESTS=(incidental-pass setup-generates-requirements tdd-writes-requirement-f
 echo "Building test image..."
 docker build -q -t "$IMAGE_NAME" "$SCRIPT_DIR"
 
+TIMEOUT="${TIMEOUT:-180}"
+
 run_test() {
   local name="$1"
   echo "=== Starting: $name ==="
-  docker run --rm \
+  timeout "$TIMEOUT" docker run --rm \
     --name "contree-test-${name}-$$" \
     -e ANTHROPIC_API_KEY \
     -v "$REPO_ROOT:/repo:ro" \
