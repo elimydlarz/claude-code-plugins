@@ -115,6 +115,10 @@ setup-generates-trees
     and the limitation is communicated honestly
   when tests are colocated with source
     then mutation testing mutate globs explicitly exclude test file patterns
+  when the project needs external services for functional tests
+    then functional tests are run in Docker
+    and test artefacts are torn down afterwards
+    and secrets are passed via environment variables
 ```
 
 ### change-writes-trees
