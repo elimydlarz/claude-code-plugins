@@ -172,6 +172,20 @@ workflow-runs-end-to-end
     then all test trees have passing tests
 ```
 
+### skill-discoverability
+
+```
+skill-discoverability
+  when a user describes a behaviour change without naming a skill
+    then the change skill is triggered
+  when a user asks about drift between code and requirements without naming a skill
+    then the sync skill is triggered
+  when a user asks to set up testing without naming a skill
+    then the setup skill is triggered
+  when a user asks to implement from existing requirements without naming a skill
+    then the tdd skill is triggered
+```
+
 ### composable-testing
 
 ```
