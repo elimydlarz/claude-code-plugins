@@ -103,10 +103,10 @@ $narrative
 $criteria
 EOF
 
-  verdict="$(cd /tmp && env -u ANTHROPIC_API_KEY claude -p "$(cat "$prompt_file")" \
+  verdict="$(env -u ANTHROPIC_API_KEY claude -p "$(cat "$prompt_file")" \
     --model haiku \
     --max-budget-usd 0.25 \
-    --no-session-persistence 2>/dev/null)" || true
+    --bare 2>/dev/null)" || true
   rm -f "$prompt_file"
 
   echo "$verdict"
