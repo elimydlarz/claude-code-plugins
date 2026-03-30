@@ -70,7 +70,7 @@ run_claude() {
 case "$TEST_NAME" in
   incidental-pass)
     # Verifies: outside-in-tdd / when an expected-red test passes incidentally
-    seed_project "$FIXTURES/incidental-pass"
+    seed_project "incidental-pass"
 
     echo "Running: incidental-pass — TDD with pre-existing implementation"
     run_claude \
