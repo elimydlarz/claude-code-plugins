@@ -32,8 +32,7 @@ run_claude() {
   local prompt="$1"
   shift
   # Don't abort on claude failure — we still need to emit VERIFY criteria
-  # Unset ANTHROPIC_API_KEY so claude uses token auth (OAuth)
-  (cd "$PROJECT_DIR" && env -u ANTHROPIC_API_KEY claude -p "$prompt" \
+  (cd "$PROJECT_DIR" && claude -p "$prompt" \
     --plugin-dir "$CONTREE_ROOT" \
     --dangerously-skip-permissions \
     --model sonnet \
