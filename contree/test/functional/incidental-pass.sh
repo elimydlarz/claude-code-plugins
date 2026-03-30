@@ -32,7 +32,7 @@ echo "Setting up project..."
 PROJECT_DIR=$(setup_project)
 echo "Project dir: $PROJECT_DIR"
 
-TRANSCRIPT_FILE="$SCRIPT_DIR/incidental-pass-transcript.txt"
+TRANSCRIPT_FILE="$SCRIPT_DIR/incidental-pass-transcript.jsonl"
 
 echo "Running claude -p with TDD skill..."
 echo "Transcript will be written to: $TRANSCRIPT_FILE"
@@ -44,7 +44,7 @@ echo "Transcript will be written to: $TRANSCRIPT_FILE"
   --model sonnet \
   --max-budget-usd 0.50 \
   --no-session-persistence \
-  --verbose 2>&1) | tee "$TRANSCRIPT_FILE"
+  --output-format stream-json 2>&1) | tee "$TRANSCRIPT_FILE"
 
 echo ""
 echo "--- Done ---"
