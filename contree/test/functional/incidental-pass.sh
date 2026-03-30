@@ -40,7 +40,8 @@ echo "Running claude -p with TDD skill..."
   --model sonnet \
   --max-budget-usd 0.50 \
   --no-session-persistence \
-  --output-format stream-json 2>&1) | tee "$TRANSCRIPT_FILE"
+  --output-format stream-json \
+  --verbose 2>&1) | tee "$TRANSCRIPT_FILE"
 
 echo ""
 echo "--- Done ---"
