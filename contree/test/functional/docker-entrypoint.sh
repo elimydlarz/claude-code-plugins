@@ -155,9 +155,9 @@ VERIFY
 
 === VERIFY ===
 1. Agent modified counter.js to add the amount parameter to increment()
-2. Stop hook fired after the agent's response
-3. Agent checked whether CLAUDE.md needs updating (drift detection)
-4. Agent updated CLAUDE.md to reflect the new amount parameter (or asked the user about it)
+2. Agent performed drift detection (read CLAUDE.md, checked for staleness)
+3. Agent identified that the Mental Model needs updating to reflect the amount parameter
+4. Agent asked the user before modifying CLAUDE.md (never modifies silently)
 VERIFY
     ;;
 
