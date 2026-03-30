@@ -4,24 +4,24 @@ set -euo pipefail
 # Analyse functional test transcripts using claude -p.
 # Feeds each transcript + its VERIFY criteria into claude and collects verdicts.
 #
+# Designed to run inside Docker (via docker-run.sh analyse) for a clean
+# environment with no plugins interfering. Can also run on the host.
+#
 # Usage:
 #   ./analyse.sh [test-name]    # analyse one transcript
 #   ./analyse.sh all             # analyse all transcripts
 #   ./analyse.sh                 # list available transcripts
-#
-# Requires: claude CLI authenticated, transcript files from a prior test run
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# Load .env if present
-if [ -f "$SCRIPT_DIR/.env" ]; then
-  set -a
-  # shellcheck source=/dev/null
-  . "$SCRIPT_DIR/.env"
-  set +a
+# Transcript location: /output in Docker, script dir on host
+if [ -d "/output" ]; then
+  TRANSCRIPT_DIR="/output"
+else
+  TRANSCRIPT_DIR="$SCRIPT_DIR"
 fi
 
-# --- Criteria per test (must match docker-entrypoint.sh VERIFY blocks) ---
+# --- Criteria per test ---
 
 criteria_for() {
   case "$1" in
@@ -94,7 +94,7 @@ ALL_TESTS=(
 
 analyse_one() {
   local test_name="$1"
-  local transcript="$SCRIPT_DIR/${test_name}-transcript.jsonl"
+  local transcript="$TRANSCRIPT_DIR/${test_name}-transcript.jsonl"
 
   if [ ! -f "$transcript" ]; then
     echo "=== $test_name: SKIP (no transcript) ==="
@@ -117,7 +117,7 @@ analyse_one() {
     else empty end
   ' "$transcript" 2>/dev/null)"
 
-  # Build prompt and feed to claude for analysis
+  # Build prompt
   local prompt_file
   prompt_file="$(mktemp)"
   cat > "$prompt_file" << EOF
@@ -136,13 +136,12 @@ $criteria
 For each numbered criterion, report PASS or FAIL with a one-line justification. End with a summary line: "X/Y PASS".
 EOF
 
+  # Run claude in /tmp with no plugins
   local verdict
-  # Run from /tmp with plugins disabled to avoid the contree stop hook firing
-  verdict="$(cd /tmp && env -u ANTHROPIC_API_KEY claude -p "$(cat "$prompt_file")" \
+  verdict="$(cd /tmp && claude -p "$(cat "$prompt_file")" \
     --model haiku \
     --max-budget-usd 0.25 \
     --no-session-persistence \
-    --settings '{"plugins":{"disabled":["contree@susu-eng"]}}' \
     2>/dev/null)" || true
   rm -f "$prompt_file"
 
@@ -152,24 +151,13 @@ EOF
 
 # --- Main ---
 
-TEST_NAME="${1:-}"
+TEST_NAME="${1:-all}"
 
-if [ -z "$TEST_NAME" ]; then
-  echo "Usage: ./analyse.sh <test-name|all>"
-  echo ""
-  echo "Available transcripts:"
-  for t in "${ALL_TESTS[@]}"; do
-    if [ -f "$SCRIPT_DIR/${t}-transcript.jsonl" ]; then
-      echo "  $t  ($(wc -c < "$SCRIPT_DIR/${t}-transcript.jsonl" | tr -d ' ') bytes)"
-    else
-      echo "  $t  (no transcript)"
-    fi
-  done
-  exit 0
-elif [ "$TEST_NAME" = "all" ]; then
+if [ "$TEST_NAME" = "all" ]; then
   for t in "${ALL_TESTS[@]}"; do
     analyse_one "$t"
   done
+  echo "=== Analysis complete ==="
 else
   analyse_one "$TEST_NAME"
 fi
