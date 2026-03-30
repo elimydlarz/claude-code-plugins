@@ -16,26 +16,22 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CONTREE_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 FIXTURES="$SCRIPT_DIR/../fixtures/incidental-pass"
-
-setup_project() {
-  local dir
-  dir=$(mktemp -d /tmp/contree-incidental-pass-XXXXXX)
-  cp -r "$FIXTURES"/* "$dir/"
-  cp "$FIXTURES"/CLAUDE.md "$dir/"
-  (cd "$dir" && git init -q && git add -A && git commit -q -m "seed: counter with reset already implemented")
-  # Install deps so vitest is available
-  (cd "$dir" && npm install --silent 2>/dev/null)
-  echo "$dir"
-}
-
-echo "Setting up project..."
-PROJECT_DIR=$(setup_project)
-echo "Project dir: $PROJECT_DIR"
-
+PROJECT_DIR="/tmp/contree-incidental-pass"
 TRANSCRIPT_FILE="$SCRIPT_DIR/incidental-pass-transcript.jsonl"
 
+# Always start fresh — overwrite previous run
+rm -rf "$PROJECT_DIR"
+mkdir -p "$PROJECT_DIR"
+cp -r "$FIXTURES"/* "$PROJECT_DIR/"
+cp "$FIXTURES"/CLAUDE.md "$PROJECT_DIR/"
+(cd "$PROJECT_DIR" && git init -q && git add -A && git commit -q -m "seed: counter with reset already implemented")
+(cd "$PROJECT_DIR" && npm install --silent 2>/dev/null)
+
+# Clean up on exit
+trap 'rm -rf "$PROJECT_DIR"' EXIT
+
+echo "Project dir: $PROJECT_DIR"
 echo "Running claude -p with TDD skill..."
-echo "Transcript will be written to: $TRANSCRIPT_FILE"
 
 (cd "$PROJECT_DIR" && env -u ANTHROPIC_API_KEY claude -p \
   "Use the tdd skill to implement the 'when reset after incrementing / then value is zero' path from the Counter test tree in ## Requirements. The reset() function already exists in counter.js — follow the TDD process exactly as described in the skill, including the incidental-pass protocol if the test passes on first run." \
@@ -48,16 +44,7 @@ echo "Transcript will be written to: $TRANSCRIPT_FILE"
 
 echo ""
 echo "--- Done ---"
-echo "Transcript saved to: $TRANSCRIPT_FILE"
-echo "Project dir (preserved): $PROJECT_DIR"
-
-# Extract readable summary: assistant text messages and tool calls
-echo ""
-echo "=== Assistant messages ==="
-grep -o '{"type":"assistant"[^}]*"message":"[^"]*"' "$TRANSCRIPT_FILE" 2>/dev/null || true
-echo ""
-echo "=== Tool uses (name only) ==="
-jq -r 'select(.type == "tool_use") | .tool' "$TRANSCRIPT_FILE" 2>/dev/null || true
+echo "Transcript: $TRANSCRIPT_FILE"
 echo ""
 echo "To analyse: read the transcript and verify the agent:"
 echo "  1. Wrote a test for 'when reset after incrementing'"
