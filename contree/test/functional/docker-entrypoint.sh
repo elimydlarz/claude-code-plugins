@@ -11,7 +11,24 @@ set -euo pipefail
 #   - $1 is the test name (e.g. "incidental-pass")
 
 TEST_NAME="${1:?Usage: docker-entrypoint.sh <test-name>}"
-CONTREE_ROOT="/work/contree"
+
+# When running inside Docker, contree is at /work/contree.
+# When running locally, derive from script location.
+if [ -d "/work/contree" ]; then
+  CONTREE_ROOT="/work/contree"
+else
+  SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+  CONTREE_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+fi
+
+# Load .env if present (for local runs — API key for functional tests only)
+ENV_FILE="$CONTREE_ROOT/test/functional/.env"
+if [ -f "$ENV_FILE" ]; then
+  set -a
+  # shellcheck source=/dev/null
+  . "$ENV_FILE"
+  set +a
+fi
 FIXTURES="$CONTREE_ROOT/test/fixtures"
 PROJECT_DIR="/tmp/contree-test-project"
 TRANSCRIPT_FILE="/output/${TEST_NAME}-transcript.jsonl"
