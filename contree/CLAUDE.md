@@ -39,6 +39,8 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `test/functional/docker-entrypoint.sh` — test cases with VERIFY criteria; transcripts analysed by Claude directly
 - `test/fixtures/seed-project/` — tiny JS counter module used as test target
 - `test/fixtures/incidental-pass/` — counter with reset() pre-implemented (for incidental-pass test)
+- `test/fixtures/sync-drift/` — counter with deliberate drift (amount param without tree, decrement tree without impl)
+- `test/fixtures/tdd-ready/` — counter with vitest configured + requirements, no tests
 
 ## Requirements
 
