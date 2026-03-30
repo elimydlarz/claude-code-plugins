@@ -31,6 +31,7 @@ seed_project() {
 run_claude() {
   local prompt="$1"
   shift
+  # Don't abort on claude failure — we still need to emit VERIFY criteria
   (cd "$PROJECT_DIR" && claude -p "$prompt" \
     --plugin-dir "$CONTREE_ROOT" \
     --dangerously-skip-permissions \
@@ -39,7 +40,7 @@ run_claude() {
     --no-session-persistence \
     --output-format stream-json \
     --verbose \
-    "$@" 2>&1) | tee "$TRANSCRIPT_FILE"
+    "$@" 2>&1) | tee "$TRANSCRIPT_FILE" || true
 }
 
 # --- Tests ---
