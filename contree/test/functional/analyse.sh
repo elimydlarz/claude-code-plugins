@@ -117,9 +117,10 @@ analyse_one() {
     else empty end
   ' "$transcript" 2>/dev/null)"
 
-  # Feed to claude for analysis
-  local verdict
-  verdict="$(claude -p "$(cat << PROMPT
+  # Build prompt and feed to claude for analysis
+  local prompt_file
+  prompt_file="$(mktemp)"
+  cat > "$prompt_file" << EOF
 You are analysing a functional test transcript. The transcript shows what a Claude agent did when given a task. Your job is to verify whether the agent's behaviour matches the expected criteria.
 
 ## Transcript (assistant messages and tool calls)
@@ -133,8 +134,11 @@ $criteria
 ## Instructions
 
 For each numbered criterion, report PASS or FAIL with a one-line justification. End with a summary line: "X/Y PASS".
-PROMPT
-  )" --model haiku --max-budget-usd 0.05 --no-session-persistence 2>/dev/null)" || true
+EOF
+
+  local verdict
+  verdict="$(claude -p "$(cat "$prompt_file")" --model haiku --max-budget-usd 0.05 --no-session-persistence 2>/dev/null)" || true
+  rm -f "$prompt_file"
 
   echo "$verdict"
   echo ""
