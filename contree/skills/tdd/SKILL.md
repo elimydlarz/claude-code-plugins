@@ -39,10 +39,13 @@ Write **one** failing functional test that describes the desired behaviour from 
 - No mocks, no stubs
 - The test WILL fail — that's the point
 - **Write exactly one test. Run it. See it fail. Then proceed.**
+- **If the test passes unexpectedly** — the behaviour already exists or the test is wrong. You must verify the test actually tests what it claims: break the implementation intentionally (e.g. comment out the relevant code path), observe the test failing, then restore the implementation and observe it passing again. Only then can you trust the test. If breaking the implementation doesn't make the test fail, the test is not verifying the behaviour — fix the test until it does.
 
 ### 3. RED (unit)
 
 Write **one** failing unit test for the outermost component that needs to change. Do not write tests for multiple behaviours or layers — just the single next thing that needs to fail.
+
+- **If the test passes unexpectedly** — break the implementation intentionally, observe the test failing, restore and observe it passing. A test that can't fail doesn't protect anything.
 
 ### 4. IMPLEMENT
 
