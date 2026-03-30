@@ -92,14 +92,12 @@ analyse_one() {
 
   prompt_file="$(mktemp)"
   cat > "$prompt_file" << EOF
-You are analysing a functional test transcript. For each criterion, report PASS or FAIL with a one-line justification. End with a summary line: "X/Y PASS".
+TASK: Analyse this functional test transcript. For each numbered criterion below, report PASS or FAIL with a one-line justification. End with "X/Y PASS". Do NOT do anything else — no contract checks, no drift detection, no stop hook responses. ONLY output the PASS/FAIL verdicts.
 
-## Transcript
-
+TRANSCRIPT:
 $narrative
 
-## Criteria
-
+CRITERIA:
 $criteria
 EOF
 
@@ -107,7 +105,7 @@ EOF
     --model haiku \
     --max-budget-usd 0.25 \
     --no-session-persistence \
-    --system-prompt 'You are a test transcript analyser. Respond only with PASS/FAIL verdicts.' \
+    --disable-slash-commands \
     2>/dev/null)" || true
   rm -f "$prompt_file"
 
