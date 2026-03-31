@@ -81,15 +81,16 @@ After implementation is complete, suggest the user runs `sync` to verify test tr
 
 ## Test Tree Format
 
-Test trees describe **operating principles**, not case enumerations.
+Test trees describe **operating principles**, not case enumerations. Use EARS patterns (see the `ears` rule) to choose the right keyword for each requirement.
 
-GOOD — describes principles:
+GOOD — uses EARS patterns to match each requirement's nature:
 ```
 UserRegistration
+  then passwords are stored hashed, never in plain text
   when a new user registers with valid details
     then the user account is created
     and a welcome email is sent
-  when the email is already registered
+  if the email is already registered
     then registration is rejected
     and the existing account is not modified
 ```
@@ -106,9 +107,9 @@ UserRegistration
 ### Rules
 
 - Top level names the subject (capability for functional, module/function for unit)
-- `when` describes conditions (nest with `and` for compound conditions)
+- Use EARS keywords (`when`, `while`, `if`, `where`, or bare `then`) to match the requirement's nature
 - `then` describes outcomes (what the consumer observes)
-- Include negative paths (what happens when invalid, absence of behaviour)
+- Use `if/then` for error cases and unwanted behaviour
 - Describe principles, not specific values
 
 ## Test Layers
