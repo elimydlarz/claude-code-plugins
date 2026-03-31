@@ -312,6 +312,7 @@ VERIFY
     echo "  discover-sync                — natural prompt triggers sync skill"
     echo "  discover-setup               — natural prompt triggers setup skill"
     echo "  discover-tdd                 — natural prompt triggers tdd skill"
+    echo "  ears-change                  — change skill uses EARS patterns"
     exit 1
     ;;
 esac
