@@ -135,9 +135,10 @@ change-writes-trees
   when a behaviour change is needed
     then the change is discussed with the user before modifying trees
     and test trees are written from the consumer's perspective
+    and EARS patterns are chosen to match each requirement's nature
     and functional → unit decomposition is planned
   when modifying existing behaviour
-    then only affected when/then paths are changed
+    then only affected paths are changed
   when removing a capability
     then the tree is removed after user confirmation
   when trees are complete
