@@ -66,6 +66,12 @@ run_claude() {
     "$@" 2>&1) | tee "$TRANSCRIPT_FILE" || true
 }
 
+write_verify() {
+  cat > "$VERIFY_FILE"
+  echo ""
+  cat "$VERIFY_FILE"
+}
+
 # --- Tests ---
 
 case "$TEST_NAME" in
