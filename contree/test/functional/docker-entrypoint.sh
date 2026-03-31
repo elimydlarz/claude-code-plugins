@@ -144,8 +144,8 @@ EOF
     write_verify << 'VERIFY'
 
 === VERIFY ===
-1. Agent invoked the change skill to add a "when reset" path to the test tree in ## Requirements
-2. Agent invoked the tdd skill after the tree was in place
+1. Agent organically invoked a skill that writes requirements first (change, or workflow which runs change internally)
+2. Agent added a "when reset" path to the test tree in ## Requirements before writing any code
 3. Agent wrote a failing test for reset behaviour
 4. Agent implemented reset() in counter.js
 5. Agent confirmed tests pass
