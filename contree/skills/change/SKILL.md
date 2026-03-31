@@ -70,38 +70,43 @@ Once aligned, suggest the user runs `sync` to audit completeness and implement g
 
 ## Tree Format Rules
 
-- **`when` describes conditions** — what triggers or sets up the behaviour. Nest with `and` for compound conditions.
+- **Use EARS patterns** — choose the right keyword for each requirement (see the `ears` rule). Don't force everything into `when/then`.
 - **`then` describes outcomes** — what the consumer observes. What changes, what's produced, what's prevented.
 - **Describe principles, not cases** — "when the input is invalid" not "when the input is empty / when the input is null / when the input is too long".
-- **Include the negative** — if something happens when valid, say what happens when invalid. Absence of behaviour is part of the specification.
+- **Include the negative** — use `if/then` for error cases and unwanted behaviour. Absence of behaviour is part of the specification.
 - **Use the consumer's vocabulary** — describe what the consumer sees, not implementation internals.
 
 ## Examples
 
-**Good** — describes operating principles:
+**Good** — uses EARS patterns to match each requirement's nature:
 ```
-user-registration
-  when a new user registers with valid details
-    then the user account is created
-    and a welcome email is sent
-  when the email is already registered
-    then registration is rejected
-    and the existing account is not modified
+media-player
+  then supports mp3 and wav formats
+  while playing
+    when pause is pressed
+      then playback pauses at current position
+    when track ends
+      then the next track starts automatically
+  when a track is loaded
+    then playback begins from the start
+  if the file is corrupt
+    then playback is rejected with an error message
+  where bluetooth is available
+    then audio can be routed to a bluetooth device
 ```
 
 **Bad** — enumerates cases:
 ```
-user-registration
-  when name is "Alice"
-    then account for Alice is created
-  when name is "Bob"
-    then account for Bob is created
+media-player
+  when file is "song.mp3"
+    then song.mp3 plays
+  when file is "track.wav"
+    then track.wav plays
 ```
 
 **Bad** — uses implementation language:
 ```
-user-registration
-  when POST /api/users is called with valid JSON body
-    then a row is inserted into the users table
-    and an SQS message is published to the welcome-email queue
+media-player
+  when AudioContext.decodeAudioData resolves
+    then the Float32Array buffer is assigned to the source node
 ```
