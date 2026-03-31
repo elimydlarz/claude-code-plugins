@@ -83,7 +83,7 @@ case "$TEST_NAME" in
     run_claude \
       "Use the tdd skill to implement the 'when reset after incrementing / then value is zero' path from the Counter test tree in ## Requirements. The reset() function already exists in counter.js — follow the TDD process exactly as described in the skill, including the incidental-pass protocol if the test passes on first run."
 
-    cat << 'VERIFY'
+    write_verify << 'VERIFY'
 
 === VERIFY ===
 1. Agent wrote a functional test for "when reset after incrementing / then value is zero"
@@ -104,7 +104,7 @@ VERIFY
     run_claude \
       "Run /setup on this project. It's a simple JS counter module. Use Vitest. Don't implement any tests yet — just configure the framework and generate requirement trees."
 
-    cat << 'VERIFY'
+    write_verify << 'VERIFY'
 
 === VERIFY ===
 1. Agent invoked the setup skill
@@ -140,7 +140,7 @@ EOF
     run_claude \
       "Add a reset feature to the counter that sets it back to zero. First run /change to add the reset behaviour to the test tree, then run /tdd to implement it."
 
-    cat << 'VERIFY'
+    write_verify << 'VERIFY'
 
 === VERIFY ===
 1. Agent ran /change and added a "when reset" path to the test tree in ## Requirements
@@ -160,7 +160,7 @@ VERIFY
     run_claude \
       "Add an 'amount' parameter to increment() so it can increment by more than 1. Update counter.js."
 
-    cat << 'VERIFY'
+    write_verify << 'VERIFY'
 
 === VERIFY ===
 1. Agent modified counter.js to add the amount parameter to increment()
@@ -186,7 +186,7 @@ EOF
     run_claude \
       "Run /setup on this project. It's a user account service that needs PostgreSQL for functional tests. Use Vitest. Configure Docker-based functional testing with a real Postgres container. Do NOT write any test files — no .test.js, no .test.ts, no spec files. Only configuration and requirement trees."
 
-    cat << 'VERIFY'
+    write_verify << 'VERIFY'
 
 === VERIFY ===
 1. Agent invoked the setup skill
@@ -223,7 +223,7 @@ EOF
     run_claude \
       "I want to add a reset feature to this counter that sets the value back to zero. Let's figure out what the behaviour should look like before writing any code."
 
-    cat << 'VERIFY'
+    write_verify << 'VERIFY'
 
 === VERIFY ===
 1. Agent invoked the change skill (not tdd, not setup, not workflow)
@@ -241,7 +241,7 @@ VERIFY
     run_claude \
       "I've been making changes to counter.js and I'm not sure the requirements still match the code. Can you check what's drifted?"
 
-    cat << 'VERIFY'
+    write_verify << 'VERIFY'
 
 === VERIFY ===
 1. Agent invoked the sync skill (not change, not tdd)
@@ -259,7 +259,7 @@ VERIFY
     run_claude \
       "This project doesn't have any testing set up yet. Can you get it ready for test-driven development? Use Vitest."
 
-    cat << 'VERIFY'
+    write_verify << 'VERIFY'
 
 === VERIFY ===
 1. Agent invoked the setup skill (not change, not tdd)
@@ -277,7 +277,7 @@ VERIFY
     run_claude \
       "The requirements are all set — can you implement the increment behaviour from the test tree?"
 
-    cat << 'VERIFY'
+    write_verify << 'VERIFY'
 
 === VERIFY ===
 1. Agent invoked the tdd skill (not change, not setup)
@@ -294,7 +294,7 @@ VERIFY
     run_claude \
       "I want to define the requirements for this media player before writing any tests or code. It has states (playing, paused, stopped), events (load, pause, resume, stop), error handling (unsupported file formats), and an optional bluetooth feature. Define the requirements using the appropriate EARS patterns for each kind of requirement."
 
-    cat << 'VERIFY'
+    write_verify << 'VERIFY'
 
 === VERIFY ===
 1. Agent invoked the change skill
