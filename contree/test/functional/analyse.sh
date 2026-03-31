@@ -61,7 +61,7 @@ INSTRUCTIONS:
 TRANSCRIPT:
 $(cat "$transcript")
 EOF
-)" --no-session-persistence --model haiku --max-budget-usd 0.10 --output-format text 2>/dev/null
+)" --no-session-persistence --model haiku --max-budget-usd 0.50 --output-format text 2>/dev/null
   echo ""
 }
 
