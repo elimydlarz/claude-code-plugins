@@ -47,14 +47,18 @@ analyse_one() {
   echo "=== Analysing: $test_name ==="
 
   claude -p "$(cat <<EOF
-Analyse this functional test transcript against the VERIFY criteria below.
+You are evaluating a Claude Code functional test transcript.
 
-For each criterion, state PASS or FAIL with one line of evidence.
-End with: Overall: PASS (N/M) or FAIL (N/M).
-
+VERIFY CRITERIA (evaluate ONLY these — nothing else):
 $verify
 
-Transcript (JSONL — each line is a JSON event, look for assistant messages and tool results):
+INSTRUCTIONS:
+- The transcript is JSONL. Each line is a JSON object. Look at "content" arrays in assistant messages for text and tool_use blocks.
+- For each numbered criterion above, output exactly one line: the criterion number, PASS or FAIL, and a brief quote or fact from the transcript as evidence.
+- After all criteria, output one summary line: "Overall: X/Y PASS"
+- Do NOT add commentary, suggestions, or analysis beyond what is asked.
+
+TRANSCRIPT:
 $(cat "$transcript")
 EOF
 )" --no-session-persistence --model haiku --max-budget-usd 0.10 --output-format text 2>/dev/null
