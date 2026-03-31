@@ -101,6 +101,13 @@ load test_helper
   assert_output --partial 'name: workflow'
 }
 
+# --- Rules ---
+
+@test "EARS rule exists" {
+  run test -f "$PROJECT_ROOT/rules/ears.md"
+  assert_success
+}
+
 # --- Hook ---
 
 @test "hooks.json exists" {
