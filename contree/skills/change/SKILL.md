@@ -31,15 +31,18 @@ Use the consumer's vocabulary. If the consumer says "register", the tree says "r
 
 **Adding a new capability:**
 
-Name the tree — a short noun phrase describing what the system does. Write `when/then` paths describing the capability's operating principles:
+Name the tree — a short noun phrase describing what the system does. Write paths using EARS patterns (see the `ears` rule) to describe the capability's operating principles:
 
 ```
 capability-name
-  when <condition>
+  then <ubiquitous outcome>
+  while <precondition>
+    then <outcome>
+  when <trigger>
     then <outcome>
     and <outcome>
-  when <other condition>
-    then <different outcome>
+  if <error condition>
+    then <recovery outcome>
 ```
 
 Add as a new subsection under `## Requirements`.
