@@ -53,5 +53,11 @@ else
 fi
 
 echo ""
-echo "Done. Transcripts in: $SCRIPT_DIR/*-transcript.jsonl"
-echo "Ask Claude to read and analyse them against the VERIFY criteria."
+echo "Done. Read and analyse these transcripts against the VERIFY criteria in docker-entrypoint.sh:"
+if [ "$TEST_NAME" = "all" ]; then
+  for t in "${ALL_TESTS[@]}"; do
+    [ -f "$SCRIPT_DIR/${t}-transcript.jsonl" ] && echo "  $SCRIPT_DIR/${t}-transcript.jsonl"
+  done
+else
+  echo "  $SCRIPT_DIR/${TEST_NAME}-transcript.jsonl"
+fi
