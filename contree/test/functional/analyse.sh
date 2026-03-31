@@ -57,7 +57,7 @@ $verify
 Transcript (JSONL — each line is a JSON event, look for assistant messages and tool results):
 $(cat "$transcript")
 EOF
-)" --no-session-persistence --model sonnet --max-budget-usd 0.25 --output-format text 2>/dev/null
+)" --no-session-persistence --model haiku --max-budget-usd 0.10 --output-format text 2>/dev/null
   echo ""
 }
 
