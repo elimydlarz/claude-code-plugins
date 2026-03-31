@@ -279,6 +279,26 @@ VERIFY
 VERIFY
     ;;
 
+  ears-change)
+    # Verifies: change-writes-trees / EARS patterns are chosen to match each requirement's nature
+    seed_project "ears-project"
+
+    echo "Running: ears-change — change skill writes requirements using varied EARS patterns"
+    run_claude \
+      "I want to define the requirements for this media player before writing any tests or code. It has states (playing, paused, stopped), events (load, pause, resume, stop), error handling (unsupported file formats), and an optional bluetooth feature. Define the requirements using the appropriate EARS patterns for each kind of requirement."
+
+    cat << 'VERIFY'
+
+=== VERIFY ===
+1. Agent invoked the change skill
+2. Trees written under ## Requirements in CLAUDE.md
+3. At least one state-driven requirement using 'while' (e.g. while playing, while paused)
+4. At least one event-driven requirement using 'when' (e.g. when a track is loaded)
+5. At least one unwanted-behaviour requirement using 'if/then' (e.g. if the file format is unsupported)
+6. Requirements use consumer vocabulary, not implementation details
+VERIFY
+    ;;
+
   *)
     echo "Unknown test: $TEST_NAME" >&2
     echo ""
