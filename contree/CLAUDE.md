@@ -36,8 +36,7 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `test/hook.bats` — hook behaviour tests: loop prevention, exit codes, prompt content
 - `test/functional/Dockerfile` — Docker image for functional tests (node + git + jq + claude CLI, fixture deps pre-installed)
 - `test/functional/docker-run.sh` — runs functional tests in Docker (parallel), passes secrets via env vars
-- `test/functional/docker-entrypoint.sh` — test cases with VERIFY criteria; transcripts saved as JSONL
-- `test/functional/analyse.sh` — feeds transcripts + VERIFY criteria to Claude for automated evaluation
+- `test/functional/docker-entrypoint.sh` — test cases with VERIFY criteria; transcripts saved as JSONL and analysed by Claude directly
 - `test/fixtures/seed-project/` — tiny JS counter module used as test target
 - `test/fixtures/incidental-pass/` — counter with reset() pre-implemented (for incidental-pass test)
 - `test/fixtures/sync-drift/` — counter with deliberate drift (amount param without tree, decrement tree without impl)
