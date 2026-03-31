@@ -325,4 +325,5 @@ VERIFY
 esac
 
 echo ""
-echo "Transcript saved to: $TRANSCRIPT_FILE"
+echo "Transcript: $TRANSCRIPT_FILE"
+echo "Verify:     $VERIFY_FILE"
