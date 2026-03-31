@@ -11,7 +11,13 @@ set -euo pipefail
 # along with the transcript to Claude for evaluation.
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 ENTRYPOINT="$SCRIPT_DIR/docker-entrypoint.sh"
+
+# Load API key from .env files (same search order as docker-run.sh)
+for env_file in "$SCRIPT_DIR/.env" "$REPO_ROOT/.env"; do
+  [ -f "$env_file" ] && set -a && . "$env_file" && set +a
+done
 
 extract_verify() {
   local test_name="$1"
