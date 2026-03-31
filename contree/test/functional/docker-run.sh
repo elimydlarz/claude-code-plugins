@@ -53,11 +53,16 @@ else
 fi
 
 echo ""
-echo "Done. Read and analyse these transcripts against the VERIFY criteria in docker-entrypoint.sh:"
+echo "Done. Read each transcript and evaluate against its verify file:"
 if [ "$TEST_NAME" = "all" ]; then
   for t in "${ALL_TESTS[@]}"; do
-    [ -f "$SCRIPT_DIR/${t}-transcript.jsonl" ] && echo "  $SCRIPT_DIR/${t}-transcript.jsonl"
+    if [ -f "$SCRIPT_DIR/${t}-transcript.jsonl" ]; then
+      echo "  $SCRIPT_DIR/${t}-transcript.jsonl"
+      echo "  $SCRIPT_DIR/${t}-verify.txt"
+      echo ""
+    fi
   done
 else
   echo "  $SCRIPT_DIR/${TEST_NAME}-transcript.jsonl"
+  echo "  $SCRIPT_DIR/${TEST_NAME}-verify.txt"
 fi
