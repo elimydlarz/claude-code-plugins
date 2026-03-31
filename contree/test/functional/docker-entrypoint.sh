@@ -118,7 +118,8 @@ VERIFY
     ;;
 
   tdd-writes-requirement-first)
-    # Verifies: outside-in-tdd / when TDD discovers new test cases
+    # Verifies: organic discovery — user describes adding + implementing a feature,
+    # agent discovers it needs /change (requirements first) then /tdd (implement)
     seed_project "seed-project"
     cat >> "$PROJECT_DIR/CLAUDE.md" << 'EOF'
 
@@ -136,19 +137,18 @@ Counter
 EOF
     (cd "$PROJECT_DIR" && git add -A && git commit -q -m "add requirements")
 
-    echo "Running: tdd-writes-requirement-first — change then TDD for reset"
+    echo "Running: tdd-writes-requirement-first — organic discovery of change then TDD"
     run_claude \
-      "Add a reset feature to the counter that sets it back to zero. First run /change to add the reset behaviour to the test tree, then run /tdd to implement it."
+      "I want to add a reset feature to this counter that sets the value back to zero. Add it to the requirements and then implement it."
 
     write_verify << 'VERIFY'
 
 === VERIFY ===
-1. Agent ran /change and added a "when reset" path to the test tree in ## Requirements
-2. Agent ran /tdd after the tree was in place
-3. Agent wrote a failing functional test for reset behaviour
-4. Agent wrote a failing unit test for reset
-5. Agent implemented reset() in counter.js
-6. Agent confirmed tests pass (unit then functional)
+1. Agent invoked the change skill to add a "when reset" path to the test tree in ## Requirements
+2. Agent invoked the tdd skill after the tree was in place
+3. Agent wrote a failing test for reset behaviour
+4. Agent implemented reset() in counter.js
+5. Agent confirmed tests pass
 VERIFY
     ;;
 
