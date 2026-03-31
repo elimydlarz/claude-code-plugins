@@ -6,6 +6,7 @@
   },
   "scripts": {
     "test": "bats --pretty test/",
-    "test:functional": "bash test/functional/docker-run.sh"
+    "test:functional": "bash test/functional/docker-run.sh",
+    "test:functional:analyse": "bash test/functional/analyse.sh"
   }
 }
