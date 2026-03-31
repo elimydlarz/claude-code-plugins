@@ -146,9 +146,9 @@ This is the key step that distinguishes contree from a plain test framework setu
 
 Process:
 1. Identify the system's capabilities — what does it do from the consumer's perspective?
-2. For each capability, write a functional-level test tree using `when/then` format
+2. For each capability, write a functional-level test tree using EARS patterns (see the `ears` rule) — choose the right keyword for each requirement's nature
 3. Describe operating principles, not implementation details
-4. Include positive and negative paths
+4. Include positive paths and unwanted behaviour (`if/then` for error cases)
 5. If existing tests exist, use them as input — but rewrite as principle-describing trees, don't copy test names verbatim
 6. If the system is new/empty, write requirement trees for the planned capabilities based on what the user describes
 
@@ -162,10 +162,11 @@ Write the trees into `## Requirements` in CLAUDE.md. Each capability gets its ow
 ### UserRegistration
 
 UserRegistration
+  then passwords are stored hashed, never in plain text
   when a new user registers with valid details
     then the user account is created
     and a welcome email is sent
-  when the email is already registered
+  if the email is already registered
     then registration is rejected
 
 ### InvoiceGeneration
@@ -174,8 +175,10 @@ InvoiceGeneration
   when a completed order is submitted for invoicing
     then a PDF invoice is generated with line items
     and the invoice is emailed to the customer
-  when the order has no line items
+  if the order has no line items
     then invoicing is rejected
+  where the customer has a tax exemption
+    then the invoice omits VAT
 ```
 
 ### 10. UPDATE CLAUDE.md
