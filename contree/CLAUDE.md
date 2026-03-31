@@ -41,6 +41,7 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `test/fixtures/incidental-pass/` — counter with reset() pre-implemented (for incidental-pass test)
 - `test/fixtures/sync-drift/` — counter with deliberate drift (amount param without tree, decrement tree without impl)
 - `test/fixtures/tdd-ready/` — counter with vitest configured + requirements, no tests
+- `test/fixtures/ears-project/` — media player module for EARS pattern functional test
 
 ## Functional Testing
 
