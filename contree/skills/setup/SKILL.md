@@ -14,6 +14,7 @@ Prepares the project for ongoing test-tree-driven development. Configures the te
 3. **Two test layers, always.** Unit (colocated, mocked, fast) and functional (separated, real system, no mocks).
 4. **CI dual reporters.** Configure tree output for local dev AND structured output (JUnit XML) for CI. Both, not either/or.
 5. **Verify after configuring.** Run the tests and confirm tree-shaped output before moving on.
+6. **No test files.** Setup configures the framework and generates requirement trees. Do NOT create any test files (`*.test.*`, `*.spec.*`). The `tdd` skill handles test implementation later.
 
 ## Process
 
