@@ -35,6 +35,7 @@ if [ -d "/output" ]; then
   OUTPUT_DIR="/output"
 fi
 TRANSCRIPT_FILE="$OUTPUT_DIR/${TEST_NAME}-transcript.jsonl"
+VERIFY_FILE="$OUTPUT_DIR/${TEST_NAME}-verify.txt"
 
 # --- Helpers ---
 
