@@ -42,6 +42,10 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `test/fixtures/sync-drift/` — counter with deliberate drift (amount param without tree, decrement tree without impl)
 - `test/fixtures/tdd-ready/` — counter with vitest configured + requirements, no tests
 
+## Functional Testing
+
+Run functional tests with `pnpm test:functional` (all) or `bash test/functional/docker-run.sh <test-name>` (one). After the script finishes, it prints the exact transcript file paths. **Always read the transcripts and evaluate each against the VERIFY criteria in docker-entrypoint.sh.** Report PASS/FAIL per criterion with evidence.
+
 ## Requirements
 
 ### test-trees-as-requirements
