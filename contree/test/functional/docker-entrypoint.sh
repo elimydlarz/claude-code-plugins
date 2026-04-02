@@ -306,6 +306,25 @@ VERIFY
 VERIFY
     ;;
 
+  no-tautologies)
+    # Verifies: change-writes-trees / every then clause asserts something the when clause does not already imply
+    seed_project "seed-project"
+
+    echo "Running: no-tautologies — change skill rejects tautological then clauses"
+    run_claude \
+      "Use the change skill to write requirements for this counter module. It can be created with a default or custom initial value, incremented, decremented, and its value read. Write the test trees under ## Requirements in CLAUDE.md. Do NOT write any code or tests."
+
+    write_verify << 'VERIFY'
+
+=== VERIFY ===
+1. Agent invoked the change skill
+2. Agent wrote test trees under ## Requirements in CLAUDE.md
+3. No then clause merely restates its when/while condition (e.g. "when created / then it is created" or "when incremented / then it increments")
+4. Every then clause asserts a concrete, observable outcome (e.g. "when created with default / then value is zero")
+5. Agent did NOT write any implementation code or tests
+VERIFY
+    ;;
+
   *)
     echo "Unknown test: $TEST_NAME" >&2
     echo ""
@@ -320,6 +339,7 @@ VERIFY
     echo "  discover-setup               — natural prompt triggers setup skill"
     echo "  discover-tdd                 — natural prompt triggers tdd skill"
     echo "  ears-change                  — change skill uses EARS patterns"
+    echo "  no-tautologies               — change skill rejects tautological trees"
     exit 1
     ;;
 esac

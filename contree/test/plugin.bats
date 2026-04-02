@@ -101,6 +101,13 @@ load test_helper
   assert_output --partial 'name: workflow'
 }
 
+# --- Tree quality ---
+
+@test "change skill instructs against tautological then clauses" {
+  run grep -q "assert something.*when clause does not already imply\|restate.*condition\|tautolog" "$PROJECT_ROOT/skills/change/SKILL.md"
+  assert_success
+}
+
 # --- Rules ---
 
 @test "EARS rule exists" {
