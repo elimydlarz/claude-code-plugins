@@ -65,7 +65,7 @@ The functional test should now pass. If it doesn't, you've missed something — 
 
 ### 8. REFACTOR
 
-With all tests green, rework for simplicity and expressiveness. Ensure test trees at both layers read as clear specifications.
+With all tests green, refactor the code you just changed — no broader. Resist the pull to keep tidying; it delays facing the next test. Duplication is a hint, not a command — don't extract abstractions until patterns have proven themselves.
 
 ### 9. REPEAT
 
