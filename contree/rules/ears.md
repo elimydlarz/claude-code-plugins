@@ -38,4 +38,13 @@ while <precondition>
     then <outcome>
 ```
 
-Choose the pattern that fits. A system constraint is ubiquitous. A precondition that must hold is state-driven. A discrete trigger is event-driven. An error case is unwanted behaviour. A feature flag is optional. Combine when needed.
+Causal nesting — when a trigger can only occur as a consequence of a prior outcome, nest it under that outcome:
+```
+when <trigger>
+  then <outcome>
+    when <consequence of outcome>
+      then <next outcome>
+```
+A `when` that depends on a preceding `then` is not a sibling — it is a child. If "refresh fails" can only happen because "refresh was attempted", nest it under the `then` that attempts the refresh.
+
+Choose the pattern that fits. A system constraint is ubiquitous. A precondition that must hold is state-driven. A discrete trigger is event-driven. An error case is unwanted behaviour. A feature flag is optional. Combine when needed. Nest when one behaviour depends on another's outcome.
