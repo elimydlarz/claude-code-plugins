@@ -117,6 +117,24 @@ media-player
     then it pauses
 ```
 
+**Bad** — flat siblings for causally dependent behaviour:
+```
+auth
+  when token is invalid
+    then refresh is attempted
+  when refresh fails
+    then user is logged out
+```
+
+**Good** — causal nesting (refresh failure depends on refresh being attempted):
+```
+auth
+  when token is invalid
+    then refresh is attempted
+      when refresh fails
+        then user is logged out
+```
+
 **Bad** — uses implementation language:
 ```
 media-player
