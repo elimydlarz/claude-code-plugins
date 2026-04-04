@@ -91,6 +91,11 @@ load test_helper
   assert_output --partial 'name: sync'
 }
 
+@test "sync skill auto-triggers on drift questions" {
+  run head -5 "$PROJECT_ROOT/skills/sync/SKILL.md"
+  assert_output --partial 'TRIGGER when'
+}
+
 @test "workflow skill exists" {
   run test -f "$PROJECT_ROOT/skills/workflow/SKILL.md"
   assert_success
