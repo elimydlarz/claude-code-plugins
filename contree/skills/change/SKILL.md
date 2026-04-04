@@ -1,6 +1,6 @@
 ---
 name: change
-description: "Set expected behaviour by writing or modifying test trees — the contract that says what the system should do before any code exists. TRIGGER when: planning or describing a behaviour change, before any code is written."
+description: "Set expected behaviour by writing or modifying test trees — the contract that says what the system should do before any code exists. TRIGGER when: the user describes a feature, capability, or behaviour change they want — even loosely (e.g. 'I want X', 'let's add Y', 'can we make it do Z', 'change how X works', 'I need to modify', 'remove this behaviour'). Trigger before any code is discussed or written."
 ---
 
 # Change
