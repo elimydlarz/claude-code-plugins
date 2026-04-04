@@ -212,8 +212,8 @@ composable-testing
 
 ```
 rules-loading
-  when a session starts with the plugin active
-    then the rules cheatsheet is shown at session start
+  when a session starts
+    then the rules cheatsheet is shown
     and not repeated on every response
 ```
 
