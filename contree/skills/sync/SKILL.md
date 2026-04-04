@@ -1,6 +1,6 @@
 ---
 name: sync
-description: "Identify gaps and cruft — where intent and implementation have drifted apart. Compares test trees against code in both directions, then hands gaps to tdd."
+description: "Identify gaps and cruft — where intent and implementation have drifted apart. Compares test trees against code in both directions, then hands gaps to tdd. TRIGGER when: the user asks about drift, gaps, or whether requirements are complete."
 ---
 
 # Sync
