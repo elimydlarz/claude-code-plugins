@@ -233,6 +233,38 @@ EOF
 VERIFY
     ;;
 
+  discover-change-implicit)
+    # Verifies: skill discoverability — bare feature request (no skill cues) triggers change skill
+    seed_project "seed-project"
+    cat >> "$PROJECT_DIR/CLAUDE.md" << 'EOF'
+
+## Requirements
+
+### Counter
+
+```
+Counter
+  when created with default
+    then value is zero
+  when incremented
+    then value increases by one
+```
+EOF
+    (cd "$PROJECT_DIR" && git add -A && git commit -q -m "add requirements")
+
+    echo "Running: discover-change-implicit — bare feature request triggers change skill"
+    run_claude \
+      "Add a decrement feature to the counter."
+
+    write_verify << 'VERIFY'
+
+=== VERIFY ===
+1. Agent invoked the change skill before writing any code
+2. Agent wrote or proposed when/then paths for decrement in ## Requirements
+3. Agent did NOT write implementation code before the tree existed
+VERIFY
+    ;;
+
   discover-sync)
     # Verifies: skill discoverability — natural prompt triggers sync skill
     seed_project "sync-drift"
