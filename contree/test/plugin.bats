@@ -137,3 +137,15 @@ load test_helper
   assert_success
   refute_output "null"
 }
+
+@test "hooks.json defines a SessionStart hook" {
+  run jq -r '.hooks.SessionStart' "$PROJECT_ROOT/hooks/hooks.json"
+  assert_success
+  refute_output "null"
+}
+
+@test "SessionStart hook loads the rules cheatsheet" {
+  run jq -r '.hooks.SessionStart[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json"
+  assert_success
+  assert_output --partial "cheatsheet.md"
+}
