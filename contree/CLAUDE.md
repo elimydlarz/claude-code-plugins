@@ -26,7 +26,8 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `.claude-plugin/plugin.json` — plugin manifest (name, version, description)
 - `package.json` — dev dependencies (bats-support, bats-assert) and test scripts
 - `rules/` — coding principles (one rule per file, plain prose, no frontmatter). Includes `ears.md` (EARS requirement syntax)
-- `hooks/hooks.json` — Stop hook detecting drift and prompting mental model updates
+- `rules/cheatsheet.md` — condensed one-liner summary of all rules, loaded at session start
+- `hooks/hooks.json` — SessionStart hook loading the rules cheatsheet; Stop hook detecting drift and prompting mental model updates
 - `skills/setup/SKILL.md` — prepare the project for test-tree-driven development: framework, reporters, initial trees
 - `skills/change/SKILL.md` — set expected behaviour: write or modify test trees before code exists
 - `skills/sync/SKILL.md` — identify gaps and cruft: test trees vs implementation in both directions
