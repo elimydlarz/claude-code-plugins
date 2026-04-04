@@ -208,6 +208,15 @@ composable-testing
     and mutation testing validates unit test quality
 ```
 
+### rules-loading
+
+```
+rules-loading
+  when a session starts with the plugin active
+    then the rules cheatsheet is shown at session start
+    and not repeated on every response
+```
+
 ## Dependencies
 
 The stop hook requires `jq` on the host system.
