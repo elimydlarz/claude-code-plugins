@@ -367,6 +367,7 @@ VERIFY
     echo "  stop-hook-fires              — stop hook prompts updates"
     echo "  setup-docker-testing         — /setup with Docker for external services"
     echo "  discover-change              — natural prompt triggers change skill"
+    echo "  discover-change-implicit     — bare feature request triggers change skill"
     echo "  discover-sync                — natural prompt triggers sync skill"
     echo "  discover-setup               — natural prompt triggers setup skill"
     echo "  discover-tdd                 — natural prompt triggers tdd skill"
