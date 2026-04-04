@@ -57,7 +57,7 @@ test-trees-as-requirements
   when a project uses contree
     then requirements in CLAUDE.md are test trees using EARS syntax
     and each capability has its own subsection under ## Requirements
-    and the EARS rule is always loaded
+    and the EARS rule is embedded in skills that use it
   when a behaviour change is needed
     then the test tree must exist before implementation starts
   when implementation reveals new understanding
