@@ -1,5 +1,15 @@
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "for f in \"${CLAUDE_PLUGIN_ROOT}/rules/\"*.md; do printf '\\n---\\n'; cat \"$f\"; done >&2; exit 2"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
