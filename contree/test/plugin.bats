@@ -115,6 +115,11 @@ load test_helper
   assert_success
 }
 
+@test "rules cheatsheet exists" {
+  run test -f "$PROJECT_ROOT/rules/cheatsheet.md"
+  assert_success
+}
+
 # --- Hook ---
 
 @test "hooks.json exists" {
