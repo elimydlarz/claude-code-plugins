@@ -236,6 +236,21 @@ rules-loading
     and not repeated on every response
 ```
 
+### self-care-20-20-20
+
+```
+self-care-20-20-20
+  when 20 minutes have elapsed since session start
+    then Claude opens its response with the 20-20-20 reminder before addressing the request
+    and the reminder names the rule and the action: look 20 feet away for 20 seconds
+    and a nudge file is created at ~/.claude/contree/nudges/20-20-20/<unix-timestamp>
+      when 20 minutes have elapsed since the most recent nudge file's timestamp
+        then Claude opens its response with the 20-20-20 reminder again
+        and a nudge file is created at ~/.claude/contree/nudges/20-20-20/<unix-timestamp>
+  if the nudge directory cannot be created
+    then no nudge is given and the hook exits silently
+```
+
 ## Dependencies
 
 The stop hook requires `jq` on the host system.
