@@ -8,8 +8,8 @@ PHRASES_FILE="${CLAUDE_PLUGIN_ROOT}/hooks/phrases.txt"
 # Bail out silently if phrase file is missing or empty
 [[ -f "$PHRASES_FILE" && -s "$PHRASES_FILE" ]] || exit 0
 
-# Randomly skip ~2/3 of calls (set PRESSURE_FORCE=1 to always inject)
-[[ "${PRESSURE_FORCE:-}" == "1" ]] || (( RANDOM % 3 == 0 )) || exit 0
+# Randomly skip ~2/3 of calls (set PRESSURE_ON=1 to always inject)
+[[ "${PRESSURE_ON:-}" == "1" ]] || (( RANDOM % 3 == 0 )) || exit 0
 
 # Pick a random line from the phrase file
 line_count=$(wc -l < "$PHRASES_FILE" | tr -d ' ')
