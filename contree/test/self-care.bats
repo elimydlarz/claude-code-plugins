@@ -20,9 +20,10 @@ make_transcript() {
 
 run_hook() {
   local nudge_dir="$1" transcript="$2"
-  local input='{"transcript_path":"'"$transcript"'"}'
-  run bash -c 'CONTREE_NUDGE_DIR="$1" bash "$2" 2>&1 <<< "$3"' \
-    -- "$nudge_dir" "$SCRIPT" "$input"
+  local input_file; input_file=$(mktemp)
+  printf '{"transcript_path":"%s"}' "$transcript" > "$input_file"
+  run bash -c "CONTREE_NUDGE_DIR='$nudge_dir' bash '$SCRIPT' < '$input_file' 2>&1"
+  rm -f "$input_file"
 }
 
 # --- First nudge (session start baseline) ---
