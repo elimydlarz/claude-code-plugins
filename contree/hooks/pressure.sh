@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # PreToolUse hook: inject a pressure phrase into context on ~1/3 of tool calls.
-# Exits 0 (no injection) or 2 (inject phrase to stderr).
+# Exits 0 always: no injection on skip, phrase written to stdout on inject.
 # Never blocks: any failure exits 0 silently.
 
 PHRASES_FILE="${CLAUDE_PLUGIN_ROOT}/hooks/phrases.txt"
