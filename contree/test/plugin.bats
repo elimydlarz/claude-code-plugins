@@ -154,3 +154,25 @@ load test_helper
   assert_success
   assert_output --partial "cheatsheet.md"
 }
+
+@test "hooks.json defines a PreToolUse hook" {
+  run jq -r '.hooks.PreToolUse' "$PROJECT_ROOT/hooks/hooks.json"
+  assert_success
+  refute_output "null"
+}
+
+@test "PreToolUse hook points to pressure.sh" {
+  run jq -r '.hooks.PreToolUse[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json"
+  assert_success
+  assert_output --partial "pressure.sh"
+}
+
+@test "pressure.sh exists" {
+  run test -f "$PROJECT_ROOT/hooks/pressure.sh"
+  assert_success
+}
+
+@test "phrases.txt exists" {
+  run test -f "$PROJECT_ROOT/hooks/phrases.txt"
+  assert_success
+}
