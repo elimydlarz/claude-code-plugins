@@ -66,6 +66,57 @@ run_claude() {
     "$@" 2>&1) | tee "$TRANSCRIPT_FILE" || true
 }
 
+# Run claude interactively via tmux so UserPromptSubmit hooks fire.
+# Captures plain-text output to TRANSCRIPT_FILE.
+run_claude_interactive() {
+  local prompt="$1"
+  local session="contree-$$"
+
+  # Write a wrapper that sets env and launches claude
+  local wrapper
+  wrapper=$(mktemp /tmp/claude-wrapper-XXXXXX.sh)
+  cat > "$wrapper" << WRAPPER
+#!/usr/bin/env bash
+cd '$PROJECT_DIR'
+export ANTHROPIC_API_KEY='${ANTHROPIC_API_KEY}'
+export CONTREE_NUDGE_DIR='${CONTREE_NUDGE_DIR:-}'
+claude --plugin-dir '$CONTREE_ROOT' \
+  --dangerously-skip-permissions \
+  --model sonnet \
+  --max-budget-usd 0.50 \
+  2>&1
+WRAPPER
+  chmod +x "$wrapper"
+
+  tmux new-session -d -s "$session" "bash '$wrapper'"
+
+  # Wait up to 30s for Claude's interactive prompt
+  local i=0
+  while [ $i -lt 30 ]; do
+    tmux capture-pane -p -t "$session" 2>/dev/null | grep -q ">" && break
+    sleep 1; (( i++ )) || true
+  done
+
+  # Send the prompt
+  tmux send-keys -t "$session" "$prompt" Enter
+
+  # Wait for response to settle: poll until output stops changing for 3s
+  local prev="" rounds=0
+  while [ $rounds -lt 60 ]; do
+    sleep 3
+    local curr
+    curr=$(tmux capture-pane -p -t "$session" 2>/dev/null)
+    [ "$curr" = "$prev" ] && break
+    prev="$curr"
+    (( rounds++ )) || true
+  done
+
+  # Save full captured output as transcript
+  tmux capture-pane -p -t "$session" > "$TRANSCRIPT_FILE" 2>/dev/null || true
+  tmux kill-session -t "$session" 2>/dev/null || true
+  rm -f "$wrapper"
+}
+
 write_verify() {
   cat > "$VERIFY_FILE"
   echo ""
