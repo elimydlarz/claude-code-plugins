@@ -18,5 +18,5 @@ line_num=$(( (RANDOM % line_count) + 1 ))
 phrase=$(sed -n "${line_num}p" "$PHRASES_FILE")
 [[ -n "$phrase" ]] || exit 0
 
-printf '%s\n' "$phrase" >&2
-exit 2
+printf '%s\n' "$phrase"
+exit 0
