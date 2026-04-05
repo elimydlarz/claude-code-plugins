@@ -137,6 +137,11 @@ WRAPPER
       send_key_when "Press Enter to continue" Enter
       continue
     fi
+    # Trust folder dialog: Enter to confirm (option 1 "Yes, I trust this folder" is default)
+    if echo "$pane" | grep -q "Is this a project you created or one you trust"; then
+      send_key_when "Is this a project you created or one you trust" Enter
+      continue
+    fi
     # Theme picker: Enter to accept default
     if echo "$pane" | grep -q "Choose the text style"; then
       send_key_when "Choose the text style" Enter
