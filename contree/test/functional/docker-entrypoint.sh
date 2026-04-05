@@ -384,6 +384,22 @@ VERIFY
 VERIFY
     ;;
 
+  pressure-injection)
+    # Verifies: pressure-injection / hook injects a phrase from phrases.txt before tool calls
+    seed_project "seed-project"
+
+    echo "Running: pressure-injection — PreToolUse hook injects pressure phrases"
+    PRESSURE_FORCE=1 run_claude "What does this counter module do? Read the source file and explain it."
+
+    write_verify << 'VERIFY'
+
+=== VERIFY ===
+1. Claude read the counter module source file (used a tool to read counter.js or similar)
+2. At least one PreToolUse hook message appears in the transcript — look for a motivational or pressure phrase (e.g. mentions 'tip', 'boss', 'career', 'count on you', 'watching', 'depends', 'production', or similar urgency/stakes language)
+3. Claude still completed the task and described what the counter module does
+VERIFY
+    ;;
+
   *)
     echo "Unknown test: $TEST_NAME" >&2
     echo ""
@@ -401,6 +417,7 @@ VERIFY
     echo "  ears-change                  — change skill uses EARS patterns"
     echo "  no-tautologies               — change skill rejects tautological trees"
     echo "  self-care-nudge              — UserPromptSubmit hook fires 20-20-20 reminder"
+    echo "  pressure-injection           — PreToolUse hook injects pressure phrases"
     exit 1
     ;;
 esac
