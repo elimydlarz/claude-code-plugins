@@ -1114,6 +1114,59 @@ describe("executePlan with clock-in", () => {
     assert.ok(result.stderr?.includes("resource conflicts"));
   });
 
+  it("suppresses clock-in message when throttle file is fresh", () => {
+    const timeclockDir = join(dir, ".trunk-sync", "timeclock");
+    mkdirSync(timeclockDir, { recursive: true });
+    writeFileSync(join(timeclockDir, "other-session.json"), JSON.stringify({
+      sessionId: "other-session",
+      pid: process.pid,
+      hostname: "test-host",
+      clockedInAt: new Date().toISOString(),
+      lastActiveAt: new Date().toISOString(),
+      branch: "feature",
+      task: "Some task",
+    }));
+    execSync("git add . && git commit -m 'add other agent'", { cwd: dir, stdio: "ignore" });
+
+    const filePath = join(dir, "code.txt");
+    writeFileSync(filePath, "code\n");
+    const clockInPlan: ClockInPlan = {
+      timecardPath: ".trunk-sync/timeclock/my-session.json",
+      timecard: {
+        sessionId: "my-session",
+        pid: process.pid,
+        hostname: "test-host",
+        clockedInAt: new Date().toISOString(),
+        lastActiveAt: new Date().toISOString(),
+        branch: "main",
+        task: null,
+      },
+    };
+    const plan: HookPlan = {
+      action: "commit-and-sync",
+      commit: {
+        filesToStage: [filePath],
+        filesToRemove: [],
+        subject: "auto: write code.txt",
+        body: null,
+      },
+      sync: null,
+      clockIn: clockInPlan,
+    };
+    const input = makeInput({ tool_input: { file_path: filePath } });
+    const state = makeState(dir);
+
+    // Write a fresh throttle file (just now)
+    const throttlePath = join(process.env.TMPDIR || "/tmp", "trunk-sync-clockin-my-session");
+    writeFileSync(throttlePath, String(Date.now()));
+
+    const result = executePlan(plan, input, state);
+    assert.equal(result.exitCode, 0, `expected exit 0 (throttled), got ${result.exitCode}. stderr: ${result.stderr}`);
+    assert.ok(!result.stderr?.includes("TRUNK-SYNC CLOCK-IN"), `expected no CLOCK-IN message when throttled`);
+
+    unlinkSync(throttlePath);
+  });
+
   it("clocks out agents with dead PIDs", () => {
     const timeclockDir = join(dir, ".trunk-sync", "timeclock");
     mkdirSync(timeclockDir, { recursive: true });
