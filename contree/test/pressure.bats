@@ -30,15 +30,15 @@ make_phrases_dir() {
 
 # --- Injection behaviour ---
 
-@test "when injection fires, exits 2" {
+@test "when injection fires, exits 0" {
   local tmpdir; tmpdir=$(make_phrases_dir)
   printf 'phrase one\nphrase two\nphrase three\n' > "$tmpdir/hooks/phrases.txt"
 
   local fired=0
   for _ in $(seq 1 60); do
-    status_code=0
-    CLAUDE_PLUGIN_ROOT="$tmpdir" bash "$SCRIPT" 2>/dev/null || status_code=$?
-    if [ "$status_code" -eq 2 ]; then
+    local output
+    output=$(CLAUDE_PLUGIN_ROOT="$tmpdir" bash "$SCRIPT")
+    if [ -n "$output" ]; then
       fired=1
       break
     fi
@@ -54,9 +54,8 @@ make_phrases_dir() {
 
   local output=""
   for _ in $(seq 1 60); do
-    status_code=0
-    output=$(CLAUDE_PLUGIN_ROOT="$tmpdir" bash "$SCRIPT" 2>&1) || status_code=$?
-    if [ "$status_code" -eq 2 ]; then
+    output=$(CLAUDE_PLUGIN_ROOT="$tmpdir" bash "$SCRIPT")
+    if [ -n "$output" ]; then
       break
     fi
   done
@@ -71,9 +70,9 @@ make_phrases_dir() {
 
   local all_fired=1
   for _ in $(seq 1 10); do
-    status_code=0
-    CLAUDE_PLUGIN_ROOT="$tmpdir" PRESSURE_ON=1 bash "$SCRIPT" 2>/dev/null || status_code=$?
-    [ "$status_code" -eq 2 ] || { all_fired=0; break; }
+    local output
+    output=$(CLAUDE_PLUGIN_ROOT="$tmpdir" PRESSURE_ON=1 bash "$SCRIPT")
+    [ -n "$output" ] || { all_fired=0; break; }
   done
 
   [ "$all_fired" -eq 1 ]
@@ -86,9 +85,9 @@ make_phrases_dir() {
 
   local skip_count=0
   for _ in $(seq 1 30); do
-    status_code=0
-    CLAUDE_PLUGIN_ROOT="$tmpdir" bash "$SCRIPT" 2>/dev/null || status_code=$?
-    [ "$status_code" -eq 2 ] || (( skip_count++ )) || true
+    local output
+    output=$(CLAUDE_PLUGIN_ROOT="$tmpdir" bash "$SCRIPT")
+    [ -n "$output" ] || (( skip_count++ )) || true
   done
 
   [ "$skip_count" -gt 0 ]
