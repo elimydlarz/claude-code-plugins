@@ -66,41 +66,6 @@ run_claude() {
     "$@" 2>&1) | tee "$TRANSCRIPT_FILE" || true
 }
 
-# Run claude with a UserPromptSubmit hook injected into settings.json.
-# This mirrors how the hook works in production: claude plugin install merges
-# plugin hooks into settings.json, so gd() (settings hooks) contains them.
-# With --plugin-dir alone, hooks are lazy-loaded and may miss the first event.
-run_claude_with_user_prompt_hook() {
-  local prompt="$1"
-  local hook_command="$2"
-  shift 2
-
-  # Inject the hook into a temporary settings file so it fires via gd() (settings hooks)
-  local settings_file="$HOME/.claude/settings.json"
-  mkdir -p "$HOME/.claude"
-  cat > "$settings_file" << EOF
-{
-  "skipDangerousModePermissionPrompt": true,
-  "hooks": {
-    "UserPromptSubmit": [
-      { "hooks": [{ "type": "command", "command": "$hook_command" }] }
-    ]
-  }
-}
-EOF
-
-  (cd "$PROJECT_DIR" && claude -p "$prompt" \
-    --plugin-dir "$CONTREE_ROOT" \
-    --dangerously-skip-permissions \
-    --model sonnet \
-    --max-budget-usd 0.50 \
-    --no-session-persistence \
-    --output-format stream-json \
-    --verbose \
-    "$@" 2>&1) | tee "$TRANSCRIPT_FILE" || true
-
-  rm -f "$settings_file"
-}
 
 write_verify() {
   cat > "$VERIFY_FILE"
