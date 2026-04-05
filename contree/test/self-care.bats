@@ -32,6 +32,19 @@ run_hook() {
 
 # --- First nudge (session start baseline) ---
 
+@test "creates a nudge file when nudge fires" {
+  local tmpdir; tmpdir=$(mktemp -d)
+  local nudge_dir="$tmpdir/nudges/20-20-20"
+  local transcript="$tmpdir/transcript.jsonl"
+
+  make_transcript "$transcript" "$(iso_minutes_ago 25)"
+  run_hook "$nudge_dir" "$transcript"
+
+  [ "$(ls "$nudge_dir" | wc -l | tr -d ' ')" -eq 1 ]
+
+  rm -rf "$tmpdir"
+}
+
 @test "exits 2 and emits 20-20-20 nudge when 20 minutes have elapsed since session start" {
   local tmpdir; tmpdir=$(mktemp -d)
   local nudge_dir="$tmpdir/nudges/20-20-20"
