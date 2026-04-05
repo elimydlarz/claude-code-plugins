@@ -84,7 +84,9 @@ export CONTREE_NUDGE_DIR='${CONTREE_NUDGE_DIR:-}'
 # Pre-seed ~/.claude/settings.json to skip first-run wizards:
 #   hasCompletedOnboarding — skips login/onboarding flow
 #   customApiKeyResponses  — pre-approves the ANTHROPIC_API_KEY so the API key wizard is skipped
+#                           Claude checks the last-20 chars of the key (JN function in cli.js)
 #   theme                  — skips the theme picker
+KEY_SUFFIX="\${ANTHROPIC_API_KEY: -20}"
 mkdir -p "\$HOME/.claude"
 cat > "\$HOME/.claude/settings.json" << SETTINGS
 {
@@ -92,7 +94,7 @@ cat > "\$HOME/.claude/settings.json" << SETTINGS
   "theme": "dark",
   "skipDangerousModePermissionPrompt": true,
   "customApiKeyResponses": {
-    "approved": ["${ANTHROPIC_API_KEY}"],
+    "approved": ["\$KEY_SUFFIX"],
     "rejected": []
   }
 }
