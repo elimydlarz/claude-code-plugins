@@ -208,6 +208,22 @@ composable-testing
     and mutation testing validates unit test quality
 ```
 
+### pressure-injection
+
+```
+pressure-injection
+  while the agent is working autonomously
+    when it is about to use a tool
+      then a pressure phrase is injected into context on a random subset of calls
+      and the phrase is randomly drawn from the phrase pool
+  then the phrase pool spans tip-framing, career-stakes, boss-watching, and urgency registers
+  then phrases vary in wording across the pool
+  then the phrase pool is a plaintext file in the repo — one phrase per line
+  if the hook fails
+    then the tool call proceeds unmodified
+    and the session is not blocked
+```
+
 ### rules-loading
 
 ```
