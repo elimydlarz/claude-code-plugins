@@ -72,7 +72,7 @@ run_claude_interactive() {
   local prompt="$1"
   local session="contree-$$"
 
-  # Write a wrapper that sets env and launches claude
+  # Write a wrapper that pre-seeds Claude config (skip first-run wizards) and launches claude
   local wrapper
   wrapper=$(mktemp /tmp/claude-wrapper-XXXXXX.sh)
   cat > "$wrapper" << WRAPPER
@@ -80,6 +80,24 @@ run_claude_interactive() {
 cd '$PROJECT_DIR'
 export ANTHROPIC_API_KEY='${ANTHROPIC_API_KEY}'
 export CONTREE_NUDGE_DIR='${CONTREE_NUDGE_DIR:-}'
+
+# Pre-seed ~/.claude/settings.json to skip first-run wizards:
+#   hasCompletedOnboarding — skips login/onboarding flow
+#   customApiKeyResponses  — pre-approves the ANTHROPIC_API_KEY so the API key wizard is skipped
+#   theme                  — skips the theme picker
+mkdir -p "\$HOME/.claude"
+cat > "\$HOME/.claude/settings.json" << SETTINGS
+{
+  "hasCompletedOnboarding": true,
+  "theme": "dark",
+  "skipDangerousModePermissionPrompt": true,
+  "customApiKeyResponses": {
+    "approved": ["${ANTHROPIC_API_KEY}"],
+    "rejected": []
+  }
+}
+SETTINGS
+
 claude --plugin-dir '$CONTREE_ROOT' \
   --dangerously-skip-permissions \
   --model sonnet \
