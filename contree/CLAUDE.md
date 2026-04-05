@@ -40,6 +40,7 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `skills/workflow/SKILL.md` — the full arc: idea → contract → verified implementation
 - `test/plugin.bats` — structural tests: plugin manifest, skill files, frontmatter
 - `test/hook.bats` — hook behaviour tests: loop prevention, exit codes, prompt content
+- `test/self-care.bats` — self-care hook tests: nudge timing, file creation, error handling
 - `test/functional/Dockerfile` — Docker image for functional tests (node + git + jq + claude CLI, fixture deps pre-installed)
 - `test/functional/docker-run.sh` — runs functional tests in Docker (parallel), passes secrets via env vars
 - `test/functional/docker-entrypoint.sh` — test cases with VERIFY criteria; transcripts saved as JSONL and analysed by Claude directly
