@@ -396,6 +396,7 @@ VERIFY
     echo "  discover-tdd                 — natural prompt triggers tdd skill"
     echo "  ears-change                  — change skill uses EARS patterns"
     echo "  no-tautologies               — change skill rejects tautological trees"
+    echo "  self-care-nudge              — UserPromptSubmit hook fires 20-20-20 reminder"
     exit 1
     ;;
 esac
