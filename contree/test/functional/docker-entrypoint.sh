@@ -142,6 +142,12 @@ WRAPPER
       send_key_when "Is this a project you created or one you trust" Enter
       continue
     fi
+    # Bypass Permissions mode warning: Down to select "Yes, I accept" then Enter
+    if echo "$pane" | grep -q "Bypass Permissions mode"; then
+      send_key_when "Bypass Permissions mode" Down
+      send_key_when "Yes, I accept" Enter
+      continue
+    fi
     # Theme picker: Enter to accept default
     if echo "$pane" | grep -q "Choose the text style"; then
       send_key_when "Choose the text style" Enter
