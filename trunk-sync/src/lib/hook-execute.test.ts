@@ -1111,7 +1111,7 @@ describe("executePlan with clock-in", () => {
     assert.ok(result.stderr?.includes("TRUNK-SYNC CLOCK-IN"), `expected TRUNK-SYNC CLOCK-IN in: ${result.stderr}`);
     assert.ok(result.stderr?.includes("other-se"), `expected other-se in: ${result.stderr}`);
     assert.ok(result.stderr?.includes("Refactoring auth"));
-    assert.ok(result.stderr?.includes("resource conflicts"));
+    assert.ok(result.stderr?.includes("no action required"));
   });
 
   it("suppresses clock-in message when throttle file is fresh", () => {
