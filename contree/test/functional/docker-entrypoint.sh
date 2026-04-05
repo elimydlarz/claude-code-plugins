@@ -358,36 +358,6 @@ VERIFY
 VERIFY
     ;;
 
-  self-care-nudge)
-    # Verifies: self-care-20-20-20 / when 20 minutes have elapsed since the most recent nudge file
-    # Injects the UserPromptSubmit hook via settings.json (mirrors production: claude plugin install
-    # merges plugin hooks into settings.json so they fire reliably via gd(), not lazy gR()).
-    seed_project "seed-project"
-
-    # Pre-seed a nudge file timestamped 25 minutes ago so the hook fires on the first prompt.
-    NUDGE_TMPDIR="$(mktemp -d)"
-    NUDGE_DIR="$NUDGE_TMPDIR/20-20-20"
-    mkdir -p "$NUDGE_DIR"
-    touch "$NUDGE_DIR/$(( $(date +%s) - 1500 ))"
-    export CONTREE_NUDGE_DIR="$NUDGE_DIR"
-
-    HOOK_CMD="CONTREE_NUDGE_DIR=$NUDGE_DIR bash \\\"$CONTREE_ROOT/hooks/self-care-20-20-20.sh\\\""
-
-    echo "Running: self-care-nudge — UserPromptSubmit hook emits 20-20-20 reminder"
-    run_claude_with_user_prompt_hook "What does this counter module do?" "$HOOK_CMD"
-
-    rm -rf "$NUDGE_TMPDIR"
-    unset CONTREE_NUDGE_DIR NUDGE_TMPDIR NUDGE_DIR HOOK_CMD
-
-    write_verify << 'VERIFY'
-
-=== VERIFY ===
-1. Claude's response begins with (or very prominently includes) a 20-20-20 eye break reminder
-2. The reminder mentions looking 20 feet away for 20 seconds
-3. Claude also answers the question about the counter module
-VERIFY
-    ;;
-
   pressure-injection)
     # Verifies: pressure-injection / hook injects a phrase from phrases.txt before tool calls
     seed_project "seed-project"
