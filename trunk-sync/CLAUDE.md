@@ -84,7 +84,7 @@ test/local-cleanup.sh         — manual test teardown
 - **version-sync**: `npm version` automatically updates `.claude-plugin/plugin.json` to match `package.json` via the `version` lifecycle script
 - **dist-tracked**: `dist/` is committed to git (excluding tests and `.d.ts`) so marketplace plugin installs have the compiled hook entry point
 - **clock-in**: on every commit, the hook writes a timecard to `.trunk-sync/timeclock/<session-id>.json` with pid, hostname, branch, clockedInAt, lastActiveAt, and task (extracted from transcript) — preserving clockedInAt across updates
-- **clock-in-message**: after clocking in, the hook reads all timecards, classifies them (own session excluded), and surfaces a throttled message (exit 2, prefixed `TRUNK-SYNC CLOCK-IN:`) when other agents are clocked in — includes each agent's task
+- **clock-in-message**: after clocking in, the hook reads all timecards, classifies them (own session excluded), and surfaces a throttled message (exit 2, prefixed `TRUNK-SYNC CLOCK-IN:`) when other agents are clocked in — includes each agent's task; message explicitly tells the agent no action is required and to continue its work
 - **clock-out-local**: agents on the same hostname with a dead PID (checked via `process.kill(pid, 0)`) are clocked out (timecard removed and staged)
 - **clock-out-remote**: agents on a different hostname with lastActiveAt older than 30 minutes are clocked out
 - **clock-in-throttle**: messages are throttled to once per 5 minutes per session via a timestamp file in `$TMPDIR`
