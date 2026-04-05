@@ -97,17 +97,17 @@ WRAPPER
     sleep 1; (( i++ )) || true
     local pane
     pane=$(tmux capture-pane -p -t "$session" 2>/dev/null)
-    # Login method wizard: press Down to select "Anthropic Console account" then Enter
+    # Login method wizard: type 2 to select "Anthropic Console account · API usage billing"
     if echo "$pane" | grep -q "Select login method"; then
-      tmux send-keys -t "$session" Down Enter; sleep 1; continue
+      sleep 1; tmux send-keys -t "$session" "2" ""; sleep 1; tmux send-keys -t "$session" "" Enter; sleep 1; continue
     fi
     # API key wizard: press Up to select "Yes" then Enter
     if echo "$pane" | grep -q "Detected a custom API key"; then
-      tmux send-keys -t "$session" Up Enter; sleep 1; continue
+      sleep 1; tmux send-keys -t "$session" Up ""; sleep 1; tmux send-keys -t "$session" "" Enter; sleep 1; continue
     fi
     # Theme wizard: press Enter to accept default (Dark mode)
     if echo "$pane" | grep -q "Choose the text style"; then
-      tmux send-keys -t "$session" "" Enter; sleep 1; continue
+      sleep 1; tmux send-keys -t "$session" "" Enter; sleep 1; continue
     fi
     # Ready for input when the main prompt line appears
     echo "$pane" | grep -q "^>" && break
