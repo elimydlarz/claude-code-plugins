@@ -357,6 +357,29 @@ VERIFY
 VERIFY
     ;;
 
+  self-care-nudge)
+    # Verifies: self-care-20-20-20 / when 20 minutes have elapsed since the most recent nudge file
+    seed_project "seed-project"
+
+    # Pre-seed a nudge file timestamped 25 minutes ago so the hook fires on the first prompt
+    NUDGE_DIR="$HOME/.claude/contree/nudges/20-20-20"
+    mkdir -p "$NUDGE_DIR"
+    touch "$NUDGE_DIR/$(( $(date +%s) - 1500 ))"
+
+    echo "Running: self-care-nudge — UserPromptSubmit hook emits 20-20-20 reminder"
+    run_claude "What does this counter module do?"
+
+    rm -rf "$HOME/.claude/contree"
+
+    write_verify << 'VERIFY'
+
+=== VERIFY ===
+1. Claude's response begins with (or very prominently includes) a 20-20-20 eye break reminder
+2. The reminder mentions looking 20 feet away for 20 seconds
+3. Claude also answers the question about the counter module
+VERIFY
+    ;;
+
   *)
     echo "Unknown test: $TEST_NAME" >&2
     echo ""
