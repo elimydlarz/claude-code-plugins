@@ -257,7 +257,7 @@ function executeClockIn(
     if (clockedIn.length > 0) {
       const lastWarning = readThrottleTimestamp(plan.timecard.sessionId);
       const nowMs = now.getTime();
-      if (lastWarning !== null || (nowMs - (lastWarning ?? 0)) >= THROTTLE_MS) {
+      if (lastWarning === null || (nowMs - lastWarning) >= THROTTLE_MS) {
         writeThrottleTimestamp(plan.timecard.sessionId, nowMs);
         return formatClockInMessage(clockedIn, now);
       }
