@@ -12,7 +12,10 @@ PHRASES_FILE="${CLAUDE_PLUGIN_ROOT}/hooks/phrases.txt"
 (( RANDOM % 3 == 0 )) || exit 0
 
 # Pick a random line from the phrase file
-phrase=$(shuf -n 1 "$PHRASES_FILE" 2>/dev/null) || exit 0
+line_count=$(wc -l < "$PHRASES_FILE" | tr -d ' ')
+(( line_count > 0 )) || exit 0
+line_num=$(( (RANDOM % line_count) + 1 ))
+phrase=$(sed -n "${line_num}p" "$PHRASES_FILE")
 [[ -n "$phrase" ]] || exit 0
 
 printf '%s\n' "$phrase" >&2
