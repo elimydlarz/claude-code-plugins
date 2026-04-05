@@ -72,7 +72,7 @@ run_claude_interactive() {
   local prompt="$1"
   local session="contree-$$"
 
-  # Write a wrapper that pre-seeds Claude config (skip first-run wizards) and launches claude
+  # Write a wrapper that sets env and launches claude
   local wrapper
   wrapper=$(mktemp /tmp/claude-wrapper-XXXXXX.sh)
   cat > "$wrapper" << WRAPPER
@@ -80,26 +80,6 @@ run_claude_interactive() {
 cd '$PROJECT_DIR'
 export ANTHROPIC_API_KEY='${ANTHROPIC_API_KEY}'
 export CONTREE_NUDGE_DIR='${CONTREE_NUDGE_DIR:-}'
-
-# Pre-seed ~/.claude/settings.json to skip first-run wizards:
-#   hasCompletedOnboarding — skips login/onboarding flow
-#   customApiKeyResponses  — pre-approves the ANTHROPIC_API_KEY so the API key wizard is skipped
-#                           Claude checks the last-20 chars of the key (JN function in cli.js)
-#   theme                  — skips the theme picker
-KEY_SUFFIX="\${ANTHROPIC_API_KEY: -20}"
-mkdir -p "\$HOME/.claude"
-cat > "\$HOME/.claude/settings.json" << SETTINGS
-{
-  "hasCompletedOnboarding": true,
-  "theme": "dark",
-  "skipDangerousModePermissionPrompt": true,
-  "customApiKeyResponses": {
-    "approved": ["\$KEY_SUFFIX"],
-    "rejected": []
-  }
-}
-SETTINGS
-
 claude --plugin-dir '$CONTREE_ROOT' \
   --dangerously-skip-permissions \
   --model sonnet \
@@ -110,21 +90,26 @@ WRAPPER
 
   tmux new-session -d -s "$session" "bash '$wrapper'"
 
-  # Dismiss first-run setup wizards (theme selection, API key confirmation, etc.)
+  # Navigate through first-run setup wizards by watching the pane and sending keystrokes.
+  # Each wizard is handled in order; we keep looping until the main prompt appears.
   local i=0
-  while [ $i -lt 60 ]; do
+  while [ $i -lt 90 ]; do
     sleep 1; (( i++ )) || true
     local pane
     pane=$(tmux capture-pane -p -t "$session" 2>/dev/null)
+    # Login method wizard: press Down to select "Anthropic Console account" then Enter
+    if echo "$pane" | grep -q "Select login method"; then
+      tmux send-keys -t "$session" Down Enter; sleep 1; continue
+    fi
+    # API key wizard: press Up to select "Yes" then Enter
+    if echo "$pane" | grep -q "Detected a custom API key"; then
+      tmux send-keys -t "$session" Up Enter; sleep 1; continue
+    fi
     # Theme wizard: press Enter to accept default (Dark mode)
     if echo "$pane" | grep -q "Choose the text style"; then
-      tmux send-keys -t "$session" "" Enter; continue
+      tmux send-keys -t "$session" "" Enter; sleep 1; continue
     fi
-    # API key wizard: navigate to "Yes" (Up arrow) then Enter
-    if echo "$pane" | grep -q "Detected a custom API key"; then
-      tmux send-keys -t "$session" Up Enter; continue
-    fi
-    # Ready for input when the user prompt appears
+    # Ready for input when the main prompt line appears
     echo "$pane" | grep -q "^>" && break
   done
 
