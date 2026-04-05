@@ -23,6 +23,10 @@ Another agent changed the same file. Git left conflict markers in the file.
 
 The hook handles all git operations — your only job is to fix the file contents using Edit.
 
+## When you see TRUNK-SYNC CLOCK-IN
+
+Another agent is working in this repo. Note the information (which agents, which branches, what tasks) and continue your work as planned. This is informational — no action is required unless you're concerned about a specific resource conflict (shared port, test database, etc.).
+
 ## Before you start
 
 Run `git pull` once at the beginning of your session to start from the latest trunk. After that, the hook handles all pulls and pushes.
