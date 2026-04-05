@@ -697,6 +697,10 @@ assert_exit 0 "git-block: git log is allowed"
 run_git_block "$(make_bash_input "git log --oneline -10")"
 assert_exit 0 "git-block: git log --oneline is allowed"
 
+# 28f2. git show is allowed
+run_git_block "$(make_bash_input "git show HEAD")"
+assert_exit 0 "git-block: git show is allowed"
+
 # 28g. git push is blocked
 run_git_block "$(make_bash_input "git push origin main")"
 assert_exit 2 "git-block: git push is blocked"
