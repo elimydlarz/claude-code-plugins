@@ -30,6 +30,44 @@ run_hook() {
   rm -f "$input_file" "$wrapper"
 }
 
+# --- Repeat nudge (nudge file baseline) ---
+
+@test "exits 2 with nudge when 20 minutes have elapsed since the most recent nudge file" {
+  local tmpdir; tmpdir=$(mktemp -d)
+  local nudge_dir="$tmpdir/nudges/20-20-20"
+  local transcript="$tmpdir/transcript.jsonl"
+
+  mkdir -p "$nudge_dir"
+  # Nudge file timestamped 25 minutes ago
+  touch "$nudge_dir/$(( $(date +%s) - 1500 ))"
+  # Session started 60 minutes ago (should not affect — nudge file takes precedence)
+  make_transcript "$transcript" "$(iso_minutes_ago 60)"
+
+  run_hook "$nudge_dir" "$transcript"
+
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"20-20-20"* ]]
+
+  rm -rf "$tmpdir"
+}
+
+@test "exits 0 when less than 20 minutes have elapsed since the most recent nudge file" {
+  local tmpdir; tmpdir=$(mktemp -d)
+  local nudge_dir="$tmpdir/nudges/20-20-20"
+  local transcript="$tmpdir/transcript.jsonl"
+
+  mkdir -p "$nudge_dir"
+  # Nudge file timestamped 10 minutes ago
+  touch "$nudge_dir/$(( $(date +%s) - 600 ))"
+  make_transcript "$transcript" "$(iso_minutes_ago 60)"
+
+  run_hook "$nudge_dir" "$transcript"
+
+  [ "$status" -eq 0 ]
+
+  rm -rf "$tmpdir"
+}
+
 # --- First nudge (session start baseline) ---
 
 @test "creates a nudge file when nudge fires" {
