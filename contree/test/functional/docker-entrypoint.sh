@@ -90,15 +90,21 @@ WRAPPER
 
   tmux new-session -d -s "$session" "bash '$wrapper'"
 
-  # Dismiss first-run setup wizard if it appears (theme selection, etc.)
+  # Dismiss first-run setup wizards (theme selection, API key confirmation, etc.)
   local i=0
-  while [ $i -lt 30 ]; do
+  while [ $i -lt 60 ]; do
     sleep 1; (( i++ )) || true
     local pane
     pane=$(tmux capture-pane -p -t "$session" 2>/dev/null)
-    # Theme wizard: press Enter to accept default
-    echo "$pane" | grep -q "Choose the text style" && tmux send-keys -t "$session" "" Enter && continue
-    # Ready for input when prompt line appears
+    # Theme wizard: press Enter to accept default (Dark mode)
+    if echo "$pane" | grep -q "Choose the text style"; then
+      tmux send-keys -t "$session" "" Enter; continue
+    fi
+    # API key wizard: navigate to "Yes" (Up arrow) then Enter
+    if echo "$pane" | grep -q "Detected a custom API key"; then
+      tmux send-keys -t "$session" Up Enter; continue
+    fi
+    # Ready for input when the user prompt appears
     echo "$pane" | grep -q "^>" && break
   done
 
