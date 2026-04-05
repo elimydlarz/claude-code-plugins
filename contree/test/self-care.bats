@@ -30,6 +30,22 @@ run_hook() {
   rm -f "$input_file" "$wrapper"
 }
 
+# --- Error handling ---
+
+@test "exits 0 silently when nudge directory cannot be created" {
+  local tmpdir; tmpdir=$(mktemp -d)
+  local transcript="$tmpdir/transcript.jsonl"
+
+  make_transcript "$transcript" "$(iso_minutes_ago 25)"
+  # /dev/null is a file, so creating a subdir beneath it always fails
+  run_hook "/dev/null/contree-nudges" "$transcript"
+
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+
+  rm -rf "$tmpdir"
+}
+
 # --- Repeat nudge (nudge file baseline) ---
 
 @test "exits 2 with nudge when 20 minutes have elapsed since the most recent nudge file" {
