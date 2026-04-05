@@ -361,15 +361,18 @@ VERIFY
     # Verifies: self-care-20-20-20 / when 20 minutes have elapsed since the most recent nudge file
     seed_project "seed-project"
 
-    # Pre-seed a nudge file timestamped 25 minutes ago so the hook fires on the first prompt
-    NUDGE_DIR="$HOME/.claude/contree/nudges/20-20-20"
+    # Pre-seed a nudge file timestamped 25 minutes ago so the hook fires on the first prompt.
+    # Use a temp dir via CONTREE_NUDGE_DIR to avoid touching real nudge state.
+    NUDGE_DIR="$(mktemp -d)/20-20-20"
     mkdir -p "$NUDGE_DIR"
     touch "$NUDGE_DIR/$(( $(date +%s) - 1500 ))"
+    export CONTREE_NUDGE_DIR="$NUDGE_DIR"
 
     echo "Running: self-care-nudge — UserPromptSubmit hook emits 20-20-20 reminder"
     run_claude "What does this counter module do?"
 
-    rm -rf "$HOME/.claude/contree"
+    rm -rf "$(dirname "$NUDGE_DIR")"
+    unset CONTREE_NUDGE_DIR
 
     write_verify << 'VERIFY'
 
