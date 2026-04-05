@@ -18,7 +18,7 @@ for env_file in "$SCRIPT_DIR/.env" "$REPO_ROOT/.env"; do
   [ -f "$env_file" ] && set -a && . "$env_file" && set +a
 done
 
-ALL_TESTS=(incidental-pass setup-generates-requirements tdd-writes-requirement-first stop-hook-fires setup-docker-testing discover-change discover-sync discover-setup discover-tdd self-care-nudge)
+ALL_TESTS=(incidental-pass setup-generates-requirements tdd-writes-requirement-first stop-hook-fires setup-docker-testing discover-change discover-sync discover-setup discover-tdd self-care-nudge pressure-injection)
 
 TEST_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
