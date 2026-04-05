@@ -410,6 +410,7 @@ VERIFY
 
   self-care-nudge)
     # Verifies: self-care-20-20-20 / when 20 minutes have elapsed since the most recent nudge file
+    # Uses tmux interactive mode because UserPromptSubmit hooks don't fire in -p mode.
     seed_project "seed-project"
 
     # Pre-seed a nudge file timestamped 25 minutes ago so the hook fires on the first prompt.
@@ -421,7 +422,7 @@ VERIFY
     export CONTREE_NUDGE_DIR="$NUDGE_DIR"
 
     echo "Running: self-care-nudge — UserPromptSubmit hook emits 20-20-20 reminder"
-    run_claude "What does this counter module do?"
+    run_claude_interactive "What does this counter module do?"
 
     rm -rf "$NUDGE_TMPDIR"
     unset CONTREE_NUDGE_DIR NUDGE_TMPDIR NUDGE_DIR
