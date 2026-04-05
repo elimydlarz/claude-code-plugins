@@ -155,6 +155,23 @@ load test_helper
   assert_output --partial "cheatsheet.md"
 }
 
+@test "hooks.json defines a UserPromptSubmit hook" {
+  run jq -r '.hooks.UserPromptSubmit' "$PROJECT_ROOT/hooks/hooks.json"
+  assert_success
+  refute_output "null"
+}
+
+@test "UserPromptSubmit hook points to self-care-20-20-20.sh" {
+  run jq -r '.hooks.UserPromptSubmit[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json"
+  assert_success
+  assert_output --partial "self-care-20-20-20.sh"
+}
+
+@test "self-care-20-20-20.sh exists" {
+  run test -f "$PROJECT_ROOT/hooks/self-care-20-20-20.sh"
+  assert_success
+}
+
 @test "hooks.json defines a PreToolUse hook" {
   run jq -r '.hooks.PreToolUse' "$PROJECT_ROOT/hooks/hooks.json"
   assert_success
