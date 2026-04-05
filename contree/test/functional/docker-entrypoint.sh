@@ -175,8 +175,8 @@ WRAPPER
     read -t 0.1 _ 2>/dev/null || true
   done
 
-  # Save full captured output as transcript
-  tmux capture-pane -p -t "$session" > "$TRANSCRIPT_FILE" 2>/dev/null || true
+  # Save full output including scrollback as transcript
+  tmux capture-pane -p -S - -t "$session" > "$TRANSCRIPT_FILE" 2>/dev/null || true
   tmux kill-session -t "$session" 2>/dev/null || true
   rm -f "$wrapper"
 }
