@@ -252,9 +252,9 @@ export function formatClockInMessage(clockedIn, now) {
         return `- ${tc.sessionId.slice(0, 8)} on ${tc.hostname} (branch: ${tc.branch}, ${agoStr} ago)${taskStr}`;
     });
     return [
-        `TRUNK-SYNC CLOCK-IN: ${clockedIn.length} other agent${clockedIn.length > 1 ? "s" : ""} clocked in.`,
+        `TRUNK-SYNC CLOCK-IN: ${clockedIn.length} other agent${clockedIn.length > 1 ? "s" : ""} clocked in. Continue your work as planned — no action required.`,
         ...lines,
-        "Consider potential resource conflicts: ports, build locks, test databases.",
+        "If you share resources (ports, test databases, build locks), coordinate accordingly. Otherwise, ignore this message.",
     ].join("\n");
 }
 function formatAge(ms) {
