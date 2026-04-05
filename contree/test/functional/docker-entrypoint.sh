@@ -363,7 +363,8 @@ VERIFY
 
     # Pre-seed a nudge file timestamped 25 minutes ago so the hook fires on the first prompt.
     # Use a temp dir via CONTREE_NUDGE_DIR to avoid touching real nudge state.
-    NUDGE_DIR="$(mktemp -d)/20-20-20"
+    NUDGE_TMPDIR="$(mktemp -d)"
+    NUDGE_DIR="$NUDGE_TMPDIR/20-20-20"
     mkdir -p "$NUDGE_DIR"
     touch "$NUDGE_DIR/$(( $(date +%s) - 1500 ))"
     export CONTREE_NUDGE_DIR="$NUDGE_DIR"
@@ -371,8 +372,8 @@ VERIFY
     echo "Running: self-care-nudge — UserPromptSubmit hook emits 20-20-20 reminder"
     run_claude "What does this counter module do?"
 
-    rm -rf "$(dirname "$NUDGE_DIR")"
-    unset CONTREE_NUDGE_DIR
+    rm -rf "$NUDGE_TMPDIR"
+    unset CONTREE_NUDGE_DIR NUDGE_TMPDIR NUDGE_DIR
 
     write_verify << 'VERIFY'
 
