@@ -90,41 +90,78 @@ WRAPPER
 
   tmux new-session -d -s "$session" "bash '$wrapper'"
 
-  # Navigate through first-run setup wizards by watching the pane and sending keystrokes.
-  # Each wizard is handled in order; we keep looping until the main prompt appears.
-  local i=0
-  while [ $i -lt 90 ]; do
-    sleep 1; (( i++ )) || true
-    local pane
-    pane=$(tmux capture-pane -p -t "$session" 2>/dev/null)
-    # Login method wizard: type 2 to select "Anthropic Console account · API usage billing"
+  # Navigate through first-run setup wizards, then send the prompt.
+  # Uses polling (100ms intervals) rather than fixed sleeps to avoid brittleness.
+  #
+  # send_key WIZARD_PATTERN KEY — waits until pane shows PATTERN, sends KEY, waits for screen change
+  send_key_when() {
+    local pattern="$1"; local key="$2"
+    local deadline=$(( $(date +%s) + 30 ))
+    local before=""
+    # Wait for wizard to appear
+    while [ $(date +%s) -lt $deadline ]; do
+      local pane; pane=$(tmux capture-pane -p -t "$session" 2>/dev/null)
+      echo "$pane" | grep -q "$pattern" && { before="$pane"; break; }
+      read -t 0.1 _ 2>/dev/null || true
+    done
+    [ -z "$before" ] && return 1
+    # Send the key
+    tmux send-keys -t "$session" "$key" ""
+    # Wait for screen to change
+    deadline=$(( $(date +%s) + 10 ))
+    while [ $(date +%s) -lt $deadline ]; do
+      local pane; pane=$(tmux capture-pane -p -t "$session" 2>/dev/null)
+      [ "$pane" != "$before" ] && return 0
+      read -t 0.1 _ 2>/dev/null || true
+    done
+  }
+
+  # Navigate any first-run wizards that may appear
+  local deadline=$(( $(date +%s) + 120 ))
+  while [ $(date +%s) -lt $deadline ]; do
+    local pane; pane=$(tmux capture-pane -p -t "$session" 2>/dev/null)
+    # Login method: Down selects "Anthropic Console account", then Enter confirms
     if echo "$pane" | grep -q "Select login method"; then
-      sleep 1; tmux send-keys -t "$session" "2" ""; sleep 1; tmux send-keys -t "$session" "" Enter; sleep 1; continue
+      send_key_when "Select login method" Down
+      send_key_when "Anthropic Console" Enter
+      continue
     fi
-    # API key wizard: press Up to select "Yes" then Enter
+    # API key confirmation: Up selects "Yes", then Enter confirms
     if echo "$pane" | grep -q "Detected a custom API key"; then
-      sleep 1; tmux send-keys -t "$session" Up ""; sleep 1; tmux send-keys -t "$session" "" Enter; sleep 1; continue
+      send_key_when "Detected a custom API key" Up
+      send_key_when "Yes" Enter
+      continue
     fi
-    # Theme wizard: press Enter to accept default (Dark mode)
+    # Security notes: Enter to continue
+    if echo "$pane" | grep -q "Press Enter to continue"; then
+      send_key_when "Press Enter to continue" Enter
+      continue
+    fi
+    # Theme picker: Enter to accept default
     if echo "$pane" | grep -q "Choose the text style"; then
-      sleep 1; tmux send-keys -t "$session" "" Enter; sleep 1; continue
+      send_key_when "Choose the text style" Enter
+      continue
     fi
-    # Ready for input when the main prompt line appears
+    # Ready — main prompt visible
     echo "$pane" | grep -q "^>" && break
+    read -t 0.1 _ 2>/dev/null || true
   done
 
-  # Send the prompt
+  # Send the actual prompt
   tmux send-keys -t "$session" "$prompt" Enter
 
-  # Wait for response to settle: poll until output stops changing for 3s
-  local prev="" rounds=0
-  while [ $rounds -lt 60 ]; do
-    sleep 3
-    local curr
-    curr=$(tmux capture-pane -p -t "$session" 2>/dev/null)
-    [ "$curr" = "$prev" ] && break
-    prev="$curr"
-    (( rounds++ )) || true
+  # Wait for response: poll until the prompt reappears (Claude is done responding)
+  local before_response; before_response=$(tmux capture-pane -p -t "$session" 2>/dev/null)
+  deadline=$(( $(date +%s) + 180 ))
+  local last_change=$(date +%s)
+  while [ $(date +%s) -lt $deadline ]; do
+    local pane; pane=$(tmux capture-pane -p -t "$session" 2>/dev/null)
+    [ "$pane" != "$before_response" ] && last_change=$(date +%s) && before_response="$pane"
+    # Stable for 5s and prompt visible = done
+    if [ $(( $(date +%s) - last_change )) -ge 5 ] && echo "$pane" | grep -q "^>"; then
+      break
+    fi
+    read -t 0.1 _ 2>/dev/null || true
   done
 
   # Save full captured output as transcript
