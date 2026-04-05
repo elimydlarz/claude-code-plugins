@@ -90,11 +90,16 @@ WRAPPER
 
   tmux new-session -d -s "$session" "bash '$wrapper'"
 
-  # Wait up to 30s for Claude's interactive prompt
+  # Dismiss first-run setup wizard if it appears (theme selection, etc.)
   local i=0
   while [ $i -lt 30 ]; do
-    tmux capture-pane -p -t "$session" 2>/dev/null | grep -q ">" && break
     sleep 1; (( i++ )) || true
+    local pane
+    pane=$(tmux capture-pane -p -t "$session" 2>/dev/null)
+    # Theme wizard: press Enter to accept default
+    echo "$pane" | grep -q "Choose the text style" && tmux send-keys -t "$session" "" Enter && continue
+    # Ready for input when prompt line appears
+    echo "$pane" | grep -q "^>" && break
   done
 
   # Send the prompt
