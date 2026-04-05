@@ -65,6 +65,21 @@ make_phrases_dir() {
   rm -rf "$tmpdir"
 }
 
+@test "PRESSURE_ON=1 always injects" {
+  local tmpdir; tmpdir=$(make_phrases_dir)
+  printf 'phrase one\nphrase two\n' > "$tmpdir/hooks/phrases.txt"
+
+  local all_fired=1
+  for _ in $(seq 1 10); do
+    status_code=0
+    CLAUDE_PLUGIN_ROOT="$tmpdir" PRESSURE_ON=1 bash "$SCRIPT" 2>/dev/null || status_code=$?
+    [ "$status_code" -eq 2 ] || { all_fired=0; break; }
+  done
+
+  [ "$all_fired" -eq 1 ]
+  rm -rf "$tmpdir"
+}
+
 @test "injection does not fire on every call" {
   local tmpdir; tmpdir=$(make_phrases_dir)
   printf 'phrase one\nphrase two\n' > "$tmpdir/hooks/phrases.txt"
