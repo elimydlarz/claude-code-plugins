@@ -153,15 +153,15 @@ WRAPPER
       send_key_when "Choose the text style" Enter
       continue
     fi
-    # Ready — main prompt visible
-    echo "$pane" | grep -q "^>" && break
+    # Ready — main prompt visible (Claude uses ❯ as the prompt character)
+    echo "$pane" | grep -q "❯" && break
     read -t 0.1 _ 2>/dev/null || true
   done
 
   # Send the actual prompt
   tmux send-keys -t "$session" "$prompt" Enter
 
-  # Wait for response: poll until the prompt reappears (Claude is done responding)
+  # Wait for response: poll until output stabilises and the prompt reappears
   local before_response; before_response=$(tmux capture-pane -p -t "$session" 2>/dev/null)
   deadline=$(( $(date +%s) + 180 ))
   local last_change=$(date +%s)
@@ -169,7 +169,7 @@ WRAPPER
     local pane; pane=$(tmux capture-pane -p -t "$session" 2>/dev/null)
     [ "$pane" != "$before_response" ] && last_change=$(date +%s) && before_response="$pane"
     # Stable for 5s and prompt visible = done
-    if [ $(( $(date +%s) - last_change )) -ge 5 ] && echo "$pane" | grep -q "^>"; then
+    if [ $(( $(date +%s) - last_change )) -ge 5 ] && echo "$pane" | grep -q "❯"; then
       break
     fi
     read -t 0.1 _ 2>/dev/null || true
