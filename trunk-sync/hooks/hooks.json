@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "INPUT=$(cat); CMD=$(printf '%s' \"$INPUT\" | jq -r '.tool_input.command // \"\"'); case \"$CMD\" in git\\ clone\\ *|git\\ diff*|git\\ log*|git\\ show*) ;; git\\ *|git) echo 'TRUNK-SYNC: Do NOT run git commands. The trunk-sync hook handles all git operations. Your only job is to fix file contents using Edit.' >&2; exit 2;; esac"
+            "command": "INPUT=$(cat); CMD=$(printf '%s' \"$INPUT\" | jq -r '.tool_input.command // \"\"'); case \"$CMD\" in git\\ clone\\ *|git\\ diff*|git\\ log*|git\\ show*|git\\ -C\\ *\\ diff*|git\\ -C\\ *\\ log*|git\\ -C\\ *\\ show*|git\\ -C\\ *\\ clone\\ *) ;; git\\ *|git) echo 'TRUNK-SYNC: Do NOT run git commands. The trunk-sync hook handles all git operations. Your only job is to fix file contents using Edit.' >&2; exit 2;; esac"
           }
         ]
       }
