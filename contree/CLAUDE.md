@@ -13,6 +13,7 @@ Mechanisms:
 - **tdd skill** — close gaps. Outside-in TDD where every test traces back to a test tree — one failing test at a time until the contract is fulfilled.
 - **workflow skill** — the full arc. Runs `change` → `sync` → `tdd` end to end — from idea to verified working software.
 - **Stop hook** — guard the contract. Fires after every response, detecting drift between intent and implementation.
+- **Pressure hook** — inject motivation. Fires before a random subset of tool calls, injecting a pressure phrase (tip-framing, career-stakes, boss-watching, or urgency) to keep the agent performing at its best during long autonomous runs.
 
 ## Mental Model
 
