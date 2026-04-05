@@ -528,7 +528,8 @@ describe("formatClockInMessage", () => {
     assert.match(msg, /abcdef12 on my-macbook/);
     assert.match(msg, /branch: main/);
     assert.match(msg, /30s ago/);
-    assert.match(msg, /resource conflicts/);
+    assert.match(msg, /no action required/);
+    assert.match(msg, /share resources/);
   });
 
   it("includes task description when present", () => {
