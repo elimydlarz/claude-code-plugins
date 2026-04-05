@@ -66,119 +66,40 @@ run_claude() {
     "$@" 2>&1) | tee "$TRANSCRIPT_FILE" || true
 }
 
-# Run claude interactively via tmux so UserPromptSubmit hooks fire.
-# Captures plain-text output to TRANSCRIPT_FILE.
-run_claude_interactive() {
+# Run claude with a UserPromptSubmit hook injected into settings.json.
+# This mirrors how the hook works in production: claude plugin install merges
+# plugin hooks into settings.json, so gd() (settings hooks) contains them.
+# With --plugin-dir alone, hooks are lazy-loaded and may miss the first event.
+run_claude_with_user_prompt_hook() {
   local prompt="$1"
-  local session="contree-$$"
+  local hook_command="$2"
+  shift 2
 
-  # Write a wrapper that sets env and launches claude
-  local wrapper
-  wrapper=$(mktemp /tmp/claude-wrapper-XXXXXX.sh)
-  cat > "$wrapper" << WRAPPER
-#!/usr/bin/env bash
-cd '$PROJECT_DIR'
-export ANTHROPIC_API_KEY='${ANTHROPIC_API_KEY}'
-export CONTREE_NUDGE_DIR='${CONTREE_NUDGE_DIR:-}'
-claude --plugin-dir '$CONTREE_ROOT' \
-  --dangerously-skip-permissions \
-  --model sonnet \
-  --max-budget-usd 0.50 \
-  2>&1
-WRAPPER
-  chmod +x "$wrapper"
-
-  tmux new-session -d -s "$session" "bash '$wrapper'"
-
-  # Navigate through first-run setup wizards, then send the prompt.
-  # Uses polling (100ms intervals) rather than fixed sleeps to avoid brittleness.
-  #
-  # send_key WIZARD_PATTERN KEY — waits until pane shows PATTERN, sends KEY, waits for screen change
-  send_key_when() {
-    local pattern="$1"; local key="$2"
-    local deadline=$(( $(date +%s) + 30 ))
-    local before=""
-    # Wait for wizard to appear
-    while [ $(date +%s) -lt $deadline ]; do
-      local pane; pane=$(tmux capture-pane -p -t "$session" 2>/dev/null)
-      echo "$pane" | grep -q "$pattern" && { before="$pane"; break; }
-      read -t 0.1 _ 2>/dev/null || true
-    done
-    [ -z "$before" ] && return 1
-    # Send the key
-    tmux send-keys -t "$session" "$key" ""
-    # Wait for screen to change
-    deadline=$(( $(date +%s) + 10 ))
-    while [ $(date +%s) -lt $deadline ]; do
-      local pane; pane=$(tmux capture-pane -p -t "$session" 2>/dev/null)
-      [ "$pane" != "$before" ] && return 0
-      read -t 0.1 _ 2>/dev/null || true
-    done
+  # Inject the hook into a temporary settings file so it fires via gd() (settings hooks)
+  local settings_file="$HOME/.claude/settings.json"
+  mkdir -p "$HOME/.claude"
+  cat > "$settings_file" << EOF
+{
+  "skipDangerousModePermissionPrompt": true,
+  "hooks": {
+    "UserPromptSubmit": [
+      { "hooks": [{ "type": "command", "command": "$hook_command" }] }
+    ]
   }
+}
+EOF
 
-  # Navigate any first-run wizards that may appear
-  local deadline=$(( $(date +%s) + 120 ))
-  while [ $(date +%s) -lt $deadline ]; do
-    local pane; pane=$(tmux capture-pane -p -t "$session" 2>/dev/null)
-    # Login method: Down selects "Anthropic Console account", then Enter confirms
-    if echo "$pane" | grep -q "Select login method"; then
-      send_key_when "Select login method" Down
-      send_key_when "Anthropic Console" Enter
-      continue
-    fi
-    # API key confirmation: Up selects "Yes", then Enter confirms
-    if echo "$pane" | grep -q "Detected a custom API key"; then
-      send_key_when "Detected a custom API key" Up
-      send_key_when "Yes" Enter
-      continue
-    fi
-    # Security notes: Enter to continue
-    if echo "$pane" | grep -q "Press Enter to continue"; then
-      send_key_when "Press Enter to continue" Enter
-      continue
-    fi
-    # Trust folder dialog: Enter to confirm (option 1 "Yes, I trust this folder" is default)
-    if echo "$pane" | grep -q "Is this a project you created or one you trust"; then
-      send_key_when "Is this a project you created or one you trust" Enter
-      continue
-    fi
-    # Bypass Permissions mode warning: Down to select "Yes, I accept" then Enter
-    if echo "$pane" | grep -q "Bypass Permissions mode"; then
-      send_key_when "Bypass Permissions mode" Down
-      send_key_when "Yes, I accept" Enter
-      continue
-    fi
-    # Theme picker: Enter to accept default
-    if echo "$pane" | grep -q "Choose the text style"; then
-      send_key_when "Choose the text style" Enter
-      continue
-    fi
-    # Ready — main prompt visible (Claude uses ❯ as the prompt character)
-    echo "$pane" | grep -q "❯" && break
-    read -t 0.1 _ 2>/dev/null || true
-  done
+  (cd "$PROJECT_DIR" && claude -p "$prompt" \
+    --plugin-dir "$CONTREE_ROOT" \
+    --dangerously-skip-permissions \
+    --model sonnet \
+    --max-budget-usd 0.50 \
+    --no-session-persistence \
+    --output-format stream-json \
+    --verbose \
+    "$@" 2>&1) | tee "$TRANSCRIPT_FILE" || true
 
-  # Send the actual prompt
-  tmux send-keys -t "$session" "$prompt" Enter
-
-  # Wait for response: poll until output stabilises and the prompt reappears
-  local before_response; before_response=$(tmux capture-pane -p -t "$session" 2>/dev/null)
-  deadline=$(( $(date +%s) + 180 ))
-  local last_change=$(date +%s)
-  while [ $(date +%s) -lt $deadline ]; do
-    local pane; pane=$(tmux capture-pane -p -t "$session" 2>/dev/null)
-    [ "$pane" != "$before_response" ] && last_change=$(date +%s) && before_response="$pane"
-    # Stable for 5s and prompt visible = done
-    if [ $(( $(date +%s) - last_change )) -ge 5 ] && echo "$pane" | grep -q "❯"; then
-      break
-    fi
-    read -t 0.1 _ 2>/dev/null || true
-  done
-
-  # Save full output including scrollback as transcript
-  tmux capture-pane -p -S - -t "$session" > "$TRANSCRIPT_FILE" 2>/dev/null || true
-  tmux kill-session -t "$session" 2>/dev/null || true
-  rm -f "$wrapper"
+  rm -f "$settings_file"
 }
 
 write_verify() {
