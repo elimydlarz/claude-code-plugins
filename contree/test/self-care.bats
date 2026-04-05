@@ -18,6 +18,13 @@ make_transcript() {
   echo '{"timestamp":"'"$ts"'","type":"user","message":"hello"}' > "$path"
 }
 
+run_hook() {
+  local nudge_dir="$1" transcript="$2"
+  local input='{"transcript_path":"'"$transcript"'"}'
+  run bash -c 'CONTREE_NUDGE_DIR="$1" bash "$2" 2>&1 <<< "$3"' \
+    -- "$nudge_dir" "$SCRIPT" "$input"
+}
+
 # --- First nudge (session start baseline) ---
 
 @test "exits 2 and emits 20-20-20 nudge when 20 minutes have elapsed since session start" {
@@ -26,14 +33,7 @@ make_transcript() {
   local transcript="$tmpdir/transcript.jsonl"
 
   make_transcript "$transcript" "$(iso_minutes_ago 25)"
-
-  run bash "$SCRIPT" \
-    <<< '{"transcript_path":"'"$transcript"'"}' \
-    2>&1
-  # merge stderr into stdout for bats capture; check exit separately
-  CONTREE_NUDGE_DIR="$nudge_dir" run bash -c \
-    'bash "'"$SCRIPT"'" 2>&1' \
-    <<< '{"transcript_path":"'"$transcript"'"}'
+  run_hook "$nudge_dir" "$transcript"
 
   [ "$status" -eq 2 ]
   [[ "$output" == *"20-20-20"* ]]
