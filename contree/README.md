@@ -14,7 +14,7 @@ Five skills:
 - **`/contree:sync`** — Audits test trees against implementation, finds gaps and drift, then TDDs any gaps closed.
 - **`/contree:workflow`** — Runs change → sync → tdd end-to-end without pausing.
 
-Plus a **stop hook** that prompts Claude to keep test trees, mental model, CLAUDE.md, and README.md current after every response.
+Plus a **stop hook** that prompts Claude to keep test trees, mental model, CLAUDE.md, and README.md current after every response. And a **self-care hook** that reminds you to look at something 20 feet away for 20 seconds every 20 minutes (20-20-20 rule).
 
 ## Install
 
