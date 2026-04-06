@@ -364,8 +364,13 @@ VERIFY
 
     echo "Running: pressure-injection — PreToolUse hook injects pressure phrases"
     export PRESSURE_ON=1
+    export PRESSURE_LOG=/tmp/pressure.log
+    : > "$PRESSURE_LOG"
     run_claude "What does this counter module do? Read the source file and explain it."
-    unset PRESSURE_ON
+    echo "=== PRESSURE_LOG ===" | tee -a "$TRANSCRIPT_FILE"
+    cat "$PRESSURE_LOG" | tee -a "$TRANSCRIPT_FILE"
+    echo "=== /PRESSURE_LOG ===" | tee -a "$TRANSCRIPT_FILE"
+    unset PRESSURE_ON PRESSURE_LOG
 
     write_verify << 'VERIFY'
 
