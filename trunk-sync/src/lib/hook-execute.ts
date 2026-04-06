@@ -15,13 +15,14 @@ export function gatherRepoState(input: HookInput): RepoState | null {
   const filePath = input.tool_input.file_path ?? null;
 
   let repoRoot: string;
+  let gitDir: string;
   try {
-    repoRoot = execSync("git rev-parse --show-toplevel", { encoding: "utf-8" }).trim();
+    const [toplevel, dir] = execSync("git rev-parse --show-toplevel --git-dir", { encoding: "utf-8" }).trim().split("\n");
+    repoRoot = toplevel;
+    gitDir = dir;
   } catch {
     return null; // not in a git repo
   }
-
-  const gitDir = execSync("git rev-parse --git-dir", { encoding: "utf-8" }).trim();
 
   let insideRepo = true;
   let gitignored = false;
