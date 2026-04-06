@@ -358,26 +358,19 @@ VERIFY
 VERIFY
     ;;
 
-  pressure-injection)
-    # Verifies: pressure-injection / hook injects a phrase from phrases.txt before tool calls
+  pressure-phrase-on-session-start)
+    # Verifies: pressure-phrase-on-session-start / SessionStart hook bundles a pressure phrase with the rules cheatsheet
     seed_project "seed-project"
 
-    echo "Running: pressure-injection — PreToolUse hook injects pressure phrases"
-    export PRESSURE_ON=1
-    export PRESSURE_LOG=/tmp/pressure.log
-    : > "$PRESSURE_LOG"
-    run_claude "What does this counter module do? Read the source file and explain it."
-    echo "=== PRESSURE_LOG ===" | tee -a "$TRANSCRIPT_FILE"
-    cat "$PRESSURE_LOG" | tee -a "$TRANSCRIPT_FILE"
-    echo "=== /PRESSURE_LOG ===" | tee -a "$TRANSCRIPT_FILE"
-    unset PRESSURE_ON PRESSURE_LOG
+    echo "Running: pressure-phrase-on-session-start — SessionStart hook bundles a pressure phrase with the cheatsheet"
+    run_claude "Quote back, verbatim, every line under a '# Pressure' heading you can see in your context. If there is none, say 'NONE'."
 
     write_verify << 'VERIFY'
 
 === VERIFY ===
-1. Claude read the counter module source file (used a tool to read counter.js or similar)
-2. At least one PreToolUse hook message appears in the transcript — look for a motivational or pressure phrase (e.g. mentions 'tip', 'boss', 'career', 'count on you', 'watching', 'depends', 'production', or similar urgency/stakes language)
-3. Claude still completed the task and described what the counter module does
+1. A SessionStart hook_response appears in the transcript whose output contains a '# Pressure' heading followed by a phrase from contree/hooks/phrases.txt
+2. The assistant's text reply quotes the same phrase verbatim (proving the phrase reached the model, not just stderr)
+3. The phrase is one of the entries in contree/hooks/phrases.txt
 VERIFY
     ;;
 
