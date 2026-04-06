@@ -19,4 +19,5 @@ phrase=$(sed -n "${line_num}p" "$PHRASES_FILE")
 [[ -n "$phrase" ]] || exit 0
 
 printf '%s\n' "$phrase"
+[[ -n "${PRESSURE_LOG:-}" ]] && printf '%s\n' "$phrase" >> "$PRESSURE_LOG"
 exit 0
