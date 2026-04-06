@@ -43,30 +43,26 @@ export function gatherRepoState(input: HookInput): RepoState | null {
     }
   }
 
-  let hasRemote = true;
-  try {
-    execSync("git remote get-url origin", { stdio: "ignore" });
-  } catch {
-    hasRemote = false;
-  }
-
+  let hasRemote = false;
   let targetBranch = "";
-  if (hasRemote) {
+  try {
+    const ref = execSync("git symbolic-ref refs/remotes/origin/HEAD", { encoding: "utf-8" }).trim();
+    hasRemote = true;
+    targetBranch = ref.replace("refs/remotes/origin/", "");
+  } catch {
     try {
-      const ref = execSync("git symbolic-ref refs/remotes/origin/HEAD", {
-        encoding: "utf-8",
-      }).trim();
-      targetBranch = ref.replace("refs/remotes/origin/", "");
-    } catch {
+      execSync("git remote get-url origin", { stdio: "ignore" });
+      hasRemote = true;
       targetBranch = "main";
+    } catch {
+      // no remote
     }
   }
 
   let currentBranch = "";
-  try {
-    currentBranch = execSync("git symbolic-ref --short HEAD", { encoding: "utf-8" }).trim();
-  } catch {
-    // detached HEAD
+  const headContent = readFileSync(join(gitDir, "HEAD"), "utf-8").trim();
+  if (headContent.startsWith("ref: refs/heads/")) {
+    currentBranch = headContent.slice("ref: refs/heads/".length);
   }
 
   const inMerge = existsSync(join(gitDir, "MERGE_HEAD"));
