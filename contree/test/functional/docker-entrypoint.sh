@@ -363,7 +363,9 @@ VERIFY
     seed_project "seed-project"
 
     echo "Running: pressure-injection — PreToolUse hook injects pressure phrases"
-    PRESSURE_ON=1 run_claude "What does this counter module do? Read the source file and explain it."
+    export PRESSURE_ON=1
+    run_claude "What does this counter module do? Read the source file and explain it."
+    unset PRESSURE_ON
 
     write_verify << 'VERIFY'
 
