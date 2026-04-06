@@ -29,8 +29,8 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `package.json` — dev dependencies (bats-support, bats-assert) and test scripts
 - `rules/` — coding principles (one rule per file, plain prose, no frontmatter). Includes `ears.md` (EARS requirement syntax)
 - `rules/cheatsheet.md` — condensed one-liner summary of all rules, loaded at session start
-- `hooks/hooks.json` — SessionStart hook loading the rules cheatsheet; Stop hook detecting drift; PreToolUse pressure hook; UserPromptSubmit self-care hook
-- `hooks/pressure.sh` — PreToolUse hook: randomly selects a phrase and injects it into context
+- `hooks/hooks.json` — SessionStart hook loading the rules cheatsheet plus a pressure phrase; Stop hook detecting drift; UserPromptSubmit self-care hook
+- `hooks/session-start.sh` — SessionStart hook: prints rules cheatsheet plus one random pressure phrase to stderr
 - `hooks/phrases.txt` — phrase pool (one phrase per line — edit to customise)
 - `hooks/self-care-20-20-20.sh` — UserPromptSubmit hook: reminds user of the 20-20-20 rule after 20 min of keyboard time
 - `skills/setup/SKILL.md` — prepare the project for test-tree-driven development: framework, reporters, initial trees
