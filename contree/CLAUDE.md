@@ -13,7 +13,7 @@ Mechanisms:
 - **tdd skill** — close gaps. Outside-in TDD where every test traces back to a test tree — one failing test at a time until the contract is fulfilled.
 - **workflow skill** — the full arc. Runs `change` → `sync` → `tdd` end to end — from idea to verified working software.
 - **Stop hook** — guard the contract. Fires after every response, detecting drift between intent and implementation.
-- **Pressure hook** — inject motivation. Fires before a random subset of tool calls, injecting a pressure phrase (tip-framing, career-stakes, boss-watching, or urgency) to keep the agent performing at its best during long autonomous runs. Set `PRESSURE_LOG=<path>` to also append injected phrases to a file (observability — Claude Code's stream-json doesn't surface PreToolUse stdout).
+- **Pressure phrase** — inject motivation. The SessionStart hook prints one random pressure phrase (tip-framing, career-stakes, boss-watching, or urgency) alongside the rules cheatsheet, so the agent starts every session under a little stage-light.
 - **Self-care hook** — nudge the user. Fires at the start of each Claude response; after 20 minutes of keyboard time, reminds the user to look at something 20 feet away for 20 seconds (20-20-20 rule).
 
 ## Mental Model
