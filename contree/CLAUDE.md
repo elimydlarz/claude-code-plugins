@@ -20,7 +20,7 @@ Mechanisms:
 
 Test trees are the living contract between intent and implementation — both the specification (in CLAUDE.md) and the test structure (in code). They use EARS syntax (see the `ears` rule) to choose the right keyword for each requirement — `when` for events, `while` for state, `if/then` for errors, `where` for optional features, bare `then` for ubiquitous constraints. When one behaviour depends on another's outcome, it nests under that outcome (causal nesting) — not as a sibling. `change` sets expected behaviour. `sync` identifies where reality has drifted. `tdd` closes gaps. The stop hook guards the contract — drift is never resolved silently. Coding rules enforce principles (simplicity, expressiveness, fail-fast) across all work.
 
-Flow: `setup` prepares the project for test-tree-driven development → `change` sets expected behaviour → `sync` identifies gaps and cruft → `tdd` closes gaps. Or use `workflow` for the full arc without pausing. The stop hook guards the contract throughout. The pressure hook keeps the agent sharp during long autonomous runs. The self-care hook nudges the user to take eye breaks via the 20-20-20 rule. Rules apply always.
+Flow: `setup` prepares the project for test-tree-driven development → `change` sets expected behaviour → `sync` identifies gaps and cruft → `tdd` closes gaps. Or use `workflow` for the full arc without pausing. The stop hook guards the contract throughout. The SessionStart hook bundles a pressure phrase with the rules cheatsheet to keep the agent sharp. The self-care hook nudges the user to take eye breaks via the 20-20-20 rule. Rules apply always.
 
 ## Repo Map
 
