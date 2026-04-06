@@ -172,20 +172,14 @@ load test_helper
   assert_success
 }
 
-@test "hooks.json defines a PreToolUse hook" {
-  run jq -r '.hooks.PreToolUse' "$PROJECT_ROOT/hooks/hooks.json"
+@test "SessionStart hook points to session-start.sh" {
+  run jq -r '.hooks.SessionStart[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json"
   assert_success
-  refute_output "null"
+  assert_output --partial "session-start.sh"
 }
 
-@test "PreToolUse hook points to pressure.sh" {
-  run jq -r '.hooks.PreToolUse[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json"
-  assert_success
-  assert_output --partial "pressure.sh"
-}
-
-@test "pressure.sh exists" {
-  run test -f "$PROJECT_ROOT/hooks/pressure.sh"
+@test "session-start.sh exists" {
+  run test -f "$PROJECT_ROOT/hooks/session-start.sh"
   assert_success
 }
 
