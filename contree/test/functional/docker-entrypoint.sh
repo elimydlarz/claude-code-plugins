@@ -390,7 +390,7 @@ VERIFY
     echo "  discover-tdd                 — natural prompt triggers tdd skill"
     echo "  ears-change                  — change skill uses EARS patterns"
     echo "  no-tautologies               — change skill rejects tautological trees"
-    echo "  pressure-injection           — PreToolUse hook injects pressure phrases"
+    echo "  pressure-phrase-on-session-start — SessionStart bundles a pressure phrase with the cheatsheet"
     exit 1
     ;;
 esac
