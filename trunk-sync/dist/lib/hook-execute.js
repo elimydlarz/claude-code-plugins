@@ -12,13 +12,15 @@ import { extractTaskFromTranscript, buildCommitPlanWithTask, classifyTimecards, 
 export function gatherRepoState(input) {
     const filePath = input.tool_input.file_path ?? null;
     let repoRoot;
+    let gitDir;
     try {
-        repoRoot = execSync("git rev-parse --show-toplevel", { encoding: "utf-8" }).trim();
+        const [toplevel, dir] = execSync("git rev-parse --show-toplevel --git-dir", { encoding: "utf-8" }).trim().split("\n");
+        repoRoot = toplevel;
+        gitDir = dir;
     }
     catch {
         return null; // not in a git repo
     }
-    const gitDir = execSync("git rev-parse --git-dir", { encoding: "utf-8" }).trim();
     let insideRepo = true;
     let gitignored = false;
     let relPath = null;
@@ -37,31 +39,27 @@ export function gatherRepoState(input) {
             }
         }
     }
-    let hasRemote = true;
+    let hasRemote = false;
+    let targetBranch = "";
     try {
-        execSync("git remote get-url origin", { stdio: "ignore" });
+        const ref = execSync("git symbolic-ref refs/remotes/origin/HEAD", { encoding: "utf-8" }).trim();
+        hasRemote = true;
+        targetBranch = ref.replace("refs/remotes/origin/", "");
     }
     catch {
-        hasRemote = false;
-    }
-    let targetBranch = "";
-    if (hasRemote) {
         try {
-            const ref = execSync("git symbolic-ref refs/remotes/origin/HEAD", {
-                encoding: "utf-8",
-            }).trim();
-            targetBranch = ref.replace("refs/remotes/origin/", "");
+            execSync("git remote get-url origin", { stdio: "ignore" });
+            hasRemote = true;
+            targetBranch = "main";
         }
         catch {
-            targetBranch = "main";
+            // no remote
         }
     }
     let currentBranch = "";
-    try {
-        currentBranch = execSync("git symbolic-ref --short HEAD", { encoding: "utf-8" }).trim();
-    }
-    catch {
-        // detached HEAD
+    const headContent = readFileSync(join(gitDir, "HEAD"), "utf-8").trim();
+    if (headContent.startsWith("ref: refs/heads/")) {
+        currentBranch = headContent.slice("ref: refs/heads/".length);
     }
     const inMerge = existsSync(join(gitDir, "MERGE_HEAD"));
     let hasStagedChanges = false;
