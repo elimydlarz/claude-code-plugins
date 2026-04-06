@@ -145,6 +145,26 @@ describe("gatherRepoState", () => {
     assert.equal(state.gitignored, true);
   });
 
+  it("reports current branch name", () => {
+    const origDir = process.cwd();
+    process.chdir(dir);
+    const state = gatherRepoState(makeInput());
+    process.chdir(origDir);
+    assert.ok(state);
+    assert.equal(state.currentBranch, "main");
+  });
+
+  it("reports empty currentBranch in detached HEAD", () => {
+    const sha = execSync("git rev-parse HEAD", { cwd: dir, encoding: "utf-8" }).trim();
+    execSync(`git checkout --detach ${sha}`, { cwd: dir, stdio: "ignore" });
+    const origDir = process.cwd();
+    process.chdir(dir);
+    const state = gatherRepoState(makeInput());
+    process.chdir(origDir);
+    assert.ok(state);
+    assert.equal(state.currentBranch, "");
+  });
+
   it("detects no remote", () => {
     const origDir = process.cwd();
     process.chdir(dir);
@@ -152,6 +172,18 @@ describe("gatherRepoState", () => {
     process.chdir(origDir);
     assert.ok(state);
     assert.equal(state.hasRemote, false);
+  });
+
+  it("detects remote and reads targetBranch from origin/HEAD", () => {
+    const { clone } = setupRepoWithRemote("gather-remote");
+    const origDir = process.cwd();
+    process.chdir(clone);
+    const state = gatherRepoState(makeInput());
+    process.chdir(origDir);
+    assert.ok(state);
+    assert.equal(state.hasRemote, true);
+    assert.equal(state.targetBranch, "main");
+    rmSync(clone, { recursive: true, force: true });
   });
 
   it("detects deleted files", () => {
