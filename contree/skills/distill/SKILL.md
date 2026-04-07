@@ -38,7 +38,7 @@ The remaining content is all plausibly useful. To rank it, look at what past ses
 
 - **User corrections** — messages where the user pushed back, said "no", "don't", "stop", or restated a rule. The CLAUDE.md content this would have prevented is high-value — keep it.
 - **Repeated mistakes** — the same wrong assumption made across multiple sessions. The CLAUDE.md content that would have prevented it is high-value — keep it, possibly strengthen it.
-- **Doc reads** — Read tool calls against CLAUDE.md, README.md, or files in the repo map. Sections that get read often are load-bearing. Sections that never get referenced in any transcript are candidates to move out.
+- **Doc reads** — Read tool calls against CLAUDE.md or files in the repo map. Sections that get read often are load-bearing. Sections that never get referenced in any transcript are candidates to move out.
 - **Tool-call patterns** — what files Claude reaches for first when starting a task. Repo Map entries pointing to those files are high-value; entries pointing to files nothing ever touches are candidates to move.
 
 Summarise the evidence: per section (or per bullet), high / medium / low based on observed need.
