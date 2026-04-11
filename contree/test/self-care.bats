@@ -18,6 +18,28 @@ make_transcript() {
   echo '{"timestamp":"'"$ts"'","type":"user","message":"hello"}' > "$path"
 }
 
+# Mirrors the shape of real Claude Code transcripts:
+# - lines 1-2 are bookkeeping entries with no timestamp
+# - first timestamped line is the user entry on line 3
+# - timestamps include fractional seconds and a Z suffix
+make_realistic_transcript() {
+  local path="$1" ts="$2"
+  {
+    echo '{"type":"permission-mode","timestamp":null}'
+    echo '{"type":"file-history-snapshot","timestamp":null}'
+    echo '{"type":"user","timestamp":"'"$ts"'","message":"hello"}'
+  } > "$path"
+}
+
+iso_minutes_ago_millis() {
+  local minutes="$1"
+  if date -v-1M >/dev/null 2>&1; then
+    date -u -v-"${minutes}M" +"%Y-%m-%dT%H:%M:%S.000Z"
+  else
+    date -u -d "${minutes} minutes ago" +"%Y-%m-%dT%H:%M:%S.000Z"
+  fi
+}
+
 run_hook() {
   local nudge_dir="$1" transcript="$2"
   local input_file wrapper
