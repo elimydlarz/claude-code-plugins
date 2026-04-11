@@ -16,7 +16,7 @@ LATEST=$(ls -t "$NUDGE_DIR" 2>/dev/null | head -1)
 if [ -n "$LATEST" ]; then
   BASELINE="$LATEST"
 else
-  START_STR=$(sed -n '3p' "$TRANSCRIPT" | jq -r '.timestamp // empty' 2>/dev/null)
+  START_STR=$(jq -r 'select(.timestamp != null) | .timestamp' "$TRANSCRIPT" 2>/dev/null | head -1)
   [ -z "$START_STR" ] && exit 0
   # Strip fractional seconds (e.g. 2026-04-11T09:30:13.325Z -> 2026-04-11T09:30:13Z)
   START_STR=$(printf '%s' "$START_STR" | sed 's/\.[0-9]*Z$/Z/')
