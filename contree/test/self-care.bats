@@ -121,6 +121,27 @@ run_hook() {
   rm -rf "$tmpdir"
 }
 
+@test "finds first timestamped entry when many bookkeeping lines precede it" {
+  local tmpdir; tmpdir=$(mktemp -d)
+  local nudge_dir="$tmpdir/nudges/20-20-20"
+  local transcript="$tmpdir/transcript.jsonl"
+  local ts; ts=$(iso_minutes_ago_millis 25)
+
+  {
+    for _ in 1 2 3 4 5 6 7 8; do
+      echo '{"type":"bookkeeping","timestamp":null}'
+    done
+    echo '{"type":"user","timestamp":"'"$ts"'","message":"hello"}'
+  } > "$transcript"
+
+  run_hook "$nudge_dir" "$transcript"
+
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"20-20-20"* ]]
+
+  rm -rf "$tmpdir"
+}
+
 @test "exits 2 when 20 minutes have elapsed since session start in a realistic transcript (no timestamp on line 1)" {
   local tmpdir; tmpdir=$(mktemp -d)
   local nudge_dir="$tmpdir/nudges/20-20-20"
