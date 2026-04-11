@@ -4,33 +4,20 @@ THRESHOLD=1200
 
 INPUT=$(cat)
 
-# TEMP debug trace
-{
-  echo "=== $(date) ==="
-  echo "HOME=$HOME"
-  echo "NUDGE_DIR=$NUDGE_DIR"
-  echo "ls NUDGE_DIR: $(ls -la "$NUDGE_DIR" 2>&1)"
-  echo "INPUT=$INPUT"
-} >> /tmp/self-care-trace.log 2>&1
-
-TRANSCRIPT=$(printf '%s' "$INPUT" | jq -r '.transcript_path // empty' 2>/dev/null)
-{
-  echo "TRANSCRIPT=$TRANSCRIPT"
-  echo "transcript exists: $([ -f "$TRANSCRIPT" ] && echo yes || echo no)"
-  echo "ls projects: $(ls -la "$(dirname "$TRANSCRIPT")" 2>&1)"
-} >> /tmp/self-care-trace.log 2>&1
-if [ -z "$TRANSCRIPT" ] || [ ! -f "$TRANSCRIPT" ]; then
-  echo "EXIT early at transcript check" >> /tmp/self-care-trace.log
-  exit 0
-fi
-
 mkdir -p "$NUDGE_DIR" 2>/dev/null || exit 0
 
-# Baseline: most recent nudge file (filename = unix timestamp), else session start
+# Baseline: most recent nudge file (filename = unix timestamp), else session start from
+# the transcript. Nudge-file baseline is tried first so we don't need the transcript to
+# exist — in `claude -p` mode, the transcript file has not yet been written when
+# UserPromptSubmit fires.
 LATEST=$(ls -t "$NUDGE_DIR" 2>/dev/null | head -1)
 if [ -n "$LATEST" ]; then
   BASELINE="$LATEST"
 else
+  TRANSCRIPT=$(printf '%s' "$INPUT" | jq -r '.transcript_path // empty' 2>/dev/null)
+  if [ -z "$TRANSCRIPT" ] || [ ! -f "$TRANSCRIPT" ]; then
+    exit 0
+  fi
   START_STR=$(jq -r 'select(.timestamp != null) | .timestamp' "$TRANSCRIPT" 2>/dev/null | head -1)
   [ -z "$START_STR" ] && exit 0
   # Strip fractional seconds (e.g. 2026-04-11T09:30:13.325Z -> 2026-04-11T09:30:13Z)
@@ -45,21 +32,10 @@ fi
 NOW=$(date +%s)
 ELAPSED=$(( NOW - BASELINE ))
 
-# TEMP debug trace
-{
-  echo "LATEST=$LATEST"
-  echo "BASELINE=$BASELINE"
-  echo "NOW=$NOW"
-  echo "ELAPSED=$ELAPSED"
-  echo "THRESHOLD=$THRESHOLD"
-} >> /tmp/self-care-trace.log 2>&1
-
 if [ "$ELAPSED" -ge "$THRESHOLD" ]; then
   touch "$NUDGE_DIR/$NOW"
-  echo "FIRED" >> /tmp/self-care-trace.log 2>&1
   echo "Before addressing the user's request, mention the 20-20-20 rule: they have been at the keyboard for a while. Say something like: \"Quick eye break: look at something 20 feet away for 20 seconds (20-20-20 rule).\" Keep it brief, then continue with their request." >&2
   exit 2
 fi
 
-echo "NOT FIRED" >> /tmp/self-care-trace.log 2>&1
 exit 0
