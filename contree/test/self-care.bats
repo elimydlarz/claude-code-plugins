@@ -121,6 +121,20 @@ run_hook() {
   rm -rf "$tmpdir"
 }
 
+@test "exits 2 when 20 minutes have elapsed since session start in a realistic transcript (no timestamp on line 1)" {
+  local tmpdir; tmpdir=$(mktemp -d)
+  local nudge_dir="$tmpdir/nudges/20-20-20"
+  local transcript="$tmpdir/transcript.jsonl"
+
+  make_realistic_transcript "$transcript" "$(iso_minutes_ago_millis 25)"
+  run_hook "$nudge_dir" "$transcript"
+
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"20-20-20"* ]]
+
+  rm -rf "$tmpdir"
+}
+
 @test "exits 2 and emits 20-20-20 nudge when 20 minutes have elapsed since session start" {
   local tmpdir; tmpdir=$(mktemp -d)
   local nudge_dir="$tmpdir/nudges/20-20-20"
