@@ -4,6 +4,15 @@ THRESHOLD=1200
 
 INPUT=$(cat)
 
+# TEMP debug trace
+{
+  echo "=== $(date) ==="
+  echo "HOME=$HOME"
+  echo "NUDGE_DIR=$NUDGE_DIR"
+  echo "ls NUDGE_DIR: $(ls -la "$NUDGE_DIR" 2>&1)"
+  echo "INPUT=$INPUT"
+} >> /tmp/self-care-trace.log 2>&1
+
 TRANSCRIPT=$(printf '%s' "$INPUT" | jq -r '.transcript_path // empty' 2>/dev/null)
 if [ -z "$TRANSCRIPT" ] || [ ! -f "$TRANSCRIPT" ]; then
   exit 0
