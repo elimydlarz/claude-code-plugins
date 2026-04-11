@@ -39,10 +39,21 @@ fi
 NOW=$(date +%s)
 ELAPSED=$(( NOW - BASELINE ))
 
+# TEMP debug trace
+{
+  echo "LATEST=$LATEST"
+  echo "BASELINE=$BASELINE"
+  echo "NOW=$NOW"
+  echo "ELAPSED=$ELAPSED"
+  echo "THRESHOLD=$THRESHOLD"
+} >> /tmp/self-care-trace.log 2>&1
+
 if [ "$ELAPSED" -ge "$THRESHOLD" ]; then
   touch "$NUDGE_DIR/$NOW"
+  echo "FIRED" >> /tmp/self-care-trace.log 2>&1
   echo "Before addressing the user's request, mention the 20-20-20 rule: they have been at the keyboard for a while. Say something like: \"Quick eye break: look at something 20 feet away for 20 seconds (20-20-20 rule).\" Keep it brief, then continue with their request." >&2
   exit 2
 fi
 
+echo "NOT FIRED" >> /tmp/self-care-trace.log 2>&1
 exit 0
