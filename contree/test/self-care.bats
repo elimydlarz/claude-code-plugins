@@ -157,13 +157,14 @@ run_hook() {
 
   run_hook "$nudge_dir" "$transcript"
 
-  [ "$status" -eq 2 ]
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"additionalContext"* ]]
   [[ "$output" == *"20-20-20"* ]]
 
   rm -rf "$tmpdir"
 }
 
-@test "exits 2 when 20 minutes have elapsed since session start in a realistic transcript (no timestamp on line 1)" {
+@test "emits additionalContext when 20 minutes have elapsed since session start in a realistic transcript" {
   local tmpdir; tmpdir=$(mktemp -d)
   local nudge_dir="$tmpdir/nudges/20-20-20"
   local transcript="$tmpdir/transcript.jsonl"
@@ -171,13 +172,14 @@ run_hook() {
   make_realistic_transcript "$transcript" "$(iso_minutes_ago_millis 25)"
   run_hook "$nudge_dir" "$transcript"
 
-  [ "$status" -eq 2 ]
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"additionalContext"* ]]
   [[ "$output" == *"20-20-20"* ]]
 
   rm -rf "$tmpdir"
 }
 
-@test "exits 2 and emits 20-20-20 nudge when 20 minutes have elapsed since session start" {
+@test "emits additionalContext with 20 feet and 20 seconds when nudge fires from session start" {
   local tmpdir; tmpdir=$(mktemp -d)
   local nudge_dir="$tmpdir/nudges/20-20-20"
   local transcript="$tmpdir/transcript.jsonl"
@@ -185,9 +187,12 @@ run_hook() {
   make_transcript "$transcript" "$(iso_minutes_ago 25)"
   run_hook "$nudge_dir" "$transcript"
 
-  [ "$status" -eq 2 ]
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"additionalContext"* ]]
+  [[ "$output" == *"UserPromptSubmit"* ]]
   [[ "$output" == *"20-20-20"* ]]
   [[ "$output" == *"20 feet"* ]]
+  [[ "$output" == *"20 seconds"* ]]
 
   rm -rf "$tmpdir"
 }
