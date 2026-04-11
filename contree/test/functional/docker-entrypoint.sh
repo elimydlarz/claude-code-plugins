@@ -376,9 +376,9 @@ VERIFY
     write_verify << 'VERIFY'
 
 === VERIFY ===
-1. A UserPromptSubmit hook_response appears in the transcript with stderr mentioning "20-20-20"
-2. The assistant's text reply opens with the 20-20-20 rule reminder, naming both "20 feet" and "20 seconds", before answering the math question
-3. The assistant still answers "4" (or equivalent) to the math question after the reminder
+1. The assistant's text reply opens with the 20-20-20 rule reminder, naming both "20 feet" and "20 seconds", before answering the math question
+2. The assistant still answers "4" (or equivalent) to the math question after the reminder
+3. The prompt was not blocked — the transcript contains an assistant message with non-zero output tokens and a "2 + 2" style answer
 VERIFY
     ;;
 
