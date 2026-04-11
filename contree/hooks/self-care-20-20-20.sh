@@ -14,7 +14,13 @@ INPUT=$(cat)
 } >> /tmp/self-care-trace.log 2>&1
 
 TRANSCRIPT=$(printf '%s' "$INPUT" | jq -r '.transcript_path // empty' 2>/dev/null)
+{
+  echo "TRANSCRIPT=$TRANSCRIPT"
+  echo "transcript exists: $([ -f "$TRANSCRIPT" ] && echo yes || echo no)"
+  echo "ls projects: $(ls -la "$(dirname "$TRANSCRIPT")" 2>&1)"
+} >> /tmp/self-care-trace.log 2>&1
 if [ -z "$TRANSCRIPT" ] || [ ! -f "$TRANSCRIPT" ]; then
+  echo "EXIT early at transcript check" >> /tmp/self-care-trace.log
   exit 0
 fi
 
