@@ -70,7 +70,7 @@ run_hook() {
 
 # --- Repeat nudge (nudge file baseline) ---
 
-@test "exits 2 with nudge when 20 minutes have elapsed since the most recent nudge file" {
+@test "emits additionalContext JSON when 20 minutes have elapsed since the most recent nudge file" {
   local tmpdir; tmpdir=$(mktemp -d)
   local nudge_dir="$tmpdir/nudges/20-20-20"
   local transcript="$tmpdir/transcript.jsonl"
@@ -83,7 +83,28 @@ run_hook() {
 
   run_hook "$nudge_dir" "$transcript"
 
-  [ "$status" -eq 2 ]
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"additionalContext"* ]]
+  [[ "$output" == *"UserPromptSubmit"* ]]
+  [[ "$output" == *"20-20-20"* ]]
+
+  rm -rf "$tmpdir"
+}
+
+@test "does not require transcript file to exist when nudge file baseline is available" {
+  local tmpdir; tmpdir=$(mktemp -d)
+  local nudge_dir="$tmpdir/nudges/20-20-20"
+  # Deliberately point at a transcript file that does NOT exist — mirrors `claude -p`
+  # behaviour where UserPromptSubmit fires before the transcript is written.
+  local transcript="$tmpdir/nonexistent.jsonl"
+
+  mkdir -p "$nudge_dir"
+  touch "$nudge_dir/$(( $(date +%s) - 1500 ))"
+
+  run_hook "$nudge_dir" "$transcript"
+
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"additionalContext"* ]]
   [[ "$output" == *"20-20-20"* ]]
 
   rm -rf "$tmpdir"
