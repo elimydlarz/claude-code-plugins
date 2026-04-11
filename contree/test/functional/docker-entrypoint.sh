@@ -370,12 +370,8 @@ VERIFY
     touch "$NUDGE_DIR/$(( $(date +%s) - 1500 ))"
 
     echo "Running: self-care-nudge-fires — self-care hook reminder reaches the model"
-    rm -f /tmp/self-care-trace.log
     run_claude \
       "What is 2 + 2? Answer in one short sentence."
-    echo "--- self-care-trace.log ---"
-    cat /tmp/self-care-trace.log 2>&1 || echo "(no trace log)"
-    echo "--- end trace ---"
 
     write_verify << 'VERIFY'
 
