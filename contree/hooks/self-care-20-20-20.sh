@@ -16,12 +16,14 @@ LATEST=$(ls -t "$NUDGE_DIR" 2>/dev/null | head -1)
 if [ -n "$LATEST" ]; then
   BASELINE="$LATEST"
 else
-  START_STR=$(head -1 "$TRANSCRIPT" | jq -r '.timestamp // empty' 2>/dev/null)
+  START_STR=$(jq -r 'select(.timestamp != null) | .timestamp' "$TRANSCRIPT" 2>/dev/null | head -1)
   [ -z "$START_STR" ] && exit 0
+  # Strip fractional seconds (e.g. 2026-04-11T09:30:13.325Z -> 2026-04-11T09:30:13Z)
+  START_STR=$(printf '%s' "$START_STR" | sed 's/\.[0-9]*Z$/Z/')
   if date -j >/dev/null 2>&1; then
-    BASELINE=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$START_STR" +%s 2>/dev/null) || exit 0
+    BASELINE=$(date -j -u -f "%Y-%m-%dT%H:%M:%SZ" "$START_STR" +%s 2>/dev/null) || exit 0
   else
-    BASELINE=$(date -d "$START_STR" +%s 2>/dev/null) || exit 0
+    BASELINE=$(date -u -d "$START_STR" +%s 2>/dev/null) || exit 0
   fi
 fi
 
