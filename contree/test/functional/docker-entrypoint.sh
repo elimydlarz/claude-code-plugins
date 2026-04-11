@@ -414,6 +414,7 @@ VERIFY
     echo "  discover-tdd                 — natural prompt triggers tdd skill"
     echo "  ears-change                  — change skill uses EARS patterns"
     echo "  no-tautologies               — change skill rejects tautological trees"
+    echo "  self-care-nudge-fires        — self-care hook reminder reaches the model"
     echo "  pressure-phrase-on-session-start — SessionStart bundles a pressure phrase with the cheatsheet"
     exit 1
     ;;
