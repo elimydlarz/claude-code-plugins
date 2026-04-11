@@ -34,12 +34,8 @@ ELAPSED=$(( NOW - BASELINE ))
 
 if [ "$ELAPSED" -ge "$THRESHOLD" ]; then
   touch "$NUDGE_DIR/$NOW"
-  jq -n '{
-    hookSpecificOutput: {
-      hookEventName: "UserPromptSubmit",
-      additionalContext: "Before addressing the user'"'"'s request, mention the 20-20-20 rule: they have been at the keyboard for a while. Say something like: \"Quick eye break: look at something 20 feet away for 20 seconds (20-20-20 rule).\" Keep it brief, then continue with their request."
-    }
-  }'
+  MESSAGE='Before addressing the user’s request, mention the 20-20-20 rule: they have been at the keyboard for a while. Say something like: "Quick eye break: look at something 20 feet away for 20 seconds (20-20-20 rule)." Keep it brief, then continue with their request.'
+  jq -n --arg msg "$MESSAGE" '{hookSpecificOutput: {hookEventName: "UserPromptSubmit", additionalContext: $msg}}'
 fi
 
 exit 0
