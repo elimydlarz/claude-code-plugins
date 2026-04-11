@@ -358,6 +358,30 @@ VERIFY
 VERIFY
     ;;
 
+  self-care-nudge-fires)
+    # Verifies: self-care-20-20-20 / when 20 minutes have elapsed since the most recent nudge file's timestamp
+    # Seeds a stale nudge file so the hook's nudge-file-baseline branch fires on the first
+    # user prompt. Proves the hook reaches the model end-to-end: real claude → hook stderr → response.
+    seed_project "seed-project"
+
+    NUDGE_DIR="$HOME/.claude/contree/nudges/20-20-20"
+    rm -rf "$NUDGE_DIR"
+    mkdir -p "$NUDGE_DIR"
+    touch "$NUDGE_DIR/$(( $(date +%s) - 1500 ))"
+
+    echo "Running: self-care-nudge-fires — self-care hook reminder reaches the model"
+    run_claude \
+      "What is 2 + 2? Answer in one short sentence."
+
+    write_verify << 'VERIFY'
+
+=== VERIFY ===
+1. A UserPromptSubmit hook_response appears in the transcript with stderr mentioning "20-20-20"
+2. The assistant's text reply opens with the 20-20-20 rule reminder, naming both "20 feet" and "20 seconds", before answering the math question
+3. The assistant still answers "4" (or equivalent) to the math question after the reminder
+VERIFY
+    ;;
+
   pressure-phrase-on-session-start)
     # Verifies: pressure-phrase-on-session-start / SessionStart hook bundles a pressure phrase with the rules cheatsheet
     seed_project "seed-project"
