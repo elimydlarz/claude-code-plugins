@@ -18,10 +18,6 @@ make_transcript() {
   echo '{"timestamp":"'"$ts"'","type":"user","message":"hello"}' > "$path"
 }
 
-# Mirrors the shape of real Claude Code transcripts:
-# - lines 1-2 are bookkeeping entries with no timestamp
-# - first timestamped line is the user entry on line 3
-# - timestamps include fractional seconds and a Z suffix
 make_realistic_transcript() {
   local path="$1" ts="$2"
   {
@@ -42,74 +38,58 @@ iso_minutes_ago_millis() {
 
 run_hook() {
   local nudge_dir="$1" transcript="$2"
-  local input_file wrapper
-  input_file=$(mktemp)
-  wrapper=$(mktemp)
+  local input_file="$BATS_TEST_TMPDIR/input.json"
+  local wrapper="$BATS_TEST_TMPDIR/wrapper.sh"
   printf '{"transcript_path":"%s"}' "$transcript" > "$input_file"
   printf '#!/usr/bin/env bash\nCONTREE_NUDGE_DIR=%q bash %q < %q 2>&1\n' \
     "$nudge_dir" "$SCRIPT" "$input_file" > "$wrapper"
   run bash "$wrapper"
-  rm -f "$input_file" "$wrapper"
 }
 
-# Captures only stdout (no stderr redirect) for JSON structure validation
 run_hook_stdout() {
   local nudge_dir="$1" transcript="$2"
-  local input_file wrapper
-  input_file=$(mktemp)
-  wrapper=$(mktemp)
+  local input_file="$BATS_TEST_TMPDIR/input.json"
+  local wrapper="$BATS_TEST_TMPDIR/wrapper.sh"
   printf '{"transcript_path":"%s"}' "$transcript" > "$input_file"
   printf '#!/usr/bin/env bash\nCONTREE_NUDGE_DIR=%q bash %q < %q 2>/dev/null\n' \
     "$nudge_dir" "$SCRIPT" "$input_file" > "$wrapper"
   run bash "$wrapper"
-  rm -f "$input_file" "$wrapper"
 }
 
 # --- Error handling ---
 
 @test "exits 0 silently when nudge directory cannot be created" {
-  local tmpdir; tmpdir=$(mktemp -d)
-  local transcript="$tmpdir/transcript.jsonl"
+  local transcript="$BATS_TEST_TMPDIR/transcript.jsonl"
 
   make_transcript "$transcript" "$(iso_minutes_ago 25)"
-  # /dev/null is a file, so creating a subdir beneath it always fails
   run_hook "/dev/null/contree-nudges" "$transcript"
 
   [ "$status" -eq 0 ]
   [ -z "$output" ]
-
-  rm -rf "$tmpdir"
 }
 
-# --- Repeat nudge (nudge file baseline) ---
+# --- JSON contract ---
 
 @test "stdout is valid hookSpecificOutput JSON with correct structure" {
-  local tmpdir; tmpdir=$(mktemp -d)
-  local nudge_dir="$tmpdir/nudges/20-20-20"
-  local transcript="$tmpdir/transcript.jsonl"
+  local nudge_dir="$BATS_TEST_TMPDIR/nudges/20-20-20"
+  local transcript="$BATS_TEST_TMPDIR/transcript.jsonl"
 
   make_transcript "$transcript" "$(iso_minutes_ago 25)"
   run_hook_stdout "$nudge_dir" "$transcript"
 
   [ "$status" -eq 0 ]
-  # Must parse as JSON
   echo "$output" | jq empty
-  # hookEventName must be UserPromptSubmit
   local event_name; event_name=$(echo "$output" | jq -r '.hookSpecificOutput.hookEventName')
   [ "$event_name" = "UserPromptSubmit" ]
-  # additionalContext must contain the 20-20-20 reminder
   local ctx; ctx=$(echo "$output" | jq -r '.hookSpecificOutput.additionalContext')
   [[ "$ctx" == *"20-20-20"* ]]
   [[ "$ctx" == *"20 feet"* ]]
   [[ "$ctx" == *"20 seconds"* ]]
-
-  rm -rf "$tmpdir"
 }
 
 @test "emits no stdout when not nudging" {
-  local tmpdir; tmpdir=$(mktemp -d)
-  local nudge_dir="$tmpdir/nudges/20-20-20"
-  local transcript="$tmpdir/transcript.jsonl"
+  local nudge_dir="$BATS_TEST_TMPDIR/nudges/20-20-20"
+  local transcript="$BATS_TEST_TMPDIR/transcript.jsonl"
 
   mkdir -p "$nudge_dir"
   touch "$nudge_dir/$(( $(date +%s) - 600 ))"
@@ -119,19 +99,16 @@ run_hook_stdout() {
 
   [ "$status" -eq 0 ]
   [ -z "$output" ]
-
-  rm -rf "$tmpdir"
 }
 
+# --- Repeat nudge (nudge file baseline) ---
+
 @test "emits additionalContext JSON when 20 minutes have elapsed since the most recent nudge file" {
-  local tmpdir; tmpdir=$(mktemp -d)
-  local nudge_dir="$tmpdir/nudges/20-20-20"
-  local transcript="$tmpdir/transcript.jsonl"
+  local nudge_dir="$BATS_TEST_TMPDIR/nudges/20-20-20"
+  local transcript="$BATS_TEST_TMPDIR/transcript.jsonl"
 
   mkdir -p "$nudge_dir"
-  # Nudge file timestamped 25 minutes ago
   touch "$nudge_dir/$(( $(date +%s) - 1500 ))"
-  # Session started 60 minutes ago (should not affect — nudge file takes precedence)
   make_transcript "$transcript" "$(iso_minutes_ago 60)"
 
   run_hook "$nudge_dir" "$transcript"
@@ -140,16 +117,11 @@ run_hook_stdout() {
   [[ "$output" == *"additionalContext"* ]]
   [[ "$output" == *"UserPromptSubmit"* ]]
   [[ "$output" == *"20-20-20"* ]]
-
-  rm -rf "$tmpdir"
 }
 
 @test "does not require transcript file to exist when nudge file baseline is available" {
-  local tmpdir; tmpdir=$(mktemp -d)
-  local nudge_dir="$tmpdir/nudges/20-20-20"
-  # Deliberately point at a transcript file that does NOT exist — mirrors `claude -p`
-  # behaviour where UserPromptSubmit fires before the transcript is written.
-  local transcript="$tmpdir/nonexistent.jsonl"
+  local nudge_dir="$BATS_TEST_TMPDIR/nudges/20-20-20"
+  local transcript="$BATS_TEST_TMPDIR/nonexistent.jsonl"
 
   mkdir -p "$nudge_dir"
   touch "$nudge_dir/$(( $(date +%s) - 1500 ))"
@@ -159,46 +131,36 @@ run_hook_stdout() {
   [ "$status" -eq 0 ]
   [[ "$output" == *"additionalContext"* ]]
   [[ "$output" == *"20-20-20"* ]]
-
-  rm -rf "$tmpdir"
 }
 
 @test "exits 0 when less than 20 minutes have elapsed since the most recent nudge file" {
-  local tmpdir; tmpdir=$(mktemp -d)
-  local nudge_dir="$tmpdir/nudges/20-20-20"
-  local transcript="$tmpdir/transcript.jsonl"
+  local nudge_dir="$BATS_TEST_TMPDIR/nudges/20-20-20"
+  local transcript="$BATS_TEST_TMPDIR/transcript.jsonl"
 
   mkdir -p "$nudge_dir"
-  # Nudge file timestamped 10 minutes ago
   touch "$nudge_dir/$(( $(date +%s) - 600 ))"
   make_transcript "$transcript" "$(iso_minutes_ago 60)"
 
   run_hook "$nudge_dir" "$transcript"
 
   [ "$status" -eq 0 ]
-
-  rm -rf "$tmpdir"
 }
 
 # --- First nudge (session start baseline) ---
 
 @test "creates a nudge file when nudge fires" {
-  local tmpdir; tmpdir=$(mktemp -d)
-  local nudge_dir="$tmpdir/nudges/20-20-20"
-  local transcript="$tmpdir/transcript.jsonl"
+  local nudge_dir="$BATS_TEST_TMPDIR/nudges/20-20-20"
+  local transcript="$BATS_TEST_TMPDIR/transcript.jsonl"
 
   make_transcript "$transcript" "$(iso_minutes_ago 25)"
   run_hook "$nudge_dir" "$transcript"
 
   [ "$(ls "$nudge_dir" | wc -l | tr -d ' ')" -eq 1 ]
-
-  rm -rf "$tmpdir"
 }
 
 @test "finds first timestamped entry when many bookkeeping lines precede it" {
-  local tmpdir; tmpdir=$(mktemp -d)
-  local nudge_dir="$tmpdir/nudges/20-20-20"
-  local transcript="$tmpdir/transcript.jsonl"
+  local nudge_dir="$BATS_TEST_TMPDIR/nudges/20-20-20"
+  local transcript="$BATS_TEST_TMPDIR/transcript.jsonl"
   local ts; ts=$(iso_minutes_ago_millis 25)
 
   {
@@ -213,14 +175,11 @@ run_hook_stdout() {
   [ "$status" -eq 0 ]
   [[ "$output" == *"additionalContext"* ]]
   [[ "$output" == *"20-20-20"* ]]
-
-  rm -rf "$tmpdir"
 }
 
 @test "emits additionalContext when 20 minutes have elapsed since session start in a realistic transcript" {
-  local tmpdir; tmpdir=$(mktemp -d)
-  local nudge_dir="$tmpdir/nudges/20-20-20"
-  local transcript="$tmpdir/transcript.jsonl"
+  local nudge_dir="$BATS_TEST_TMPDIR/nudges/20-20-20"
+  local transcript="$BATS_TEST_TMPDIR/transcript.jsonl"
 
   make_realistic_transcript "$transcript" "$(iso_minutes_ago_millis 25)"
   run_hook "$nudge_dir" "$transcript"
@@ -228,14 +187,11 @@ run_hook_stdout() {
   [ "$status" -eq 0 ]
   [[ "$output" == *"additionalContext"* ]]
   [[ "$output" == *"20-20-20"* ]]
-
-  rm -rf "$tmpdir"
 }
 
 @test "emits additionalContext with 20 feet and 20 seconds when nudge fires from session start" {
-  local tmpdir; tmpdir=$(mktemp -d)
-  local nudge_dir="$tmpdir/nudges/20-20-20"
-  local transcript="$tmpdir/transcript.jsonl"
+  local nudge_dir="$BATS_TEST_TMPDIR/nudges/20-20-20"
+  local transcript="$BATS_TEST_TMPDIR/transcript.jsonl"
 
   make_transcript "$transcript" "$(iso_minutes_ago 25)"
   run_hook "$nudge_dir" "$transcript"
@@ -246,6 +202,4 @@ run_hook_stdout() {
   [[ "$output" == *"20-20-20"* ]]
   [[ "$output" == *"20 feet"* ]]
   [[ "$output" == *"20 seconds"* ]]
-
-  rm -rf "$tmpdir"
 }
