@@ -52,6 +52,19 @@ run_hook() {
   rm -f "$input_file" "$wrapper"
 }
 
+# Captures only stdout (no stderr redirect) for JSON structure validation
+run_hook_stdout() {
+  local nudge_dir="$1" transcript="$2"
+  local input_file wrapper
+  input_file=$(mktemp)
+  wrapper=$(mktemp)
+  printf '{"transcript_path":"%s"}' "$transcript" > "$input_file"
+  printf '#!/usr/bin/env bash\nCONTREE_NUDGE_DIR=%q bash %q < %q 2>/dev/null\n' \
+    "$nudge_dir" "$SCRIPT" "$input_file" > "$wrapper"
+  run bash "$wrapper"
+  rm -f "$input_file" "$wrapper"
+}
+
 # --- Error handling ---
 
 @test "exits 0 silently when nudge directory cannot be created" {
