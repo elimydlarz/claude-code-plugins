@@ -83,6 +83,46 @@ run_hook_stdout() {
 
 # --- Repeat nudge (nudge file baseline) ---
 
+@test "stdout is valid hookSpecificOutput JSON with correct structure" {
+  local tmpdir; tmpdir=$(mktemp -d)
+  local nudge_dir="$tmpdir/nudges/20-20-20"
+  local transcript="$tmpdir/transcript.jsonl"
+
+  make_transcript "$transcript" "$(iso_minutes_ago 25)"
+  run_hook_stdout "$nudge_dir" "$transcript"
+
+  [ "$status" -eq 0 ]
+  # Must parse as JSON
+  echo "$output" | jq empty
+  # hookEventName must be UserPromptSubmit
+  local event_name; event_name=$(echo "$output" | jq -r '.hookSpecificOutput.hookEventName')
+  [ "$event_name" = "UserPromptSubmit" ]
+  # additionalContext must contain the 20-20-20 reminder
+  local ctx; ctx=$(echo "$output" | jq -r '.hookSpecificOutput.additionalContext')
+  [[ "$ctx" == *"20-20-20"* ]]
+  [[ "$ctx" == *"20 feet"* ]]
+  [[ "$ctx" == *"20 seconds"* ]]
+
+  rm -rf "$tmpdir"
+}
+
+@test "emits no stdout when not nudging" {
+  local tmpdir; tmpdir=$(mktemp -d)
+  local nudge_dir="$tmpdir/nudges/20-20-20"
+  local transcript="$tmpdir/transcript.jsonl"
+
+  mkdir -p "$nudge_dir"
+  touch "$nudge_dir/$(( $(date +%s) - 600 ))"
+  make_transcript "$transcript" "$(iso_minutes_ago 60)"
+
+  run_hook_stdout "$nudge_dir" "$transcript"
+
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+
+  rm -rf "$tmpdir"
+}
+
 @test "emits additionalContext JSON when 20 minutes have elapsed since the most recent nudge file" {
   local tmpdir; tmpdir=$(mktemp -d)
   local nudge_dir="$tmpdir/nudges/20-20-20"
