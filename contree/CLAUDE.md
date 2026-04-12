@@ -14,7 +14,7 @@ Mechanisms:
 - **workflow skill** — the full arc. Runs `change` → `sync` → `tdd` end to end — from idea to verified working software.
 - **Stop hook** — guard the contract. Fires after every response, detecting drift between intent and implementation.
 - **Pressure phrase** — inject motivation. The SessionStart hook prints one random pressure phrase (tip-framing, career-stakes, boss-watching, or urgency) alongside the rules cheatsheet, so the agent starts every session under a little stage-light.
-- **Self-care hook** — nudge the user. Fires at the start of each Claude response; after 20 minutes of keyboard time, reminds the user to look at something 20 feet away for 20 seconds (20-20-20 rule).
+- **Self-care hook** — nudge the user. Fires on each user prompt submission; after 20 minutes of keyboard time, injects a 20-20-20 eye-break reminder into Claude's context via `additionalContext` so Claude opens its response with the nudge.
 
 ## Mental Model
 
