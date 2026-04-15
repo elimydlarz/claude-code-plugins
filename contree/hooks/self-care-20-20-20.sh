@@ -6,27 +6,34 @@ INPUT=$(cat)
 
 mkdir -p "$NUDGE_DIR" 2>/dev/null || exit 0
 
-# Baseline: most recent nudge file (filename = unix timestamp), else session start from
-# the transcript. Nudge-file baseline is tried first so we don't need the transcript to
-# exist — in `claude -p` mode, the transcript file has not yet been written when
-# UserPromptSubmit fires.
-LATEST=$(ls -t "$NUDGE_DIR" 2>/dev/null | head -1)
-if [ -n "$LATEST" ]; then
-  BASELINE="$LATEST"
-else
-  TRANSCRIPT=$(printf '%s' "$INPUT" | jq -r '.transcript_path // empty' 2>/dev/null)
-  if [ -z "$TRANSCRIPT" ] || [ ! -f "$TRANSCRIPT" ]; then
-    exit 0
-  fi
+NUDGE_BASELINE=$(ls -t "$NUDGE_DIR" 2>/dev/null | head -1)
+
+SESSION_BASELINE=""
+TRANSCRIPT=$(printf '%s' "$INPUT" | jq -r '.transcript_path // empty' 2>/dev/null)
+if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
   START_STR=$(jq -r 'select(.timestamp != null) | .timestamp' "$TRANSCRIPT" 2>/dev/null | head -1)
-  [ -z "$START_STR" ] && exit 0
-  # Strip fractional seconds (e.g. 2026-04-11T09:30:13.325Z -> 2026-04-11T09:30:13Z)
-  START_STR=$(printf '%s' "$START_STR" | sed 's/\.[0-9]*Z$/Z/')
-  if date -j >/dev/null 2>&1; then
-    BASELINE=$(date -j -u -f "%Y-%m-%dT%H:%M:%SZ" "$START_STR" +%s 2>/dev/null) || exit 0
-  else
-    BASELINE=$(date -u -d "$START_STR" +%s 2>/dev/null) || exit 0
+  if [ -n "$START_STR" ]; then
+    START_STR=$(printf '%s' "$START_STR" | sed 's/\.[0-9]*Z$/Z/')
+    if date -j >/dev/null 2>&1; then
+      SESSION_BASELINE=$(date -j -u -f "%Y-%m-%dT%H:%M:%SZ" "$START_STR" +%s 2>/dev/null) || SESSION_BASELINE=""
+    else
+      SESSION_BASELINE=$(date -u -d "$START_STR" +%s 2>/dev/null) || SESSION_BASELINE=""
+    fi
   fi
+fi
+
+if [ -n "$NUDGE_BASELINE" ] && [ -n "$SESSION_BASELINE" ]; then
+  if [ "$SESSION_BASELINE" -gt "$NUDGE_BASELINE" ]; then
+    BASELINE="$SESSION_BASELINE"
+  else
+    BASELINE="$NUDGE_BASELINE"
+  fi
+elif [ -n "$NUDGE_BASELINE" ]; then
+  BASELINE="$NUDGE_BASELINE"
+elif [ -n "$SESSION_BASELINE" ]; then
+  BASELINE="$SESSION_BASELINE"
+else
+  exit 0
 fi
 
 NOW=$(date +%s)
