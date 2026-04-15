@@ -101,3 +101,9 @@ run_hook_with_last_text() {
   [ "$status" -eq 0 ]
   [ -z "$output" ]
 }
+
+@test "hook exits 2 with drift prompt when last assistant message does not end with a question mark" {
+  run_hook_with_last_text "Did the tests pass? Yes! Finished."
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"drifted"* ]]
+}
