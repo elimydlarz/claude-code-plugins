@@ -121,3 +121,11 @@ run_hook_with_last_text() {
   output=$(echo '{}' | bash -c "$cmd" 2>&1 || true)
   [[ "$output" == *"README.md"* ]]
 }
+
+# --- Yield on question ---
+
+@test "hook exits 0 silently when last assistant message ends with a question mark" {
+  run_hook_with_last_text "Want me to do that?"
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
