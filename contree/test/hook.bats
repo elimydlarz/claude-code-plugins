@@ -107,3 +107,9 @@ run_hook_with_last_text() {
   [ "$status" -eq 2 ]
   [[ "$output" == *"drifted"* ]]
 }
+
+@test "hook yields when question mark is followed by trailing whitespace" {
+  run_hook_with_last_text $'Want me to do that?\n\n'
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
