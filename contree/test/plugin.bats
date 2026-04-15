@@ -149,10 +149,10 @@ load test_helper
   refute_output "null"
 }
 
-@test "SessionStart hook loads the rules cheatsheet" {
-  run jq -r '.hooks.SessionStart[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json"
+@test "SessionStart hook emits the rules cheatsheet on stdout" {
+  CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" run bash "$PROJECT_ROOT/hooks/session-start.sh"
   assert_success
-  assert_output --partial "cheatsheet.md"
+  assert_output --partial "**KISS**"
 }
 
 @test "hooks.json defines a UserPromptSubmit hook" {
