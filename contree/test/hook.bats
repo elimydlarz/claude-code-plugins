@@ -113,3 +113,19 @@ run_hook_with_last_text() {
   [ "$status" -eq 0 ]
   [ -z "$output" ]
 }
+
+@test "hook selects the last assistant text across multiple messages" {
+  local transcript="$BATS_TEST_TMPDIR/transcript.jsonl"
+  {
+    echo '{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"Statement one."}]}}'
+    echo '{"type":"user","message":{"role":"user","content":"ok"}}'
+    echo '{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"Ready to proceed?"}]}}'
+  } > "$transcript"
+  local input_file="$BATS_TEST_TMPDIR/input.json"
+  printf '{"transcript_path":"%s"}' "$transcript" > "$input_file"
+  local cmd; cmd=$(hook_command)
+  run env CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" CMD="$cmd" INPUT_FILE="$input_file" \
+    bash -c 'bash -c "$CMD" < "$INPUT_FILE" 2>&1'
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
