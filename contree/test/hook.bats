@@ -12,6 +12,20 @@ run_hook() {
   run bash -c "echo '$input' | bash -c '$cmd' 2>&1"
 }
 
+# Helper: run the hook with a transcript file whose last assistant text is $1
+run_hook_with_last_text() {
+  local last_text="$1"
+  local transcript="$BATS_TEST_TMPDIR/transcript.jsonl"
+  jq -nc --arg text "$last_text" \
+    '{type:"assistant",message:{role:"assistant",content:[{type:"text",text:$text}]}}' \
+    > "$transcript"
+  local input_file="$BATS_TEST_TMPDIR/input.json"
+  printf '{"transcript_path":"%s"}' "$transcript" > "$input_file"
+  local cmd
+  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
+  run env CMD="$cmd" INPUT_FILE="$input_file" bash -c 'bash -c "$CMD" < "$INPUT_FILE" 2>&1'
+}
+
 # --- Loop prevention ---
 
 @test "hook exits 0 when stop_hook_active is true" {
