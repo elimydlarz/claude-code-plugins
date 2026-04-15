@@ -8,7 +8,7 @@ fi
 TRANSCRIPT=$(printf '%s' "$INPUT" | jq -r '.transcript_path // empty' 2>/dev/null)
 if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
   LAST_CHAR=$(jq -rs '
-    ([.[] | select(.type == "assistant") | .message.content[]? | select(.type == "text") | .text] | first // "")
+    ([.[] | select(.type == "assistant") | .message.content[]? | select(.type == "text") | .text] | last // "")
     | sub("[[:space:]]+$"; "")
     | if length > 0 then .[-1:] else "" end
   ' "$TRANSCRIPT" 2>/dev/null)
