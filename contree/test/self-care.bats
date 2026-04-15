@@ -203,3 +203,35 @@ run_hook_stdout() {
   [[ "$output" == *"20 feet"* ]]
   [[ "$output" == *"20 seconds"* ]]
 }
+
+# --- Prior-session nudge files do not trigger a nudge ---
+
+@test "does not nudge when session started recently even if a prior-session nudge file is older than 20 minutes" {
+  local nudge_dir="$BATS_TEST_TMPDIR/nudges/20-20-20"
+  local transcript="$BATS_TEST_TMPDIR/transcript.jsonl"
+
+  mkdir -p "$nudge_dir"
+  touch "$nudge_dir/$(( $(date +%s) - 1500 ))"
+  make_transcript "$transcript" "$(iso_minutes_ago 5)"
+
+  run_hook "$nudge_dir" "$transcript"
+
+  [ "$status" -eq 0 ]
+  [[ "$output" != *"additionalContext"* ]]
+  [[ "$output" != *"20-20-20"* ]]
+}
+
+@test "nudges after 20 minutes since session start even if a prior-session nudge file is older" {
+  local nudge_dir="$BATS_TEST_TMPDIR/nudges/20-20-20"
+  local transcript="$BATS_TEST_TMPDIR/transcript.jsonl"
+
+  mkdir -p "$nudge_dir"
+  touch "$nudge_dir/$(( $(date +%s) - 3600 ))"
+  make_transcript "$transcript" "$(iso_minutes_ago 25)"
+
+  run_hook "$nudge_dir" "$transcript"
+
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"additionalContext"* ]]
+  [[ "$output" == *"20-20-20"* ]]
+}
