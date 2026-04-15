@@ -31,96 +31,66 @@ run_hook_with_last_text() {
 # --- Loop prevention ---
 
 @test "hook exits 0 when stop_hook_active is true" {
-  local cmd
-  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
-  echo '{"stop_hook_active": true}' | bash -c "$cmd" 2>/dev/null
-  # If we get here without error, exit was 0
+  run_hook '{"stop_hook_active": true}'
+  [ "$status" -eq 0 ]
 }
 
 @test "hook exits 0 when stop_hook_active is true among other fields" {
-  local cmd
-  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
-  echo '{"stop_hook_active": true, "other": "data"}' | bash -c "$cmd" 2>/dev/null
+  run_hook '{"stop_hook_active": true, "other": "data"}'
+  [ "$status" -eq 0 ]
 }
 
 # --- Normal operation ---
 
 @test "hook exits 2 when stop_hook_active is false" {
-  local cmd
-  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
-  run bash -c 'echo "{\"stop_hook_active\": false}" | bash -c '"'"''"$cmd"''"'"' 2>&1'
+  run_hook '{"stop_hook_active": false}'
   [ "$status" -eq 2 ]
 }
 
 @test "hook exits 2 when stop_hook_active is absent" {
-  local cmd
-  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
-  run bash -c 'echo "{}" | bash -c '"'"''"$cmd"''"'"' 2>&1'
+  run_hook '{}'
   [ "$status" -eq 2 ]
 }
 
 @test "hook exits 2 with empty input" {
-  local cmd
-  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
-  run bash -c 'echo "" | bash -c '"'"''"$cmd"''"'"' 2>&1'
+  run_hook ''
   [ "$status" -eq 2 ]
 }
 
 # --- Review prompt content ---
 
 @test "hook prompt mentions Requirements" {
-  local cmd
-  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
-  local output
-  output=$(echo '{}' | bash -c "$cmd" 2>&1 || true)
+  run_hook '{}'
   [[ "$output" == *"Requirements"* ]]
 }
 
 @test "hook prompt mentions test trees" {
-  local cmd
-  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
-  local output
-  output=$(echo '{}' | bash -c "$cmd" 2>&1 || true)
+  run_hook '{}'
   [[ "$output" == *"test trees"* ]]
 }
 
 @test "hook prompt mentions Mental Model" {
-  local cmd
-  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
-  local output
-  output=$(echo '{}' | bash -c "$cmd" 2>&1 || true)
+  run_hook '{}'
   [[ "$output" == *"Mental Model"* ]]
 }
 
 @test "hook prompt mentions drift" {
-  local cmd
-  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
-  local output
-  output=$(echo '{}' | bash -c "$cmd" 2>&1 || true)
+  run_hook '{}'
   [[ "$output" == *"drifted"* ]]
 }
 
 @test "hook prompt mentions never modify silently" {
-  local cmd
-  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
-  local output
-  output=$(echo '{}' | bash -c "$cmd" 2>&1 || true)
+  run_hook '{}'
   [[ "$output" == *"never modify them silently"* ]]
 }
 
 @test "hook prompt mentions CLAUDE.md" {
-  local cmd
-  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
-  local output
-  output=$(echo '{}' | bash -c "$cmd" 2>&1 || true)
+  run_hook '{}'
   [[ "$output" == *"CLAUDE.md"* ]]
 }
 
 @test "hook prompt mentions README.md" {
-  local cmd
-  cmd=$(jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json")
-  local output
-  output=$(echo '{}' | bash -c "$cmd" 2>&1 || true)
+  run_hook '{}'
   [[ "$output" == *"README.md"* ]]
 }
 
