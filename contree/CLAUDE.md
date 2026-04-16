@@ -140,6 +140,21 @@ setup-generates-trees
     and secrets are passed via environment variables
 ```
 
+### setup-installs-architectural-linter
+
+```
+setup-installs-architectural-linter
+  when setup is run on a JS/TS project
+    then dependency-cruiser is installed as a dev dependency
+    and .dependency-cruiser.cjs enforces domain purity and adapter-inward dependencies
+    and the lint script runs the validator
+    and CI fails on boundary violations
+  when setup is run on a project in another language
+    then a language-appropriate architectural linter is named
+    and the boundary rules the user must enforce are described
+    but no config is written without a contree template
+```
+
 ### change-writes-trees
 
 ```
