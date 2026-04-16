@@ -41,9 +41,9 @@ Write **one** failing functional test that describes the desired behaviour from 
 - **Write exactly one test. Run it. See it fail. Then proceed.**
 - **If the test passes unexpectedly** — the behaviour already exists or the test is wrong. You must verify the test actually tests what it claims: break the implementation intentionally (e.g. comment out the relevant code path), observe the test failing, then fix the implementation, observe the test passing, and move on. If breaking the implementation doesn't make the test fail, the test is not verifying the behaviour — fix the test until it does.
 
-### 3. IDENTIFY LAYERS, THEN RED (unit)
+### 3. IDENTIFY POSITION, THEN RED (unit)
 
-Before writing the next test, decompose the current `when/then` path into the hex layers it actually touches:
+Before writing the next test, decompose the current `when/then` path into the hex positions it actually touches:
 
 - **Transport** — does the path cross an HTTP/CLI/queue/cron boundary? That's an inbound adapter whose protocol mapping needs its own test.
 - **Orchestration** — does the path coordinate multiple concerns (validate input, call a collaborator, update state, emit an event)? That's the use-case.
