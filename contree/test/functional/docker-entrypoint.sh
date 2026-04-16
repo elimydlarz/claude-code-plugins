@@ -191,7 +191,7 @@ EOF
 
 === VERIFY ===
 1. Agent invoked the setup skill
-2. Agent created Docker infrastructure for functional tests (Dockerfile and/or docker-compose.yml)
+2. Agent created Docker infrastructure for the real-infra test layers (Dockerfile and/or docker-compose.yml)
 3. Docker config includes a PostgreSQL service/container
 4. Secrets/credentials are passed via environment variables, not hardcoded
 5. Test artefacts (containers) are torn down after tests run (docker-compose down, --rm, or equivalent)
