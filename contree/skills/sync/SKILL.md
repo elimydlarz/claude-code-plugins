@@ -63,9 +63,9 @@ For each tree with no test file (or no passing tests), suggest the user runs `td
 
 After all gaps are implemented:
 
-- Run all tests — confirm tree output matches test trees
-- Re-read `## Requirements` — confirm it accurately describes the system
-- If mutation testing is configured, run Stryker as final validation
+- Run all tests at every layer — confirm tree output matches `## Test Trees`
+- Re-read `## Test Trees` — confirm it accurately describes the system
+- If mutation testing is configured, run Stryker against Domain + Use-case as final validation
 
 ## What Done Looks Like
 
