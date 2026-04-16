@@ -21,6 +21,7 @@ cat <<'EOF'
 - **Consumer-driven** — implement only what a consumer already needs
 - **Resolve uncertainty** — look directly and remove optionality; don't hedge with fallbacks
 - **pnpm** — use pnpm, not npm, for JS/TS
+- **Trees are the contract** — every expected behaviour goes in `## Test Trees`; every tree is verified by a test; every test drives the real implementation. If you're wondering whether an expectation belongs in the trees, the answer is yes.
 - **Hexagonal** — domain pure; I/O in adapters; dependencies point inward; each driven port ships with an in-memory twin
 - **Test layers** — Domain (pure), Use-case (in-memory adapters), Adapter (driving mocks app, driven hits real infra), System (whole app, in-memory by default)
 - **Shared port contract** — one `*.contract.ts` suite per port, imported by both in-memory-adapter and real-adapter test files
