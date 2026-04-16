@@ -81,7 +81,7 @@ After implementation is complete, suggest the user runs `sync` to verify test tr
 
 ## Test Tree Format
 
-Test trees describe **operating principles**, not case enumerations. Use EARS patterns (see the `ears` rule) to choose the right keyword for each requirement.
+Test trees describe **operating principles**, not case enumerations. Use EARS patterns (see EARS Patterns below) to choose the right keyword for each requirement.
 
 GOOD — uses EARS patterns to match each requirement's nature:
 ```
