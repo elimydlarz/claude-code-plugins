@@ -294,6 +294,11 @@ self-care-20-20-20
     then no nudge is given and the hook exits silently
 ```
 
+## Cross-Functional Requirements
+
+- Supported languages: JS/TS (Node, Bun, React, React Native), Elixir (Phoenix, Jido), Go. Setup refuses other languages and names the supported set.
+- Mutation testing is omitted for Elixir — no mature tool exists. Users are pointed at property-based testing with StreamData as a substitute.
+
 ## Dependencies
 
 The stop hook requires `jq` on the host system.
