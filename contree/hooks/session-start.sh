@@ -21,8 +21,10 @@ cat <<'EOF'
 - **Consumer-driven** — implement only what a consumer already needs
 - **Resolve uncertainty** — look directly and remove optionality; don't hedge with fallbacks
 - **pnpm** — use pnpm, not npm, for JS/TS
-- **Hexagonal** — domain pure; I/O in adapters; dependencies point inward
-- **Test layers** — unit at domain/use-case/inbound; integration at outbound adapters; functional for the whole slice
+- **Hexagonal** — domain pure; I/O in adapters; dependencies point inward; each driven port ships with an in-memory twin
+- **Test layers** — Domain (pure), Use-case (in-memory adapters), Adapter (driving mocks app, driven hits real infra), System (whole app, in-memory by default)
+- **Shared port contract** — one `*.contract.ts` suite per port, imported by both in-memory-adapter and real-adapter test files
+- **One tree, one test file** — each tree in `## Test Trees` reifies exactly one test file; describe/it hierarchy mirrors the tree
 EOF
 
 pressure_phrases=(
