@@ -127,41 +127,56 @@ UserRegistration
 - Use `if/then` for error cases and unwanted behaviour
 - Describe principles, not specific values
 
-## Test Layers
+## Positions and Layers
+
+Hexagonal architecture gives five **positions** — locations in the codebase where code sits. Testing gives three **layers** — scopes at which we verify behaviour. They are orthogonal axes. The minimum spanning set is one default layer per position:
+
+| Position         | Default layer | Default mocking posture                                                       |
+| ---------------- | ------------- | ----------------------------------------------------------------------------- |
+| Domain           | unit          | nothing — pure functions over data                                            |
+| Use-case         | unit          | fake outbound ports (hand-rolled in-memory fakes preferred over strict mocks) |
+| Inbound adapter  | unit          | mock the use-case; keep the adapter thin to avoid over-specification          |
+| Outbound adapter | integration   | real infrastructure (Testcontainers, a local service, recorded cassettes)     |
+| Slice behaviour  | functional    | none — whole system wired                                                     |
+
+Mockist unit testing alone does NOT cover outbound adapters or slice behaviour. Serialization, schema, wiring, and constraint bugs only surface at integration and functional layers.
 
 ### Outside-In Order
 
-Contree prescribes hexagonal architecture. Drive tests inward in this order:
-
 1. **Functional** — whole vertical slice. One test per `when/then` path in the tree.
-2. **Inbound adapter** (unit) — protocol → use-case input mapping. HTTP/CLI/queue payloads translated to plain input; results translated back.
-3. **Use-case** (unit) — orchestration. Outbound ports faked; assert returned data and port interactions.
+2. **Inbound adapter** (unit) — protocol → use-case input mapping.
+3. **Use-case** (unit) — orchestration. Outbound ports faked.
 4. **Domain** (unit) — pure business rules. No mocks, no async, no setup.
-5. **Outbound adapter** (integration) — real infrastructure. DB queries, HTTP calls, queue publishing.
+5. **Outbound adapter** (integration) — real infrastructure.
 
-Every failing test you write should sit at a specific layer. If you can't name the layer, you're not decomposed enough.
-
-### Functional Tests
-- Exercise real public surface, no mocks
-- `test/functional/` at project root
-- `*.functional.test.*` naming
-- Prove the system works end-to-end
+Every failing test you write should sit at a named position and a named layer. If you can't name both, you're not decomposed enough.
 
 ### Unit Tests
-- Single module/class/function in isolation
-- Mock collaborators (for use-cases, the collaborators are outbound ports)
+- Single module in isolation; collaborators faked
 - Colocated with source
 - `*.unit.test.*` naming
+- Domain units use no fakes — pure functions over data
 - Drive internal design with fast feedback
-- Domain tests use no mocks — pure functions over data
 
-### Outbound Adapter Integration Tests
-- Hit real infrastructure (DB, API, queue)
+### Integration Tests
+- Cover outbound adapters against real infrastructure
 - Verify serialization, schema/query behaviour, timeouts
+- Colocated with the outbound adapter
+- `*.integration.test.*` naming
 - Slower than unit tests — keep the set focused
 
+### Functional Tests
+- Exercise the real public surface, no mocks, whole vertical slice
+- `test/functional/` at project root
+- `*.functional.test.*` naming
+- Prove the whole vertical slice works
+
+### Beyond the minimum
+
+The table above is the minimum spanning set. Additive test types are welcome when they earn their keep: sociable use-case tests (use-case + real adapters), consumer-driven contract tests at adapter boundaries, multi-slice functional journeys. They supplement; they do not replace the defaults.
+
 ### Mutation Testing
-- Stryker validates unit test quality
+- Stryker validates unit-test quality
 - Run only at end of completed work
 - Tests that pass with mutations are too permissive
 
