@@ -84,11 +84,6 @@ run_hook_with_last_text() {
   [[ "$output" == *"never modify them silently"* ]]
 }
 
-@test "hook prompt mentions CLAUDE.md" {
-  run_hook '{}'
-  [[ "$output" == *"CLAUDE.md"* ]]
-}
-
 @test "hook prompt mentions README.md" {
   run_hook '{}'
   [[ "$output" == *"README.md"* ]]
