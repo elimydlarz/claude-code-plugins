@@ -256,8 +256,9 @@ Add or update the following sections:
 - `## Requirements` — the test trees from step 10
 - Testing commands section with:
   - Command to run all unit tests with tree output
+  - Command to run all integration tests with tree output
   - Command to run all functional tests with tree output
-  - Command to run only changed unit/functional tests
+  - Command to run only changed unit/integration/functional tests
   - Command to run mutation testing
   - Outside-in TDD workflow summary
   - Example test tree structure for this project
