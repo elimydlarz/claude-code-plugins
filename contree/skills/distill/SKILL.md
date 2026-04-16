@@ -47,7 +47,7 @@ Summarise the evidence: per section (or per bullet), high / medium / low based o
 
 Using the evidence:
 
-- **Keep verbatim** — `## Requirements` test trees. Always.
+- **Keep verbatim** — `## Test Trees`. Always.
 - **Keep tightened** — high-evidence content, in its already-tightened form.
 - **Move to a referenced file** — medium and low-evidence content that's still useful. Move to a sibling file (e.g. `docs/<topic>.md`), leave a one-line pointer in CLAUDE.md.
 - **Flag as possibly stale** — content for capabilities that may no longer exist. Never auto-removed. Hand to the user as a question.
