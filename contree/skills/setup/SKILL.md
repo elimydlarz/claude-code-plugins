@@ -1,6 +1,6 @@
 ---
 name: setup
-description: "Prepare the project for ongoing test-tree-driven development — configures test framework with tree reporters and generates initial test trees in CLAUDE.md. TRIGGER when: project has no test framework configured, no ## Requirements section in CLAUDE.md, or user is starting a new project. Run once per project."
+description: "Prepare the project for ongoing test-tree-driven development — configures test framework with tree reporters and generates initial test trees in CLAUDE.md. TRIGGER when: project has no test framework configured, no ## Test Trees section in CLAUDE.md, or user is starting a new project. Run once per project."
 ---
 
 # Setup Contree
@@ -31,7 +31,7 @@ Read project files — source code, existing tests, configs, CLAUDE.md. Understa
 - Language and ecosystem
 - Existing test framework and config (if any)
 - What behaviours the system implements today
-- Whether `## Requirements` already exists in CLAUDE.md
+- Whether `## Test Trees` already exists in CLAUDE.md
 - Whether this is a monorepo (check for workspace configs, turborepo.json, nx.json, pnpm-workspace.yaml, Cargo.toml workspaces)
 
 **Detect existing test config.** Check for these files before creating or modifying anything:
@@ -218,7 +218,7 @@ Commands should be simple to invoke — package.json scripts, Makefile targets, 
 
 This is the key step that distinguishes contree from a plain test framework setup.
 
-**Read the codebase and generate test trees that describe what the system does today.** These become the `## Requirements` section in CLAUDE.md.
+**Read the codebase and generate test trees that describe what the system does today.** These become the `## Test Trees` section in CLAUDE.md.
 
 Process:
 1. Identify the system's capabilities — what does it do from the consumer's perspective?
@@ -230,10 +230,10 @@ Process:
 
 **Do NOT implement the test trees** — they are requirements only at this stage. The `tdd` skill handles implementation later.
 
-Write the trees into `## Requirements` in CLAUDE.md. Each capability gets its own subsection:
+Write the trees into `## Test Trees` in CLAUDE.md. Each capability gets its own subsection:
 
 ```markdown
-## Requirements
+## Test Trees
 
 ### UserRegistration
 
