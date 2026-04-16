@@ -11,7 +11,7 @@ Prepares the project for ongoing test-tree-driven development. Configures the te
 
 1. **Read before write.** Always read existing config files before modifying them. Never overwrite — merge surgically.
 2. **Tree output is non-negotiable.** If a framework can produce nested output, configure it. If it can only produce flat output, use it and be honest.
-3. **Two test layers, always.** Unit (colocated, mocked, fast) and functional (separated, real system, no mocks).
+3. **Three test layers, always.** Unit (colocated, fakes, fast), integration (colocated with outbound adapters, real infrastructure), functional (separated, whole system, no mocks). See `skills/tdd/SKILL.md` for the Positions and Layers table that routes each hex position to a default layer.
 4. **CI dual reporters.** Configure tree output for local dev AND structured output (JUnit XML) for CI. Both, not either/or.
 5. **Verify after configuring.** Run the tests and confirm tree-shaped output before moving on.
 6. **No test files.** Setup configures the framework and generates requirement trees. Do NOT create any test files (`*.test.*`, `*.spec.*`). The `tdd` skill handles test implementation later.
