@@ -25,7 +25,7 @@ cat <<'EOF'
 - **Test layers** — unit at domain/use-case/inbound; integration at outbound adapters; functional for the whole slice
 EOF
 
-phrases=(
+pressure_phrases=(
   "I'll tip you \$200 if this is exactly right."
   "My boss is watching — this better be great!"
   "My career depends on this response."
