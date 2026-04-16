@@ -185,16 +185,16 @@ change-decomposes-by-hexagonal-positions
     and adapters are tested separately from use-cases
 ```
 
-### tdd-drives-hexagonal-layers
+### tdd-drives-hexagonal-positions
 
 ```
-tdd-drives-hexagonal-layers
+tdd-drives-hexagonal-positions
   when TDD drives inward from a failing functional test
-    then the current path is decomposed into the hex layers it touches: transport, orchestration, side effects, domain
-    and the next test targets the outermost untested layer
-    and each test sits at a named hex layer
+    then the current path is decomposed into the hex positions it touches: inbound adapter, use-case, domain, outbound port, outbound adapter
+    and the next test targets the outermost untested position
+    and each test sits at a named hex position and a named test layer
     and use-case tests fake outbound ports
-    and outbound adapter tests use real infrastructure
+    and outbound adapter tests exercise real infrastructure at the integration layer
   if the path has side effects
     then the next test is a use-case test with ports faked, not a domain test
   if the path is trivial
