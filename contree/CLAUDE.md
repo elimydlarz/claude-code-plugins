@@ -172,32 +172,35 @@ change-writes-trees
     and the user is suggested to run sync
 ```
 
-### change-decomposes-by-hexagonal-positions
+### change-decomposes-across-layers
 
 ```
-change-decomposes-by-hexagonal-positions
-  when a test tree is decomposed for implementation
-    then each leaf maps to a hex position: domain, use-case, inbound adapter, outbound port, or outbound adapter
-    and side effects in the tree become outbound ports
-    and ports are named for capability, not technology
-    and adapters are tested separately from use-cases
+change-decomposes-across-layers
+  when a slice is decomposed for implementation
+    then the slice is a System tree named for the consumer capability
+    and each behavioural unit with observable choices gets its own tree at its layer: Domain / Use-case / Adapter / port contract
+    and every tree reifies exactly one test file
+    and side effects become outbound ports named for capability not technology
+    and each outbound port has a shared contract tree honoured by both in-memory and real adapters
+  when a unit is trivial (thin pass-through, single-port delegation)
+    then no separate tree is written — the parent System tree covers it
 ```
 
-### tdd-drives-hexagonal-positions
+### tdd-drives-through-seams
 
 ```
-tdd-drives-hexagonal-positions
-  when TDD drives inward from a failing functional test
-    then the current path is decomposed into the hex positions it touches: inbound adapter, use-case, domain, outbound port, outbound adapter
-    and the next test targets the outermost untested position
-    and each test sits at a named hex position and a named test layer
-    and use-case tests fake outbound ports
-    and outbound adapter tests exercise real infrastructure at the integration layer
+tdd-drives-through-seams
+  when TDD drives inward from a failing System test
+    then the slice is decomposed into the hex seams it touches: driving adapter, use-case, domain, port contract, driven adapter
+    and the next failing test targets the outermost untested layer
+    and each test sits at a named layer and reifies its tree
+    and Use-case tests run against in-memory driven adapters (not mocks)
+    and the shared port contract suite is imported by both the in-memory adapter test and the driven adapter test
+    and driven adapter tests exercise real infrastructure
   if the path has side effects
-    then the next test is a use-case test with ports faked, not a domain test
-  if the path is trivial
-    then no unit test is written — the functional test is enough
-```
+    then the next test is a Use-case test with in-memory adapters wired, not a Domain test
+  if the unit is trivial
+    then no separate inner test is written — the System test is enough
 
 ### sync-audits-and-resolves
 
