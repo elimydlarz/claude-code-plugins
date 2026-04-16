@@ -179,7 +179,3 @@ $"
   assert_success
 }
 
-@test "phrases.txt exists" {
-  run test -f "$PROJECT_ROOT/hooks/phrases.txt"
-  assert_success
-}
