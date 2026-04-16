@@ -87,7 +87,7 @@ case "$TEST_NAME" in
     write_verify << 'VERIFY'
 
 === VERIFY ===
-1. Agent wrote a functional test for "when reset after incrementing / then value is zero"
+1. Agent wrote a System test for "when reset after incrementing / then value is zero"
 2. Agent ran the test and it passed on first run (incidental pass)
 3. Agent recognised the incidental pass and invoked the break/verify protocol
 4. Agent broke the reset() implementation intentionally (e.g. commented out count = 0)
