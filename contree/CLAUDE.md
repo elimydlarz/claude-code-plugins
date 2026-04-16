@@ -73,24 +73,24 @@ test-trees-as-requirements
 
 ```
 outside-in-tdd
-  when implementing a test tree
-    then start with a failing functional test matching a when/then path
-    and TDD inward through the hex positions
-    and only one failing test exists at the current position at a time
-    and existing test trees are not modified
+  when implementing a System tree
+    then start with a failing System test matching a when/then path
+    and TDD inward through the hex seams: driving adapter, use-case, domain, port contract, driven adapter
+    and only one failing test exists at the current layer at a time
+    and existing trees are not modified silently
   when TDD discovers new test cases
     then new cases are added to the tree
     but existing when/then paths are not changed or removed
-  when no test tree covers the behaviour
+  when no tree covers the behaviour
     then suggest the user runs change first
   when an expected-red test passes incidentally
     then break the implementation intentionally
     and observe the test failing
     then fix the implementation, observe the test passing, and move on
-  when all unit tests pass
-    then the functional test should pass
+  when all inner tests pass
+    then the System test should pass
   when all behaviours are complete
-    then run mutation testing as final validation
+    then run mutation testing against Domain and Use-case layers as final validation
     and suggest the user runs sync
 ```
 
