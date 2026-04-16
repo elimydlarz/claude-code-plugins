@@ -109,6 +109,73 @@ Layers are named for the hex seam under test, not for infrastructure presence. C
 | Adapter  | adapter being exercised              | `score-http-handler`, `ScoreRepository-Postgres`|
 | System   | capability/slice or cross-cutting policy | `save-score`, `auth-enforcement`            |
 
+**The in-memory adapter pattern**
+
+This is the linchpin of the whole scheme. Without it, Use-case and System tests either get slow (real infra) or dishonest (mocks that don't match reality).
+
+For each outbound port, ship two adapters that both satisfy the port contract:
+
+```
+OrderRepository (port interface)
+├── PostgresOrderRepository    ← real, used in production and in driven-adapter tests
+└── InMemoryOrderRepository    ← real, used in Use-case and System tests
+```
+
+The in-memory adapter is not a mock. It's a real implementation: stores data in a map, enforces the same invariants (unique IDs, referential rules, ordering guarantees) that the real adapter does. The composition root swaps it in at test time by pointing at a different wiring.
+
+What this buys:
+
+- Use-case tests run in milliseconds against *real application behaviour*.
+- System tests run fast by default, covering the full vertical slice.
+- The real adapter's job shrinks to "adapt Postgres to the port" — everything application-level is already covered by tests running against the in-memory adapter.
+
+**The shared port contract suite**
+
+In-memory substitution is only sound if both adapters really do satisfy the same contract. Enforce this with a shared contract suite: one test suite, imported by both adapter test files.
+
+```ts
+// src/features/score/application/ports/score-repository.contract.ts
+export function scoreRepositoryContract(makeRepo: () => ScoreRepository) {
+  describe('ScoreRepository', () => {
+    describe('when save is called with a score', () => {
+      it('is retrievable by its id', async () => {
+        const repo = makeRepo()
+        await repo.save(someScore)
+        expect(await repo.findById(someScore.id)).toEqual(someScore)
+      })
+    })
+    describe('if save is called twice with the same score id', () => {
+      it('rejects the second call without side effects', async () => { /* ... */ })
+    })
+  })
+}
+```
+
+```ts
+// src/features/score/adapters/outbound/in-memory/in-memory-score-repository.adapter.test.ts
+import { scoreRepositoryContract } from '../../../application/ports/score-repository.contract'
+scoreRepositoryContract(() => new InMemoryScoreRepository())
+```
+
+```ts
+// src/features/score/adapters/outbound/postgres/postgres-score-repository.adapter.test.ts
+import { scoreRepositoryContract } from '../../../application/ports/score-repository.contract'
+scoreRepositoryContract(() => new PostgresScoreRepository(testDb))
+// Plus Postgres-specific tests: timeouts, schema, constraint violations.
+```
+
+The contract suite IS the port-contract tree (`ScoreRepository`). Both adapter tests run the shared suite. The real adapter's test file *also* has tests for behaviour that only exists at its seam (timeouts, retries, constraint violations) — those live in the same `*.adapter.test.*` file but outside the shared suite.
+
+The tree in `## Test Trees`:
+
+```
+ScoreRepository
+  when save is called with a score
+    then the score is retrievable by its id
+  if save is called twice with the same score id
+    then the second call is rejected without side effects
+```
+
 **Feature-first module layout** — use this directory shape when adding or touching a capability:
 
 ```
