@@ -464,8 +464,8 @@ VERIFY
     echo "  discover-tdd                 — natural prompt triggers tdd skill"
     echo "  ears-change                  — change skill uses EARS patterns"
     echo "  no-tautologies               — change skill rejects tautological trees"
-    echo "  change-hex-decomposition     — change skill decomposes by hex layers"
-    echo "  tdd-hex-layers               — tdd drives outside-in through named hex layers"
+    echo "  change-hex-decomposition     — change skill decomposes by hex positions"
+    echo "  tdd-hex-layers               — tdd drives outside-in through named hex positions"
     echo "  self-care-nudge-fires        — self-care hook reminder reaches the model"
     echo "  pressure-phrase-on-session-start — SessionStart bundles a pressure phrase with the cheatsheet"
     exit 1
