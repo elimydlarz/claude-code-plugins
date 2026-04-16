@@ -70,16 +70,18 @@ Present identified frameworks with trade-offs and recommendation. Include tree o
 
 Confirm how conventions apply to this project:
 
-- Unit tests: colocated with source, `*.unit.test.*`
-- Integration tests: colocated with the outbound adapter they exercise, `*.integration.test.*`
-- Functional tests: `test/functional/` at project root, `*.functional.test.*`
+- Domain tests: colocated with source, `*.domain.test.*`
+- Use-case tests: colocated with source, `*.use-case.test.*`
+- Adapter tests: colocated with the adapter (driving or driven), `*.adapter.test.*`
+- System tests: `test/system/` at project root, `*.system.test.*`
+- Shared port contract suites: colocated with the port interface, `*.contract.ts` (not a test file — a suite imported by both the in-memory and real adapter tests)
 - Tree-style output at every layer
 
 **Language-specific conventions that override defaults:**
-- **Rust**: unit tests live inside the source file (`#[cfg(test)] mod tests`); integration tests (including outbound-adapter tests) live in `tests/` at crate root — this is the language convention, not a choice
-- **Go**: tests are always colocated (`foo_test.go` next to `foo.go`); outbound-adapter integration tests use `*_integration_test.go` with `//go:build integration` tags — this is the language convention
-- **Ruby/RSpec**: separated `spec/` directory is the overwhelming convention — follow it
-- **Python**, **JS/TS**, **PHP**: both colocated and separated patterns work; prefer colocated for unit and integration tests
+- **Rust**: Domain and Use-case tests live inside source (`#[cfg(test)] mod tests`); Adapter (driven) and System tests live in `tests/` at crate root — this is the language convention
+- **Go**: tests are always colocated (`foo_test.go` next to `foo.go`); Adapter (driven) tests use `*_integration_test.go` with `//go:build integration` tags; System tests live in `test/system/` or `tests/system/` per convention
+- **Ruby/RSpec**: separated `spec/` directory is the overwhelming convention — follow it, subdivide by layer (`spec/domain/`, `spec/use_case/`, `spec/adapter/`, `spec/system/`)
+- **Python**, **JS/TS**, **PHP**: both colocated and separated patterns work; prefer colocated for Domain, Use-case, Adapter
 
 **Monorepo strategy:**
 - Unit tests: colocated with source in each package
