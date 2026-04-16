@@ -18,7 +18,7 @@ CLAUDE.md is the source of intent that drives tests and code, so it will necessa
 
 ## Inviolable Rules
 
-1. **Never modify test trees.** Every line under `## Requirements` stays byte-for-byte identical. If a tree looks stale, ask the user — do not edit it unilaterally. Same rule the stop hook enforces.
+1. **Never modify test trees.** Every line under `## Test Trees` stays byte-for-byte identical. If a tree looks stale, ask the user — do not edit it unilaterally. Same rule the stop hook enforces.
 2. **Never drop a capability the code still has.** If something CLAUDE.md mentions still exists in code, the information must survive — kept, or moved to a referenced file with a pointer left behind.
 3. **Always confirm before writing.** Show the plan, get explicit approval. No silent edits.
 
