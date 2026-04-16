@@ -93,10 +93,10 @@ run_hook_with_last_text() {
   [ -z "$output" ]
 }
 
-@test "hook exits 2 with drift prompt when last assistant message does not end with a question mark" {
+@test "hook exits 2 with check prompt when last assistant message does not end with a question mark" {
   run_hook_with_last_text "Did the tests pass? Yes! Finished."
   [ "$status" -eq 2 ]
-  [[ "$output" == *"drifted"* ]]
+  [[ "$output" == *"inconsistency"* ]]
 }
 
 @test "hook yields when question mark is followed by trailing whitespace" {
