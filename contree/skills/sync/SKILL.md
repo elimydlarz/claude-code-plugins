@@ -27,9 +27,9 @@ If `## Test Trees` doesn't exist or has no trees, stop and suggest running `setu
 
 Read the codebase to understand what's actually implemented:
 
-- Source code — what capabilities exist?
-- Existing tests — what's already covered?
-- Test output — run tests and read the tree output
+- Source code — what capabilities exist? What domain objects, use-cases, ports, adapters?
+- Existing tests at each layer (`*.domain.test.*`, `*.use-case.test.*`, `*.adapter.test.*`, `*.system.test.*`) — what's already covered?
+- Test output — run tests and read the tree output per layer
 
 ### 3. COMPARE: TREES → IMPLEMENTATION
 
