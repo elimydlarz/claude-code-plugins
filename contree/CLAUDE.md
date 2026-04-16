@@ -260,14 +260,10 @@ composable-testing
 ```
 pressure-phrase-on-session-start
   when a session starts
-    then one pressure phrase is appended to the rules cheatsheet output
-    and the phrase is randomly drawn from the phrase pool
-  then the phrase pool spans tip-framing, career-stakes, boss-watching, and urgency registers
+    then one pressure phrase is appended to the rules output
+    and the phrase is randomly drawn from the inline pressure-phrase pool
+  then the pressure-phrase pool spans tip-framing, career-stakes, boss-watching, and urgency registers
   then phrases vary in wording across the pool
-  then the phrase pool is a plaintext file in the repo — one phrase per line
-  if the phrase pool is missing or empty
-    then the cheatsheet is still shown
-    and the session is not blocked
 ```
 
 ### rules-loading
@@ -275,7 +271,7 @@ pressure-phrase-on-session-start
 ```
 rules-loading
   when a session starts
-    then the rules cheatsheet is shown
+    then the rules list is shown
     and not repeated on every response
 ```
 
