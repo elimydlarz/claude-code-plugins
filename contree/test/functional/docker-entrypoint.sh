@@ -335,7 +335,7 @@ VERIFY
 3. At least one state-driven requirement using 'while' (e.g. while playing, while paused)
 4. At least one event-driven requirement using 'when' (e.g. when a track is loaded)
 5. At least one unwanted-behaviour requirement using 'if/then' (e.g. if the file format is unsupported)
-6. Requirements use consumer vocabulary, not implementation details
+6. Trees use consumer vocabulary, not implementation details
 VERIFY
     ;;
 
