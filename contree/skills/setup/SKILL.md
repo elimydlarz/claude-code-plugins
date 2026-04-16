@@ -213,7 +213,7 @@ This is the key step that distinguishes contree from a plain test framework setu
 
 Process:
 1. Identify the system's capabilities — what does it do from the consumer's perspective?
-2. For each capability, write a functional-level test tree using EARS patterns (see the `ears` rule) — choose the right keyword for each requirement's nature
+2. For each capability, write a functional-level test tree using EARS patterns (see EARS Patterns below) — choose the right keyword for each requirement's nature
 3. Describe operating principles, not implementation details
 4. Include positive paths and unwanted behaviour (`if/then` for error cases)
 5. If existing tests exist, use them as input — but rewrite as principle-describing trees, don't copy test names verbatim
