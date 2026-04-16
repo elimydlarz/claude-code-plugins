@@ -35,4 +35,4 @@ Run mutation testing at the end.
 
 ### 4. DONE — intent and implementation are one
 
-All test trees in `## Requirements` should now have passing tests and working implementation.
+All test trees in `## Test Trees` should now have passing tests and working implementation.
