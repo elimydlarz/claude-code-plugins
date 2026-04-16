@@ -1335,13 +1335,13 @@ Every Docker harness follows the same lifecycle:
 start dependencies → wait for readiness → run tests → tear down
 ```
 
-The harness lives alongside the functional tests:
+The harness lives alongside the real-infra test layers:
 
 ```
-test/functional/
-  docker-compose.yml      # service definitions
+test/system/
+  docker-compose.yml      # service definitions (shared with driven-adapter tests if needed)
   wait-for-ready.sh       # readiness checks (or use healthchecks in compose)
-  *.functional.test.*     # test files
+  *.system.test.*         # System test files
 ```
 
 Or, for projects where `docker-compose.yml` belongs at root (e.g., the project already has one for dev):
