@@ -1310,7 +1310,7 @@ No mature mutation testing tool. Be honest about this.
 
 ### When Docker is needed vs not
 
-**Docker IS needed when** functional tests must exercise the software against real external processes:
+**Docker IS needed when** Adapter (driven) or System tests must exercise the software against real external processes:
 - Database-backed applications (Postgres, MySQL, Redis, MongoDB, etc.)
 - Web APIs/servers that need to be started and hit over HTTP
 - Message queue consumers (RabbitMQ, Kafka, SQS)
