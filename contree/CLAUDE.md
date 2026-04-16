@@ -119,8 +119,8 @@ setup-generates-trees
   when setup is run on an existing project
     then existing test config is detected and merged into, not overwritten
     and tree reporters are configured for both local dev and CI (dual reporters)
-    and unit, integration, and functional test layers are configured as separate commands
-    and mutation testing is configured with explicit test file exclusions
+    and the four test layers (Domain, Use-case, Adapter, System) are configured as separate commands
+    and mutation testing is configured with explicit test file exclusions for every layer's suffix
     and changed-test runners are configured with known gotchas addressed
     and test trees are generated from existing code
     and trees are written to ## Test Trees in CLAUDE.md
@@ -132,8 +132,8 @@ setup-generates-trees
     and the limitation is communicated honestly
   when tests are colocated with source
     then mutation testing mutate globs explicitly exclude test file patterns
-  when the project needs external services for functional tests
-    then functional tests are run in Docker
+  when the project needs external services for Adapter or System tests
+    then those layers run in Docker
     and test artefacts are torn down afterwards
     and secrets are passed via environment variables
 ```
