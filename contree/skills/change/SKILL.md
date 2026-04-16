@@ -53,47 +53,59 @@ Find the existing tree. Add, change, or remove `when/then` paths to reflect the 
 
 **Removing a capability:**
 
-Remove the tree from `## Requirements`. Confirm with the user first.
+Remove the tree from `## Test Trees`. Confirm with the user first.
 
-### 4. Decompose into Hex Positions
+### 4. Decompose Across Layers and Positions
 
-Contree prescribes hexagonal architecture: domain is pure, I/O lives in adapters, dependencies point inward. Every tree decomposes across these positions.
+A System tree describes a slice's consumer-visible behaviour. Below it sits a set of smaller trees — one per behavioural unit the slice produces. Each smaller tree reifies one test file at one test layer. See the Test Layers section in `skills/tdd/SKILL.md` for full guidance on the four layers (Domain / Use-case / Adapter / System), the in-memory adapter pattern, and the shared port contract suite.
 
-**Hexagonal positions:**
+**Hex positions** — the locations in the codebase where code sits:
 
-- **Domain** — entities, value objects, pure business rules. No framework, no I/O, no async. Takes data, returns data.
+- **Domain** — entities, value objects, aggregates, domain services. No framework, no I/O, no async. Data in, data out.
 - **Use-case (application)** — orchestrates a single consumer-visible behaviour. Receives outbound ports as constructor args. Returns plain data, never adapter types.
-- **Inbound adapter** — translates a transport (HTTP, CLI, queue, cron) into use-case input and the result back into a transport response.
-- **Outbound port** — interface the use-case depends on (repository, gateway, clock, logger). Lives next to the use-case.
-- **Outbound adapter** — concrete implementation of an outbound port against real infrastructure (DB, HTTP SDK, queue client).
+- **Driving adapter** — translates a transport (HTTP, CLI, queue, cron) into use-case input and the result back.
+- **Outbound port** — interface the use-case depends on (repository, gateway, clock, logger). Lives next to the use-case in `application/ports/`.
+- **Driven adapter** — concrete implementation of an outbound port. Ships with an in-memory twin (for Use-case and System tests) plus the real one (for production and Adapter tests).
 
 **Decomposition rules:**
 
-- Each position has a default test layer and mocking posture — see the Positions and Layers table in `skills/tdd/SKILL.md`.
-- Each `when/then` path in the tree maps to a **functional test** exercising the whole vertical slice through a real inbound adapter.
-- Each **side effect** in the tree (persistence, external call, time, randomness) becomes an outbound port — named for the capability, not the technology (`OrderRepository`, not `PostgresClient`).
-- **Use-case tests** fake outbound ports and assert orchestration + returned data.
-- **Adapter tests** are separate: inbound adapters test protocol mapping; outbound adapters test integration against real infrastructure.
-- **Domain tests** cover business rules with no mocks, no async, no setup.
-- Stop decomposing when it's obvious. Trivial pieces don't need their own tree.
+- The top-level tree describes the **slice** — a System tree named for the consumer-visible capability (`save-score`, `cancel-order`). It drives the System test.
+- Below it, write a **separate tree** for each behavioural unit that has observable behaviour someone could change silently:
+  - A **Domain tree** per domain object or service with substantive rules (`Money`, `SessionToken`). Trivial value objects don't earn a tree — they're implicit in the use-case.
+  - A **Use-case tree** per use-case with non-trivial orchestration (`save-score-use-case`). A use-case that just delegates to a single port doesn't earn a tree.
+  - A **Driving-adapter tree** per adapter with non-trivial translation (`score-http-handler`). Thin adapters don't earn a tree.
+  - A **Port contract tree** per outbound port (`ScoreRepository`, `AuditLog`). The tree is reified by a shared contract suite (see `skills/tdd/SKILL.md`) that both the in-memory and real adapters must pass. Name ports for capability, not technology (`OrderRepository`, not `PostgresClient`).
+  - A **Driven-adapter tree** per real driven adapter when it has adapter-specific behaviour beyond the port contract (`ScoreRepository-Postgres` for timeout/retry/schema; the port contract covers the rest).
+- **One tree, one test file.** Each tree's `describe`/`it` hierarchy mirrors the tree verbatim.
+- **Cross-cutting System trees** — for app-level invariants that aren't per-slice (auth enforcement, rate limiting, error envelope), write a System tree named for the policy.
 
-Every `then` in the tree should be traceable down through functional → use-case → (port or domain) → adapter.
+**Tree naming heuristic** — name each tree for the subject with observable behaviour at its layer:
+
+| Layer    | Subject                             | Example                                         |
+| -------- | ----------------------------------- | ----------------------------------------------- |
+| Domain   | domain object or service             | `Money`, `SessionToken`, `LeaderboardRanking`   |
+| Use-case | the use-case                         | `save-score-use-case`                           |
+| Port     | port interface (shared contract)     | `ScoreRepository`, `AuditLog`                   |
+| Adapter  | adapter being exercised              | `score-http-handler`, `ScoreRepository-Postgres`|
+| System   | capability/slice or cross-cutting policy | `save-score`, `auth-enforcement`            |
 
 **Feature-first module layout** — use this directory shape when adding or touching a capability:
 
 ```
 src/features/<name>/
-  domain/              # entities, value objects, pure rules
+  domain/              # entities, value objects, domain services (+ .domain.test.*)
   application/
-    ports/             # inbound + outbound port interfaces
-    use-cases/         # orchestration
+    ports/             # outbound port interfaces (+ .contract.ts shared suites)
+    use-cases/         # orchestration (+ .use-case.test.*)
   adapters/
-    inbound/           # http, cli, queue, cron
-    outbound/          # postgres, stripe, s3, etc.
-  composition/         # explicit wiring of adapters into use-cases
+    inbound/           # http, cli, queue, cron (+ .adapter.test.*)
+    outbound/
+      in-memory/       # in-memory implementations of outbound ports
+      <real>/          # real implementations (postgres, stripe, s3) (+ .adapter.test.*)
+  composition/         # explicit wiring; points at real or in-memory adapters per layer
 ```
 
-The **composition root** is the only place that imports concrete adapters and wires them into use-cases. Nothing else should.
+The **composition root** is the only place that imports concrete adapters and wires them into use-cases. Nothing else should. Use-case and System tests wire in-memory adapters through it; production wires real adapters.
 
 ### 5. Present for Alignment
 
