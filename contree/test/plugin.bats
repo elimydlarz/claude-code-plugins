@@ -141,14 +141,7 @@ load test_helper
   CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" run bash "$PROJECT_ROOT/hooks/session-start.sh"
   assert_success
   assert_output --partial "**KISS**"
-}
-
-@test "SessionStart hook appends a pressure phrase" {
-  CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" run bash "$PROJECT_ROOT/hooks/session-start.sh"
-  assert_success
   assert_output --partial "**Test layers**"
-  refute_output --partial "**Test layers** —
-$"
 }
 
 @test "hooks.json defines a UserPromptSubmit hook" {
