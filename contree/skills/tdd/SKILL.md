@@ -41,15 +41,24 @@ Write **one** failing functional test that describes the desired behaviour from 
 - **Write exactly one test. Run it. See it fail. Then proceed.**
 - **If the test passes unexpectedly** — the behaviour already exists or the test is wrong. You must verify the test actually tests what it claims: break the implementation intentionally (e.g. comment out the relevant code path), observe the test failing, then fix the implementation, observe the test passing, and move on. If breaking the implementation doesn't make the test fail, the test is not verifying the behaviour — fix the test until it does.
 
-### 3. IDENTIFY PORTS, THEN RED (unit)
+### 3. IDENTIFY LAYERS, THEN RED (unit)
 
-Before writing the next test, identify the **side effects** in the current `when/then` path. A side effect is anything that escapes the pure-data boundary: persistence, external calls, time, randomness, audit/log emission, I/O. Each side effect becomes an **outbound port** named for the capability (e.g., `AuditLog`, `ScoreRepository`), never for the technology (`PostgresClient`, `StripeSDK`).
+Before writing the next test, decompose the current `when/then` path into the hex layers it actually touches:
 
-If the path has side effects, the next test is a **use-case test** with those ports faked — asserting both returned data and port interactions. It is NOT a domain test. Domain tests only cover pure business rules that produce no side effects in the path being tested — collapsing an audit/persistence/notification into the domain object is a hex violation.
+- **Transport** — does the path cross an HTTP/CLI/queue/cron boundary? That's an inbound adapter whose protocol mapping needs its own test.
+- **Orchestration** — does the path coordinate multiple concerns (validate input, call a collaborator, update state, emit an event)? That's the use-case.
+- **Side effects** — does the path persist, call an external service, read time, emit audits, produce randomness, or do I/O? Each is an outbound port. Name ports for capability (`AuditLog`, `ScoreRepository`), never for technology (`PostgresClient`, `StripeSDK`).
+- **Pure rules** — does the path compute over data with no collaborators? That's the domain.
 
-If an inbound adapter sits between the functional layer and the use-case (HTTP controller, CLI handler, queue consumer), test its protocol mapping at this layer.
+Pick the outermost untested layer and write **one** failing test there:
 
-Write **one** failing unit test for the chosen layer. Do not write tests for multiple behaviours or layers — just the single next thing that needs to fail.
+- Inbound adapter present but untested → test protocol mapping.
+- Orchestration + side effects → **use-case test with ports faked**. Assert both the returned data and the port interactions. This is NOT a domain test — collapsing a side effect into a domain object is a hex violation.
+- Orchestration without side effects → use-case test, no fakes needed beyond the use-case's own inputs.
+- No orchestration, no side effects → **domain test**: pure functions over data, no mocks.
+- Trivial path (one function, no orchestration, no side effects) → no unit test. The functional test is enough.
+
+Do not write tests for multiple behaviours or layers — just the single next thing that needs to fail.
 
 - **If the test passes unexpectedly** — break the implementation intentionally, observe the test failing, then fix the implementation, observe the test passing, and move on. A test that can't fail doesn't protect anything.
 
