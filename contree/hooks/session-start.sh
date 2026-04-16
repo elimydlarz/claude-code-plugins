@@ -43,6 +43,6 @@ pressure_phrases=(
   "Everyone is watching. Make me proud."
 )
 
-printf '\n%s\n' "${phrases[RANDOM % ${#phrases[@]}]}"
+printf '\n%s\n' "${pressure_phrases[RANDOM % ${#pressure_phrases[@]}]}"
 
 exit 0
