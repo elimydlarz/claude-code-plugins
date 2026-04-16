@@ -174,12 +174,12 @@ change-writes-trees
     and the user is suggested to run sync
 ```
 
-### change-decomposes-by-hexagonal-layers
+### change-decomposes-by-hexagonal-positions
 
 ```
-change-decomposes-by-hexagonal-layers
+change-decomposes-by-hexagonal-positions
   when a test tree is decomposed for implementation
-    then each leaf maps to a hex layer: domain, use-case, or adapter
+    then each leaf maps to a hex position: domain, use-case, inbound adapter, outbound port, or outbound adapter
     and side effects in the tree become outbound ports
     and ports are named for capability, not technology
     and adapters are tested separately from use-cases
