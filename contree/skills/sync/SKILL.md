@@ -57,7 +57,7 @@ After this step, test trees and implementation intent should be aligned.
 
 ### 6. IMPLEMENT GAPS
 
-For each `when/then` path that has a test tree but no implementation or tests, suggest the user runs `tdd` to implement it. Present the gaps so they can prioritise.
+For each tree with no test file (or no passing tests), suggest the user runs `tdd` to implement it. Present the gaps so they can prioritise.
 
 ### 7. VERIFY
 
