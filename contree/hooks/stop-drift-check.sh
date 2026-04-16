@@ -17,5 +17,5 @@ if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
   fi
 fi
 
-echo '(1) Is there any inconsistency between test trees and implementation? If so, propose solutions to the user. (2) Have the key concepts or operating principles shifted in a way not reflected in ## Mental Model? (3) Does README.md accurately describe the current state of the project? If nothing needs attention, reply only with 0.' >&2
+echo '(1) Have test trees and implementation drifted apart? If so, propose solutions to the user. (2) Have the key concepts or operating principles shifted in a way not reflected in ## Mental Model? (3) Does README.md accurately describe the current state of the project? If nothing needs attention, reply only with 0.' >&2
 exit 2
