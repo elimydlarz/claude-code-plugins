@@ -359,20 +359,20 @@ VERIFY
     ;;
 
   change-hex-decomposition)
-    # Verifies: change-decomposes-by-hexagonal-positions
+    # Verifies: change-decomposes-across-layers
     seed_project "seed-project"
 
-    echo "Running: change-hex-decomposition — change skill decomposes by hex positions"
+    echo "Running: change-hex-decomposition — change skill decomposes across layers"
     run_claude \
-      "Use the change skill. Add a 'save score' feature — on save, the score is persisted to a remote service and an audit entry is appended locally. Write the tree into ## Test Trees, then explain how it decomposes across hex positions. Do NOT write any code or tests."
+      "Use the change skill. Add a 'save score' feature — on save, the score is persisted to a remote service and an audit entry is appended locally. Write the slice as a System tree in ## Test Trees, then explain how it decomposes across layers (Domain / Use-case / Adapter / port contract). Do NOT write any code or tests."
 
     write_verify << 'VERIFY'
 
 === VERIFY ===
 1. Agent invoked the change skill
-2. Agent wrote a when/then tree for save-score under ## Test Trees
+2. Agent wrote a System tree for save-score under ## Test Trees
 3. Agent identified at least two outbound ports (persistence + audit) named for capability, not technology
-4. Agent explicitly named the hex positions (domain, use-case, adapter) when planning decomposition
+4. Agent explicitly named the layers the slice decomposes into (Domain / Use-case / Adapter / port contract) and which behavioural units live at each
 5. Agent did NOT write implementation code or tests
 VERIFY
     ;;
