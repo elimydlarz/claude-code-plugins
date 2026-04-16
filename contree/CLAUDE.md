@@ -149,7 +149,7 @@ change-writes-trees
     and test trees are written from the consumer's perspective
     and EARS patterns are chosen to match each requirement's nature
     and every then clause asserts something the when clause does not already imply
-    and functional → unit decomposition is planned
+    and functional → hex-layer decomposition is planned
   when modifying existing behaviour
     then only affected paths are changed
   when removing a capability
