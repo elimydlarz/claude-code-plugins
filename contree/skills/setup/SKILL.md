@@ -70,7 +70,7 @@ Confirm how conventions apply to this project:
 - Tree-style output at every layer
 
 **Language-specific conventions that override defaults:**
-- **Rust**: unit tests live inside the source file (`#[cfg(test)] mod tests`); integration tests (outbound-adapter layer included) live in `tests/` at crate root — this is the language convention, not a choice
+- **Rust**: unit tests live inside the source file (`#[cfg(test)] mod tests`); integration tests (including outbound-adapter tests) live in `tests/` at crate root — this is the language convention, not a choice
 - **Go**: tests are always colocated (`foo_test.go` next to `foo.go`); outbound-adapter integration tests use `*_integration_test.go` with `//go:build integration` tags — this is the language convention
 - **Ruby/RSpec**: separated `spec/` directory is the overwhelming convention — follow it
 - **Python**, **JS/TS**, **PHP**: both colocated and separated patterns work; prefer colocated for unit and integration tests
