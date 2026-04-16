@@ -268,9 +268,10 @@ Add or update the following sections:
 Run each layer's test suite and confirm:
 
 - Unit test output is tree-shaped (or best available for the language)
+- Integration test output is tree-shaped
 - Functional test output is tree-shaped
 - Mutation testing runs and produces a score report
-- If no tests exist yet, create minimal smoke tests at both layers with nested describe/it blocks, run to confirm tree-shaped output
+- If no tests exist yet, create minimal smoke tests at each layer with nested describe/it blocks, run to confirm tree-shaped output
 
 ---
 
