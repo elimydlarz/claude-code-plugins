@@ -433,18 +433,18 @@ VERIFY
     ;;
 
   pressure-phrase-on-session-start)
-    # Verifies: pressure-phrase-on-session-start / SessionStart hook bundles a pressure phrase with the rules cheatsheet
+    # Verifies: pressure-phrase-on-session-start / SessionStart hook bundles a pressure phrase with the rules
     seed_project "seed-project"
 
-    echo "Running: pressure-phrase-on-session-start — SessionStart hook bundles a pressure phrase with the cheatsheet"
-    run_claude "Quote back, verbatim, the last non-empty line that appeared in your SessionStart hook context (after the rules cheatsheet). If there is none, say 'NONE'."
+    echo "Running: pressure-phrase-on-session-start — SessionStart hook bundles a pressure phrase with the rules"
+    run_claude "Quote back, verbatim, the last non-empty line that appeared in your SessionStart hook context (after the rules list). If there is none, say 'NONE'."
 
     write_verify << 'VERIFY'
 
 === VERIFY ===
-1. A SessionStart hook_response appears in the transcript whose output ends with a phrase from contree/hooks/phrases.txt appended after the rules cheatsheet (no '# Pressure' header — the phrase is unlabelled)
+1. A SessionStart hook_response appears in the transcript whose output ends with a phrase from the pressure_phrases array in contree/hooks/session-start.sh appended after the rules list (no '# Pressure' header — the phrase is unlabelled)
 2. The assistant's text reply quotes the same phrase verbatim (proving the phrase reached the model, not just stderr)
-3. The phrase is one of the entries in contree/hooks/phrases.txt
+3. The phrase is one of the entries in the pressure_phrases array in contree/hooks/session-start.sh
 VERIFY
     ;;
 
