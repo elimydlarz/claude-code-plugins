@@ -31,12 +31,12 @@ claude plugin install contree@susu-eng --scope project
 4. The stop hook keeps `CLAUDE.md` and `README.md` current after every response
 5. Run `/contree:sync` periodically to verify completeness, or `/contree:workflow` for the full cycle
 
-## Requirements format
+## Test tree format
 
-Requirements in `CLAUDE.md` look like this:
+Trees in `CLAUDE.md` look like this:
 
 ```markdown
-## Requirements
+## Test Trees
 
 ### UserRegistration
 
@@ -48,7 +48,7 @@ UserRegistration
     then registration is rejected
 ```
 
-Each capability gets its own subsection. Trees describe operating principles (not case enumerations).
+Each behavioural unit gets its own tree — slice (System), use-case, port contract, adapter, domain object. Trees describe operating principles (not case enumerations).
 
 ## Supported languages
 
