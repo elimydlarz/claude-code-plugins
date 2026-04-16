@@ -82,7 +82,7 @@ case "$TEST_NAME" in
 
     echo "Running: incidental-pass — TDD with pre-existing implementation"
     run_claude \
-      "Use the tdd skill to implement the 'when reset after incrementing / then value is zero' path from the Counter test tree in ## Requirements. The reset() function already exists in counter.js — follow the TDD process exactly as described in the skill, including the incidental-pass protocol if the test passes on first run."
+      "Use the tdd skill to implement the 'when reset after incrementing / then value is zero' path from the Counter test tree in ## Test Trees. The reset() function already exists in counter.js — follow the TDD process exactly as described in the skill, including the incidental-pass protocol if the test passes on first run."
 
     write_verify << 'VERIFY'
 
@@ -113,7 +113,7 @@ VERIFY
 3. Agent configured vitest (vitest.config.* exists, vitest in package.json)
 4. Agent configured tree reporters for human-readable nested output
 5. Agent configured separate unit and functional test commands
-6. Agent generated test trees in when/then format under ## Requirements in CLAUDE.md
+6. Agent generated test trees in when/then format under ## Test Trees in CLAUDE.md
 7. Agent did NOT write any test implementations
 VERIFY
     ;;
@@ -124,7 +124,7 @@ VERIFY
     seed_project "seed-project"
     cat >> "$PROJECT_DIR/CLAUDE.md" << 'EOF'
 
-## Requirements
+## Test Trees
 
 ### Counter
 
@@ -146,7 +146,7 @@ EOF
 
 === VERIFY ===
 1. Agent organically invoked a skill that writes requirements first (change, or workflow which runs change internally)
-2. Agent added a "when reset" path to the test tree in ## Requirements before writing any code
+2. Agent added a "when reset" path to the test tree in ## Test Trees before writing any code
 3. Agent wrote a failing test for reset behaviour
 4. Agent implemented reset() in counter.js
 5. Agent confirmed tests pass
@@ -196,7 +196,7 @@ EOF
 4. Secrets/credentials are passed via environment variables, not hardcoded
 5. Test artefacts (containers) are torn down after tests run (docker-compose down, --rm, or equivalent)
 6. Agent configured vitest with tree reporters
-7. Agent generated test trees under ## Requirements in CLAUDE.md
+7. Agent generated test trees under ## Test Trees in CLAUDE.md
 8. Agent did NOT write any test implementations
 VERIFY
     ;;
@@ -206,7 +206,7 @@ VERIFY
     seed_project "seed-project"
     cat >> "$PROJECT_DIR/CLAUDE.md" << 'EOF'
 
-## Requirements
+## Test Trees
 
 ### Counter
 
@@ -229,7 +229,7 @@ EOF
 === VERIFY ===
 1. Agent invoked the change skill (not tdd, not setup, not workflow)
 2. Agent discussed the reset behaviour before modifying trees
-3. Agent wrote or proposed when/then paths for reset in ## Requirements
+3. Agent wrote or proposed when/then paths for reset in ## Test Trees
 4. Agent did NOT write any implementation code
 VERIFY
     ;;
@@ -239,7 +239,7 @@ VERIFY
     seed_project "seed-project"
     cat >> "$PROJECT_DIR/CLAUDE.md" << 'EOF'
 
-## Requirements
+## Test Trees
 
 ### Counter
 
@@ -261,7 +261,7 @@ EOF
 
 === VERIFY ===
 1. Agent invoked the change skill before writing any code
-2. Agent wrote or proposed when/then paths for decrement in ## Requirements
+2. Agent wrote or proposed when/then paths for decrement in ## Test Trees
 3. Agent did NOT write implementation code before the tree existed
 VERIFY
     ;;
@@ -297,7 +297,7 @@ VERIFY
 === VERIFY ===
 1. Agent invoked the setup skill (not change, not tdd)
 2. Agent configured vitest
-3. Agent generated test trees under ## Requirements in CLAUDE.md
+3. Agent generated test trees under ## Test Trees in CLAUDE.md
 4. Agent did NOT write any test implementations
 VERIFY
     ;;
@@ -331,7 +331,7 @@ VERIFY
 
 === VERIFY ===
 1. Agent invoked the change skill
-2. Trees written under ## Requirements in CLAUDE.md
+2. Trees written under ## Test Trees in CLAUDE.md
 3. At least one state-driven requirement using 'while' (e.g. while playing, while paused)
 4. At least one event-driven requirement using 'when' (e.g. when a track is loaded)
 5. At least one unwanted-behaviour requirement using 'if/then' (e.g. if the file format is unsupported)
@@ -345,13 +345,13 @@ VERIFY
 
     echo "Running: no-tautologies — change skill rejects tautological then clauses"
     run_claude \
-      "Use the change skill to write requirements for this counter module. It can be created with a default or custom initial value, incremented, decremented, and its value read. Write the test trees under ## Requirements in CLAUDE.md. Do NOT write any code or tests."
+      "Use the change skill to write requirements for this counter module. It can be created with a default or custom initial value, incremented, decremented, and its value read. Write the test trees under ## Test Trees in CLAUDE.md. Do NOT write any code or tests."
 
     write_verify << 'VERIFY'
 
 === VERIFY ===
 1. Agent invoked the change skill
-2. Agent wrote test trees under ## Requirements in CLAUDE.md
+2. Agent wrote test trees under ## Test Trees in CLAUDE.md
 3. No then clause merely restates its when/while condition (e.g. "when created / then it is created" or "when incremented / then it increments")
 4. Every then clause asserts a concrete, observable outcome (e.g. "when created with default / then value is zero")
 5. Agent did NOT write any implementation code or tests
@@ -364,13 +364,13 @@ VERIFY
 
     echo "Running: change-hex-decomposition — change skill decomposes by hex positions"
     run_claude \
-      "Use the change skill. Add a 'save score' feature — on save, the score is persisted to a remote service and an audit entry is appended locally. Write the tree into ## Requirements, then explain how it decomposes across hex positions. Do NOT write any code or tests."
+      "Use the change skill. Add a 'save score' feature — on save, the score is persisted to a remote service and an audit entry is appended locally. Write the tree into ## Test Trees, then explain how it decomposes across hex positions. Do NOT write any code or tests."
 
     write_verify << 'VERIFY'
 
 === VERIFY ===
 1. Agent invoked the change skill
-2. Agent wrote a when/then tree for save-score under ## Requirements
+2. Agent wrote a when/then tree for save-score under ## Test Trees
 3. Agent identified at least two outbound ports (persistence + audit) named for capability, not technology
 4. Agent explicitly named the hex positions (domain, use-case, adapter) when planning decomposition
 5. Agent did NOT write implementation code or tests
