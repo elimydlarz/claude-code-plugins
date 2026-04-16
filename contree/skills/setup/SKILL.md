@@ -361,7 +361,7 @@ export default defineConfig({
 })
 ```
 
-**Separating unit and functional tests** — use Vitest projects (replaces deprecated `vitest.workspace.ts` in v3.2+):
+**Separating unit, integration, and functional tests** — use Vitest projects (replaces deprecated `vitest.workspace.ts` in v3.2+). Add an `integration` project alongside `unit` and `functional` (same pattern, `include: ['src/**/*.integration.test.{ts,js}']`, higher timeouts) when outbound adapters need real infrastructure:
 ```ts
 // vitest.config.ts
 export default defineConfig({
