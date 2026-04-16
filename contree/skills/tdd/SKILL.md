@@ -28,58 +28,53 @@ If no test tree covers the behaviour you're about to implement, **stop and sugge
 
 ### 1. CONFIRM TEST TREE
 
-Identify which test tree in `## Requirements` covers this behaviour. State it explicitly:
+Identify which tree in `## Test Trees` covers this behaviour. State it explicitly:
 
-> Implementing against test tree: `UserRegistration`
+> Implementing against tree: `save-score`
 
-If the test tree seems incomplete, note it but proceed with what's there. Don't modify existing trees — you can add newly discovered cases as you go.
+If the tree seems incomplete, note it but proceed with what's there. Don't modify existing trees — you can add newly discovered cases as you go.
 
-### 2. RED (functional)
+### 2. RED (System)
 
-Write **one** failing functional test that describes the desired behaviour from the consumer's perspective. This test should map directly to a single `when/then` path in the test tree.
+Write **one** failing System test for the slice. It should map directly to a single `when/then` path in the tree.
 
-- Exercise the real system through its public surface
-- No mocks, no stubs
-- The test WILL fail — that's the point
+- Drive through a real driving adapter (HTTP, CLI). In-memory driven adapters — not mocks.
+- No internal mocks. No stubs.
+- The test WILL fail — that's the point.
 - **Write exactly one test. Run it. See it fail. Then proceed.**
-- **If the test passes unexpectedly** — the behaviour already exists or the test is wrong. You must verify the test actually tests what it claims: break the implementation intentionally (e.g. comment out the relevant code path), observe the test failing, then fix the implementation, observe the test passing, and move on. If breaking the implementation doesn't make the test fail, the test is not verifying the behaviour — fix the test until it does.
+- **If the test passes unexpectedly** — break the implementation intentionally (comment out the code path), observe the test failing, fix it, observe it passing, move on. A test that can't fail protects nothing.
 
-### 3. IDENTIFY POSITION, THEN RED (unit)
+### 3. IDENTIFY LAYER, THEN RED (inner)
 
-Before writing the next test, decompose the current `when/then` path into the hex positions it actually touches:
+Before writing the next test, decompose the failing path into the hex seams it touches. Pick the **outermost untested layer** and write one failing test there.
 
-- **Transport** — does the path cross an HTTP/CLI/queue/cron boundary? That's an inbound adapter whose protocol mapping needs its own test.
-- **Orchestration** — does the path coordinate multiple concerns (validate input, call a collaborator, update state, emit an event)? That's the use-case.
-- **Side effects** — does the path persist, call an external service, read time, emit audits, produce randomness, or do I/O? Each is an outbound port. Name ports for capability (`AuditLog`, `ScoreRepository`), never for technology (`PostgresClient`, `StripeSDK`).
-- **Pure rules** — does the path compute over data with no collaborators? That's the domain.
+Questions in order:
 
-Pick the outermost untested position and write **one** failing test there:
+- **Does the path cross a driving-adapter boundary** (HTTP/CLI/queue/cron)? If the translation is non-trivial — routing, deserialization, auth extraction, error-code shaping — write a driving-adapter test with the use-case mocked.
+- **Does the path orchestrate** (call a domain factory, invoke one or more ports, branch on results)? Write a use-case test. In-memory driven adapters satisfy the ports; domain factories are real.
+- **Does the path compute a pure rule** over data with no collaborators? Write a domain test.
+- **Does the path require a new outbound port or a new method on an existing one?** Write the shared port contract suite (the `ScoreRepository` tree) first. Both the in-memory adapter and, later, the real adapter must satisfy it.
+- **Has all application behaviour been covered but the real infrastructure still needs wiring?** Write a driven-adapter test against real infra. It runs the shared contract suite plus any adapter-specific behaviour (timeouts, retries, schema).
 
-- Inbound adapter present but untested → test protocol mapping.
-- Orchestration + side effects → **use-case test with ports faked**. Assert both the returned data and the port interactions. This is NOT a domain test — collapsing a side effect into a domain object is a hex violation.
-- Orchestration without side effects → use-case test, no fakes needed beyond the use-case's own inputs.
-- No orchestration, no side effects → **domain test**: pure functions over data, no mocks.
-- Trivial path (one function, no orchestration, no side effects) → no unit test. The functional test is enough.
+Do not write tests for multiple layers in one step.
 
-Do not write tests for multiple behaviours or positions — just the single next thing that needs to fail.
-
-- **If the test passes unexpectedly** — break the implementation intentionally, observe the test failing, then fix the implementation, observe the test passing, and move on. A test that can't fail doesn't protect anything.
+- **If the test passes unexpectedly** — break the implementation intentionally, observe failure, fix, observe passing, move on.
 
 ### 4. IMPLEMENT
 
-Write only enough code to make the unit test pass. YAGNI.
+Write only enough code to make the failing test pass. YAGNI.
 
-### 5. GREEN (unit)
+### 5. GREEN (inner)
 
-Confirm unit tests pass.
+Confirm the inner test passes.
 
-### 6. REPEAT (unit)
+### 6. REPEAT (inner)
 
-Continue inward — **one failing test at a time**. Write one test, run it, see it fail, implement, see it pass. Then and only then write the next test. Never batch multiple tests into a single step, even if you know what they all need to be.
+Continue inward — **one failing test at a time**. Write one, run it, see it fail, implement, see it pass. Then the next. Never batch.
 
-### 7. GREEN (functional)
+### 7. GREEN (System)
 
-The functional test should now pass. If it doesn't, you've missed something — write another unit test to cover the gap, implement, check again.
+The System test should now pass. If it doesn't, a layer is missing coverage — write another inner test to close the gap, implement, re-run System.
 
 ### 8. REFACTOR
 
