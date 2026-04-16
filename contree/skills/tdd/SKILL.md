@@ -7,7 +7,7 @@ description: "Close gaps between intent and implementation — one failing test 
 
 ## Principles
 
-1. **Outside-in, always** — start with a failing functional test, TDD inward through unit layers
+1. **Outside-in, always** — start with a failing functional test, TDD inward through the hex layers: inbound adapter → use-case → domain / outbound port → outbound adapter
 2. **Test trees are the requirements** — the `## Requirements` section in CLAUDE.md contains test trees that specify what the system does. Every test you write traces back to a test tree
 3. **Two test layers** — functional (real system, no mocks) and unit (isolated, mocked collaborators)
 4. **One failing test at a time** — write exactly one failing test, make it pass, then write the next. Never write multiple failing tests in a single step. If you catch yourself writing more than one `it`/`test` block before running tests, stop and delete all but the first
