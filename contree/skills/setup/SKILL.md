@@ -248,7 +248,7 @@ InvoiceGeneration
     then the invoice omits VAT
 ```
 
-### 10. UPDATE CLAUDE.md
+### 11. UPDATE CLAUDE.md
 
 Add or update the following sections:
 
