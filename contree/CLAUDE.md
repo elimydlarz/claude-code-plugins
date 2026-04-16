@@ -103,7 +103,7 @@ stop-hook-sync
   when Claude stops after a response that does not end with a question
     then it checks whether test trees and implementation have drifted apart
     and checks whether mental model needs updating
-    and checks whether README.md accurately describes the project
+    and checks whether the readme still provides accurate instructions for users
   when Claude stops after a response that ends with a question
     then the hook yields the turn to the user without injecting the check prompt
   when test trees and implementation have drifted apart
