@@ -19,9 +19,9 @@ Finds where the contract has drifted from reality. Compares the trees in `## Tes
 
 ### 1. LOAD TEST TREES
 
-Read `## Requirements` in the project's CLAUDE.md. Parse each test tree — every `when/then` path is a specified behaviour.
+Read `## Test Trees` in the project's CLAUDE.md. Parse each tree — every `when/then` path is a specified behaviour.
 
-If `## Requirements` doesn't exist or has no test trees, stop and suggest running `setup` first.
+If `## Test Trees` doesn't exist or has no trees, stop and suggest running `setup` first.
 
 ### 2. INVENTORY IMPLEMENTATION
 
