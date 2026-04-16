@@ -252,7 +252,7 @@ InvoiceGeneration
 
 Add or update the following sections:
 
-- `## Requirements` — the test trees from step 9
+- `## Requirements` — the test trees from step 10
 - Testing commands section with:
   - Command to run all unit tests with tree output
   - Command to run all functional tests with tree output
