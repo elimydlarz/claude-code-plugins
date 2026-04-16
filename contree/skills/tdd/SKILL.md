@@ -20,9 +20,9 @@ description: "Close gaps between intent and implementation — one failing test 
 
 ## Before You Start
 
-Read `## Requirements` in the project's CLAUDE.md. The test trees there are your specification. You are implementing against them.
+Read `## Test Trees` in the project's CLAUDE.md. The trees there are the contract. You are implementing against them.
 
-If no test tree covers the behaviour you're about to implement, **stop and suggest running `change` first** to write the test tree before writing any code or tests.
+If no tree covers the behaviour you're about to implement, **stop and suggest running `change` first** to write the tree before writing any code or tests.
 
 ## Process
 
