@@ -179,7 +179,7 @@ VERIFY
 ## Mental Model
 
 This project manages user accounts. It uses PostgreSQL for persistence.
-Functional tests need a real database — no mocks.
+Adapter and System tests need a real database — no mocks.
 EOF
     (cd "$PROJECT_DIR" && git add -A && git commit -q -m "describe external service needs")
 
