@@ -102,7 +102,7 @@ Once aligned, suggest the user runs `sync` to audit completeness and implement g
 
 ## Tree Format Rules
 
-- **Use EARS patterns** — choose the right keyword for each requirement (see the `ears` rule). Don't force everything into `when/then`.
+- **Use EARS patterns** — choose the right keyword for each requirement (see EARS Patterns below). Don't force everything into `when/then`.
 - **`then` describes outcomes** — what the consumer observes. What changes, what's produced, what's prevented.
 - **Every `then` must assert something the `when` clause does not already imply** — if a `then` merely restates the condition, it's a tautology and adds no value. "when created / then it is created" tests nothing. "when created with default / then value is zero" asserts a concrete outcome.
 - **Describe principles, not cases** — "when the input is invalid" not "when the input is empty / when the input is null / when the input is too long".
