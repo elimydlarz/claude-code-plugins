@@ -1,0 +1,4 @@
+- Adapter tests at the Adapter layer exercise one adapter against its port contract. For driven adapters, that means real infrastructure — Testcontainers, a local service, or recorded cassettes. Not mocks.
+- Driven adapters ship in two flavours that share one port contract suite: an in-memory adapter used by Use-case and System tests, and a real adapter used in production. Both adapter test files import and run the same `*.contract.ts` suite. The real adapter's test file layers on adapter-specific behaviour (timeouts, retries, constraint handling) beyond the shared suite.
+- Name adapter tests `*.adapter.test.*` and colocate with the adapter
+- *Do not* use environment variables to vary behaviour between test and runtime
