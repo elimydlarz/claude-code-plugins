@@ -65,14 +65,15 @@ Present identified frameworks with trade-offs and recommendation. Include tree o
 Confirm how conventions apply to this project:
 
 - Unit tests: colocated with source, `*.unit.test.*`
+- Integration tests: colocated with the outbound adapter they exercise, `*.integration.test.*`
 - Functional tests: `test/functional/` at project root, `*.functional.test.*`
-- Tree-style output at both layers
+- Tree-style output at every layer
 
 **Language-specific conventions that override defaults:**
-- **Rust**: unit tests live inside the source file (`#[cfg(test)] mod tests`), integration tests in `tests/` at crate root — this is the language convention, not a choice
-- **Go**: tests are always colocated (`foo_test.go` next to `foo.go`) — this is the language convention
+- **Rust**: unit tests live inside the source file (`#[cfg(test)] mod tests`); integration tests (outbound-adapter layer included) live in `tests/` at crate root — this is the language convention, not a choice
+- **Go**: tests are always colocated (`foo_test.go` next to `foo.go`); outbound-adapter integration tests use `*_integration_test.go` with `//go:build integration` tags — this is the language convention
 - **Ruby/RSpec**: separated `spec/` directory is the overwhelming convention — follow it
-- **Python**, **JS/TS**, **PHP**: both colocated and separated patterns work; prefer colocated for unit tests
+- **Python**, **JS/TS**, **PHP**: both colocated and separated patterns work; prefer colocated for unit and integration tests
 
 **Monorepo strategy:**
 - Unit tests: colocated with source in each package
