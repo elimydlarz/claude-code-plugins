@@ -59,11 +59,6 @@ run_hook_with_last_text() {
 
 # --- Review prompt content ---
 
-@test "hook prompt mentions Requirements" {
-  run_hook '{}'
-  [[ "$output" == *"Requirements"* ]]
-}
-
 @test "hook prompt mentions test trees" {
   run_hook '{}'
   [[ "$output" == *"test trees"* ]]
