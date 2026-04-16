@@ -41,9 +41,15 @@ Write **one** failing functional test that describes the desired behaviour from 
 - **Write exactly one test. Run it. See it fail. Then proceed.**
 - **If the test passes unexpectedly** — the behaviour already exists or the test is wrong. You must verify the test actually tests what it claims: break the implementation intentionally (e.g. comment out the relevant code path), observe the test failing, then fix the implementation, observe the test passing, and move on. If breaking the implementation doesn't make the test fail, the test is not verifying the behaviour — fix the test until it does.
 
-### 3. RED (unit)
+### 3. IDENTIFY PORTS, THEN RED (unit)
 
-Write **one** failing unit test for the outermost component that needs to change. Do not write tests for multiple behaviours or layers — just the single next thing that needs to fail.
+Before writing the next test, identify the **side effects** in the current `when/then` path. A side effect is anything that escapes the pure-data boundary: persistence, external calls, time, randomness, audit/log emission, I/O. Each side effect becomes an **outbound port** named for the capability (e.g., `AuditLog`, `ScoreRepository`), never for the technology (`PostgresClient`, `StripeSDK`).
+
+If the path has side effects, the next test is a **use-case test** with those ports faked — asserting both returned data and port interactions. It is NOT a domain test. Domain tests only cover pure business rules that produce no side effects in the path being tested — collapsing an audit/persistence/notification into the domain object is a hex violation.
+
+If an inbound adapter sits between the functional layer and the use-case (HTTP controller, CLI handler, queue consumer), test its protocol mapping at this layer.
+
+Write **one** failing unit test for the chosen layer. Do not write tests for multiple behaviours or layers — just the single next thing that needs to fail.
 
 - **If the test passes unexpectedly** — break the implementation intentionally, observe the test failing, then fix the implementation, observe the test passing, and move on. A test that can't fail doesn't protect anything.
 
