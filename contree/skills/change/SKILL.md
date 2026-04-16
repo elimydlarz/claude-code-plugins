@@ -57,7 +57,27 @@ Remove the tree from `## Test Trees`. Confirm with the user first.
 
 ### 4. Decompose Across Layers and Positions
 
-A System tree describes a slice's consumer-visible behaviour. Below it sits a set of smaller trees — one per behavioural unit the slice produces. Each smaller tree reifies one test file at one test layer. See the Test Layers section in `skills/tdd/SKILL.md` for full guidance on the four layers (Domain / Use-case / Adapter / System), the in-memory adapter pattern, and the shared port contract suite.
+A System tree describes a slice's consumer-visible behaviour. Below it sits a set of smaller trees — one per behavioural unit the slice produces. Each smaller tree reifies one test file at one test layer.
+
+**The four test layers map to the hex seams:**
+
+```
+  [ Driving Adapter ]  ←→  [ Port ]  ←→  [ Use-case ]  ←→  [ Port ]  ←→  [ Driven Adapter ]
+     (HTTP / CLI)             (iface)      (orchestration)   (iface)       (Postgres / Stripe / FS)
+                                                 ↕
+                                           [ Domain ]
+                                    (entities, value objects,
+                                     domain services, rules)
+```
+
+| Layer       | Seam under test                  | Collaborators                                           | Speed     | File convention                     |
+| ----------- | -------------------------------- | ------------------------------------------------------- | --------- | ----------------------------------- |
+| Domain      | the pure core                    | none — no fakes, no mocks, no async                     | instant   | `*.domain.test.*`                   |
+| Use-case    | orchestration + port boundaries  | in-memory adapters (real implementations of the ports)  | fast      | `*.use-case.test.*`                 |
+| Adapter     | one adapter against its contract | driving: mocked use-case. driven: real infrastructure.  | mixed     | `*.adapter.test.*`                  |
+| System      | the whole wired app              | in-memory driven adapters by default; real on demand    | slow      | `*.system.test.*` in `test/system/` |
+
+Layers are named for the hex seam under test, not for infrastructure presence. Classic "unit/integration/functional" conflates pure Domain with mocked Use-case and overloads "integration" — seams give sharper targets.
 
 **Hex positions** — the locations in the codebase where code sits:
 
