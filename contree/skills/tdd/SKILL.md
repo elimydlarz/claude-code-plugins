@@ -114,6 +114,18 @@ UserRegistration
 
 ## Test Layers
 
+### Outside-In Order
+
+Contree prescribes hexagonal architecture. Drive tests inward in this order:
+
+1. **Functional** — whole vertical slice. One test per `when/then` path in the tree.
+2. **Inbound adapter** (unit) — protocol → use-case input mapping. HTTP/CLI/queue payloads translated to plain input; results translated back.
+3. **Use-case** (unit) — orchestration. Outbound ports faked; assert returned data and port interactions.
+4. **Domain** (unit) — pure business rules. No mocks, no async, no setup.
+5. **Outbound adapter** (integration) — real infrastructure. DB queries, HTTP calls, queue publishing.
+
+Every failing test you write should sit at a specific layer. If you can't name the layer, you're not decomposed enough.
+
 ### Functional Tests
 - Exercise real public surface, no mocks
 - `test/functional/` at project root
@@ -122,10 +134,16 @@ UserRegistration
 
 ### Unit Tests
 - Single module/class/function in isolation
-- Mock collaborators
+- Mock collaborators (for use-cases, the collaborators are outbound ports)
 - Colocated with source
 - `*.unit.test.*` naming
 - Drive internal design with fast feedback
+- Domain tests use no mocks — pure functions over data
+
+### Outbound Adapter Integration Tests
+- Hit real infrastructure (DB, API, queue)
+- Verify serialization, schema/query behaviour, timeouts
+- Slower than unit tests — keep the set focused
 
 ### Mutation Testing
 - Stryker validates unit test quality
