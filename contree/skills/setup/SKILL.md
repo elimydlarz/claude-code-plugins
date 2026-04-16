@@ -381,15 +381,31 @@ export default defineConfig({
       {
         extends: true,  // inherit root config (plugins, resolve.alias, etc.)
         test: {
-          name: 'unit',
-          include: ['src/**/*.unit.test.{ts,js}'],
+          name: 'domain',
+          include: ['src/**/*.domain.test.{ts,js}'],
         },
       },
       {
         extends: true,
         test: {
-          name: 'functional',
-          include: ['test/functional/**/*.functional.test.{ts,js}'],
+          name: 'use-case',
+          include: ['src/**/*.use-case.test.{ts,js}'],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'adapter',
+          include: ['src/**/*.adapter.test.{ts,js}'],
+          testTimeout: 30_000,  // driven adapters hit real infra
+          hookTimeout: 30_000,
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'system',
+          include: ['test/system/**/*.system.test.{ts,js}'],
           testTimeout: 30_000,
           hookTimeout: 30_000,
         },
@@ -403,8 +419,10 @@ export default defineConfig({
 ```json
 {
   "test": "vitest run",
-  "test:unit": "vitest run --project unit",
-  "test:functional": "vitest run --project functional",
+  "test:domain": "vitest run --project domain",
+  "test:use-case": "vitest run --project use-case",
+  "test:adapter": "vitest run --project adapter",
+  "test:system": "vitest run --project system",
   "test:changed": "vitest run --changed",
   "test:watch": "vitest",
   "test:mutate": "stryker run"
