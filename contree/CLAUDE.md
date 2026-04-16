@@ -174,6 +174,28 @@ change-writes-trees
     and the user is suggested to run sync
 ```
 
+### change-decomposes-by-hexagonal-layers
+
+```
+change-decomposes-by-hexagonal-layers
+  when a test tree is decomposed for implementation
+    then each leaf maps to a hex layer: domain, use-case, or adapter
+    and side effects in the tree become outbound ports
+    and ports are named for capability, not technology
+    and adapters are tested separately from use-cases
+```
+
+### tdd-drives-hexagonal-layers
+
+```
+tdd-drives-hexagonal-layers
+  when TDD drives inward from a failing functional test
+    then the layer order is inbound adapter → use-case → domain / outbound port → outbound adapter
+    and each test sits at a named hex layer
+    and use-case tests fake outbound ports
+    and outbound adapter tests use real infrastructure
+```
+
 ### sync-audits-and-resolves
 
 ```
