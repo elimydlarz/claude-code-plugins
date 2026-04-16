@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Runs a single functional test.
+# Runs the contree functional test.
 # Works both inside Docker (called by docker-run.sh) and directly on the host.
 #
 # Expects:
 #   - ANTHROPIC_API_KEY in environment or in .env file
-#   - $1 is the test name (e.g. "incidental-pass")
+#   - $1 is the test name (currently just "full-workflow")
 
 TEST_NAME="${1:?Usage: docker-entrypoint.sh <test-name>}"
 
@@ -37,11 +37,13 @@ fi
 TRANSCRIPT_FILE="$OUTPUT_DIR/${TEST_NAME}-transcript.jsonl"
 VERIFY_FILE="$OUTPUT_DIR/${TEST_NAME}-verify.txt"
 
+# Clean transcript so phases append to a fresh file.
+rm -f "$TRANSCRIPT_FILE"
+
 # --- Helpers ---
 
 seed_project() {
   local fixture_name="$1"
-  # Use pre-installed fixtures from Docker image if available, otherwise from plugin source
   local fixture_dir="/fixtures/$fixture_name"
   [ -d "$fixture_dir" ] || fixture_dir="$FIXTURES/$fixture_name"
 
@@ -51,21 +53,30 @@ seed_project() {
   (cd "$PROJECT_DIR" && git init -q && git config user.email "test@test" && git config user.name "test" && git add -A && git commit -q -m "seed")
 }
 
+# Tracks whether we've started a Claude session in this run — subsequent calls
+# pass `-c` to continue the same session so Claude has memory across phases.
+CLAUDE_CALL_COUNT=0
+
 run_claude() {
   local prompt="$1"
   shift
-  # Don't abort on claude failure — we still need to emit VERIFY criteria
+  local continue_flag=()
+  if [ "$CLAUDE_CALL_COUNT" -gt 0 ]; then
+    continue_flag=(-c)
+  fi
+  CLAUDE_CALL_COUNT=$((CLAUDE_CALL_COUNT + 1))
+
+  # Don't abort on claude failure — we still need to emit the VERIFY file
   (cd "$PROJECT_DIR" && claude -p "$prompt" \
+    "${continue_flag[@]}" \
     --plugin-dir "$CONTREE_ROOT" \
     --dangerously-skip-permissions \
     --model sonnet \
     --max-budget-usd 0.50 \
-    --no-session-persistence \
     --output-format stream-json \
     --verbose \
-    "$@" 2>&1) | tee "$TRANSCRIPT_FILE" || true
+    "$@" 2>&1) | tee -a "$TRANSCRIPT_FILE" || true
 }
-
 
 write_verify() {
   cat > "$VERIFY_FILE"
@@ -73,379 +84,65 @@ write_verify() {
   cat "$VERIFY_FILE"
 }
 
-# --- Tests ---
+# --- Test ---
 
 case "$TEST_NAME" in
-  incidental-pass)
-    # Verifies: outside-in-tdd
-    seed_project "incidental-pass"
+  full-workflow)
+    # One scenario, three phases in one session, covers every tree in
+    # contree/CLAUDE.md ## Test Trees.
+    seed_project "greenfield"
 
-    echo "Running: incidental-pass — TDD with pre-existing implementation"
+    echo ""
+    echo "=== Phase 1: setup ==="
     run_claude \
-      "Use the tdd skill to implement the 'when reset after incrementing / then value is zero' path from the Counter test tree in ## Test Trees. The reset() function already exists in counter.js — follow the TDD process exactly as described in the skill, including the incidental-pass protocol if the test passes on first run."
+      "This project has no code yet — read CLAUDE.md for the Mental Model, then run /contree:setup to configure the test framework and generate test trees."
+
+    echo ""
+    echo "=== Phase 2: workflow (change → sync → tdd) ==="
+    run_claude \
+      "Now implement the project. Use /contree:workflow to set expected behaviour in trees and drive the implementation outside-in."
+
+    echo ""
+    echo "=== Phase 3: drift injection + sync ==="
+    # Inject drift: add an undocumented capability to the source without updating the trees.
+    if [ -f "$PROJECT_DIR/src/codes.js" ]; then
+      DRIFT_TARGET="$PROJECT_DIR/src/codes.js"
+    elif [ -f "$PROJECT_DIR/src/index.js" ]; then
+      DRIFT_TARGET="$PROJECT_DIR/src/index.js"
+    else
+      DRIFT_TARGET="$(find "$PROJECT_DIR/src" -maxdepth 2 -name '*.js' -not -name '*.test.*' | head -n 1)"
+    fi
+    if [ -n "$DRIFT_TARGET" ] && [ -f "$DRIFT_TARGET" ]; then
+      cat >> "$DRIFT_TARGET" <<'DRIFT'
+
+// Drift injected by the functional harness — this capability is NOT in the trees.
+export function generateBatch(n) {
+  const out = []
+  for (let i = 0; i < n; i++) out.push(generate())
+  return out
+}
+DRIFT
+      (cd "$PROJECT_DIR" && git add -A && git commit -q -m "inject drift: generateBatch")
+      echo "[harness] Injected drift into $DRIFT_TARGET (added generateBatch)."
+    else
+      echo "[harness] WARNING: could not find a source file to drift. Phase 3 may PASS/FAIL on sync without seeing drift."
+    fi
+
+    run_claude \
+      "Something feels off in this project — please audit for drift between the trees and the implementation, then propose fixes."
 
     write_verify << 'VERIFY'
-Verify this transcript against the `outside-in-tdd` tree in the plugin's
+Evaluate the transcript against every tree in the plugin's
 `contree/CLAUDE.md` `## Test Trees` section.
 
-For each `when/then` (or `if/then`) path in that tree, return one of:
+For each `when/then` (or `if/then`) path in each tree, return one of:
 
   PASS — transcript demonstrates the assertion (quote evidence)
   FAIL — transcript contradicts the assertion (quote evidence)
   N/A  — the scenario did not exercise this assertion
 
-The tree IS the checklist. There is no separate list of criteria here.
-VERIFY
-    ;;
-
-  setup-generates-requirements)
-    # Verifies: setup-generates-trees / when setup is run on an existing project
-    seed_project "seed-project"
-
-    echo "Running: setup-generates-requirements — /setup on existing project"
-    run_claude \
-      "Run /setup on this project. It's a simple JS counter module. Use Vitest. Don't implement any tests yet — just configure the framework and generate requirement trees."
-
-    write_verify << 'VERIFY'
-
-=== VERIFY ===
-1. Agent invoked the setup skill
-2. Agent read the existing counter.js to understand the codebase
-3. Agent configured vitest (vitest.config.* exists, vitest in package.json)
-4. Agent configured tree reporters for human-readable nested output
-5. Agent configured separate per-layer test commands (Domain, Use-case, Adapter, System)
-6. Agent generated test trees in when/then format under ## Test Trees in CLAUDE.md
-7. Agent did NOT write any test implementations
-VERIFY
-    ;;
-
-  tdd-writes-requirement-first)
-    # Verifies: organic discovery — user describes adding + implementing a feature,
-    # agent discovers it needs /change (requirements first) then /tdd (implement)
-    seed_project "seed-project"
-    cat >> "$PROJECT_DIR/CLAUDE.md" << 'EOF'
-
-## Test Trees
-
-### Counter
-
-```
-Counter
-  when created with default
-    then value is zero
-  when incremented
-    then value increases by one
-```
-EOF
-    (cd "$PROJECT_DIR" && git add -A && git commit -q -m "add requirements")
-
-    echo "Running: tdd-writes-requirement-first — organic discovery of change then TDD"
-    run_claude \
-      "I want to add a reset feature to this counter that sets the value back to zero. Add it to the requirements and then implement it."
-
-    write_verify << 'VERIFY'
-
-=== VERIFY ===
-1. Agent organically invoked a skill that writes requirements first (change, or workflow which runs change internally)
-2. Agent added a "when reset" path to the test tree in ## Test Trees before writing any code
-3. Agent wrote a failing test for reset behaviour
-4. Agent implemented reset() in counter.js
-5. Agent confirmed tests pass
-VERIFY
-    ;;
-
-  stop-hook-fires)
-    # Verifies: stop-hook-sync / when Claude stops after any response
-    seed_project "seed-project"
-
-    echo "Running: stop-hook-fires — stop hook prompts CLAUDE.md update"
-    run_claude \
-      "Add an 'amount' parameter to increment() so it can increment by more than 1. Update counter.js."
-
-    write_verify << 'VERIFY'
-
-=== VERIFY ===
-1. Agent modified counter.js to add the amount parameter to increment()
-2. Agent performed drift detection (read CLAUDE.md, checked for staleness)
-3. Agent identified that the Mental Model needs updating to reflect the amount parameter
-4. Agent asked the user before modifying CLAUDE.md (never modifies silently)
-VERIFY
-    ;;
-
-  setup-docker-testing)
-    # Verifies: setup-generates-trees / when the project needs external services
-    seed_project "seed-project"
-    cat >> "$PROJECT_DIR/CLAUDE.md" << 'EOF'
-
-## Mental Model
-
-This project manages user accounts. It uses PostgreSQL for persistence.
-Adapter and System tests need a real database — no mocks.
-EOF
-    (cd "$PROJECT_DIR" && git add -A && git commit -q -m "describe external service needs")
-
-    echo "Running: setup-docker-testing — /setup with external service dependency"
-    run_claude \
-      "Run /setup on this project. It's a user account service that needs PostgreSQL for Adapter and System tests. Use Vitest. Configure Docker-based testing with a real Postgres container for the layers that need it. Do NOT write any test files — no .test.js, no .test.ts, no spec files. Only configuration and test trees."
-
-    write_verify << 'VERIFY'
-
-=== VERIFY ===
-1. Agent invoked the setup skill
-2. Agent created Docker infrastructure for the real-infra test layers (Dockerfile and/or docker-compose.yml)
-3. Docker config includes a PostgreSQL service/container
-4. Secrets/credentials are passed via environment variables, not hardcoded
-5. Test artefacts (containers) are torn down after tests run (docker-compose down, --rm, or equivalent)
-6. Agent configured vitest with tree reporters
-7. Agent generated test trees under ## Test Trees in CLAUDE.md
-8. Agent did NOT write any test implementations
-VERIFY
-    ;;
-
-  discover-change)
-    # Verifies: skill discoverability — natural prompt triggers change skill
-    seed_project "seed-project"
-    cat >> "$PROJECT_DIR/CLAUDE.md" << 'EOF'
-
-## Test Trees
-
-### Counter
-
-```
-Counter
-  when created with default
-    then value is zero
-  when incremented
-    then value increases by one
-```
-EOF
-    (cd "$PROJECT_DIR" && git add -A && git commit -q -m "add requirements")
-
-    echo "Running: discover-change — natural prompt triggers change skill"
-    run_claude \
-      "I want to add a reset feature to this counter that sets the value back to zero. Let's figure out what the behaviour should look like before writing any code."
-
-    write_verify << 'VERIFY'
-
-=== VERIFY ===
-1. Agent invoked the change skill (not tdd, not setup, not workflow)
-2. Agent discussed the reset behaviour before modifying trees
-3. Agent wrote or proposed when/then paths for reset in ## Test Trees
-4. Agent did NOT write any implementation code
-VERIFY
-    ;;
-
-  discover-change-implicit)
-    # Verifies: skill discoverability — bare feature request (no skill cues) triggers change skill
-    seed_project "seed-project"
-    cat >> "$PROJECT_DIR/CLAUDE.md" << 'EOF'
-
-## Test Trees
-
-### Counter
-
-```
-Counter
-  when created with default
-    then value is zero
-  when incremented
-    then value increases by one
-```
-EOF
-    (cd "$PROJECT_DIR" && git add -A && git commit -q -m "add requirements")
-
-    echo "Running: discover-change-implicit — bare feature request triggers change skill"
-    run_claude \
-      "Add a decrement feature to the counter."
-
-    write_verify << 'VERIFY'
-
-=== VERIFY ===
-1. Agent invoked the change skill before writing any code
-2. Agent wrote or proposed when/then paths for decrement in ## Test Trees
-3. Agent did NOT write implementation code before the tree existed
-VERIFY
-    ;;
-
-  discover-sync)
-    # Verifies: skill discoverability — natural prompt triggers sync skill
-    seed_project "sync-drift"
-
-    echo "Running: discover-sync — natural prompt triggers sync skill"
-    run_claude \
-      "I've been making changes to counter.js and I'm not sure the requirements still match the code. Can you check what's drifted?"
-
-    write_verify << 'VERIFY'
-
-=== VERIFY ===
-1. Agent invoked the sync skill (not change, not tdd)
-2. Agent identified that decrement tree exists without implementation
-3. Agent identified that amount parameter exists without a tree
-4. Agent reported drift to the user rather than silently fixing it
-VERIFY
-    ;;
-
-  discover-setup)
-    # Verifies: skill discoverability — natural prompt triggers setup skill
-    seed_project "seed-project"
-
-    echo "Running: discover-setup — natural prompt triggers setup skill"
-    run_claude \
-      "This project doesn't have any testing set up yet. Can you get it ready for test-driven development? Use Vitest."
-
-    write_verify << 'VERIFY'
-
-=== VERIFY ===
-1. Agent invoked the setup skill (not change, not tdd)
-2. Agent configured vitest
-3. Agent generated test trees under ## Test Trees in CLAUDE.md
-4. Agent did NOT write any test implementations
-VERIFY
-    ;;
-
-  discover-tdd)
-    # Verifies: skill discoverability — natural prompt triggers tdd skill
-    seed_project "tdd-ready"
-
-    echo "Running: discover-tdd — natural prompt triggers tdd skill"
-    run_claude \
-      "The requirements are all set — can you implement the increment behaviour from the test tree?"
-
-    write_verify << 'VERIFY'
-
-=== VERIFY ===
-1. Agent invoked the tdd skill (not change, not setup)
-2. Agent started with a failing test matching a when/then path
-3. Agent wrote implementation code to make the test pass
-VERIFY
-    ;;
-
-  ears-change)
-    # Verifies: change-writes-trees / EARS patterns are chosen to match each requirement's nature
-    seed_project "ears-project"
-
-    echo "Running: ears-change — change skill writes requirements using varied EARS patterns"
-    run_claude \
-      "I want to define the requirements for this media player before writing any tests or code. It has states (playing, paused, stopped), events (load, pause, resume, stop), error handling (unsupported file formats), and an optional bluetooth feature. Define the requirements using the appropriate EARS patterns for each kind of requirement."
-
-    write_verify << 'VERIFY'
-
-=== VERIFY ===
-1. Agent invoked the change skill
-2. Trees written under ## Test Trees in CLAUDE.md
-3. At least one state-driven requirement using 'while' (e.g. while playing, while paused)
-4. At least one event-driven requirement using 'when' (e.g. when a track is loaded)
-5. At least one unwanted-behaviour requirement using 'if/then' (e.g. if the file format is unsupported)
-6. Trees use consumer vocabulary, not implementation details
-VERIFY
-    ;;
-
-  no-tautologies)
-    # Verifies: change-writes-trees / every then clause asserts something the when clause does not already imply
-    seed_project "seed-project"
-
-    echo "Running: no-tautologies — change skill rejects tautological then clauses"
-    run_claude \
-      "Use the change skill to write requirements for this counter module. It can be created with a default or custom initial value, incremented, decremented, and its value read. Write the test trees under ## Test Trees in CLAUDE.md. Do NOT write any code or tests."
-
-    write_verify << 'VERIFY'
-
-=== VERIFY ===
-1. Agent invoked the change skill
-2. Agent wrote test trees under ## Test Trees in CLAUDE.md
-3. No then clause merely restates its when/while condition (e.g. "when created / then it is created" or "when incremented / then it increments")
-4. Every then clause asserts a concrete, observable outcome (e.g. "when created with default / then value is zero")
-5. Agent did NOT write any implementation code or tests
-VERIFY
-    ;;
-
-  change-hex-decomposition)
-    # Verifies: change-decomposes-across-layers
-    seed_project "seed-project"
-
-    echo "Running: change-hex-decomposition — change skill decomposes across layers"
-    run_claude \
-      "Use the change skill. Add a 'save score' feature — on save, the score is persisted to a remote service and an audit entry is appended locally. Write the slice as a System tree in ## Test Trees, then explain how it decomposes across layers (Domain / Use-case / Adapter / port contract). Do NOT write any code or tests."
-
-    write_verify << 'VERIFY'
-
-=== VERIFY ===
-1. Agent invoked the change skill
-2. Agent wrote a System tree for save-score under ## Test Trees
-3. Agent identified at least two outbound ports (persistence + audit) named for capability, not technology
-4. Agent explicitly named the layers the slice decomposes into (Domain / Use-case / Adapter / port contract) and which behavioural units live at each
-5. Agent did NOT write implementation code or tests
-VERIFY
-    ;;
-
-  tdd-hex-layers)
-    # Verifies: tdd-drives-through-seams
-    seed_project "tdd-ready"
-    cat >> "$PROJECT_DIR/CLAUDE.md" << 'EOF'
-
-### AuditedCounter
-
-```
-AuditedCounter
-  when incremented
-    then value increases by one
-    and an audit entry is recorded
-```
-EOF
-    (cd "$PROJECT_DIR" && git add -A && git commit -q -m "add audited requirements")
-
-    echo "Running: tdd-hex-layers — tdd drives outside-in through named layers"
-    run_claude \
-      "Use the tdd skill to start implementing AuditedCounter. Write just the first two failing tests — the outermost (System) one first, then one layer inward — and stop there. Name the layer of each test as you write it."
-
-    write_verify << 'VERIFY'
-
-=== VERIFY ===
-1. Agent invoked the tdd skill
-2. Agent's first test is a System test exercising the whole AuditedCounter behaviour
-3. Agent's second test is one layer inward (Use-case with an in-memory audit adapter wired, or a Driving-adapter test with the use-case mocked)
-4. Agent explicitly named the layer of each test as it was written
-5. Agent identified the audit mechanism as an outbound port, not a concrete technology
-VERIFY
-    ;;
-
-  self-care-nudge-fires)
-    # Verifies: self-care-20-20-20 / when 20 minutes have elapsed since the most recent nudge file's timestamp
-    # Seeds a stale nudge file so the hook's nudge-file-baseline branch fires on the first
-    # user prompt. Proves the hook reaches the model end-to-end: real claude → hook stderr → response.
-    seed_project "seed-project"
-
-    NUDGE_DIR="$HOME/.claude/contree/nudges/20-20-20"
-    rm -rf "$NUDGE_DIR"
-    mkdir -p "$NUDGE_DIR"
-    touch "$NUDGE_DIR/$(( $(date +%s) - 1500 ))"
-
-    echo "Running: self-care-nudge-fires — self-care hook reminder reaches the model"
-    run_claude \
-      "What is 2 + 2? Answer in one short sentence."
-
-    write_verify << 'VERIFY'
-
-=== VERIFY ===
-1. The assistant's text reply opens with the 20-20-20 rule reminder, naming both "20 feet" and "20 seconds", before answering the math question
-2. The assistant still answers "4" (or equivalent) to the math question after the reminder
-3. The prompt was not blocked — the transcript contains an assistant message with non-zero output tokens and a "2 + 2" style answer
-VERIFY
-    ;;
-
-  pressure-phrase-on-session-start)
-    # Verifies: pressure-phrase-on-session-start / SessionStart hook bundles a pressure phrase with the rules
-    seed_project "seed-project"
-
-    echo "Running: pressure-phrase-on-session-start — SessionStart hook bundles a pressure phrase with the rules"
-    run_claude "Quote back, verbatim, the last non-empty line that appeared in your SessionStart hook context (after the rules list). If there is none, say 'NONE'."
-
-    write_verify << 'VERIFY'
-
-=== VERIFY ===
-1. A SessionStart hook_response appears in the transcript whose output ends with a phrase from the pressure_phrases array in contree/hooks/session-start.sh appended after the rules list (no '# Pressure' header — the phrase is unlabelled)
-2. The assistant's text reply quotes the same phrase verbatim (proving the phrase reached the model, not just stderr)
-3. The phrase is one of the entries in the pressure_phrases array in contree/hooks/session-start.sh
+The trees ARE the checklist. Report results grouped by tree, then a final summary
+of PASS / FAIL / N/A counts across all trees.
 VERIFY
     ;;
 
@@ -453,22 +150,7 @@ VERIFY
     echo "Unknown test: $TEST_NAME" >&2
     echo ""
     echo "Available tests:"
-    echo "  incidental-pass              — TDD incidental-pass protocol"
-    echo "  setup-generates-requirements — /setup on existing project"
-    echo "  tdd-writes-requirement-first — TDD discovers new test cases"
-    echo "  stop-hook-fires              — stop hook prompts updates"
-    echo "  setup-docker-testing         — /setup with Docker for external services"
-    echo "  discover-change              — natural prompt triggers change skill"
-    echo "  discover-change-implicit     — bare feature request triggers change skill"
-    echo "  discover-sync                — natural prompt triggers sync skill"
-    echo "  discover-setup               — natural prompt triggers setup skill"
-    echo "  discover-tdd                 — natural prompt triggers tdd skill"
-    echo "  ears-change                  — change skill uses EARS patterns"
-    echo "  no-tautologies               — change skill rejects tautological trees"
-    echo "  change-hex-decomposition     — change skill decomposes across layers"
-    echo "  tdd-hex-layers               — tdd drives outside-in through named layers"
-    echo "  self-care-nudge-fires        — self-care hook reminder reaches the model"
-    echo "  pressure-phrase-on-session-start — SessionStart bundles a pressure phrase with the rules"
+    echo "  full-workflow — setup → workflow → drift → sync, verified against every tree"
     exit 1
     ;;
 esac
