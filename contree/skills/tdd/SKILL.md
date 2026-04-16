@@ -119,11 +119,12 @@ UserRegistration
 
 ### Rules
 
-- Top level names the subject (capability for functional, module/function for unit)
-- Use EARS keywords (`when`, `while`, `if`, `where`, or bare `then`) to match the requirement's nature
-- `then` describes outcomes (what the consumer observes)
-- Use `if/then` for error cases and unwanted behaviour
-- Describe principles, not specific values
+- Top level names the subject — see the naming heuristic in Test Layers (domain object for Domain, use-case for Use-case, port interface for port contract, adapter for Adapter, slice name for System).
+- Use EARS keywords (`when`, `while`, `if`, `where`, or bare `then`) to match the requirement's nature.
+- `then` describes outcomes (what the consumer observes at this layer).
+- Use `if/then` for error cases and unwanted behaviour.
+- Describe principles, not specific values.
+- Tree names must be unique within `## Test Trees`. One tree, one test file.
 
 ## Test Layers
 
