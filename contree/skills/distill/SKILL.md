@@ -70,7 +70,7 @@ Make the edits. Create any new files. Diff test trees after to confirm they're b
 ### 7. VERIFY
 
 - Re-read the new `CLAUDE.md` end to end
-- Confirm every test tree under `## Requirements` is unchanged
+- Confirm every tree under `## Test Trees` is unchanged
 - Confirm nothing the code still does has been silently dropped
 - Report final size
 
