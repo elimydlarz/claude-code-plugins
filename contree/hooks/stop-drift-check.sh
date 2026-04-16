@@ -17,5 +17,5 @@ if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
   fi
 fi
 
-echo '(1) Is there any inconsistency between test trees in ## Requirements and the implementation, in either direction? If so, propose solutions to the user. (2) Has the public API or behaviour changed in a way not reflected in ## Mental Model? Any new parameter, changed signature, added capability, or removed feature means the Mental Model needs updating. (3) Does README.md accurately describe the current state of the project? If nothing needs attention, reply only with 0.' >&2
+echo '(1) Is there any inconsistency between test trees in ## Requirements and the implementation, in either direction? If so, propose solutions to the user. (2) Have the key concepts or operating principles shifted in a way not reflected in ## Mental Model? (3) Does README.md accurately describe the current state of the project? If nothing needs attention, reply only with 0.' >&2
 exit 2
