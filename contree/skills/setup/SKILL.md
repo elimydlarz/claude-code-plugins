@@ -205,7 +205,7 @@ Configure commands to run only tests affected by recent changes. Be aware of the
 
 Commands should be simple to invoke — package.json scripts, Makefile targets, or mix aliases.
 
-### 9. GENERATE INITIAL REQUIREMENT TREES
+### 10. GENERATE INITIAL REQUIREMENT TREES
 
 This is the key step that distinguishes contree from a plain test framework setup.
 
