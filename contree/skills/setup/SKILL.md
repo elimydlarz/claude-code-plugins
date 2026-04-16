@@ -371,7 +371,7 @@ export default defineConfig({
 })
 ```
 
-**Separating unit, integration, and functional tests** — use Vitest projects (replaces deprecated `vitest.workspace.ts` in v3.2+). Add an `integration` project alongside `unit` and `functional` (same pattern, `include: ['src/**/*.integration.test.{ts,js}']`, higher timeouts) when outbound adapters need real infrastructure:
+**Separating the four test layers** — use Vitest projects (replaces deprecated `vitest.workspace.ts` in v3.2+). One project per layer: `domain`, `use-case`, `adapter`, `system`. Same pattern shown below — adjust `include` globs and timeouts per layer. Adapter (driven) and System (with real infra) may need much higher timeouts than Domain/Use-case:
 ```ts
 // vitest.config.ts
 export default defineConfig({
