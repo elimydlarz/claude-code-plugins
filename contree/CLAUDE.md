@@ -121,7 +121,7 @@ setup-generates-trees
   when setup is run on an existing project
     then existing test config is detected and merged into, not overwritten
     and tree reporters are configured for both local dev and CI (dual reporters)
-    and unit and functional test layers are configured as separate commands
+    and unit, integration, and functional test layers are configured as separate commands
     and mutation testing is configured with explicit test file exclusions
     and changed-test runners are configured with known gotchas addressed
     and test trees are generated from existing code
