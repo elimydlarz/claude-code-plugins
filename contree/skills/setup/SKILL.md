@@ -261,15 +261,16 @@ InvoiceGeneration
 
 Add or update the following sections:
 
-- `## Requirements` — the test trees from step 10
+- `## Test Trees` — the trees from step 10
 - Testing commands section with:
-  - Command to run all unit tests with tree output
-  - Command to run all integration tests with tree output
-  - Command to run all functional tests with tree output
-  - Command to run only changed unit/integration/functional tests
-  - Command to run mutation testing
+  - Command to run Domain tests with tree output
+  - Command to run Use-case tests with tree output
+  - Command to run Adapter tests with tree output (driving and driven)
+  - Command to run System tests with tree output (in-memory driven adapters by default; a separate command for real-infra runs)
+  - Command to run only changed tests at each layer
+  - Command to run mutation testing (Domain + Use-case only)
   - Outside-in TDD workflow summary
-  - Example test tree structure for this project
+  - Example tree structure for this project
 
 ### 12. VERIFY
 
