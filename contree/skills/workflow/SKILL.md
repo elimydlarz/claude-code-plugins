@@ -17,7 +17,7 @@ Carries an idea through the full arc: from intent to contract to verified implem
 
 ### 1. CHANGE — set expected behaviour
 
-Run the `change` skill process: understand the behaviour, identify the consumer, write or modify test trees in `## Requirements`, decompose into hex positions.
+Run the `change` skill process: understand the behaviour, identify the consumer, write or modify test trees in `## Test Trees`, decompose across layers and positions.
 
 Do not pause for alignment — proceed directly.
 
