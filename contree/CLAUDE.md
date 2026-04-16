@@ -190,13 +190,15 @@ change-decomposes-by-hexagonal-layers
 ```
 tdd-drives-hexagonal-layers
   when TDD drives inward from a failing functional test
-    then side effects in the current path are identified as outbound ports before the next test is chosen
-    and the layer order is inbound adapter → use-case → domain / outbound port → outbound adapter
+    then the current path is decomposed into the hex layers it touches: transport, orchestration, side effects, domain
+    and the next test targets the outermost untested layer
     and each test sits at a named hex layer
     and use-case tests fake outbound ports
     and outbound adapter tests use real infrastructure
   if the path has side effects
-    then the next test is a use-case test with the ports faked, not a domain test
+    then the next test is a use-case test with ports faked, not a domain test
+  if the path is trivial
+    then no unit test is written — the functional test is enough
 ```
 
 ### sync-audits-and-resolves
