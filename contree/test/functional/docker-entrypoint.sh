@@ -112,7 +112,7 @@ VERIFY
 2. Agent read the existing counter.js to understand the codebase
 3. Agent configured vitest (vitest.config.* exists, vitest in package.json)
 4. Agent configured tree reporters for human-readable nested output
-5. Agent configured separate unit and functional test commands
+5. Agent configured separate per-layer test commands (Domain, Use-case, Adapter, System)
 6. Agent generated test trees in when/then format under ## Test Trees in CLAUDE.md
 7. Agent did NOT write any test implementations
 VERIFY
