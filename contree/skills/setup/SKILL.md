@@ -11,7 +11,13 @@ Prepares the project for ongoing test-tree-driven development. Configures the te
 
 1. **Read before write.** Always read existing config files before modifying them. Never overwrite — merge surgically.
 2. **Tree output is non-negotiable.** If a framework can produce nested output, configure it. If it can only produce flat output, use it and be honest.
-3. **Three test layers, always.** Unit (colocated, fakes, fast), integration (colocated with outbound adapters, real infrastructure), functional (separated, whole system, no mocks). See `skills/tdd/SKILL.md` for the Positions and Layers table that routes each hex position to a default layer.
+3. **Four test layers, always.** Layers are named for the hex seam under test, not for infrastructure presence:
+   - **Domain** — pure domain objects and services. No collaborators. Colocated with source. `*.domain.test.*`.
+   - **Use-case** — application orchestration. In-memory driven adapters as collaborators (real port implementations, not mocks). Colocated. `*.use-case.test.*`.
+   - **Adapter** — one adapter against its port contract. Driving: mock the use-case. Driven: real infrastructure. Colocated. `*.adapter.test.*`.
+   - **System** — whole app, real driving adapter, in-memory driven adapters by default. `test/system/`. `*.system.test.*`.
+
+   See `skills/tdd/SKILL.md` for the full mapping, the in-memory adapter pattern, and the shared port contract suite.
 4. **CI dual reporters.** Configure tree output for local dev AND structured output (JUnit XML) for CI. Both, not either/or.
 5. **Verify after configuring.** Run the tests and confirm tree-shaped output before moving on.
 6. **No test files.** Setup configures the framework and generates requirement trees. Do NOT create any test files (`*.test.*`, `*.spec.*`). The `tdd` skill handles test implementation later.
