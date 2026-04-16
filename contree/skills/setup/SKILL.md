@@ -119,8 +119,8 @@ When configuring Docker:
 
 Install appropriate mutation testing tool (see Mutation Testing Reference below). Configure with:
 
-- Mutator targeting source files, **explicitly excluding test files** — if tests are colocated, the exclusion globs must match the naming convention exactly (e.g., `!src/**/*.unit.test.*`, `!src/**/*.integration.test.*`, `!src/**/*.functional.test.*`)
-- Unit test runner only (integration and functional tests are too slow for mutation testing)
+- Mutator targeting source files, **explicitly excluding test files** — if tests are colocated, the exclusion globs must match the naming convention exactly (e.g., `!src/**/*.domain.test.*`, `!src/**/*.use-case.test.*`, `!src/**/*.adapter.test.*`, `!src/**/*.contract.ts`)
+- Domain and Use-case test runners only (Adapter and System tests are too slow for mutation testing)
 - Thresholds: `high: 80, low: 60, break: 50`
 - Incremental mode where available (stores state between runs for speed)
 - Add script/command (e.g., `npm run test:mutate`)
