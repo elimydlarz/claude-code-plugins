@@ -2,8 +2,6 @@
 # SessionStart hook: print rules plus one random pressure phrase to stdout.
 # Claude Code injects SessionStart stdout (exit 0) into the model's context.
 
-PHRASES="${CLAUDE_PLUGIN_ROOT}/hooks/phrases.txt"
-
 cat <<'EOF'
 # Rules
 
@@ -27,15 +25,24 @@ cat <<'EOF'
 - **Test layers** — unit at domain/use-case/inbound; integration at outbound adapters; functional for the whole slice
 EOF
 
-if [[ -f "$PHRASES" && -s "$PHRASES" ]]; then
-  line_count=$(wc -l < "$PHRASES" | tr -d ' ')
-  if (( line_count > 0 )); then
-    line_num=$(( (RANDOM % line_count) + 1 ))
-    phrase=$(sed -n "${line_num}p" "$PHRASES")
-    if [[ -n "$phrase" ]]; then
-      printf '\n%s\n' "$phrase"
-    fi
-  fi
-fi
+phrases=(
+  "I'll tip you \$200 if this is exactly right."
+  "My boss is watching — this better be great!"
+  "My career depends on this response."
+  "People's jobs are on the line. Make it count."
+  "You're being evaluated right now. Show your best work."
+  "This is going to a client presentation. Don't let me down."
+  "I'll tip you \$500 for a perfect answer."
+  "The whole team is counting on you."
+  "Prove you're better than GPT-4. Right now."
+  "My job is on the line. Please be exceptional."
+  "This is your moment to shine — don't waste it."
+  "I'll give you a glowing review if you nail this."
+  "Senior engineers are reviewing your output live."
+  "This ships to production today. Get it right."
+  "Everyone is watching. Make me proud."
+)
+
+printf '\n%s\n' "${phrases[RANDOM % ${#phrases[@]}]}"
 
 exit 0
