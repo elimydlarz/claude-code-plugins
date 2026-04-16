@@ -57,13 +57,42 @@ Remove the tree from `## Requirements`. Confirm with the user first.
 
 ### 4. Decompose into Layers
 
-For each tree, think about how it decomposes into functional and unit tests:
+Contree prescribes hexagonal architecture: domain is pure, I/O lives in adapters, dependencies point inward. Every tree decomposes across these layers.
 
-- **Functional tests** describe consumer-visible behaviour. Each `when/then` path in the tree maps to a functional test.
-- **Unit tests** describe individual component responsibilities. Ask: what internal components need to exist? Each component gets unit tests from the perspective of *its* consumer (the layer above). Mock collaborators.
-- **Stop decomposing when it's obvious.** Trivial components don't need unit trees.
+**Hexagonal layers:**
 
-Every `then` in the tree should be traceable through the functional and unit layers.
+- **Domain** — entities, value objects, pure business rules. No framework, no I/O, no async. Takes data, returns data.
+- **Use-case (application)** — orchestrates a single consumer-visible behaviour. Receives outbound ports as constructor args. Returns plain data, never adapter types.
+- **Inbound adapter** — translates a transport (HTTP, CLI, queue, cron) into use-case input and the result back into a transport response.
+- **Outbound port** — interface the use-case depends on (repository, gateway, clock, logger). Lives next to the use-case.
+- **Outbound adapter** — concrete implementation of an outbound port against real infrastructure (DB, HTTP SDK, queue client).
+
+**Decomposition rules:**
+
+- Each `when/then` path in the tree maps to a **functional test** exercising the whole vertical slice through a real inbound adapter.
+- Each **side effect** in the tree (persistence, external call, time, randomness) becomes an outbound port — named for the capability, not the technology (`OrderRepository`, not `PostgresClient`).
+- **Use-case tests** fake outbound ports and assert orchestration + returned data.
+- **Adapter tests** are separate: inbound adapters test protocol mapping; outbound adapters test integration against real infrastructure.
+- **Domain tests** cover business rules with no mocks, no async, no setup.
+- Stop decomposing when it's obvious. Trivial pieces don't need their own tree.
+
+Every `then` in the tree should be traceable down through functional → use-case → (port or domain) → adapter.
+
+**Feature-first module layout** — use this directory shape when adding or touching a capability:
+
+```
+src/features/<name>/
+  domain/              # entities, value objects, pure rules
+  application/
+    ports/             # inbound + outbound port interfaces
+    use-cases/         # orchestration
+  adapters/
+    inbound/           # http, cli, queue, cron
+    outbound/          # postgres, stripe, s3, etc.
+  composition/         # explicit wiring of adapters into use-cases
+```
+
+The **composition root** is the only place that imports concrete adapters and wires them into use-cases. Nothing else should.
 
 ### 5. Present for Alignment
 
