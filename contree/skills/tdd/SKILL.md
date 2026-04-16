@@ -7,16 +7,14 @@ description: "Close gaps between intent and implementation — one failing test 
 
 ## Principles
 
-1. **Outside-in, always** — start with a failing System test for the slice, then TDD inward through the hex seams: driving adapter, use-case, domain; outbound port → driven adapter integration last. See the Test Layers section for the mapping.
-2. **Test trees are the contract** — the `## Test Trees` section in CLAUDE.md contains every tree. Each tree describes one behavioural unit: a domain object, a use-case, an adapter, a port contract, or a slice. Every test you write reifies one tree.
-3. **One tree ↔ one test file** — each tree maps to exactly one test file. The file's `describe`/`it` hierarchy mirrors the tree verbatim. Finding a test from a tree (or vice versa) should take zero search.
-4. **Four test layers mapped to hex seams** — Domain, Use-case, Adapter (driving and driven), System. Layers are named for the architectural seam under test, not for infrastructure presence. See the Test Layers section for the full mapping.
-5. **In-memory adapters are first-class** — each driven port has two adapters: the real one (Postgres, Stripe, filesystem) and an in-memory one. Both satisfy the same port contract. Use-case and System tests run against the in-memory adapter for speed.
-6. **The port contract suite is shared** — one contract suite per port, imported by both the real-adapter Adapter test AND the in-memory-adapter Adapter test. Both must pass the same suite. That's what makes substitution sound.
-7. **One failing test at a time** — write exactly one failing test, make it pass, then write the next. If you catch yourself writing more than one `it`/`test` block before running tests, stop and delete all but the first.
-8. **Mutation testing validates finished work** — run mutation testing at the end, never during the cycle.
-9. **Tree output at every layer** — nested, indented, human-readable. The test output reads like the tree.
-10. **Don't change existing trees silently** — TDD may discover new cases; add them. But never modify or remove an existing `when/then` path without asking.
+1. **Outside-in, always** — start with a failing System test, then TDD inward: driving adapter → use-case → domain → port contract → driven adapter.
+2. **Test trees are the contract** — read `## Test Trees` before writing anything. Every test you write reifies exactly one tree. If no tree covers what you're about to build, stop and suggest `change`.
+3. **One failing test at a time** — write one failing test, make it pass, then write the next. Never batch.
+4. **Mutation testing validates finished work** — run at the end, against Domain and Use-case layers only. Never during the cycle.
+5. **Tree output at every layer** — nested, indented, human-readable. Test output reads like the tree.
+6. **Don't change existing trees silently** — add new cases as you discover them. Never modify or remove an existing path without asking. The stop hook enforces this.
+
+The layer taxonomy, in-memory adapter pattern, shared port contract suite, and tree-naming heuristic all live in `skills/change/SKILL.md` — that's where decomposition decisions are made. This skill is the tactical cycle that implements those decisions.
 
 ## Before You Start
 
