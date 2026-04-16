@@ -113,8 +113,8 @@ Separate command/config for the System layer:
 
 When configuring Docker:
 - `docker-compose.yml` lives at project root (or `test/functional/docker-compose.yml` if the project root is already crowded)
-- Functional test scripts start compose, wait for readiness, run tests, tear down
-- Add a `test:functional` script that orchestrates the full lifecycle
+- Real-infra test scripts start compose, wait for readiness, run tests, tear down
+- Add a `test:system:real` script (or `test:adapter:real`) that orchestrates the full lifecycle
 - Never assume Docker services are already running — the harness must be self-contained
 
 ### 7. CONFIGURE MUTATION TESTING
