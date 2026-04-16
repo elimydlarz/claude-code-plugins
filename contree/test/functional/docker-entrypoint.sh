@@ -467,7 +467,7 @@ VERIFY
     echo "  change-hex-decomposition     — change skill decomposes by hex positions"
     echo "  tdd-hex-layers               — tdd drives outside-in through named hex positions"
     echo "  self-care-nudge-fires        — self-care hook reminder reaches the model"
-    echo "  pressure-phrase-on-session-start — SessionStart bundles a pressure phrase with the cheatsheet"
+    echo "  pressure-phrase-on-session-start — SessionStart bundles a pressure phrase with the rules"
     exit 1
     ;;
 esac
