@@ -74,25 +74,32 @@ test-trees-as-requirements
 
 ```
 outside-in-tdd
-  when implementing a System tree
-    then start with a failing System test matching a when/then path
-    and TDD inward through the hex seams: driving adapter, use-case, domain, port contract, driven adapter
-    and only one failing test exists at the current layer at a time
+  when implementing a tree
+    then each when/then path becomes one failing test, written one at a time in tree order
+    and the test is written at the tree's layer (Domain / Use-case / Adapter / System)
+    and the test file reifies the tree — describe/it hierarchy mirrors when/then verbatim
     and existing trees are not modified silently
+  when writing a Use-case test
+    then the in-memory adapter for each outbound port is wired
+  when writing an Adapter test for an in-memory or real driven adapter
+    then the shared port contract suite is imported and run against the adapter
+  when writing an Adapter test for a real driven adapter
+    then real infrastructure is exercised
+    and adapter-specific tests are added for behaviour beyond the shared contract
   when TDD discovers new test cases
     then new cases are added to the tree
     but existing when/then paths are not changed or removed
-  when no tree covers the behaviour
-    then suggest the user runs change first
   when an expected-red test passes incidentally
     then break the implementation intentionally
     and observe the test failing
     then fix the implementation, observe the test passing, and move on
-  when all inner tests pass
-    then the System test should pass
-  when all behaviours are complete
+  when all inner-layer tests pass
+    then the System test passes
+  when all trees for a slice have passing tests
     then run mutation testing against Domain and Use-case layers as final validation
     and suggest the user runs sync
+  if no tree covers the behaviour
+    then suggest the user runs change first
 ```
 
 ### stop-hook-sync
