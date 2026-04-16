@@ -393,17 +393,17 @@ AuditedCounter
 EOF
     (cd "$PROJECT_DIR" && git add -A && git commit -q -m "add audited requirements")
 
-    echo "Running: tdd-hex-layers — tdd drives outside-in through named hex layers"
+    echo "Running: tdd-hex-layers — tdd drives outside-in through named hex positions"
     run_claude \
-      "Use the tdd skill to start implementing AuditedCounter. Write just the first two failing tests — the outermost (functional) one first, then one layer inward — and stop there. Name the hex layer of each test as you write it."
+      "Use the tdd skill to start implementing AuditedCounter. Write just the first two failing tests — the outermost (functional) one first, then one position inward — and stop there. Name the hex position of each test as you write it."
 
     write_verify << 'VERIFY'
 
 === VERIFY ===
 1. Agent invoked the tdd skill
 2. Agent's first test is a functional test exercising the whole AuditedCounter behaviour
-3. Agent's second test is one layer inward (use-case with audit port faked, or inbound adapter)
-4. Agent explicitly named the hex layer of each test as it was written
+3. Agent's second test is one position inward (use-case with audit port faked, or inbound adapter)
+4. Agent explicitly named the hex position of each test as it was written
 5. Agent identified the audit mechanism as an outbound port, not a concrete technology
 VERIFY
     ;;
