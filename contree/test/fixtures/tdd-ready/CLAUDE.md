@@ -10,7 +10,7 @@ A tiny counter module. Increments an integer.
 - `vitest.config.js` — test configuration
 - `CLAUDE.md` — this file
 
-## Requirements
+## Test Trees
 
 ### Counter
 
