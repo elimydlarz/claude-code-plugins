@@ -90,7 +90,8 @@ Layers are named for the hex seam under test, not for infrastructure presence. C
 **Decomposition rules:**
 
 - The top-level tree describes the **slice** — a System tree named for the consumer-visible capability (`save-score`, `cancel-order`). It drives the System test.
-- Below it, write a **separate tree** for each behavioural unit that has observable behaviour someone could change silently:
+- **Pure libraries (no vertical slice).** A library with only exported functions and no driving adapter, no use-case, and no driven port has no slice in the usual sense. Still write a System tree if any cross-function invariant is observable (e.g. `ShortCode` — *when `generate()` produces a code, then `isValid()` accepts it*). If no cross-function invariant exists, omit System altogether and document the omission — but never leave a System test file without a corresponding tree.
+- Below the slice, write a **separate tree** for each behavioural unit that has observable behaviour someone could change silently:
   - A **Domain tree** per domain object or service with substantive rules (`Money`, `SessionToken`). Trivial value objects don't earn a tree — they're implicit in the use-case.
   - A **Use-case tree** per use-case with non-trivial orchestration (`save-score-use-case`). A use-case that just delegates to a single port doesn't earn a tree.
   - A **Driving-adapter tree** per adapter with non-trivial translation (`score-http-handler`). Thin adapters don't earn a tree.
