@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A Claude Code plugin that unifies test-tree-driven development with living requirements. Test trees ARE the requirements — they live in `## Requirements` of the project's CLAUDE.md, describe what the system does using EARS syntax, and are kept in sync with implementation automatically.
+A Claude Code plugin that unifies test-tree-driven development with living requirements. Test trees ARE the requirements — they live in `## Test Trees` of the project's CLAUDE.md, describe what the system does using EARS syntax, and are kept in sync with implementation automatically.
 
 Mechanisms:
 
@@ -52,7 +52,7 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 
 Run functional tests with `pnpm test:functional` (all) or `bash test/functional/docker-run.sh <test-name>` (one). After the script finishes, it prints the exact transcript file paths. **Always read the transcripts and evaluate each against the VERIFY criteria in docker-entrypoint.sh.** Report PASS/FAIL per criterion with evidence.
 
-## Requirements
+## Test Trees
 
 ### test-trees-as-requirements
 
@@ -60,7 +60,7 @@ Run functional tests with `pnpm test:functional` (all) or `bash test/functional/
 test-trees-as-requirements
   when a project uses contree
     then requirements in CLAUDE.md are test trees using EARS syntax
-    and each capability has its own subsection under ## Requirements
+    and each capability has its own subsection under ## Test Trees
     and the EARS rule is embedded in skills that use it
   when a behaviour change is needed
     then the test tree must exist before implementation starts
@@ -122,7 +122,7 @@ setup-generates-trees
     and mutation testing is configured with explicit test file exclusions
     and changed-test runners are configured with known gotchas addressed
     and test trees are generated from existing code
-    and trees are written to ## Requirements in CLAUDE.md
+    and trees are written to ## Test Trees in CLAUDE.md
   when setup is run on a new project
     then test trees are generated from user-described plans
     and tests are NOT implemented yet
