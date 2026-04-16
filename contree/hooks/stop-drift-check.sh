@@ -17,5 +17,5 @@ if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
   fi
 fi
 
-echo '(1) Have test trees and implementation drifted apart? If so, propose solutions to the user. (2) Have the key concepts or operating principles shifted in a way not reflected in Mental Model? If so, update it. (3) Does the readme still provide accurate instructions for users? If so, update it. If nothing needs attention, reply only with 0.' >&2
+echo '(1) Have test trees and implementation drifted apart? If so, propose solutions to the user. (2) Have the key concepts or operating principles shifted in a way not reflected in Mental Model? If so, update it. (3) Is the readme out of date now? If so, update it. If nothing needs attention, reply 0.' >&2
 exit 2
