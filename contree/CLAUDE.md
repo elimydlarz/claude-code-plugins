@@ -107,7 +107,7 @@ stop-hook-sync
   when Claude stops after a response that ends with a question
     then the hook yields the turn to the user without injecting the check prompt
   when test trees and implementation have drifted apart
-    then Claude proposes solutions to the user
+    then Claude proposes solutions
   when stop_hook_active is true
     then the hook exits silently to prevent infinite loops
   when nothing needs attention
