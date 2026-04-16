@@ -261,7 +261,7 @@ Add or update the following sections:
   - Outside-in TDD workflow summary
   - Example test tree structure for this project
 
-### 11. VERIFY
+### 12. VERIFY
 
 Run each layer's test suite and confirm:
 
