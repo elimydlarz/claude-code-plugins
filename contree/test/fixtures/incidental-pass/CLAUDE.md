@@ -9,7 +9,7 @@ A tiny counter module. Increments, decrements, and resets an integer.
 - `counter.js` — the counter module
 - `CLAUDE.md` — this file
 
-## Requirements
+## Test Trees
 
 ### Counter
 
