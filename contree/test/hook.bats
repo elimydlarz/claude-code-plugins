@@ -74,14 +74,10 @@ run_hook_with_last_text() {
   [[ "$output" == *"Mental Model"* ]]
 }
 
-@test "hook prompt mentions drift" {
+@test "hook prompt mentions inconsistency in either direction" {
   run_hook '{}'
-  [[ "$output" == *"drifted"* ]]
-}
-
-@test "hook prompt mentions never modify silently" {
-  run_hook '{}'
-  [[ "$output" == *"never modify them silently"* ]]
+  [[ "$output" == *"inconsistency"* ]]
+  [[ "$output" == *"either direction"* ]]
 }
 
 @test "hook prompt mentions README.md" {
