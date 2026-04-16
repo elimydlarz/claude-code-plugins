@@ -378,7 +378,7 @@ VERIFY
     ;;
 
   tdd-hex-layers)
-    # Verifies: tdd-drives-hexagonal-positions
+    # Verifies: tdd-drives-through-seams
     seed_project "tdd-ready"
     cat >> "$PROJECT_DIR/CLAUDE.md" << 'EOF'
 
