@@ -16,3 +16,4 @@
 - **Consumer-driven** — implement only what a consumer already needs
 - **Resolve uncertainty** — look directly and remove optionality; don't hedge with fallbacks
 - **pnpm** — use pnpm, not npm, for JS/TS
+- **Hexagonal** — domain pure; I/O in adapters; dependencies point inward
