@@ -1,0 +1,9 @@
+{
+  "name": "shortcode",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {}
+}
