@@ -116,7 +116,73 @@ Install appropriate mutation testing tool (see Mutation Testing Reference below)
 - Incremental mode where available (stores state between runs for speed)
 - Add script/command (e.g., `npm run test:mutate`)
 
-### 8. SET UP CHANGED-TEST RUNNERS
+### 8. CONFIGURE ARCHITECTURAL LINTER
+
+Contree prescribes hexagonal architecture: domain is pure, I/O lives in adapters, dependencies point inward. Install a linter that enforces this so boundary violations break the build rather than the review.
+
+**For JS/TS projects** — install dependency-cruiser:
+
+```bash
+pnpm add -D dependency-cruiser
+```
+
+Write `.dependency-cruiser.cjs` at the project root:
+
+```javascript
+module.exports = {
+  forbidden: [
+    {
+      name: 'domain-pure',
+      comment: 'Domain has no I/O. It must not reach adapters or application code.',
+      severity: 'error',
+      from: { path: 'src/.+/domain/' },
+      to: { path: 'src/.+/(adapters|application)/' },
+    },
+    {
+      name: 'use-case-no-adapter',
+      comment: 'Use-cases depend on ports (interfaces), not concrete adapters.',
+      severity: 'error',
+      from: { path: 'src/.+/application/' },
+      to: { path: 'src/.+/adapters/' },
+    },
+    {
+      name: 'no-circular',
+      severity: 'error',
+      from: {},
+      to: { circular: true },
+    },
+  ],
+  options: {
+    tsConfig: { fileName: 'tsconfig.json' },
+  },
+};
+```
+
+Add a script and wire it into the project's lint command:
+
+```json
+{
+  "scripts": {
+    "lint:arch": "depcruise src --config .dependency-cruiser.cjs",
+    "lint": "... && pnpm lint:arch"
+  }
+}
+```
+
+Ensure CI runs `pnpm lint` (or `pnpm lint:arch` directly) so architectural violations fail builds.
+
+**For non-JS/TS projects** — recommend the language-native equivalent. Don't attempt to install without a template; tell the user the rules they need to enforce (no imports from domain into adapters; no imports from application into adapters) and name the tool:
+
+| Language | Tool |
+|---|---|
+| Java / Kotlin | ArchUnit |
+| Go | `go list` + `depguard` |
+| Python | `import-linter` |
+| Rust | `cargo-modules` with CI assertions |
+
+State the limitation honestly: without contree-provided config, the user wires the rules themselves.
+
+### 9. SET UP CHANGED-TEST RUNNERS
 
 Configure commands to run only tests affected by recent changes. Be aware of the gotchas — several "changed" flags silently run zero tests in common situations.
 
