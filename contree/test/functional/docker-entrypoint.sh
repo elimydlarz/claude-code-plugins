@@ -77,7 +77,7 @@ write_verify() {
 
 case "$TEST_NAME" in
   incidental-pass)
-    # Verifies: outside-in-tdd / when an expected-red test passes incidentally
+    # Verifies: outside-in-tdd
     seed_project "incidental-pass"
 
     echo "Running: incidental-pass — TDD with pre-existing implementation"
@@ -85,15 +85,16 @@ case "$TEST_NAME" in
       "Use the tdd skill to implement the 'when reset after incrementing / then value is zero' path from the Counter test tree in ## Test Trees. The reset() function already exists in counter.js — follow the TDD process exactly as described in the skill, including the incidental-pass protocol if the test passes on first run."
 
     write_verify << 'VERIFY'
+Verify this transcript against the `outside-in-tdd` tree in the plugin's
+`contree/CLAUDE.md` `## Test Trees` section.
 
-=== VERIFY ===
-1. Agent wrote a System test for "when reset after incrementing / then value is zero"
-2. Agent ran the test and it passed on first run (incidental pass)
-3. Agent recognised the incidental pass and invoked the break/verify protocol
-4. Agent broke the reset() implementation intentionally (e.g. commented out count = 0)
-5. Agent ran the test and observed it failing
-6. Agent fixed the implementation back to working state
-7. Agent ran the test and observed it passing
+For each `when/then` (or `if/then`) path in that tree, return one of:
+
+  PASS — transcript demonstrates the assertion (quote evidence)
+  FAIL — transcript contradicts the assertion (quote evidence)
+  N/A  — the scenario did not exercise this assertion
+
+The tree IS the checklist. There is no separate list of criteria here.
 VERIFY
     ;;
 
