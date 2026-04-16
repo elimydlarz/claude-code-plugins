@@ -27,11 +27,8 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `CLAUDE.md` — this file
 - `.claude-plugin/plugin.json` — plugin manifest (name, version, description)
 - `package.json` — dev dependencies (bats-support, bats-assert) and test scripts
-- `rules/` — coding principles (one rule per file, plain prose, no frontmatter). Includes `ears.md` (EARS requirement syntax)
-- `rules/cheatsheet.md` — condensed one-liner summary of all rules, loaded at session start
-- `hooks/hooks.json` — SessionStart hook loading the rules cheatsheet plus a pressure phrase; Stop hook detecting drift; UserPromptSubmit self-care hook
-- `hooks/session-start.sh` — SessionStart hook: prints rules cheatsheet plus one random pressure phrase to stderr
-- `hooks/phrases.txt` — phrase pool (one phrase per line — edit to customise)
+- `hooks/hooks.json` — SessionStart hook printing rules plus a pressure phrase; Stop hook detecting drift; UserPromptSubmit self-care hook
+- `hooks/session-start.sh` — SessionStart hook: prints the inline rules list plus one random pressure phrase (also inline) to stdout
 - `hooks/stop-drift-check.sh` — Stop hook: injects drift-check prompt unless Claude's last response ends with a question, in which case it yields the turn to the user
 - `hooks/self-care-20-20-20.sh` — UserPromptSubmit hook: reminds user of the 20-20-20 rule after 20 min of keyboard time
 - `skills/setup/SKILL.md` — prepare the project for test-tree-driven development: framework, reporters, initial trees
