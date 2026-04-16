@@ -1,3 +1,0 @@
-- Integration tests exercise outbound adapters against real infrastructure — Testcontainers, a local service, or recorded cassettes. Not mocks.
-- Name tests `*.integration.test.*` and colocate with the adapter
-- *Do not* use environment variables to vary behaviour between test and runtime

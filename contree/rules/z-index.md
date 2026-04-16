@@ -1,1 +1,0 @@
-When possible, avoid using z-index to control visibility. Good component layout doesn't rely on z-index, and juggling conflicting z-indices is problematic over longer time horizons even if it seems easy now.

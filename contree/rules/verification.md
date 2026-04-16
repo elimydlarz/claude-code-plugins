@@ -1,3 +1,0 @@
-- Always verify that your task is really complete - that it actually works.
-- Verify your intermediary changes quickly using commands that run tests and other checks selectively
-- Verify your final work using all tools at your disposal
