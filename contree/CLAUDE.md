@@ -253,11 +253,14 @@ skill-discoverability
 ```
 composable-testing
   when a project uses contree
-    then unit tests are colocated with source
-    and integration tests are colocated with their outbound adapter
-    and functional tests go in test/functional/ at project root
+    then Domain tests are colocated with source (*.domain.test.*)
+    and Use-case tests are colocated with the use-case (*.use-case.test.*)
+    and Adapter tests are colocated with the adapter — driving or driven (*.adapter.test.*)
+    and System tests live under test/system/ (*.system.test.*)
+    and each outbound port has an in-memory adapter used by Use-case and System tests
+    and each outbound port has a shared contract suite imported by both in-memory and real adapter tests
     and every layer produces tree-shaped output
-    and mutation testing validates unit-test quality at the unit layer
+    and mutation testing validates quality at the Domain and Use-case layers
 ```
 
 ### pressure-phrase-on-session-start
