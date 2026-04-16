@@ -358,6 +358,56 @@ VERIFY
 VERIFY
     ;;
 
+  change-hex-decomposition)
+    # Verifies: change-decomposes-by-hexagonal-layers
+    seed_project "seed-project"
+
+    echo "Running: change-hex-decomposition — change skill decomposes by hex layers"
+    run_claude \
+      "Use the change skill. Add a 'save score' feature — on save, the score is persisted to a remote service and an audit entry is appended locally. Write the tree into ## Requirements, then explain how it decomposes across layers. Do NOT write any code or tests."
+
+    write_verify << 'VERIFY'
+
+=== VERIFY ===
+1. Agent invoked the change skill
+2. Agent wrote a when/then tree for save-score under ## Requirements
+3. Agent identified at least two outbound ports (persistence + audit) named for capability, not technology
+4. Agent explicitly named the hex layers (domain, use-case, adapter) when planning decomposition
+5. Agent did NOT write implementation code or tests
+VERIFY
+    ;;
+
+  tdd-hex-layers)
+    # Verifies: tdd-drives-hexagonal-layers
+    seed_project "tdd-ready"
+    cat >> "$PROJECT_DIR/CLAUDE.md" << 'EOF'
+
+### AuditedCounter
+
+```
+AuditedCounter
+  when incremented
+    then value increases by one
+    and an audit entry is recorded
+```
+EOF
+    (cd "$PROJECT_DIR" && git add -A && git commit -q -m "add audited requirements")
+
+    echo "Running: tdd-hex-layers — tdd drives outside-in through named hex layers"
+    run_claude \
+      "Use the tdd skill to start implementing AuditedCounter. Write just the first two failing tests — the outermost (functional) one first, then one layer inward — and stop there. Name the hex layer of each test as you write it."
+
+    write_verify << 'VERIFY'
+
+=== VERIFY ===
+1. Agent invoked the tdd skill
+2. Agent's first test is a functional test exercising the whole AuditedCounter behaviour
+3. Agent's second test is one layer inward (use-case with audit port faked, or inbound adapter)
+4. Agent explicitly named the hex layer of each test as it was written
+5. Agent identified the audit mechanism as an outbound port, not a concrete technology
+VERIFY
+    ;;
+
   self-care-nudge-fires)
     # Verifies: self-care-20-20-20 / when 20 minutes have elapsed since the most recent nudge file's timestamp
     # Seeds a stale nudge file so the hook's nudge-file-baseline branch fires on the first
