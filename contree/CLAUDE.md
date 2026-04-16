@@ -63,6 +63,7 @@ test-trees-as-requirements
     and each behavioural unit has its own tree under ## Test Trees
     and trees are flat subsections — not grouped by kind or layer
     and every tree reifies exactly one test file
+    and every test file reifies exactly one tree
     and the EARS rule is embedded in skills that use it
   when a behaviour change is needed
     then the tree must exist before implementation starts
