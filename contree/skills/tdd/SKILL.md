@@ -124,194 +124,48 @@ UserRegistration
 - Describe principles, not specific values.
 - Tree names must be unique within `## Test Trees`. One tree, one test file.
 
-## Test Layers
+## Writing Tests at Each Layer
 
-Contree defines **four test layers**, each mapped to a seam in the hexagonal architecture:
+Tactical cheatsheet for the RED/GREEN cycle. See `skills/change/SKILL.md` for the full layer taxonomy, seam diagram, in-memory adapter pattern, shared port contract suite, and naming heuristic — that's where the strategic decisions live.
 
-```
-  [ Driving Adapter ]  ←→  [ Port ]  ←→  [ Use-case ]  ←→  [ Port ]  ←→  [ Driven Adapter ]
-     (HTTP / CLI)             (iface)      (orchestration)   (iface)       (Postgres / Stripe / FS)
-                                                 ↕
-                                           [ Domain ]
-                                    (entities, value objects,
-                                     domain services, rules)
-```
+### Domain (`*.domain.test.*`, colocated)
+- Import: the domain object/service under test.
+- Collaborators: none.
+- Call functions directly, assert on returned data.
 
-| Layer       | Seam under test                  | Collaborators                                           | Speed     | File convention            |
-| ----------- | -------------------------------- | ------------------------------------------------------- | --------- | -------------------------- |
-| Domain      | the pure core                    | none — no fakes, no mocks, no async                     | instant   | `*.domain.test.*`          |
-| Use-case    | orchestration + port boundaries  | in-memory adapters (real implementations of the ports) | fast      | `*.use-case.test.*`        |
-| Adapter     | one adapter against its contract | driving: mocked use-case. driven: real infrastructure.  | mixed     | `*.adapter.test.*`         |
-| System      | the whole wired app              | in-memory driven adapters by default; real on demand    | slow      | `*.system.test.*` in `test/system/` |
+### Use-case (`*.use-case.test.*`, colocated)
+- Import: the use-case plus the in-memory adapter for each outbound port it depends on.
+- Wire: instantiate the use-case with the in-memory adapters.
+- Assert on returned data and on the in-memory adapter's state (what was saved, what was queried).
 
-**Why layer by seam, not by infrastructure:** the classic unit/integration/functional triad describes *how much real stuff is wired in*. Hex gives you named seams with typed contracts — so layer by seam, and the mocking posture falls out of the architecture instead of being chosen per test.
+### Adapter — driving (`*.adapter.test.*`, colocated)
+- Import: the driving adapter plus a mock of the use-case.
+- Assert: protocol-to-input translation — routing, deserialization, error-code shaping, auth extraction.
 
-### Layer 1 — Domain
+### Adapter — driven (`*.adapter.test.*`, colocated)
+- Import: the real adapter, the shared contract suite (`*.contract.ts`), plus any real-infra test helpers (Testcontainers, local service, etc.).
+- Run the shared contract suite against the real adapter. Add adapter-specific tests for behaviour beyond the port contract (timeout, retry, schema, constraint handling).
 
-Pure domain objects and services: entities, value objects, aggregates, domain services, invariants.
+### System (`*.system.test.*` in `test/system/`)
+- Import: the composition root (wired with in-memory driven adapters by default) plus the real driving adapter.
+- Drive the real driving adapter; assert on observable effects through the same adapter.
+- A separate command reruns the System suite with real driven adapters wired for pre-release verification.
 
-- **No collaborators.** No ports, no mocks, no fakes. If you need a fake here, the domain has leaked infrastructure — fix the design, don't test through it.
-- **No async, no setup, no teardown.** Just functions over data.
-- **One tree per domain object or service** (`Money`, `SessionToken`, `LeaderboardRanking`). Tree names it; test file reifies it.
+### Outside-in order
 
-Write a domain tree only when the rule is substantive — many cases, edge behaviour, algorithmic depth, or reuse across multiple use-cases. Trivial domain types don't earn their own tree; they're covered implicitly by the use-case that owns them.
-
-### Layer 2 — Use-case
-
-Application services / interactors — the orchestration code that drives domain objects and calls outbound ports.
-
-- **Ports are faked with in-memory adapters**, not strict mocks. The in-memory adapter is a real implementation of the port contract (stores data in a map, enforces the same invariants). See *In-memory adapters* below.
-- **Verifies what the application does**: the right port is called with the right data, the right domain factory is invoked, the right error is raised. Catches coordination bugs.
-- **Does not verify HTTP/CLI wiring** — that's the driving-adapter test's job. Does not verify Postgres serialization — that's the driven-adapter test's job.
-- **One tree per use-case** (`save-score-use-case`, `cancel-order-use-case`).
-
-### Layer 3 — Adapter
-
-One adapter in isolation, verified against its port contract. Split by direction:
-
-- **Driving adapter tests** — HTTP controller, CLI handler, queue consumer. Application mocked. Verify protocol-to-input mapping: routing, deserialization, error-code shaping, auth extraction. File lives next to the adapter.
-- **Driven adapter tests** — Postgres repository, Stripe client, filesystem writer. Real infrastructure (Testcontainers, local service, recorded cassettes). Verify the adapter satisfies the port contract against the real thing. File lives next to the adapter.
-
-Naming: `*.adapter.test.*` in both directions. Tree name is the adapter itself (`score-http-handler`, `ScoreRepository-Postgres`, `AuditLog-FileSystem`).
-
-**Driven adapter tests use the shared port contract suite** — see below.
-
-### Layer 4 — System
-
-The whole app assembled, driven through a real driving adapter (HTTP, CLI), with driven adapters substituted for in-memory by default and real on demand.
-
-- **Default: in-memory driven adapters.** Acceptance-level confidence at Use-case speed. Runs in CI on every push.
-- **On-demand: real driven adapters.** Same System tests, but wired against Testcontainers or a staging environment. Run before release, not on every push.
-- **One tree per slice** (`save-score`, `cancel-order`, `user-registration`). One System test file per tree; the file's `describe`/`it` hierarchy mirrors the tree. Lives in `test/system/`.
-- **Plus cross-cutting trees** (`auth-enforcement`, `rate-limiting`, `error-envelope`) for app-level invariants that aren't per-slice.
-
-**Outside-in TDD starts here.** Write a failing System test first. Then TDD inward through Driving adapter → Use-case → Domain / Port → Driven adapter (integration against real infra).
-
----
-
-## The in-memory adapter pattern
-
-This is the linchpin of the whole scheme. Without it, Use-case and System tests either get slow (real infra) or dishonest (mocks that don't match reality).
-
-For each driven port, ship two adapters that both satisfy the port contract:
-
-```
-OrderRepository (port interface)
-├── PostgresOrderRepository    ← real, used in production and in driven-adapter tests
-└── InMemoryOrderRepository    ← real, used in Use-case and System tests
-```
-
-The in-memory adapter is not a mock. It's a real implementation: stores data in a map, enforces the same invariants (unique IDs, referential rules, ordering guarantees) that the real adapter does. Swap it in at composition time by pointing the composition root at a different wiring.
-
-What this buys:
-
-- Use-case tests run in milliseconds against *real application behaviour*.
-- System tests run fast by default, covering the full vertical slice.
-- The real adapter's job shrinks to "adapt Postgres to the port" — everything application-level is already covered by tests running against the in-memory adapter.
-
----
-
-## The shared port contract suite
-
-In-memory substitution is only sound if both adapters really do satisfy the same contract. Contree enforces this with a **shared port contract suite**: one test suite, imported by both adapter test files.
-
-```ts
-// src/features/score/application/ports/score-repository.contract.ts
-export function scoreRepositoryContract(makeRepo: () => ScoreRepository) {
-  describe('ScoreRepository', () => {
-    describe('when save is called with a score', () => {
-      it('is retrievable by its id', async () => {
-        const repo = makeRepo()
-        await repo.save(someScore)
-        expect(await repo.findById(someScore.id)).toEqual(someScore)
-      })
-    })
-    describe('if save is called twice with the same score id', () => {
-      it('rejects the second call without side effects', async () => { ... })
-    })
-  })
-}
-```
-
-```ts
-// src/features/score/adapters/outbound/in-memory-score-repository.adapter.test.ts
-import { scoreRepositoryContract } from '../../application/ports/score-repository.contract'
-scoreRepositoryContract(() => new InMemoryScoreRepository())
-```
-
-```ts
-// src/features/score/adapters/outbound/postgres-score-repository.adapter.test.ts
-import { scoreRepositoryContract } from '../../application/ports/score-repository.contract'
-scoreRepositoryContract(() => new PostgresScoreRepository(testDb))
-// Plus Postgres-specific tests: timeouts, schema, constraint violations.
-```
-
-The contract suite IS the port contract tree (`ScoreRepository`). Both adapter tests pass the shared suite. The Postgres adapter *also* has its own tests for behaviour that only exists at the Postgres seam (timeouts, retries, constraint violations) — those live in the same `*.adapter.test.*` file but outside the shared suite.
-
-Tree in `## Test Trees`:
-
-```
-ScoreRepository
-  when save is called with a score
-    then the score is retrievable by its id
-  if save is called twice with the same score id
-    then the second call is rejected without side effects
-```
-
----
-
-## One tree per behavioural unit
-
-Every behavioural unit gets its own tree in `## Test Trees`, flat and unsectioned. Each tree maps 1:1 to a test file:
-
-| Tree                          | Test file                                                 | Layer     |
-| ----------------------------- | --------------------------------------------------------- | --------- |
-| `save-score`                  | `test/system/save-score.system.test.ts`                   | System    |
-| `score-http-handler`          | `score-http-handler.adapter.test.ts` (colocated)          | Adapter (driving) |
-| `save-score-use-case`         | `save-score.use-case.test.ts` (colocated)                 | Use-case  |
-| `ScoreRepository`             | `score-repository.contract.ts` (colocated with port)      | — (shared suite) |
-| `ScoreRepository-Postgres`    | `postgres-score-repository.adapter.test.ts` (colocated)   | Adapter (driven)  |
-| `SessionToken`                | `session-token.domain.test.ts` (colocated)                | Domain    |
-
-**Heuristic for whether a unit earns a tree:** does the unit have behavioural choices someone could change silently? If yes, tree. If no (trivial pass-through — a one-line adapter that just calls the use-case, a use-case that just delegates to a single port), it's covered by the parent System tree.
-
-### Tree naming heuristic
-
-**Name each tree for the subject with observable behaviour at its layer.**
-
-| Layer    | Subject is...                          | Examples                                         |
-| -------- | -------------------------------------- | ------------------------------------------------ |
-| Domain   | the domain object or service           | `SessionToken`, `Money`, `LeaderboardRanking`    |
-| Use-case | the use-case                           | `save-score-use-case`, `cancel-order-use-case`   |
-| Port     | the port interface (shared contract)   | `ScoreRepository`, `AuditLog`                    |
-| Adapter  | the adapter being exercised            | `score-http-handler`, `ScoreRepository-Postgres` |
-| System   | the capability/slice, not the whole app | `save-score`, `user-registration`               |
-
-Cross-cutting System trees name the policy: `auth-enforcement`, `rate-limiting`, `error-envelope`.
-
----
-
-## Outside-in order
-
-1. **System** — one failing test for the slice, in `test/system/`. Mirrors the tree verbatim.
+1. **System** — one failing test for the slice.
 2. **Driving adapter** — one failing test for protocol mapping. Mock the use-case.
-3. **Use-case** — one failing test for orchestration. In-memory driven adapters. Domain factories real.
+3. **Use-case** — one failing test for orchestration. In-memory driven adapters.
 4. **Domain** — one failing test for the pure rule. No collaborators.
-5. **Port contract** — write the shared suite. Both in-memory and real adapters must pass it.
-6. **Driven adapter** — implement the real adapter. Shared suite runs green against it; add Postgres-specific tests for timeout/retry/constraint behaviour.
+5. **Port contract** — write the shared suite (`*.contract.ts`). Both in-memory and real adapters must pass it.
+6. **Driven adapter** — implement the real adapter. Shared suite runs green; add adapter-specific tests.
 
 Every failing test sits at a named layer. If you can't name the layer, you're not decomposed enough.
 
 ---
 
-## Beyond the minimum
-
-Additive test kinds are welcome when they earn their keep — multi-slice System journeys, consumer-driven contract tests with external peers, load tests, characterization tests. They supplement the four layers; they don't replace them.
-
----
-
 ## Mutation Testing
-- Stryker validates unit-test quality at the Domain and Use-case layers.
+- Stryker validates test quality at the Domain and Use-case layers.
 - Run at end of completed work; never during the cycle.
 - Tests that survive mutants are too permissive.
 
