@@ -106,7 +106,7 @@ stop-hook-sync
     and checks whether README.md accurately describes the project
   when Claude stops after a response that ends with a question
     then the hook yields the turn to the user without injecting the check prompt
-  when inconsistency is detected between implementation and test trees
+  when test trees and implementation have drifted apart
     then Claude proposes solutions to the user
   when stop_hook_active is true
     then the hook exits silently to prevent infinite loops
