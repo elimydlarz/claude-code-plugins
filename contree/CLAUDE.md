@@ -101,7 +101,7 @@ outside-in-tdd
 ```
 stop-hook-sync
   when Claude stops after a response that does not end with a question
-    then it checks for inconsistency between test trees and implementation in either direction
+    then it checks for inconsistency between test trees and implementation
     and checks whether mental model needs updating
     and checks whether README.md accurately describes the project
   when Claude stops after a response that ends with a question
