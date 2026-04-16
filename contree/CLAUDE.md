@@ -201,6 +201,7 @@ tdd-drives-through-seams
     then the next test is a Use-case test with in-memory adapters wired, not a Domain test
   if the unit is trivial
     then no separate inner test is written — the System test is enough
+```
 
 ### sync-audits-and-resolves
 
