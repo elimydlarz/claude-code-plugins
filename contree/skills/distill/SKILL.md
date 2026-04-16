@@ -7,7 +7,7 @@ description: "Distill CLAUDE.md down to its essence when it has grown too large,
 
 CLAUDE.md is loaded into every session's context. Past ~40k characters it crowds out the work. This skill distills it down — same meaning, less text — and uses past Claude Code transcripts as evidence for what's actually load-bearing.
 
-The contract — `## Requirements` test trees — is sacred. Distillation never paraphrases or "tightens" a test tree. Everything else is negotiable.
+The contract — `## Test Trees` — is sacred. Distillation never paraphrases or "tightens" a tree. Everything else is negotiable.
 
 CLAUDE.md is the source of intent that drives tests and code, so it will necessarily restate things that also appear in code. That overlap is not redundancy — do not cut content just because the code "already shows" it.
 
