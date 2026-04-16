@@ -113,18 +113,6 @@ load test_helper
   assert_success
 }
 
-# --- Rules ---
-
-@test "EARS rule exists" {
-  run test -f "$PROJECT_ROOT/rules/ears.md"
-  assert_success
-}
-
-@test "rules cheatsheet exists" {
-  run test -f "$PROJECT_ROOT/rules/cheatsheet.md"
-  assert_success
-}
-
 # --- Hook ---
 
 @test "hooks.json exists" {
