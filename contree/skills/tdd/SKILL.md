@@ -50,7 +50,7 @@ Before writing the next test, decompose the current `when/then` path into the he
 - **Side effects** — does the path persist, call an external service, read time, emit audits, produce randomness, or do I/O? Each is an outbound port. Name ports for capability (`AuditLog`, `ScoreRepository`), never for technology (`PostgresClient`, `StripeSDK`).
 - **Pure rules** — does the path compute over data with no collaborators? That's the domain.
 
-Pick the outermost untested layer and write **one** failing test there:
+Pick the outermost untested position and write **one** failing test there:
 
 - Inbound adapter present but untested → test protocol mapping.
 - Orchestration + side effects → **use-case test with ports faked**. Assert both the returned data and the port interactions. This is NOT a domain test — collapsing a side effect into a domain object is a hex violation.
