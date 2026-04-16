@@ -497,7 +497,7 @@ export default config
 - `displayName` is required for `--selectProjects` and `--ignoreProjects` to work
 - `--onlyChanged` uses `git status` — after committing, zero tests run; use `--changedSince=origin/main` for CI
 - `--changedSince` requires the base branch to be fetchable — in CI run `git fetch --no-tags --depth=1 origin main` first, then use `origin/main` (not `main`)
-- Stryker's Jest runner crashes when Jest `projects` is configured — if using Stryker with Jest projects, you may need a separate jest.config for Stryker that targets unit tests only without the projects array
+- Stryker's Jest runner crashes when Jest `projects` is configured — if using Stryker with Jest projects, you may need a separate jest.config for Stryker that targets Domain + Use-case tests only without the projects array
 - Do NOT install `ts-jest` if the project uses Vitest (which handles TypeScript natively)
 
 ---
