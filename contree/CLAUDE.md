@@ -61,6 +61,7 @@ test-trees-as-requirements
   when a project uses contree
     then requirements in CLAUDE.md are test trees using EARS syntax
     and each behavioural unit has its own tree under ## Test Trees
+    and trees are flat subsections — not grouped by kind or layer
     and every tree reifies exactly one test file
     and the EARS rule is embedded in skills that use it
   when a behaviour change is needed
