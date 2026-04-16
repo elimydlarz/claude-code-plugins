@@ -251,10 +251,11 @@ skill-discoverability
 ```
 composable-testing
   when a project uses contree
-    then functional tests go in test/functional/ at project root
-    and unit tests are colocated with source
-    and both layers produce tree-shaped output
-    and mutation testing validates unit test quality
+    then unit tests are colocated with source
+    and integration tests are colocated with their outbound adapter
+    and functional tests go in test/functional/ at project root
+    and every layer produces tree-shaped output
+    and mutation testing validates unit-test quality at the unit layer
 ```
 
 ### pressure-phrase-on-session-start
