@@ -84,30 +84,32 @@ Confirm how conventions apply to this project:
 - **Python**, **JS/TS**, **PHP**: both colocated and separated patterns work; prefer colocated for Domain, Use-case, Adapter
 
 **Monorepo strategy:**
-- Unit tests: colocated with source in each package
-- Functional tests: at monorepo root `test/functional/` if they exercise cross-package behaviour, or per-package if they test a single package
+- Colocated test layers (Domain, Use-case, Adapter): stay with source in each package
+- System tests: at monorepo root `test/system/` if they exercise cross-package behaviour, or per-package if they test a single package
 - Never create a single root-level test config that reaches into all packages — follow the monorepo tool's conventions (Turborepo tasks, Nx project graph, pnpm workspace scripts)
 - Use shared base config that each package extends
 
-### 5. CONFIGURE UNIT TEST RUNNER
+### 5. CONFIGURE INNER TEST RUNNERS
 
-Write tree-style reporter config into the project's test configuration. Use the Framework Reference below.
+Configure the Domain, Use-case, and Adapter layers as separate projects/configurations in the test runner. See the Framework Reference below — the Vitest projects example shows one config with four projects.
 
 **Do NOT skip. Do NOT rely on defaults. Do NOT overwrite existing config — merge into it.**
 
 If the config already has a `reporters` or `verbose` key, check whether changing it would break CI (e.g., removing a JUnit XML reporter). Present the conflict to the user rather than silently overwriting.
 
-### 6. CONFIGURE FUNCTIONAL TEST RUNNER
+### 6. CONFIGURE SYSTEM TEST RUNNER
 
-Separate test command/config:
+Separate command/config for the System layer:
 
-- `test/functional/` at project root
+- `test/system/` at project root
+- `*.system.test.*` naming
 - Tree-style output
-- Runnable independently from unit tests
+- Runnable independently from the inner layers
 - Same framework where possible
-- Higher timeouts (functional tests hit real systems)
+- Higher timeouts — System tests assemble the whole app
+- Two modes: default uses in-memory driven adapters (fast, runs in CI); a separate command wires real driven adapters when needed (pre-release, not per-push)
 
-**Determine whether a Docker harness is needed.** See the Docker Harness Reference below. The key question: does this software need external processes (databases, queues, HTTP servers, other services) to exercise its real behaviour? If yes, set up a Docker Compose harness alongside the functional test runner. If the software is a pure library or CLI that only touches the filesystem, Docker is unnecessary overhead — run functional tests directly on the host.
+**Determine whether a Docker harness is needed** for the real-infra modes. See the Docker Harness Reference below. Key question: do Adapter (driven) or System (real-infra mode) tests need external processes — databases, queues, HTTP servers? If yes, set up a Docker Compose harness. If the software is pure in-process, Docker is unnecessary.
 
 When configuring Docker:
 - `docker-compose.yml` lives at project root (or `test/functional/docker-compose.yml` if the project root is already crowded)
