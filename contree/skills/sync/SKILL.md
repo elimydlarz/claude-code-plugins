@@ -71,8 +71,8 @@ After all gaps are implemented:
 
 After sync completes:
 
-1. Every `when/then` path in `## Requirements` has a passing functional test
-2. Every functional test traces to a test tree
+1. Every tree in `## Test Trees` has a test file; every `when/then` path has a passing test at that tree's layer
+2. Every test file reifies exactly one tree
 3. No undocumented capabilities — everything the system does is specified
 4. No stale trees — every tree describes something that exists
-5. Test tree output reads like `## Requirements` — same language, same structure
+5. Test output reads like `## Test Trees` — same language, same structure
