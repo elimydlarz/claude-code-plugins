@@ -144,7 +144,6 @@ setup-generates-trees
 setup-installs-architectural-linter
   when setup is run
     then a hex-boundary linter is installed and configured
-    and the lint script runs the validator and surfaces boundary violations (domain not pure, application reaching adapters, circulars)
 ```
 
 ### change-writes-trees
