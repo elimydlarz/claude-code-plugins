@@ -177,31 +177,16 @@ change-writes-trees
 
 ```
 change-decomposes-across-layers
-  when a slice is decomposed for implementation
-    then the slice is a System tree named for the consumer capability
-    and each behavioural unit with observable choices gets its own tree at its layer: Domain / Use-case / Adapter / port contract
+  when a behaviour change is planned
+    then the slice is captured as a System tree named for the consumer capability
+    and each behavioural unit with observable choices becomes its own tree at its layer: Domain, Use-case, Adapter, or port contract
     and every tree reifies exactly one test file
-    and side effects become outbound ports named for capability not technology
-    and each outbound port has a shared contract tree honoured by both in-memory and real adapters
-  when a unit is trivial (thin pass-through, single-port delegation)
-    then no separate tree is written — the parent System tree covers it
-```
-
-### tdd-drives-through-seams
-
-```
-tdd-drives-through-seams
-  when TDD drives inward from a failing System test
-    then the slice is decomposed into the hex seams it touches: driving adapter, use-case, domain, port contract, driven adapter
-    and the next failing test targets the outermost untested layer
-    and each test sits at a named layer and reifies its tree
-    and Use-case tests run against in-memory driven adapters (not mocks)
-    and the shared port contract suite is imported by both the in-memory adapter test and the driven adapter test
-    and driven adapter tests exercise real infrastructure
-  if the path has side effects
-    then the next test is a Use-case test with in-memory adapters wired, not a Domain test
-  if the unit is trivial
-    then no separate inner test is written — the System test is enough
+    and trees are named for the subject with observable behaviour at their layer
+  when a side effect is identified
+    then it becomes an outbound port named for capability, not technology
+    and the port ships in two flavours: an in-memory adapter and a real adapter
+    and a shared contract suite is written for the port
+    and both adapters must pass the shared suite
 ```
 
 ### sync-audits-and-resolves
