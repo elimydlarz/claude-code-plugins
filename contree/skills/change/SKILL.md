@@ -55,11 +55,11 @@ Find the existing tree. Add, change, or remove `when/then` paths to reflect the 
 
 Remove the tree from `## Requirements`. Confirm with the user first.
 
-### 4. Decompose into Layers
+### 4. Decompose into Hex Positions
 
-Contree prescribes hexagonal architecture: domain is pure, I/O lives in adapters, dependencies point inward. Every tree decomposes across these layers.
+Contree prescribes hexagonal architecture: domain is pure, I/O lives in adapters, dependencies point inward. Every tree decomposes across these positions.
 
-**Hexagonal layers:**
+**Hexagonal positions:**
 
 - **Domain** — entities, value objects, pure business rules. No framework, no I/O, no async. Takes data, returns data.
 - **Use-case (application)** — orchestrates a single consumer-visible behaviour. Receives outbound ports as constructor args. Returns plain data, never adapter types.
