@@ -58,7 +58,7 @@ Pick the outermost untested position and write **one** failing test there:
 - No orchestration, no side effects → **domain test**: pure functions over data, no mocks.
 - Trivial path (one function, no orchestration, no side effects) → no unit test. The functional test is enough.
 
-Do not write tests for multiple behaviours or layers — just the single next thing that needs to fail.
+Do not write tests for multiple behaviours or positions — just the single next thing that needs to fail.
 
 - **If the test passes unexpectedly** — break the implementation intentionally, observe the test failing, then fix the implementation, observe the test passing, and move on. A test that can't fail doesn't protect anything.
 
