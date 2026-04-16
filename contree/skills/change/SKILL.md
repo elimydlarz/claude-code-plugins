@@ -45,7 +45,7 @@ capability-name
     then <recovery outcome>
 ```
 
-Add as a new subsection under `## Requirements`.
+Add as a new subsection under `## Test Trees`.
 
 **Modifying existing behaviour:**
 
