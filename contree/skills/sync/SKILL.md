@@ -41,19 +41,21 @@ Check the reverse — does the implementation do things no test tree describes?
 
 ### 5. RESOLVE DRIFT
 
+**Never resolve drift unilaterally.** Every case below requires a concrete user decision before any edit — even when the resolution seems obvious (e.g. "the function is clearly YAGNI, just delete it"). Drift is where intent and implementation disagree; silently picking a side destroys the contract this skill exists to protect. Present the drift, present the options, ask, then act on the answer.
+
 **Implementation missing for a tree path** (test tree exists, no code):
 - Flag as a gap to implement. These are the priority.
 
 **Implementation exists without a tree** (code exists, no test tree):
-- Discuss with the user. The implementation may be accidental scope creep that should be removed, or it may be a legitimate capability that needs a tree. Don't assume either way.
+- Present the two options to the user, with a quick read of the evidence: (a) the implementation is accidental scope creep → remove it, or (b) it's a legitimate capability → write a tree for it. Do not choose. Ask.
 
 **Stale trees** (test tree for capabilities that no longer exist):
-- Discuss with the user before removing.
+- Present to the user before removing. Ask whether the capability should come back (write/restore it) or the tree is truly obsolete (remove it).
 
 **Dead paths** (a `when/then` path that no longer reflects reality):
-- Discuss with the user. The path may need updating or the implementation may be wrong.
+- Present to the user. The path may need updating, or the implementation may be wrong — ask which.
 
-After this step, test trees and implementation intent should be aligned.
+After this step, test trees and implementation intent should be aligned, and the user has approved every change.
 
 ### 6. IMPLEMENT GAPS
 
