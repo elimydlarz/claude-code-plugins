@@ -77,8 +77,8 @@ test-trees-as-requirements
 outside-in-tdd
   when implementing a test tree
     then start with a failing functional test matching a when/then path
-    and TDD inward through the hex layers
-    and only one failing test exists at the current layer at a time
+    and TDD inward through the hex positions
+    and only one failing test exists at the current position at a time
     and existing test trees are not modified
   when TDD discovers new test cases
     then new cases are added to the tree
