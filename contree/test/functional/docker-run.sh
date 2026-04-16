@@ -4,11 +4,13 @@ set -euo pipefail
 # Run contree functional tests in Docker.
 #
 # Usage:
-#   ./docker-run.sh incidental-pass    # run one test
-#   ./docker-run.sh all                # run all in parallel
+#   ./docker-run.sh full-workflow    # run the scenario
+#   ./docker-run.sh all              # run every scenario in ALL_TESTS in parallel
 #
-# Transcripts are saved to *-transcript.jsonl.
-# Ask Claude to read and analyse them against the VERIFY criteria.
+# Each scenario writes one appended transcript at <name>-transcript.jsonl and
+# one verify file at <name>-verify.txt. The verify file names the trees to
+# evaluate the transcript against — the trees in contree/CLAUDE.md ## Test Trees
+# are the checklist.
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
