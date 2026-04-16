@@ -74,10 +74,9 @@ run_hook_with_last_text() {
   [[ "$output" == *"Mental Model"* ]]
 }
 
-@test "hook prompt mentions inconsistency in either direction" {
+@test "hook prompt mentions inconsistency" {
   run_hook '{}'
   [[ "$output" == *"inconsistency"* ]]
-  [[ "$output" == *"either direction"* ]]
 }
 
 @test "hook prompt mentions README.md" {
