@@ -60,12 +60,13 @@ Run functional tests with `pnpm test:functional` (all) or `bash test/functional/
 test-trees-as-requirements
   when a project uses contree
     then requirements in CLAUDE.md are test trees using EARS syntax
-    and each capability has its own subsection under ## Test Trees
+    and each behavioural unit has its own tree under ## Test Trees
+    and every tree reifies exactly one test file
     and the EARS rule is embedded in skills that use it
   when a behaviour change is needed
-    then the test tree must exist before implementation starts
+    then the tree must exist before implementation starts
   when implementation reveals new understanding
-    then the test tree is updated to reflect reality
+    then the tree is updated to reflect reality
 ```
 
 ### outside-in-tdd
