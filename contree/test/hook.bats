@@ -79,9 +79,9 @@ run_hook_with_last_text() {
   [[ "$output" == *"drifted apart"* ]]
 }
 
-@test "hook prompt mentions README.md" {
+@test "hook prompt mentions readme" {
   run_hook '{}'
-  [[ "$output" == *"README.md"* ]]
+  [[ "$output" == *"readme"* ]]
 }
 
 # --- Yield on question ---
