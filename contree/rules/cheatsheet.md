@@ -17,3 +17,4 @@
 - **Resolve uncertainty** — look directly and remove optionality; don't hedge with fallbacks
 - **pnpm** — use pnpm, not npm, for JS/TS
 - **Hexagonal** — domain pure; I/O in adapters; dependencies point inward
+- **Test layers** — unit at domain/use-case/inbound; integration at outbound adapters; functional for the whole slice
