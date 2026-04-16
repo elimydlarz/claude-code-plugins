@@ -31,7 +31,7 @@ Use the consumer's vocabulary. If the consumer says "register", the tree says "r
 
 **Adding a new capability:**
 
-Name the tree — a short noun phrase describing what the system does. Write paths using EARS patterns (see the `ears` rule) to describe the capability's operating principles:
+Name the tree — a short noun phrase describing what the system does. Write paths using EARS patterns (see EARS Patterns below) to describe the capability's operating principles:
 
 ```
 capability-name
