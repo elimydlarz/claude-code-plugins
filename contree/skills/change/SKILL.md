@@ -69,6 +69,7 @@ Contree prescribes hexagonal architecture: domain is pure, I/O lives in adapters
 
 **Decomposition rules:**
 
+- Each position has a default test layer and mocking posture — see the Positions and Layers table in `skills/tdd/SKILL.md`.
 - Each `when/then` path in the tree maps to a **functional test** exercising the whole vertical slice through a real inbound adapter.
 - Each **side effect** in the tree (persistence, external call, time, randomness) becomes an outbound port — named for the capability, not the technology (`OrderRepository`, not `PostgresClient`).
 - **Use-case tests** fake outbound ports and assert orchestration + returned data.
