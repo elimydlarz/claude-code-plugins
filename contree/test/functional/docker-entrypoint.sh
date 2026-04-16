@@ -185,7 +185,7 @@ EOF
 
     echo "Running: setup-docker-testing — /setup with external service dependency"
     run_claude \
-      "Run /setup on this project. It's a user account service that needs PostgreSQL for functional tests. Use Vitest. Configure Docker-based functional testing with a real Postgres container. Do NOT write any test files — no .test.js, no .test.ts, no spec files. Only configuration and requirement trees."
+      "Run /setup on this project. It's a user account service that needs PostgreSQL for Adapter and System tests. Use Vitest. Configure Docker-based testing with a real Postgres container for the layers that need it. Do NOT write any test files — no .test.js, no .test.ts, no spec files. Only configuration and test trees."
 
     write_verify << 'VERIFY'
 
