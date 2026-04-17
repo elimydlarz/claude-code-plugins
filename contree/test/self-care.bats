@@ -40,3 +40,9 @@ touch_nudge_seconds_ago() {
   [ "$status" -eq 0 ]
   [ -z "$output" ]
 }
+
+@test "does not nudge when no prior heartbeats exist" {
+  run_hook
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
