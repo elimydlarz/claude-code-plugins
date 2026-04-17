@@ -275,17 +275,17 @@ rules-loading
 
 ```
 self-care-20-20-20
-  when 20 minutes have elapsed since session start
-    then Claude opens its response with the 20-20-20 reminder before addressing the request
-    and the reminder names the rule and the action: look 20 feet away for 20 seconds
-    and a nudge file is created at ~/.claude/contree/nudges/20-20-20/<unix-timestamp>
-      when 20 minutes have elapsed since the most recent nudge file's timestamp
-        then Claude opens its response with the 20-20-20 reminder again
-        and a nudge file is created at ~/.claude/contree/nudges/20-20-20/<unix-timestamp>
-  if nudge files from prior sessions exist
-    then they do not trigger a nudge until 20 minutes have elapsed since session start
-  if the nudge directory cannot be created
-    then no nudge is given and the hook exits silently
+  when the UserPromptSubmit hook fires in any session
+    when the heartbeat is recorded
+      and while heartbeats with no gap longer than 5 minutes between them have been continuous for at least 20 minutes
+        and no reminder has been issued in the last 20 minutes
+          when a reminder is recorded
+            then the hook returns additionalContext instructing Claude to open its response with the 20-20-20 reminder before addressing the request
+            and the instructed reminder names the rule and the action: look 20 feet away for 20 seconds
+          when the reminder record fails
+            then the hook exits silently
+    when the heartbeat record fails
+      then the hook exits silently
 ```
 
 ## Cross-Functional Requirements
