@@ -31,6 +31,14 @@ Run in the background — it takes roughly 5–15 minutes end-to-end (Docker bui
 cd contree/test/functional && bash docker-run.sh full-workflow 2>&1 | tee /tmp/full-workflow-run.log
 ```
 
+Or for the layered scenario:
+
+```
+cd contree/test/functional && bash docker-run.sh layered-workflow 2>&1 | tee /tmp/layered-workflow-run.log
+```
+
+Or both in parallel (`all`).
+
 Use `run_in_background: true` with a generous timeout. Do **not** poll — wait for the completion notification, then proceed to step 2. Do **not** attempt to evaluate a partial transcript.
 
 Prerequisites (check before running): `ANTHROPIC_API_KEY` available in env or in `contree/test/functional/.env`, Docker daemon running. If either is missing, stop and report.
