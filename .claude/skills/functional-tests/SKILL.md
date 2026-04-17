@@ -5,7 +5,14 @@ description: "Run and evaluate the contree plugin's Docker-based functional test
 
 # Contree functional tests
 
-The contree plugin ships one functional scenario — `full-workflow` — that drives a real Claude session through three phases against a greenfield fixture and produces a transcript. You (this Claude Code session) then evaluate that transcript against every tree in `contree/CLAUDE.md` `## Test Trees`.
+The contree plugin ships two functional scenarios that each drive a real Claude session through three phases (setup → workflow → drift+sync) and produce a transcript. You (this Claude Code session) evaluate each transcript against every tree in `contree/CLAUDE.md` `## Test Trees`.
+
+| Scenario | Fixture | Exercises |
+|---|---|---|
+| `full-workflow` | `greenfield` (pure utility, no I/O) | Domain layer, setup, change, tdd cycle, mutation, sync discoverability, stop hook, rules/pressure |
+| `layered-workflow` | `bookmarks-api` (HTTP + repository port) | All four layers, in-memory adapter pattern, shared port contract suite, driving + driven adapter tests, System through HTTP |
+
+Run one or both. `full-workflow` covers the broadest tree set. `layered-workflow` fills in the Use-case / Adapter / port / in-memory paths that `full-workflow` leaves as N/A.
 
 ## When to use
 
