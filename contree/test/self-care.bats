@@ -66,6 +66,22 @@ touch_nudge_seconds_ago() {
   [[ "$ctx" == *"20 seconds"* ]]
 }
 
+@test "does not nudge when a gap longer than 5 minutes breaks the stretch" {
+  # 30+ min of heartbeats but with a 10-min gap 10 min ago — stretch is only 10 min long
+  touch_heartbeat_seconds_ago 1800
+  touch_heartbeat_seconds_ago 1500
+  touch_heartbeat_seconds_ago 1200
+  touch_heartbeat_seconds_ago 900
+  # gap 900s → 600s = 5 min, OK; but 900 → 300 = 10 min gap
+  touch_heartbeat_seconds_ago 300
+  touch_heartbeat_seconds_ago 60
+
+  run_hook
+
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
+
 @test "does not nudge when a reminder was issued in the last 20 minutes" {
   touch_heartbeat_seconds_ago 1500
   touch_heartbeat_seconds_ago 1200
