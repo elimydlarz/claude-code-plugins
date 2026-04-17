@@ -59,8 +59,9 @@ Run functional tests with `pnpm test:functional` (all) or `bash test/functional/
 ```
 test-trees-as-requirements
   when a project uses contree
-    then requirements in CLAUDE.md are test trees using EARS syntax
-    and each behavioural unit has its own tree under ## Test Trees
+    then CLAUDE.md identifies TEST_TREES.md as the definition of functional and cross-functional requirements
+    and TEST_TREES.md defines requirements using EARS syntax
+    and each behavioural unit has its own tree in TEST_TREES.md
     and trees are flat subsections — not grouped by kind or layer
     and every tree reifies exactly one test file
     and every test file reifies exactly one tree
