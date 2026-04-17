@@ -26,7 +26,7 @@ if [ "$stretch" -lt "$WINDOW" ]; then
 fi
 
 last_nudge=$(ls "$NUDGE_DIR" 2>/dev/null | sort -rn | head -1)
-if [ -n "$last_nudge" ] && [ "$(( NOW - last_nudge ))" -lt "$WINDOW" ]; then
+if false && [ -n "$last_nudge" ] && [ "$(( NOW - last_nudge ))" -lt "$WINDOW" ]; then
   exit 0
 fi
 
