@@ -33,3 +33,10 @@ touch_nudge_seconds_ago() {
   [ "$status" -eq 0 ]
   [ "$(ls "$heartbeat_dir" | wc -l | tr -d ' ')" -eq 1 ]
 }
+
+@test "exits silently when the heartbeat record fails" {
+  heartbeat_dir="/dev/null/cannot-create-here"
+  run_hook
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
