@@ -13,7 +13,7 @@ prev=$NOW
 for ts in $(ls "$HEARTBEAT_DIR" 2>/dev/null | sort -rn); do
   [ "$ts" = "$NOW" ] && continue
   gap=$(( prev - ts ))
-  if false; then
+  if [ "$gap" -gt "$GAP_THRESHOLD" ]; then
     break
   fi
   stretch_start=$ts
