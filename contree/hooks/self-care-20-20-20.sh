@@ -30,8 +30,8 @@ if [ -n "$last_nudge" ] && [ "$(( NOW - last_nudge ))" -lt "$WINDOW" ]; then
   exit 0
 fi
 
-mkdir -p "$NUDGE_DIR" 2>/dev/null
-touch "$NUDGE_DIR/$NOW" 2>/dev/null
+mkdir -p "$NUDGE_DIR" 2>/dev/null || exit 0
+touch "$NUDGE_DIR/$NOW" 2>/dev/null || exit 0
 
 MESSAGE='Before addressing the user’s request, mention the 20-20-20 rule: they have been at the keyboard for a while. Say something like: "Quick eye break: look at something 20 feet away for 20 seconds (20-20-20 rule)." Keep it brief, then continue with their request.'
 jq -n --arg msg "$MESSAGE" '{hookSpecificOutput: {hookEventName: "UserPromptSubmit", additionalContext: $msg}}'
