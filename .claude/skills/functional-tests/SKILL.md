@@ -76,11 +76,21 @@ The `<name>-verify.txt` file says: *"Evaluate the transcript against every tree 
 
 That's you. Open `contree/CLAUDE.md`, read every tree. For each `when/then` (and `if/then`) path, render one verdict and quote evidence from the transcript:
 
-- **PASS** — the transcript demonstrates the assertion. Quote the tool call, assistant text, or hook output that proves it.
-- **FAIL** — the transcript contradicts the assertion. Quote the contradicting evidence.
+- **PASS** — the transcript demonstrates the plugin behaviour the tree asserts. Quote the tool call, assistant text, or hook output that proves it.
+- **FAIL** — the transcript contradicts the plugin behaviour the tree asserts. This is a **contree regression** — the plugin's specification was violated. Quote the contradicting evidence.
 - **N/A** — the scenario didn't exercise this assertion (e.g. pure-library scenario doesn't touch the in-memory adapter pattern).
 
-Report grouped by tree, with a final summary: total PASS / FAIL / N-A across all trees, then a short "Real concerns" list for anything that matters vs "Scenario noise" for things that don't (headless mode means `change` can't literally "discuss with user", etc.).
+**What you are verifying is contree plugin behaviour — not Claude's coding quality.** These are different things. Claude may write buggy code, hit budget limits, take shortcuts, or produce imperfect implementations. None of those are contree regressions. A FAIL means the *plugin's specification was violated*:
+
+- The skill didn't trigger when it should have → FAIL (skill-discoverability regression)
+- Trees were silently modified → FAIL (contract violation)
+- Drift was resolved without asking the user → FAIL (sync regression)
+- Claude wrote bad code but followed the right process → PASS (the plugin guided correctly)
+- Budget ran out before mutation testing → PASS (contree prescribed it; Claude couldn't afford it)
+- Claude wrote tests in parallel instead of one-at-a-time → PASS (contree prescribed one-at-a-time; Claude took a shortcut under pressure — the plugin still fired the right skill and showed the right process)
+- The harness injected broken drift code and tests failed → PASS on the sync check (contree found the drift); irrelevant to other trees
+
+Report grouped by tree, with a final summary: total PASS / FAIL / N-A across all trees, then a short "Regressions" list (only genuine plugin spec violations) and an optional "Observations" list for anything notable but not a regression.
 
 ### 4. What to specifically watch for
 
