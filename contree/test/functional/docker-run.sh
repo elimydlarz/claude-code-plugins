@@ -20,7 +20,7 @@ for env_file in "$SCRIPT_DIR/.env" "$REPO_ROOT/.env"; do
   [ -f "$env_file" ] && set -a && . "$env_file" && set +a
 done
 
-ALL_TESTS=(full-workflow)
+ALL_TESTS=(full-workflow layered-workflow)
 
 TEST_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
