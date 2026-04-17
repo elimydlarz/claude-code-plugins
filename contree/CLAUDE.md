@@ -133,7 +133,7 @@ setup-generates-trees
     and mutation testing is configured with explicit test file exclusions for every layer's suffix
     and changed-test runners are configured with known gotchas addressed
     and test trees are generated from existing code
-    and trees are written to ## Test Trees in CLAUDE.md
+    and trees are written to TEST_TREES.md
   when setup is run on a new project
     then test trees are generated from user-described plans
     and tests are NOT implemented yet
