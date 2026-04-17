@@ -277,6 +277,7 @@ rules-loading
 self-care-20-20-20
   when the UserPromptSubmit hook fires in any session
     when the heartbeat is recorded
+      then heartbeats older than one hour are pruned
       and while heartbeats with no gap longer than 5 minutes between them have been continuous for at least 20 minutes
         and no reminder has been issued in the last 20 minutes
           when a reminder is recorded
