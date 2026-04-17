@@ -65,3 +65,14 @@ touch_nudge_seconds_ago() {
   [[ "$ctx" == *"20 feet"* ]]
   [[ "$ctx" == *"20 seconds"* ]]
 }
+
+@test "does not nudge when a reminder was issued in the last 20 minutes" {
+  touch_heartbeat_seconds_ago 1500
+  touch_heartbeat_seconds_ago 60
+  touch_nudge_seconds_ago 600  # 10 min ago — within 20 min window
+
+  run_hook
+
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
