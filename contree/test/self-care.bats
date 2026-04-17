@@ -46,3 +46,22 @@ touch_nudge_seconds_ago() {
   [ "$status" -eq 0 ]
   [ -z "$output" ]
 }
+
+@test "nudges when heartbeats span at least 20 minutes with no gap longer than 5 minutes" {
+  touch_heartbeat_seconds_ago 1500  # 25 min ago
+  touch_heartbeat_seconds_ago 1200  # 20 min ago
+  touch_heartbeat_seconds_ago 900   # 15 min ago
+  touch_heartbeat_seconds_ago 600   # 10 min ago
+  touch_heartbeat_seconds_ago 300   # 5 min ago
+  touch_heartbeat_seconds_ago 60    # 1 min ago
+
+  run_hook
+
+  [ "$status" -eq 0 ]
+  echo "$output" | jq empty
+  [ "$(echo "$output" | jq -r '.hookSpecificOutput.hookEventName')" = "UserPromptSubmit" ]
+  local ctx; ctx=$(echo "$output" | jq -r '.hookSpecificOutput.additionalContext')
+  [[ "$ctx" == *"20-20-20"* ]]
+  [[ "$ctx" == *"20 feet"* ]]
+  [[ "$ctx" == *"20 seconds"* ]]
+}
