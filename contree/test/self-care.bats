@@ -41,6 +41,28 @@ touch_nudge_seconds_ago() {
   [ -z "$output" ]
 }
 
+@test "prunes heartbeats older than one hour when recording" {
+  local old_ts; old_ts=$(( $(date +%s) - 7200 ))
+  mkdir -p "$heartbeat_dir"
+  touch "$heartbeat_dir/$old_ts"
+
+  run_hook
+
+  [ "$status" -eq 0 ]
+  [ ! -f "$heartbeat_dir/$old_ts" ]
+}
+
+@test "keeps heartbeats newer than one hour when recording" {
+  local recent_ts; recent_ts=$(( $(date +%s) - 1800 ))
+  mkdir -p "$heartbeat_dir"
+  touch "$heartbeat_dir/$recent_ts"
+
+  run_hook
+
+  [ "$status" -eq 0 ]
+  [ -f "$heartbeat_dir/$recent_ts" ]
+}
+
 @test "does not nudge when no prior heartbeats exist" {
   run_hook
   [ "$status" -eq 0 ]
