@@ -96,3 +96,18 @@ touch_nudge_seconds_ago() {
   [ "$status" -eq 0 ]
   [ -z "$output" ]
 }
+
+@test "exits silently when the reminder record fails" {
+  touch_heartbeat_seconds_ago 1500
+  touch_heartbeat_seconds_ago 1200
+  touch_heartbeat_seconds_ago 900
+  touch_heartbeat_seconds_ago 600
+  touch_heartbeat_seconds_ago 300
+  touch_heartbeat_seconds_ago 60
+  nudge_dir="/dev/null/cannot-create-here"
+
+  run_hook
+
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
