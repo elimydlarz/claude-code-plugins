@@ -146,11 +146,68 @@ of PASS / FAIL / N/A counts across all trees.
 VERIFY
     ;;
 
+  layered-workflow)
+    # Exercises the Use-case / Adapter / port-contract / in-memory-adapter paths
+    # that full-workflow (pure utility) leaves as N/A.
+    seed_project "bookmarks-api"
+
+    echo ""
+    echo "=== Phase 1: setup ==="
+    run_claude \
+      "This project has no code yet — read CLAUDE.md for the Mental Model, then run /contree:setup to configure the test framework and generate test trees. This project has HTTP endpoints and a persistence port, so expect trees at multiple layers."
+
+    echo ""
+    echo "=== Phase 2: workflow (change → sync → tdd) ==="
+    run_claude \
+      "Now implement the project. Use /contree:workflow to set expected behaviour in trees and drive the implementation outside-in. The project has a BookmarkRepository port — remember to build an in-memory adapter and a shared port contract suite alongside the file-based production adapter."
+
+    echo ""
+    echo "=== Phase 3: drift injection + sync ==="
+    # Inject drift: add an undocumented DELETE endpoint without updating trees.
+    HANDLER_FILE="$(find "$PROJECT_DIR/src" -maxdepth 3 -name '*.js' -not -name '*.test.*' | xargs grep -l 'router\|app\.\(get\|post\|delete\|put\)' 2>/dev/null | head -n 1)"
+    if [ -n "$HANDLER_FILE" ] && [ -f "$HANDLER_FILE" ]; then
+      cat >> "$HANDLER_FILE" <<'DRIFT'
+
+// Drift injected by the functional harness — this endpoint is NOT in the trees.
+app.delete('/bookmarks/:id', (req, res) => {
+  res.status(204).end()
+})
+DRIFT
+      (cd "$PROJECT_DIR" && git add -A && git commit -q -m "inject drift: DELETE endpoint")
+      echo "[harness] Injected drift into $HANDLER_FILE (added DELETE /bookmarks/:id)."
+    else
+      echo "[harness] WARNING: could not find a route handler to drift. Phase 3 may not see drift."
+    fi
+
+    run_claude \
+      "Something feels off in this project — please audit for drift between the trees and the implementation, then propose fixes."
+
+    write_verify << 'VERIFY'
+Evaluate the transcript against every tree in the plugin's
+`contree/CLAUDE.md` `## Test Trees` section.
+
+Focus especially on the trees that exercise hex layering:
+  - change-decomposes-across-layers (port decomposition, in-memory + real adapters, shared contract)
+  - outside-in-tdd (Use-case wiring with in-memory adapters, Adapter with shared contract, System through driving adapter)
+  - composable-testing (four file naming conventions, port contract suite)
+
+For each `when/then` (or `if/then`) path in each tree, return one of:
+
+  PASS — transcript demonstrates the assertion (quote evidence)
+  FAIL — transcript contradicts the assertion (quote evidence)
+  N/A  — the scenario did not exercise this assertion
+
+The trees ARE the checklist. Report results grouped by tree, then a final summary
+of PASS / FAIL / N/A counts across all trees.
+VERIFY
+    ;;
+
   *)
     echo "Unknown test: $TEST_NAME" >&2
     echo ""
     echo "Available tests:"
-    echo "  full-workflow — setup → workflow → drift → sync, verified against every tree"
+    echo "  full-workflow     — pure utility: setup → workflow → drift → sync (Domain-weighted)"
+    echo "  layered-workflow  — HTTP API: setup → workflow → drift → sync (exercises all four layers + ports + in-memory adapters)"
     exit 1
     ;;
 esac
