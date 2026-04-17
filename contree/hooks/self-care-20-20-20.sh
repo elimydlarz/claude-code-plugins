@@ -12,7 +12,7 @@ touch "$HEARTBEAT_DIR/$NOW" 2>/dev/null || exit 0
 prune_cutoff=$(( NOW - PRUNE_AGE ))
 for ts in $(ls "$HEARTBEAT_DIR" 2>/dev/null); do
   if [ "$ts" -lt "$prune_cutoff" ] 2>/dev/null; then
-    rm -f "$HEARTBEAT_DIR/$ts"
+    : # rm disabled
   fi
 done
 
