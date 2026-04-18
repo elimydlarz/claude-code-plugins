@@ -22,6 +22,7 @@ cat <<'EOF'
 - **Resolve uncertainty** — look directly and remove optionality; don't hedge with fallbacks
 - **pnpm** — use pnpm, not npm, for JS/TS
 - **Trees are the contract** — every expected behaviour and side effect goes in `## Test Trees`; every tree is verified by a test; every test drives the real implementation. File writes, external calls, state mutations, and cleanup all count as behaviour — if it's observable anywhere (filesystem, network, logs, next invocation), it belongs in the tree. If you're wondering whether an expectation belongs in the trees, the answer is yes.
+- **Debugging means a test gap** — if you're debugging, the tests weren't good enough. Before fixing, find the tree path that should have caught the bug (add it if it's missing), write the failing test, then fix the code.
 - **Hexagonal** — domain pure; I/O in adapters; dependencies point inward; each driven port ships with an in-memory twin
 - **Test layers** — Domain (pure), Use-case (in-memory adapters), Adapter (driving mocks app, driven hits real infra), System (whole app, in-memory by default)
 - **Shared port contract** — one `*.contract.ts` suite per port, imported by both in-memory-adapter and real-adapter test files
