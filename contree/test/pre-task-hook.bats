@@ -48,3 +48,10 @@ run_hook_in() {
   [[ "$output" == *"wrong, incomplete, or misleading"* ]]
   [[ "$output" == *"silently reshaping"* ]]
 }
+
+@test "session start directs the agent to treat test trees as the authoritative behaviour contract" {
+  run_hook_in "$BATS_TEST_TMPDIR"
+  [[ "$output" == *"test trees"* ]]
+  [[ "$output" == *"authoritative"* ]]
+  [[ "$output" == *"behaviour contract"* ]]
+}
