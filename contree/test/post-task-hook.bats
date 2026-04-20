@@ -6,7 +6,6 @@ hook_command() {
   jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json"
 }
 
-# Helper: run the hook command with given JSON input
 run_hook() {
   local input="$1"
   local cmd; cmd=$(hook_command)
@@ -14,7 +13,6 @@ run_hook() {
     bash -c 'printf "%s" "$INPUT" | bash -c "$CMD" 2>&1'
 }
 
-# Helper: run the hook with a transcript file whose last assistant text is $1
 run_hook_with_last_text() {
   local last_text="$1"
   local transcript="$BATS_TEST_TMPDIR/transcript.jsonl"
@@ -57,74 +55,16 @@ run_hook_with_last_text() {
   [ "$status" -eq 2 ]
 }
 
-# --- Mental-model nudge ---
+# --- Prompt content (golden-file) ---
+# If this fails: the drift-check prompt changed. Review the diff, then update
+# test/fixtures/expected/stop-drift-check.out deliberately.
 
-@test "mental-model nudge includes the 'not recoverable from code and tests' criterion" {
-  run_hook '{}'
-  [[ "$output" == *"not recover"* ]]
-  [[ "$output" == *"code and tests"* ]]
-}
-
-@test "mental-model nudge includes the 'removal would cause a mistake' criterion" {
-  run_hook '{}'
-  [[ "$output" == *"removal"* ]]
-  [[ "$output" == *"mistake"* ]]
-  [[ "$output" == *"competent human"* ]]
-}
-
-@test "mental-model nudge defaults to no change" {
-  run_hook '{}'
-  [[ "$output" == *"default"* ]]
-  [[ "$output" == *"no change"* ]]
-}
-
-@test "mental-model nudge requires declaring which of the seven sections the edit belongs to" {
-  run_hook '{}'
-  [[ "$output" == *"seven sections"* ]]
-}
-
-@test "mental-model nudge rejects edits that fit no section" {
-  run_hook '{}'
-  [[ "$output" == *"no section fits"* || "$output" == *"fits no section"* || "$output" == *"none fits"* ]]
-}
-
-@test "mental-model nudge prefers tightening existing lines over adding new ones" {
-  run_hook '{}'
-  [[ "$output" == *"tighten"* ]]
-}
-
-@test "mental-model nudge requires statements to describe what is true" {
-  run_hook '{}'
-  [[ "$output" == *"what is true"* ]]
-  [[ "$output" == *"what to avoid"* ]]
-}
-
-@test "mental-model nudge requires displacement or merging at section cap" {
-  run_hook '{}'
-  [[ "$output" == *"cap"* ]]
-  [[ "$output" == *"displace"* || "$output" == *"merg"* ]]
-}
-
-# --- Test-trees nudge ---
-
-@test "test-trees nudge detects drift between trees and implementation" {
-  run_hook '{}'
-  [[ "$output" == *"test trees"* ]]
-  [[ "$output" == *"drift"* || "$output" == *"drifted"* ]]
-}
-
-# --- CLAUDE.md nudge ---
-
-@test "claude-md nudge detects drift between CLAUDE.md content and reality" {
-  run_hook '{}'
-  [[ "$output" == *"CLAUDE.md"* ]]
-}
-
-# --- Readme nudge ---
-
-@test "readme nudge detects readme staleness" {
-  run_hook '{}'
-  [[ "$output" == *"readme"* ]]
+@test "hook emits the expected drift-check prompt" {
+  local actual="$BATS_TEST_TMPDIR/actual"
+  printf '%s' '{}' | bash "$PROJECT_ROOT/hooks/stop-drift-check.sh" >/dev/null 2>"$actual"
+  local exit_code=$?
+  [ "$exit_code" -eq 2 ]
+  diff "$actual" "$PROJECT_ROOT/test/fixtures/expected/stop-drift-check.out"
 }
 
 # --- Yield on question ---
@@ -135,10 +75,10 @@ run_hook_with_last_text() {
   [ -z "$output" ]
 }
 
-@test "hook exits 2 with check prompt when last assistant message does not end with a question mark" {
+@test "hook exits 2 and emits the prompt when last assistant message does not end with a question mark" {
   run_hook_with_last_text "Did the tests pass? Yes! Finished."
   [ "$status" -eq 2 ]
-  [[ "$output" == *"drifted apart"* ]]
+  [ -n "$output" ]
 }
 
 @test "hook yields when question mark is followed by trailing whitespace" {
