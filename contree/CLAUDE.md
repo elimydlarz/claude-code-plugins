@@ -72,6 +72,22 @@ test-trees-as-requirements
     then the tree is updated to reflect reality
 ```
 
+### mental-model-lives-in-its-own-file
+
+```
+mental-model-lives-in-its-own-file
+  when a project uses contree
+    then CLAUDE.md identifies MENTAL_MODEL.md as the definition of the project's mental model
+    and CLAUDE.md contains a pointer to MENTAL_MODEL.md, not the mental model content itself
+    and MENTAL_MODEL.md organises the mental model under seven H2 sections
+    and the seven sections are: Core Domain Identity, World-to-Code Mapping, Ubiquitous Language, Bounded Contexts, Invariants, Decision Rationale, Temporal View
+  when setup is run
+    then any of the above invariants not yet satisfied are established
+    and each newly created section is followed by a one-line placeholder describing what belongs there
+    and existing MENTAL_MODEL.md content is not modified
+    and an existing CLAUDE.md pointer is not duplicated
+```
+
 ### outside-in-tdd
 
 ```
