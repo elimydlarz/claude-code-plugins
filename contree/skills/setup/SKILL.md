@@ -216,46 +216,19 @@ Configure commands to run only tests affected by recent changes. Be aware of the
 
 Commands should be simple to invoke — package.json scripts, Makefile targets, or mix aliases.
 
-### 10. GENERATE INITIAL REQUIREMENT TREES
+### 10. CREATE TEST_TREES.md AND OFFER TO COMPOSE INITIAL TREES
 
-This is the key step that distinguishes contree from a plain test framework setup.
+Create `TEST_TREES.md` at the project root if it does not already exist, containing a short header noting that the file holds the project's test trees and that new trees should be added as `###` subsections using EARS patterns.
 
-**Read the codebase and generate test trees that describe what the system does today.** Write them into `TEST_TREES.md` at the project root — one file, flat subsections, one `###` heading per behavioural unit.
+**Do not compose the trees yourself in this step.** Tree decomposition is the `change` skill's expertise — it enforces one-tree-one-file, the system/inner-layer naming heuristic, the EARS-by-requirement-nature rule, and causal nesting. Doing it inline here tends to drop those rules.
 
-Process:
-1. Identify the system's capabilities — what does it do from the consumer's perspective?
-2. For each capability, write a functional-level test tree using EARS patterns (see EARS Patterns below) — choose the right keyword for each requirement's nature
-3. Describe operating principles, not implementation details
-4. Include positive paths and unwanted behaviour (`if/then` for error cases)
-5. If existing tests exist, use them as input — but rewrite as principle-describing trees, don't copy test names verbatim
-6. If the system is new/empty, write requirement trees for the planned capabilities based on what the user describes
+Instead, once the framework is configured and `TEST_TREES.md` exists, offer the user:
 
-**Do NOT implement the test trees** — they are requirements only at this stage. The `tdd` skill handles implementation later. In particular, **do not create any `*.test.*` or `*.spec.*` files in this step**, not even with `.todo`/`.skip` stubs. Tests are the `tdd` skill's output.
+> "Framework is set up and `TEST_TREES.md` is in place. To compose the initial test trees, I'd recommend running `/contree:change` — it has deeper decomposition guidance. Want me to invoke it now, or compose them later yourself?"
 
-Write the trees into `TEST_TREES.md`. Each capability gets its own `###` subsection:
+If the user accepts, invoke `/contree:change` and let that skill drive the tree composition.
 
-```markdown
-### UserRegistration
-
-UserRegistration
-  then passwords are stored hashed, never in plain text
-  when a new user registers with valid details
-    then the user account is created
-    and a welcome email is sent
-  if the email is already registered
-    then registration is rejected
-
-### InvoiceGeneration
-
-InvoiceGeneration
-  when a completed order is submitted for invoicing
-    then a PDF invoice is generated with line items
-    and the invoice is emailed to the customer
-  if the order has no line items
-    then invoicing is rejected
-  where the customer has a tax exemption
-    then the invoice omits VAT
-```
+**Do not create any `*.test.*` or `*.spec.*` files in this step**, not even with `.todo`/`.skip` stubs. Tests are the `tdd` skill's output.
 
 ### 11. UPDATE CLAUDE.md
 
