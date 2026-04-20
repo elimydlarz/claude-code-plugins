@@ -160,7 +160,6 @@ post-task-readme-check
 post-task-mental-model-check
   when Claude completes a task
     then the mental model is left unchanged by default
-    and the validator's findings are surfaced alongside the gate nudge
   when the task reveals theory-level knowledge not recoverable from code
     then the mental model is updated
     and the edit declares which of the seven sections it belongs to
