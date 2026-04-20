@@ -59,4 +59,11 @@ if [ -f TEST_TREES.md ]; then
   cat TEST_TREES.md
 fi
 
+cat <<'EOF'
+
+# Working with the Mental Model and Test Trees
+
+- Use the mental model's existing concepts, vocabulary, and decisions rather than inventing parallel ones.
+EOF
+
 exit 0
