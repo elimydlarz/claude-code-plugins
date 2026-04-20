@@ -54,4 +54,9 @@ if [ -f MENTAL_MODEL.md ]; then
   cat MENTAL_MODEL.md
 fi
 
+if [ -f TEST_TREES.md ]; then
+  printf '\n# Test Trees\n\n'
+  cat TEST_TREES.md
+fi
+
 exit 0
