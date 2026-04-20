@@ -61,9 +61,9 @@ run_hook_with_last_text() {
 
 @test "hook emits the expected drift-check prompt" {
   local actual="$BATS_TEST_TMPDIR/actual"
-  printf '%s' '{}' | bash "$PROJECT_ROOT/hooks/stop-drift-check.sh" >/dev/null 2>"$actual"
-  local exit_code=$?
-  [ "$exit_code" -eq 2 ]
+  run bash -c 'printf "%s" "{}" | bash "$1" >/dev/null 2>"$2"' _ \
+    "$PROJECT_ROOT/hooks/stop-drift-check.sh" "$actual"
+  [ "$status" -eq 2 ]
   diff "$actual" "$PROJECT_ROOT/test/fixtures/expected/stop-drift-check.out"
 }
 
