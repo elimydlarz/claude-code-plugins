@@ -5,7 +5,7 @@ description: "Set expected behaviour by writing or modifying test trees — the 
 
 # Change
 
-Sets expected behaviour before code exists. Talks through a behaviour change with the user and writes it into the trees in `## Test Trees` of the project's CLAUDE.md — making intent explicit and agreed before implementation begins.
+Sets expected behaviour before code exists. Talks through a behaviour change with the user and writes it into `TEST_TREES.md` at the project root — making intent explicit and agreed before implementation begins.
 
 ## When to Use
 
