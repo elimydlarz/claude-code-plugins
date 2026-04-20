@@ -195,6 +195,8 @@ mental-model-edit-validation
   when MENTAL_MODEL.md is edited via a tool call
     then the validator runs against the post-edit content
     and its findings are surfaced to Claude's next response via additional context
+  when a file other than MENTAL_MODEL.md is edited
+    then the validator does not run
 ```
 
 ### setup-generates-trees
