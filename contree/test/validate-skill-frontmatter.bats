@@ -85,7 +85,7 @@ just body.
   [[ "$output" == *"frontmatter"* ]]
 }
 
-@test "exits non-zero when frontmatter is not closed" {
+@test "exits non-zero when frontmatter has no closing marker" {
   local skills="$BATS_TEST_TMPDIR/skills"
   write_skill "$skills/bad" '---
 name: bad
@@ -97,6 +97,7 @@ description: "Never closed"
   run bash "$SCRIPT" "$skills"
   [ "$status" -ne 0 ]
   [[ "$output" == *"bad/SKILL.md"* ]]
+  [[ "$output" == *"frontmatter"* ]]
 }
 
 @test "exits non-zero when the skills dir does not exist" {
