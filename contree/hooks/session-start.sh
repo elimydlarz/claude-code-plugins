@@ -64,6 +64,7 @@ cat <<'EOF'
 # Working with the Mental Model and Test Trees
 
 - Use the mental model's existing concepts, vocabulary, and decisions rather than inventing parallel ones.
+- Preserve the mental model's invariants. If a task appears to require breaking one, surface the conflict rather than routing around it.
 EOF
 
 exit 0
