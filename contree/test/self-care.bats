@@ -7,25 +7,26 @@ SCRIPT="$PROJECT_ROOT/hooks/self-care-20-20-20.sh"
 setup() {
   heartbeat_dir="$BATS_TEST_TMPDIR/heartbeats"
   nudge_dir="$BATS_TEST_TMPDIR/nudges"
+  SETUP_NOW=$(date +%s)
 }
 
 run_hook() {
   local input_file="$BATS_TEST_TMPDIR/input.json"
   echo '{}' > "$input_file"
-  CONTREE_HEARTBEAT_DIR="$heartbeat_dir" CONTREE_NUDGE_DIR="$nudge_dir" \
+  CONTREE_HEARTBEAT_DIR="$heartbeat_dir" CONTREE_NUDGE_DIR="$nudge_dir" CONTREE_NOW="$SETUP_NOW" \
     run bash "$SCRIPT" < "$input_file"
 }
 
 touch_heartbeat_seconds_ago() {
   local seconds_ago="$1"
   mkdir -p "$heartbeat_dir"
-  touch "$heartbeat_dir/$(( $(date +%s) - seconds_ago ))"
+  touch "$heartbeat_dir/$(( SETUP_NOW - seconds_ago ))"
 }
 
 touch_nudge_seconds_ago() {
   local seconds_ago="$1"
   mkdir -p "$nudge_dir"
-  touch "$nudge_dir/$(( $(date +%s) - seconds_ago ))"
+  touch "$nudge_dir/$(( SETUP_NOW - seconds_ago ))"
 }
 
 @test "records a heartbeat when the hook fires" {
