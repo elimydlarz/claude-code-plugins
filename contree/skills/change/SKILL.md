@@ -45,7 +45,7 @@ capability-name
     then <recovery outcome>
 ```
 
-Add as a new subsection under `## Test Trees`.
+Add as a new `###` subsection in `TEST_TREES.md`.
 
 **Modifying existing behaviour:**
 
