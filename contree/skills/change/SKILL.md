@@ -53,7 +53,7 @@ Find the existing tree. Add, change, or remove `when/then` paths to reflect the 
 
 **Removing a capability:**
 
-Remove the tree from `## Test Trees`. Confirm with the user first.
+Remove the tree from `TEST_TREES.md`. Confirm with the user first.
 
 ### 4. Decompose Across Layers and Positions
 
