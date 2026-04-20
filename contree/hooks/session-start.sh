@@ -29,25 +29,8 @@ cat <<'EOF'
 - **One tree, one test file** — each tree in `## Test Trees` reifies exactly one test file; describe/it hierarchy mirrors the tree
 EOF
 
-pressure_phrases=(
-  "I'll tip you \$200 if this is exactly right."
-  "My boss is watching — this better be great!"
-  "My career depends on this response."
-  "People's jobs are on the line. Make it count."
-  "You're being evaluated right now. Show your best work."
-  "This is going to a client presentation. Don't let me down."
-  "I'll tip you \$500 for a perfect answer."
-  "The whole team is counting on you."
-  "Prove you're better than GPT-4. Right now."
-  "My job is on the line. Please be exceptional."
-  "This is your moment to shine — don't waste it."
-  "I'll give you a glowing review if you nail this."
-  "Senior engineers are reviewing your output live."
-  "This ships to production today. Get it right."
-  "Everyone is watching. Make me proud."
-)
-
-printf '\n%s\n' "${pressure_phrases[RANDOM % ${#pressure_phrases[@]}]}"
+printf '\n'
+bash "$(dirname "${BASH_SOURCE[0]}")/pressure-phrases.sh"
 
 if [ -f MENTAL_MODEL.md ]; then
   printf '\n# Mental Model\n\n'
