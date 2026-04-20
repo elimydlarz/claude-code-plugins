@@ -87,6 +87,34 @@ run_hook_with_last_text() {
   [ -z "$output" ]
 }
 
+@test "hook emits the prompt when earlier text ended with ? but the most recent assistant text is a statement" {
+  local transcript="$BATS_TEST_TMPDIR/transcript.jsonl"
+  {
+    echo '{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"Is this right?"}]}}'
+    echo '{"type":"user","message":{"role":"user","content":"yes"}}'
+    echo '{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"OK done."}]}}'
+  } > "$transcript"
+  local input_file="$BATS_TEST_TMPDIR/input.json"
+  printf '{"transcript_path":"%s"}' "$transcript" > "$input_file"
+  local cmd; cmd=$(hook_command)
+  run env CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" CMD="$cmd" INPUT_FILE="$input_file" \
+    bash -c 'bash -c "$CMD" < "$INPUT_FILE" 2>&1'
+  [ "$status" -eq 2 ]
+  [ -n "$output" ]
+}
+
+@test "hook emits the prompt when no assistant message has any text (tool_use only)" {
+  local transcript="$BATS_TEST_TMPDIR/transcript.jsonl"
+  echo '{"type":"assistant","message":{"role":"assistant","content":[{"type":"tool_use","id":"t1","name":"Bash","input":{"command":"ls"}}]}}' > "$transcript"
+  local input_file="$BATS_TEST_TMPDIR/input.json"
+  printf '{"transcript_path":"%s"}' "$transcript" > "$input_file"
+  local cmd; cmd=$(hook_command)
+  run env CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" CMD="$cmd" INPUT_FILE="$input_file" \
+    bash -c 'bash -c "$CMD" < "$INPUT_FILE" 2>&1'
+  [ "$status" -eq 2 ]
+  [ -n "$output" ]
+}
+
 @test "hook selects the last assistant text across multiple messages" {
   local transcript="$BATS_TEST_TMPDIR/transcript.jsonl"
   {
