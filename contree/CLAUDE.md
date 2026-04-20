@@ -188,6 +188,15 @@ mental-model-validator
     then the validator flags that the file is missing
 ```
 
+### mental-model-edit-validation
+
+```
+mental-model-edit-validation
+  when MENTAL_MODEL.md is edited via a tool call
+    then the validator runs against the post-edit content
+    and its findings are surfaced to Claude's next response via additional context
+```
+
 ### setup-generates-trees
 
 ```
