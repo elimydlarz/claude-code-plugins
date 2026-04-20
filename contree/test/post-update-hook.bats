@@ -7,8 +7,9 @@ HOOK="$PROJECT_ROOT/hooks/post-update-check.sh"
 run_hook_for_file() {
   local project="$1"
   local file_path="$2"
+  local tool_name="${3:-Edit}"
   local input
-  input=$(jq -nc --arg fp "$file_path" '{tool_name:"Edit", tool_input:{file_path:$fp}}')
+  input=$(jq -nc --arg tn "$tool_name" --arg fp "$file_path" '{tool_name:$tn, tool_input:{file_path:$fp}}')
   run env CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" INPUT="$input" PROJECT="$project" \
     bash -c 'cd "$PROJECT" && printf "%s" "$INPUT" | bash "'"$HOOK"'"'
 }
