@@ -8,3 +8,20 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   run grep -qE "MENTAL_MODEL\.md.*seven.*(section|H2)|seven.*(section|H2).*MENTAL_MODEL" "$SKILL"
   assert_success
 }
+
+@test "setup skill names the seven mental-model sections" {
+  run grep -q "Core Domain Identity" "$SKILL"
+  assert_success
+  run grep -q "World-to-Code Mapping" "$SKILL"
+  assert_success
+  run grep -q "Ubiquitous Language" "$SKILL"
+  assert_success
+  run grep -q "Bounded Contexts" "$SKILL"
+  assert_success
+  run grep -q "Invariants" "$SKILL"
+  assert_success
+  run grep -q "Decision Rationale" "$SKILL"
+  assert_success
+  run grep -q "Temporal View" "$SKILL"
+  assert_success
+}
