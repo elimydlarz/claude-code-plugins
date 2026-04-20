@@ -11,6 +11,14 @@ VALIDATOR="$PROJECT_ROOT/hooks/validate-mental-model.sh"
   [[ "$output" == *"missing"* || "$output" == *"not exist"* || "$output" == *"does not"* ]]
 }
 
+@test "validator exits 0 even when issues are present (advisory, not blocking)" {
+  cd "$BATS_TEST_TMPDIR"
+  printf '## Glossary\n\n- one\n' > MENTAL_MODEL.md
+  run bash "$VALIDATOR"
+  [ "$status" -eq 0 ]
+  [ -n "$output" ]
+}
+
 write_well_formed() {
   cat > "$1/MENTAL_MODEL.md" <<'EOF'
 ## Core Domain Identity
