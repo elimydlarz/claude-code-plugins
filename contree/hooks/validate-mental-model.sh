@@ -21,6 +21,8 @@ BEGIN {
   section = substr($0, 4)
   if (!(section in caps)) {
     printf "%s is a rogue heading, not one of the seven named sections\n", section
+  } else {
+    seen[section] = 1
   }
   next
 }
@@ -28,6 +30,11 @@ BEGIN {
   count[section]++
 }
 END {
+  for (s in caps) {
+    if (!(s in seen)) {
+      printf "%s section is missing\n", s
+    }
+  }
   for (s in count) {
     if (caps[s] && count[s] > caps[s]) {
       printf "%s exceeds its cap of %d (has %d items)\n", s, caps[s], count[s]
