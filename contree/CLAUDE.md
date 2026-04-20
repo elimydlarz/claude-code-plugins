@@ -72,26 +72,20 @@ test-trees-as-requirements
     then the tree is updated to reflect reality
 ```
 
-### mental-model-lives-in-its-own-file
+### setup-scaffolds-mental-model
 
 ```
-mental-model-lives-in-its-own-file
-  when a project uses contree
-    then CLAUDE.md identifies MENTAL_MODEL.md as the definition of the project's mental model
-    and CLAUDE.md contains a pointer to MENTAL_MODEL.md, not the mental model content itself
-    and MENTAL_MODEL.md organises the mental model under seven H2 sections
+setup-scaffolds-mental-model
+  when setup is run and MENTAL_MODEL.md does not exist
+    then MENTAL_MODEL.md is created with seven H2 sections
     and the seven sections are: Core Domain Identity, World-to-Code Mapping, Ubiquitous Language, Bounded Contexts, Invariants, Decision Rationale, Temporal View
-  when MENTAL_MODEL.md is edited
-    then the edit targets one of the seven sections
-    and tightening an existing line is preferred over adding a new one
-    and statements describe what is true, not what to avoid
-    when the target section is at its cap
-      then an existing item is displaced or merged rather than appended
-  when setup is run
-    then any of the above invariants not yet satisfied are established
-    and each newly created section is followed by a one-line placeholder describing what belongs there
-    and existing MENTAL_MODEL.md content is not modified
-    and an existing CLAUDE.md pointer is not duplicated
+    and each section is followed by a one-line placeholder describing what belongs there
+  when setup is run and MENTAL_MODEL.md already exists
+    then its content is not modified
+  when setup is run and CLAUDE.md does not reference MENTAL_MODEL.md
+    then a pointer line is added to CLAUDE.md identifying MENTAL_MODEL.md as the definition of the mental model
+  when setup is run and CLAUDE.md already references MENTAL_MODEL.md
+    then the pointer is not duplicated
 ```
 
 ### outside-in-tdd
