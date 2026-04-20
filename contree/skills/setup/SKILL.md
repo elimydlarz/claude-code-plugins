@@ -263,6 +263,7 @@ InvoiceGeneration
 
 Add or update the following sections:
 
+- A pointer line identifying `TEST_TREES.md` as the definition of the project's test trees. If `CLAUDE.md` already references `TEST_TREES.md`, do not duplicate the pointer.
 - `## Test Trees` — the trees from step 10
 - Testing commands section with:
   - Command to run Domain tests with tree output
