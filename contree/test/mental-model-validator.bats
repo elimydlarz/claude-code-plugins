@@ -10,3 +10,42 @@ VALIDATOR="$PROJECT_ROOT/hooks/validate-mental-model.sh"
   [[ "$output" == *"MENTAL_MODEL.md"* ]]
   [[ "$output" == *"missing"* || "$output" == *"not exist"* || "$output" == *"does not"* ]]
 }
+
+write_well_formed() {
+  cat > "$1/MENTAL_MODEL.md" <<'EOF'
+## Core Domain Identity
+
+- placeholder
+
+## World-to-Code Mapping
+
+- placeholder
+
+## Ubiquitous Language
+
+- placeholder
+
+## Bounded Contexts
+
+- placeholder
+
+## Invariants
+
+- placeholder
+
+## Decision Rationale
+
+- placeholder
+
+## Temporal View
+
+- placeholder
+EOF
+}
+
+@test "validator reports no issues when MENTAL_MODEL.md is well-formed" {
+  cd "$BATS_TEST_TMPDIR"
+  write_well_formed "$BATS_TEST_TMPDIR"
+  run bash "$VALIDATOR"
+  [ -z "$output" ]
+}
