@@ -30,3 +30,18 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   run grep -qE "one-line placeholder|placeholder.*each section|each section.*placeholder" "$SKILL"
   assert_success
 }
+
+@test "setup skill instructs not to modify existing MENTAL_MODEL.md content" {
+  run grep -qE "existing.*MENTAL_MODEL|MENTAL_MODEL.*not.*modif|content is authoritative|must not be modified" "$SKILL"
+  assert_success
+}
+
+@test "setup skill instructs to add a CLAUDE.md pointer to MENTAL_MODEL.md if missing" {
+  run grep -qE "pointer.*MENTAL_MODEL|MENTAL_MODEL.*pointer|CLAUDE\.md.*(identif|point).*MENTAL_MODEL" "$SKILL"
+  assert_success
+}
+
+@test "setup skill instructs not to duplicate an existing CLAUDE.md pointer" {
+  run grep -qE "not duplicat|already (point|referenc)" "$SKILL"
+  assert_success
+}
