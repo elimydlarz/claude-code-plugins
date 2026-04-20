@@ -43,7 +43,7 @@ touch_nudge_seconds_ago() {
 }
 
 @test "prunes heartbeats older than one hour when recording" {
-  local old_ts; old_ts=$(( $(date +%s) - 7200 ))
+  local old_ts; old_ts=$(( SETUP_NOW - 7200 ))
   mkdir -p "$heartbeat_dir"
   touch "$heartbeat_dir/$old_ts"
 
@@ -54,7 +54,7 @@ touch_nudge_seconds_ago() {
 }
 
 @test "keeps heartbeats newer than one hour when recording" {
-  local recent_ts; recent_ts=$(( $(date +%s) - 1800 ))
+  local recent_ts; recent_ts=$(( SETUP_NOW - 1800 ))
   mkdir -p "$heartbeat_dir"
   touch "$heartbeat_dir/$recent_ts"
 
