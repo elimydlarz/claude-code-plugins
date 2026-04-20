@@ -37,3 +37,11 @@ run_hook_for_file() {
   run_hook_for_file "$project" "$project/some-other-file.md"
   [ -z "$output" ]
 }
+
+@test "post-update hook does not run validator for adjacent files like MENTAL_MODEL_DRAFT.md" {
+  local project="$BATS_TEST_TMPDIR/project"
+  mkdir -p "$project"
+  printf '## Glossary\n\n- one\n' > "$project/MENTAL_MODEL.md"
+  run_hook_for_file "$project" "$project/MENTAL_MODEL_DRAFT.md"
+  [ -z "$output" ]
+}
