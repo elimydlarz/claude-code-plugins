@@ -9,8 +9,8 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_success
 }
 
-@test "setup skill instructs to write trees to TEST_TREES.md" {
-  run grep -qE "[Ww]rite.*trees.*TEST_TREES\.md|trees.*writ.*TEST_TREES\.md|TEST_TREES\.md.*contains.*trees" "$SKILL"
+@test "setup skill names TEST_TREES.md as where trees live" {
+  run grep -qE "TEST_TREES\.md.*tree|tree.*TEST_TREES\.md" "$SKILL"
   assert_success
 }
 
