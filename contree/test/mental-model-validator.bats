@@ -49,3 +49,49 @@ EOF
   run bash "$VALIDATOR"
   [ -z "$output" ]
 }
+
+@test "validator flags the overflow and names the section when Invariants exceeds its cap of 10" {
+  cd "$BATS_TEST_TMPDIR"
+  cat > MENTAL_MODEL.md <<'EOF'
+## Core Domain Identity
+
+- placeholder
+
+## World-to-Code Mapping
+
+- placeholder
+
+## Ubiquitous Language
+
+- placeholder
+
+## Bounded Contexts
+
+- placeholder
+
+## Invariants
+
+- one
+- two
+- three
+- four
+- five
+- six
+- seven
+- eight
+- nine
+- ten
+- eleven
+
+## Decision Rationale
+
+- placeholder
+
+## Temporal View
+
+- placeholder
+EOF
+  run bash "$VALIDATOR"
+  [[ "$output" == *"Invariants"* ]]
+  [[ "$output" == *"cap"* || "$output" == *"overflow"* || "$output" == *"exceed"* ]]
+}
