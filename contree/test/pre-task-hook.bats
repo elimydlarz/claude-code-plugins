@@ -59,28 +59,7 @@ run_hook_in() {
   [[ "$output" == *"behaviour contract"* ]]
 }
 
-# --- Rules content (named anchors for the rules list) ---
-
-@test "session start prints the KISS rule" {
-  run_hook_in "$BATS_TEST_TMPDIR"
-  [[ "$output" == *"KISS"* ]]
-  [[ "$output" == *"simplicity"* ]]
-}
-
-@test "session start prints the test-layers rule" {
-  run_hook_in "$BATS_TEST_TMPDIR"
-  [[ "$output" == *"Test layers"* ]]
-  [[ "$output" == *"Domain"* ]]
-  [[ "$output" == *"Use-case"* ]]
-  [[ "$output" == *"Adapter"* ]]
-  [[ "$output" == *"System"* ]]
-}
-
-@test "session start prints the hexagonal rule" {
-  run_hook_in "$BATS_TEST_TMPDIR"
-  [[ "$output" == *"Hexagonal"* ]]
-  [[ "$output" == *"dependencies point inward"* ]]
-}
+# --- Pressure phrase integration (pressure-phrase-on-session-start tree) ---
 
 @test "session start prints a random pressure phrase from the pool" {
   run_hook_in "$BATS_TEST_TMPDIR"
