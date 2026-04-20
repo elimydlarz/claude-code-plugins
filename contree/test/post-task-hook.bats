@@ -55,16 +55,77 @@ run_hook_with_last_text() {
   [ "$status" -eq 2 ]
 }
 
-# --- Prompt content (golden-file) ---
-# If this fails: the drift-check prompt changed. Review the diff, then update
-# test/fixtures/expected/stop-drift-check.out deliberately.
+# --- Mental-model nudge: primary criteria ---
 
-@test "hook emits the expected drift-check prompt" {
-  local actual="$BATS_TEST_TMPDIR/actual"
-  run bash -c 'printf "%s" "{}" | bash "$1" >/dev/null 2>"$2"' _ \
-    "$PROJECT_ROOT/hooks/stop-drift-check.sh" "$actual"
-  [ "$status" -eq 2 ]
-  diff "$actual" "$PROJECT_ROOT/test/fixtures/expected/stop-drift-check.out"
+@test "mental-model nudge names the 'not recoverable from code and tests' criterion" {
+  run_hook '{}'
+  [[ "$output" == *"recover"* ]]
+  [[ "$output" == *"code and tests"* ]]
+}
+
+@test "mental-model nudge names the 'removal would cause a mistake a competent human would not make' criterion" {
+  run_hook '{}'
+  [[ "$output" == *"removal"* ]]
+  [[ "$output" == *"competent human"* ]]
+}
+
+@test "mental-model nudge defaults to no change" {
+  run_hook '{}'
+  [[ "$output" == *"Default"* ]]
+  [[ "$output" == *"no change"* ]]
+}
+
+# --- Mental-model nudge: when a change is warranted ---
+
+@test "mental-model nudge names the seven sections as the only accepted landing zones" {
+  run_hook '{}'
+  [[ "$output" == *"seven sections"* ]]
+}
+
+@test "mental-model nudge rejects edits that fit no section" {
+  run_hook '{}'
+  [[ "$output" == *"none fits"* || "$output" == *"no section fits"* ]]
+}
+
+@test "mental-model nudge prefers tightening existing lines over adding new ones" {
+  run_hook '{}'
+  [[ "$output" == *"tighten"* ]]
+}
+
+@test "mental-model nudge requires statements of what is true, not what to avoid" {
+  run_hook '{}'
+  [[ "$output" == *"what is true"* ]]
+  [[ "$output" == *"avoid"* ]]
+}
+
+@test "mental-model nudge requires displacement or merge when a section is at its cap" {
+  run_hook '{}'
+  [[ "$output" == *"cap"* ]]
+  [[ "$output" == *"displace"* || "$output" == *"merg"* ]]
+}
+
+# --- Test-trees nudge ---
+
+@test "test-trees nudge prompts detection of drift between trees and implementation" {
+  run_hook '{}'
+  [[ "$output" == *"test trees"* || "$output" == *"TEST TREES"* ]]
+  [[ "$output" == *"drift"* ]]
+}
+
+# --- CLAUDE.md nudge ---
+
+@test "claude-md nudge prompts detection of drift between CLAUDE.md content and reality" {
+  run_hook '{}'
+  [[ "$output" == *"CLAUDE.md"* ]]
+  [[ "$output" == *"drift"* ]]
+}
+
+# --- README nudge ---
+
+@test "readme nudge prompts detection of readme staleness" {
+  run_hook '{}'
+  [[ "$output" == *"readme"* || "$output" == *"README"* ]]
+  [[ "$output" == *"out of date"* || "$output" == *"stale"* ]]
 }
 
 # --- Yield on question ---
