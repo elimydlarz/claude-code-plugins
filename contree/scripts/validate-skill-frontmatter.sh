@@ -11,6 +11,12 @@ fi
 offenders=()
 
 while IFS= read -r -d '' skill_file; do
+  marker_count=$(awk '/^---$/ { count++ } END { print count+0 }' "$skill_file")
+  if [ "$marker_count" -lt 2 ]; then
+    offenders+=("$skill_file: missing or unclosed frontmatter")
+    continue
+  fi
+
   frontmatter=$(awk '
     /^---$/ { markers++; if (markers == 1) { inside=1; next } if (markers == 2) { exit } }
     inside { print }
