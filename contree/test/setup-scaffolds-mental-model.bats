@@ -25,3 +25,8 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   run grep -q "Temporal View" "$SKILL"
   assert_success
 }
+
+@test "setup skill instructs each section be followed by a one-line placeholder" {
+  run grep -qE "one-line placeholder|placeholder.*each section|each section.*placeholder" "$SKILL"
+  assert_success
+}
