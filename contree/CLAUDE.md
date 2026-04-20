@@ -138,9 +138,11 @@ pre-task-hook
 ```
 post-task-hook
   when Claude stops after a response that does not end with a question
-    then a mental-model nudge prompts consideration of whether the task revealed theory-level knowledge, defaulting to no change
+    then a mental-model nudge prompts consideration of whether the task revealed something a future agent could not recover from code and tests, and whose removal would cause a mistake a competent human would not make, defaulting to no change
       when a change is warranted
-        then tightening an existing line is preferred over adding a new one
+        then the edit declares which of the seven sections it belongs to
+        and an edit fitting no section is not added to the mental model
+        and tightening an existing line is preferred over adding a new one
         and statements describe what is true, not what to avoid
         and when the target section is at its cap, an existing item is displaced or merged rather than appended
     and a test-trees nudge prompts detection of drift between trees and implementation
