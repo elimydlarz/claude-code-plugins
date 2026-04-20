@@ -20,3 +20,20 @@ run_hook_for_file() {
   run_hook_for_file "$project" "$project/MENTAL_MODEL.md"
   [[ "$output" == *"Glossary"* ]]
 }
+
+@test "post-update hook surfaces findings via additionalContext JSON" {
+  local project="$BATS_TEST_TMPDIR/project"
+  mkdir -p "$project"
+  printf '## Glossary\n\n- one\n' > "$project/MENTAL_MODEL.md"
+  run_hook_for_file "$project" "$project/MENTAL_MODEL.md"
+  [[ "$output" == *"additionalContext"* ]]
+  [[ "$output" == *"PostToolUse"* ]]
+}
+
+@test "post-update hook does not run validator when a file other than MENTAL_MODEL.md is edited" {
+  local project="$BATS_TEST_TMPDIR/project"
+  mkdir -p "$project"
+  printf '## Glossary\n\n- one\n' > "$project/MENTAL_MODEL.md"
+  run_hook_for_file "$project" "$project/some-other-file.md"
+  [ -z "$output" ]
+}
