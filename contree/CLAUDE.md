@@ -81,6 +81,12 @@ mental-model-lives-in-its-own-file
     and CLAUDE.md contains a pointer to MENTAL_MODEL.md, not the mental model content itself
     and MENTAL_MODEL.md organises the mental model under seven H2 sections
     and the seven sections are: Core Domain Identity, World-to-Code Mapping, Ubiquitous Language, Bounded Contexts, Invariants, Decision Rationale, Temporal View
+  when MENTAL_MODEL.md is edited
+    then the edit targets one of the seven sections
+    and tightening an existing line is preferred over adding a new one
+    and statements describe what is true, not what to avoid
+    when the target section is at its cap
+      then an existing item is displaced or merged rather than appended
   when setup is run
     then any of the above invariants not yet satisfied are established
     and each newly created section is followed by a one-line placeholder describing what belongs there
