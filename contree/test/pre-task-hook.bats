@@ -42,3 +42,9 @@ run_hook_in() {
   [[ "$output" == *"surface"* ]]
   [[ "$output" == *"routing around"* ]]
 }
+
+@test "session start directs the agent to flag bad theory rather than silently reshape through code" {
+  run_hook_in "$BATS_TEST_TMPDIR"
+  [[ "$output" == *"wrong, incomplete, or misleading"* ]]
+  [[ "$output" == *"silently reshaping"* ]]
+}
