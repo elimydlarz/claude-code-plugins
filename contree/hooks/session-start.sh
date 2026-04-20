@@ -65,6 +65,7 @@ cat <<'EOF'
 
 - Use the mental model's existing concepts, vocabulary, and decisions rather than inventing parallel ones.
 - Preserve the mental model's invariants. If a task appears to require breaking one, surface the conflict rather than routing around it.
+- If the mental model is wrong, incomplete, or misleading for this task, flag it rather than silently reshaping it through code.
 EOF
 
 exit 0
