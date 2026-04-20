@@ -125,8 +125,12 @@ outside-in-tdd
 ```
 pre-task-hook
   when a session starts
-    then the agent is oriented to work within the mental model's vocabulary and invariants rather than inventing parallel ones
-    and the agent is oriented to treat test trees as the behaviour contract
+    then MENTAL_MODEL.md contents are displayed
+    and TEST_TREES.md contents are displayed
+    and the agent is directed to use the mental model's existing concepts, vocabulary, and decisions rather than inventing parallel ones
+    and the agent is directed to preserve the mental model's invariants, surfacing conflict when a task appears to require breaking one rather than routing around it
+    and the agent is directed to flag the mental model as wrong, incomplete, or misleading rather than silently reshaping it through code
+    and the agent is directed to treat test trees as the authoritative behaviour contract
 ```
 
 ### post-task-hook
