@@ -50,6 +50,15 @@ EOF
   [ -z "$output" ]
 }
 
+@test "validator flags the rogue heading when an H2 is not one of the seven named sections" {
+  cd "$BATS_TEST_TMPDIR"
+  write_well_formed "$BATS_TEST_TMPDIR"
+  printf '\n## Glossary\n\n- extra\n' >> MENTAL_MODEL.md
+  run bash "$VALIDATOR"
+  [[ "$output" == *"Glossary"* ]]
+  [[ "$output" == *"rogue"* || "$output" == *"not one of"* || "$output" == *"unknown"* ]]
+}
+
 @test "validator flags the overflow and names the section when Invariants exceeds its cap of 10" {
   cd "$BATS_TEST_TMPDIR"
   cat > MENTAL_MODEL.md <<'EOF'
