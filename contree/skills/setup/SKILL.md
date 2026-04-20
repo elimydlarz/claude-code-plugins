@@ -31,7 +31,7 @@ Read project files — source code, existing tests, configs, CLAUDE.md. Understa
 - Language and ecosystem
 - Existing test framework and config (if any)
 - What behaviours the system implements today
-- Whether `## Test Trees` already exists in CLAUDE.md
+- Whether `TEST_TREES.md` already exists at the project root
 - Whether this is a monorepo (check for workspace configs, turborepo.json, nx.json, pnpm-workspace.yaml, Cargo.toml workspaces)
 
 **Detect existing test config.** Check for these files before creating or modifying anything:
