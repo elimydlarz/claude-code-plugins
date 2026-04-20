@@ -278,6 +278,16 @@ Add or update the following sections:
 
 If `MENTAL_MODEL.md` does not exist at the project root, create it with the seven H2 sections that organise the project's mental model. Do not create the file if it already exists — its content is authoritative and must not be modified.
 
+The seven H2 sections, in this order:
+
+1. `## Core Domain Identity`
+2. `## World-to-Code Mapping`
+3. `## Ubiquitous Language`
+4. `## Bounded Contexts`
+5. `## Invariants`
+6. `## Decision Rationale`
+7. `## Temporal View`
+
 ### 12. VERIFY
 
 Run each layer's test suite and confirm:
