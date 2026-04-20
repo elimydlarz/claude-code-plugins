@@ -19,6 +19,9 @@ BEGIN {
 }
 /^## / {
   section = substr($0, 4)
+  if (!(section in caps)) {
+    printf "%s is a rogue heading, not one of the seven named sections\n", section
+  }
   next
 }
 /^[-*] / && section {
