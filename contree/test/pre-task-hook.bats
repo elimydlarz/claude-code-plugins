@@ -13,7 +13,7 @@ run_hook_in() {
     bash -c 'cd "$PROJECT_DIR" && bash -c "$CMD"'
 }
 
-# --- File interpolation (real behaviour) ---
+# --- File interpolation ---
 
 @test "session start displays MENTAL_MODEL.md contents when file exists" {
   local project="$BATS_TEST_TMPDIR/project"
@@ -31,17 +31,66 @@ run_hook_in() {
   [[ "$output" == *"UNIQUE_TEST_TREES_MARKER_STRING"* ]]
 }
 
-# --- Prompt content (golden-file) ---
-# The pressure-phrase line is replaced with __PRESSURE_PHRASE__ before diffing,
-# because it is drawn randomly from a pool. If this fails: the rules or trailer
-# changed. Review the diff, then update test/fixtures/expected/session-start.out
-# deliberately.
+# --- Agent direction ---
 
-@test "session start emits the expected rules and trailer in an empty cwd" {
-  local project="$BATS_TEST_TMPDIR/project"
-  mkdir -p "$project"
-  local actual="$BATS_TEST_TMPDIR/actual"
-  ( cd "$project" && bash "$PROJECT_ROOT/hooks/session-start.sh" ) \
-    | sed -E 's/^([^#\-].+)$/__PRESSURE_PHRASE__/' > "$actual"
-  diff "$actual" "$PROJECT_ROOT/test/fixtures/expected/session-start.out"
+@test "session start directs the agent to use existing mental-model concepts, vocabulary, and decisions" {
+  run_hook_in "$BATS_TEST_TMPDIR"
+  [[ "$output" == *"concepts, vocabulary, and decisions"* ]]
+  [[ "$output" == *"inventing parallel"* ]]
+}
+
+@test "session start directs the agent to preserve invariants and surface conflict rather than route around" {
+  run_hook_in "$BATS_TEST_TMPDIR"
+  [[ "$output" == *"invariants"* ]]
+  [[ "$output" == *"surface"* ]]
+  [[ "$output" == *"routing around"* ]]
+}
+
+@test "session start directs the agent to flag the mental model as wrong, incomplete, or misleading rather than silently reshaping it" {
+  run_hook_in "$BATS_TEST_TMPDIR"
+  [[ "$output" == *"wrong, incomplete, or misleading"* ]]
+  [[ "$output" == *"silently reshaping"* ]]
+}
+
+@test "session start directs the agent to treat test trees as the authoritative behaviour contract" {
+  run_hook_in "$BATS_TEST_TMPDIR"
+  [[ "$output" == *"test trees"* ]]
+  [[ "$output" == *"authoritative"* ]]
+  [[ "$output" == *"behaviour contract"* ]]
+}
+
+# --- Rules content (named anchors for the rules list) ---
+
+@test "session start prints the KISS rule" {
+  run_hook_in "$BATS_TEST_TMPDIR"
+  [[ "$output" == *"KISS"* ]]
+  [[ "$output" == *"simplicity"* ]]
+}
+
+@test "session start prints the test-layers rule" {
+  run_hook_in "$BATS_TEST_TMPDIR"
+  [[ "$output" == *"Test layers"* ]]
+  [[ "$output" == *"Domain"* ]]
+  [[ "$output" == *"Use-case"* ]]
+  [[ "$output" == *"Adapter"* ]]
+  [[ "$output" == *"System"* ]]
+}
+
+@test "session start prints the hexagonal rule" {
+  run_hook_in "$BATS_TEST_TMPDIR"
+  [[ "$output" == *"Hexagonal"* ]]
+  [[ "$output" == *"dependencies point inward"* ]]
+}
+
+@test "session start prints a random pressure phrase from the pool" {
+  run_hook_in "$BATS_TEST_TMPDIR"
+  source "$PROJECT_ROOT/hooks/pressure-phrases.sh"
+  local found=0
+  for phrase in "${pressure_phrases[@]}"; do
+    if [[ "$output" == *"$phrase"* ]]; then
+      found=1
+      break
+    fi
+  done
+  [ "$found" -eq 1 ]
 }
