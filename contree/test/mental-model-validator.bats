@@ -50,6 +50,38 @@ EOF
   [ -z "$output" ]
 }
 
+@test "validator flags the missing section when one of the seven named sections is absent" {
+  cd "$BATS_TEST_TMPDIR"
+  cat > MENTAL_MODEL.md <<'EOF'
+## Core Domain Identity
+
+- placeholder
+
+## World-to-Code Mapping
+
+- placeholder
+
+## Ubiquitous Language
+
+- placeholder
+
+## Bounded Contexts
+
+- placeholder
+
+## Decision Rationale
+
+- placeholder
+
+## Temporal View
+
+- placeholder
+EOF
+  run bash "$VALIDATOR"
+  [[ "$output" == *"Invariants"* ]]
+  [[ "$output" == *"missing"* || "$output" == *"absent"* ]]
+}
+
 @test "validator flags the rogue heading when an H2 is not one of the seven named sections" {
   cd "$BATS_TEST_TMPDIR"
   write_well_formed "$BATS_TEST_TMPDIR"
