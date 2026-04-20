@@ -120,55 +120,41 @@ outside-in-tdd
     then suggest the user runs change first
 ```
 
-### post-task-checks
+### pre-task-hook
 
 ```
-post-task-checks
+pre-task-hook
+  when a session starts
+    then the agent is oriented to work within the mental model's vocabulary and invariants rather than inventing parallel ones
+    and the agent is oriented to treat test trees as the behaviour contract
+```
+
+### post-task-hook
+
+```
+post-task-hook
   when Claude stops after a response that does not end with a question
-    then the post-task checks fire
+    then a mental-model nudge prompts consideration of whether the task revealed theory-level knowledge, with default of no change and the edit invariants applied if a change is warranted
+    and a test-trees nudge prompts detection of drift between trees and implementation
+    and a claude-md nudge prompts detection of drift between CLAUDE.md content and reality
+    and a readme nudge prompts detection of readme staleness
   when Claude stops after a response that ends with a question
-    then the hook yields the turn to the user without injecting the checks
+    then the hook yields the turn to the user without injecting the nudges
   when stop_hook_active is true
     then the hook exits silently to prevent infinite loops
-  when no check reports anything
+  when no nudge reports anything
     then Claude replies with 0
 ```
 
-### post-task-tree-drift-check
+### post-update-hook
 
 ```
-post-task-tree-drift-check
-  when Claude completes a task
-    then drift between test trees and implementation is detected
-  when drift is found
-    then Claude proposes solutions
-```
-
-### post-task-readme-check
-
-```
-post-task-readme-check
-  when Claude completes a task
-    then readme staleness is detected
-  when the readme is out of date
-    then it is updated
-```
-
-### post-task-mental-model-check
-
-```
-post-task-mental-model-check
-  when Claude completes a task
-    then the mental model is left unchanged by default
-  when the task reveals theory-level knowledge not recoverable from code
-    then the mental model is updated
-    and the edit declares which of the seven sections it belongs to
-    and tightening an existing line is preferred over adding a new one
-    and statements describe what is true, not what to avoid
-    when the target section is at its cap
-      then an existing item is displaced or merged rather than appended
-  if a proposed change fits none of the seven sections
-    then it is not part of the mental model and is not added
+post-update-hook
+  when MENTAL_MODEL.md is edited via a tool call
+    then the validator runs against the post-edit content
+    and its findings are surfaced to Claude's next response via additional context
+  when a file other than MENTAL_MODEL.md is edited
+    then the validator does not run
 ```
 
 ### mental-model-validator
@@ -186,17 +172,6 @@ mental-model-validator
     then the validator flags the missing section
   when MENTAL_MODEL.md does not exist
     then the validator flags that the file is missing
-```
-
-### mental-model-edit-validation
-
-```
-mental-model-edit-validation
-  when MENTAL_MODEL.md is edited via a tool call
-    then the validator runs against the post-edit content
-    and its findings are surfaced to Claude's next response via additional context
-  when a file other than MENTAL_MODEL.md is edited
-    then the validator does not run
 ```
 
 ### setup-generates-trees
