@@ -134,7 +134,11 @@ pre-task-hook
 ```
 post-task-hook
   when Claude stops after a response that does not end with a question
-    then a mental-model nudge prompts consideration of whether the task revealed theory-level knowledge, with default of no change and the edit invariants applied if a change is warranted
+    then a mental-model nudge prompts consideration of whether the task revealed theory-level knowledge, defaulting to no change
+      when a change is warranted
+        then tightening an existing line is preferred over adding a new one
+        and statements describe what is true, not what to avoid
+        and when the target section is at its cap, an existing item is displaced or merged rather than appended
     and a test-trees nudge prompts detection of drift between trees and implementation
     and a claude-md nudge prompts detection of drift between CLAUDE.md content and reality
     and a readme nudge prompts detection of readme staleness
