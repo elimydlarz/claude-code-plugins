@@ -245,11 +245,13 @@ Add or update the following sections:
   - Outside-in TDD workflow summary
   - Example tree structure for this project
 
-### 11b. SCAFFOLD MENTAL_MODEL.md
+### 12. SCAFFOLD MENTAL_MODEL.md
 
-If `MENTAL_MODEL.md` does not exist at the project root, create it with the seven H2 sections that organise the project's mental model. Do not create the file if it already exists — its content is authoritative and must not be modified.
+**This step is mandatory. Do not skip it.** If `MENTAL_MODEL.md` does not exist at the project root, create it now — before VERIFY.
 
-The seven H2 sections, in this order:
+If `MENTAL_MODEL.md` already exists, leave it alone — its content is authoritative and must not be modified.
+
+When creating the file, write exactly these seven H2 sections, in order, each followed by a one-line placeholder describing what belongs there:
 
 1. `## Core Domain Identity`
 2. `## World-to-Code Mapping`
@@ -259,11 +261,11 @@ The seven H2 sections, in this order:
 6. `## Decision Rationale`
 7. `## Temporal View`
 
-Under each heading, write a one-line placeholder describing what belongs there. The placeholders are replaced as the project accrues real content; their purpose is to make the expected contents of each section legible without content yet.
+The placeholders are replaced as the project accrues real content; their purpose is to make the expected contents of each section legible without content yet.
 
 Then add a pointer line to `CLAUDE.md` identifying `MENTAL_MODEL.md` as the definition of the project's mental model. If `CLAUDE.md` already references `MENTAL_MODEL.md`, do not duplicate the pointer.
 
-### 12. VERIFY
+### 13. VERIFY
 
 Run each layer's test suite and confirm:
 
