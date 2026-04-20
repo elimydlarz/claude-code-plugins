@@ -52,3 +52,19 @@ run_hook_for_file() {
   run_hook_for_file "$project" "$project/MENTAL_MODEL_DRAFT.md"
   [ -z "$output" ]
 }
+
+@test "post-update hook runs validator when MENTAL_MODEL.md is written (tool_name Write)" {
+  local project="$BATS_TEST_TMPDIR/project"
+  mkdir -p "$project"
+  printf '## Glossary\n\n- one\n' > "$project/MENTAL_MODEL.md"
+  run_hook_for_file "$project" "$project/MENTAL_MODEL.md" "Write"
+  [[ "$output" == *"Glossary"* ]]
+}
+
+@test "post-update hook runs validator when MENTAL_MODEL.md is written via MultiEdit" {
+  local project="$BATS_TEST_TMPDIR/project"
+  mkdir -p "$project"
+  printf '## Glossary\n\n- one\n' > "$project/MENTAL_MODEL.md"
+  run_hook_for_file "$project" "$project/MENTAL_MODEL.md" "MultiEdit"
+  [[ "$output" == *"Glossary"* ]]
+}
