@@ -247,11 +247,11 @@ Add or update the following sections:
 
 ### 12. SCAFFOLD MENTAL_MODEL.md
 
-**This step is mandatory. Do not skip it.** If `MENTAL_MODEL.md` does not exist at the project root, create it now — before VERIFY.
+**This step is mandatory. Do not skip it.** If `MENTAL_MODEL.md` does not exist at the project root, create it now — before VERIFY — with exactly seven H2 sections.
 
 If `MENTAL_MODEL.md` already exists, leave it alone — its content is authoritative and must not be modified.
 
-When creating the file, write exactly these seven H2 sections, in order, each followed by a one-line placeholder describing what belongs there:
+The seven H2 sections, in order, each followed by a one-line placeholder describing what belongs there:
 
 1. `## Core Domain Identity`
 2. `## World-to-Code Mapping`
