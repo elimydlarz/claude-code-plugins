@@ -209,6 +209,7 @@ setup-generates-trees
     and changed-test runners are configured with known gotchas addressed
     and test trees are generated from existing code
     and trees are written to TEST_TREES.md
+    and CLAUDE.md is updated to point at TEST_TREES.md if it does not already
   when setup is run on a new project
     then test trees are generated from user-described plans
     and tests are NOT implemented yet
