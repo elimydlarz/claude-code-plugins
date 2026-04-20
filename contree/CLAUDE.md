@@ -120,22 +120,73 @@ outside-in-tdd
     then suggest the user runs change first
 ```
 
-### stop-hook-sync
+### post-task-checks
 
 ```
-stop-hook-sync
+post-task-checks
   when Claude stops after a response that does not end with a question
-    then it checks whether test trees and implementation have drifted apart
-    and checks whether mental model needs updating
-    and checks whether the readme is out of date
+    then the post-task checks fire
   when Claude stops after a response that ends with a question
-    then the hook yields the turn to the user without injecting the check prompt
-  when test trees and implementation have drifted apart
-    then Claude proposes solutions
+    then the hook yields the turn to the user without injecting the checks
   when stop_hook_active is true
     then the hook exits silently to prevent infinite loops
-  when nothing needs attention
+  when no check reports anything
     then Claude replies with 0
+```
+
+### post-task-tree-drift-check
+
+```
+post-task-tree-drift-check
+  when Claude completes a task
+    then drift between test trees and implementation is detected
+  when drift is found
+    then Claude proposes solutions
+```
+
+### post-task-readme-check
+
+```
+post-task-readme-check
+  when Claude completes a task
+    then readme staleness is detected
+  when the readme is out of date
+    then it is updated
+```
+
+### post-task-mental-model-check
+
+```
+post-task-mental-model-check
+  when Claude completes a task
+    then the mental model is left unchanged by default
+    and the validator's findings are surfaced alongside the gate nudge
+  when the task reveals theory-level knowledge not recoverable from code
+    then the mental model is updated
+    and the edit declares which of the seven sections it belongs to
+    and tightening an existing line is preferred over adding a new one
+    and statements describe what is true, not what to avoid
+    when the target section is at its cap
+      then an existing item is displaced or merged rather than appended
+  if a proposed change fits none of the seven sections
+    then it is not part of the mental model and is not added
+```
+
+### mental-model-validator
+
+```
+mental-model-validator
+  then the validator's output is advisory and does not block edits
+  when MENTAL_MODEL.md is well-formed
+    then the validator reports no issues
+  when a section exceeds the upper bound of its cap range
+    then the validator flags the overflow and names the section
+  when MENTAL_MODEL.md contains a heading that is not one of the seven named sections
+    then the validator flags the rogue heading
+  when one of the seven named sections is missing
+    then the validator flags the missing section
+  when MENTAL_MODEL.md does not exist
+    then the validator flags that the file is missing
 ```
 
 ### setup-generates-trees
