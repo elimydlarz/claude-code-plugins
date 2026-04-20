@@ -34,3 +34,11 @@ run_hook_in() {
   [[ "$output" == *"concepts, vocabulary, and decisions"* ]]
   [[ "$output" == *"inventing parallel"* ]]
 }
+
+@test "session start directs the agent to preserve invariants and surface conflict rather than route around" {
+  run_hook_in "$BATS_TEST_TMPDIR"
+  [[ "$output" == *"preserve"* ]]
+  [[ "$output" == *"invariants"* ]]
+  [[ "$output" == *"surface"* ]]
+  [[ "$output" == *"routing around"* ]]
+}
