@@ -18,3 +18,14 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   run grep -qE '## Test Trees.*CLAUDE\.md|CLAUDE\.md.*## Test Trees|Write the trees into `## Test Trees` in CLAUDE' "$SKILL"
   assert_failure
 }
+
+@test "setup skill offers to invoke the change skill for initial test trees" {
+  run grep -qE "/contree:change|change skill" "$SKILL"
+  assert_success
+}
+
+@test "setup skill does not itself instruct writing tree content inline" {
+  # The old instruction "Write the trees into ..." should be gone — setup defers tree composition to the change skill.
+  run grep -qE 'Write the trees into' "$SKILL"
+  assert_failure
+}
