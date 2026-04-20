@@ -274,6 +274,10 @@ Add or update the following sections:
   - Outside-in TDD workflow summary
   - Example tree structure for this project
 
+### 11b. SCAFFOLD MENTAL_MODEL.md
+
+If `MENTAL_MODEL.md` does not exist at the project root, create it with the seven H2 sections that organise the project's mental model. Do not create the file if it already exists — its content is authoritative and must not be modified.
+
 ### 12. VERIFY
 
 Run each layer's test suite and confirm:
