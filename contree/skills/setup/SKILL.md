@@ -290,6 +290,8 @@ The seven H2 sections, in this order:
 
 Under each heading, write a one-line placeholder describing what belongs there. The placeholders are replaced as the project accrues real content; their purpose is to make the expected contents of each section legible without content yet.
 
+Then add a pointer line to `CLAUDE.md` identifying `MENTAL_MODEL.md` as the definition of the project's mental model. If `CLAUDE.md` already references `MENTAL_MODEL.md`, do not duplicate the pointer.
+
 ### 12. VERIFY
 
 Run each layer's test suite and confirm:
