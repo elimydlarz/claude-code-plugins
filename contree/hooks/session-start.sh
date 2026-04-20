@@ -49,4 +49,9 @@ pressure_phrases=(
 
 printf '\n%s\n' "${pressure_phrases[RANDOM % ${#pressure_phrases[@]}]}"
 
+if [ -f MENTAL_MODEL.md ]; then
+  printf '\n# Mental Model\n\n'
+  cat MENTAL_MODEL.md
+fi
+
 exit 0
