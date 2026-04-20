@@ -28,3 +28,9 @@ run_hook_in() {
   run_hook_in "$project"
   [[ "$output" == *"UNIQUE_TEST_TREES_MARKER_STRING"* ]]
 }
+
+@test "session start directs the agent to use existing mental model concepts, vocabulary, and decisions" {
+  run_hook_in "$BATS_TEST_TMPDIR"
+  [[ "$output" == *"concepts, vocabulary, and decisions"* ]]
+  [[ "$output" == *"inventing parallel"* ]]
+}
