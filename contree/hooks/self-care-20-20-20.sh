@@ -6,7 +6,7 @@ WINDOW=1200
 PRUNE_AGE=3600
 
 mkdir -p "$HEARTBEAT_DIR" 2>/dev/null || exit 0
-NOW=$(date +%s)
+NOW="${CONTREE_NOW:-$(date +%s)}"
 touch "$HEARTBEAT_DIR/$NOW" 2>/dev/null || exit 0
 
 prune_cutoff=$(( NOW - PRUNE_AGE ))
