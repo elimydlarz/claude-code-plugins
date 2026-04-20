@@ -343,6 +343,7 @@ pressure-phrase-on-session-start
 rules-loading
   when a session starts
     then the rules list is shown
+    and the rules include a mental-model orientation instruction
     and not repeated on every response
 ```
 
