@@ -54,56 +54,17 @@ load test_helper
   assert_success
 }
 
-# --- Skill frontmatter ---
-
-@test "tdd skill has name in frontmatter" {
-  run head -5 "$PROJECT_ROOT/skills/tdd/SKILL.md"
-  assert_output --partial 'name: tdd'
-}
-
-@test "tdd skill auto-triggers on behaviour changes" {
-  run head -5 "$PROJECT_ROOT/skills/tdd/SKILL.md"
-  assert_output --partial 'TRIGGER when'
-}
-
-@test "setup skill has name in frontmatter" {
-  run head -5 "$PROJECT_ROOT/skills/setup/SKILL.md"
-  assert_output --partial 'name: setup'
-}
-
-@test "setup skill auto-triggers on missing requirements" {
-  run head -5 "$PROJECT_ROOT/skills/setup/SKILL.md"
-  assert_output --partial 'TRIGGER when'
-}
-
-@test "change skill has name in frontmatter" {
-  run head -5 "$PROJECT_ROOT/skills/change/SKILL.md"
-  assert_output --partial 'name: change'
-}
-
-@test "change skill auto-triggers on behaviour changes" {
-  run head -5 "$PROJECT_ROOT/skills/change/SKILL.md"
-  assert_output --partial 'TRIGGER when'
-}
-
-@test "sync skill has name in frontmatter" {
-  run head -5 "$PROJECT_ROOT/skills/sync/SKILL.md"
-  assert_output --partial 'name: sync'
-}
-
-@test "sync skill auto-triggers on drift questions" {
-  run head -5 "$PROJECT_ROOT/skills/sync/SKILL.md"
-  assert_output --partial 'TRIGGER when'
-}
-
 @test "workflow skill exists" {
   run test -f "$PROJECT_ROOT/skills/workflow/SKILL.md"
   assert_success
 }
 
-@test "workflow skill has name in frontmatter" {
-  run head -5 "$PROJECT_ROOT/skills/workflow/SKILL.md"
-  assert_output --partial 'name: workflow'
+# --- Skill frontmatter (generic validator) ---
+
+@test "every SKILL.md has non-empty name and description" {
+  run bash "$PROJECT_ROOT/scripts/validate-skill-frontmatter.sh" "$PROJECT_ROOT/skills"
+  assert_success
+  [ -z "$output" ]
 }
 
 # --- Tree quality ---
@@ -171,4 +132,3 @@ load test_helper
   run test -f "$PROJECT_ROOT/hooks/session-start.sh"
   assert_success
 }
-
