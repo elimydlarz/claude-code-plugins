@@ -31,7 +31,9 @@ Use the consumer's vocabulary. If the consumer says "register", the tree says "r
 
 **Adding a new capability:**
 
-Name the tree — a short noun phrase describing what the system does. Write paths using EARS patterns (see EARS Patterns below) to describe the capability's operating principles:
+Name the tree — a short noun phrase describing what the system does. **One tree reifies exactly one test file.** If a capability exposes multiple behavioural units (e.g. a module with `generate` AND `isValid`, each testable independently), write **one tree per unit**, not one tree grouping them under a shared header. Grouping destroys the one-tree-one-file invariant and forces the TDD skill to fabricate ambiguous test structure.
+
+Write paths using EARS patterns (see EARS Patterns below) to describe the capability's operating principles:
 
 ```
 capability-name
