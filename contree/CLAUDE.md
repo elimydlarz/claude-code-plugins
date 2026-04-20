@@ -28,7 +28,10 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `.claude-plugin/plugin.json` — plugin manifest (name, version, description)
 - `package.json` — dev dependencies (bats-support, bats-assert) and test scripts
 - `hooks/hooks.json` — SessionStart hook printing rules plus a pressure phrase; Stop hook detecting drift; UserPromptSubmit self-care hook
-- `hooks/session-start.sh` — SessionStart hook: prints the inline rules list plus one random pressure phrase (also inline) to stdout
+- `hooks/session-start.sh` — SessionStart hook: prints the inline rules list plus one random pressure phrase (sourced from `hooks/pressure-phrases.sh`) to stdout
+- `hooks/pressure-phrases.sh` — pressure-phrase pool: prints one random phrase when run, exposes `pressure_phrases` array when sourced
+- `scripts/validate-skill-frontmatter.sh` — bats-only utility: asserts every `skills/*/SKILL.md` has non-empty `name` and `description`
+- `test/fixtures/expected/` — golden files for hook stdout/stderr (diffed by pre-task-hook.bats and post-task-hook.bats)
 - `hooks/stop-drift-check.sh` — Stop hook: injects drift-check prompt unless Claude's last response ends with a question, in which case it yields the turn to the user
 - `hooks/self-care-20-20-20.sh` — UserPromptSubmit hook: reminds user of the 20-20-20 rule after 20 min of keyboard time
 - `skills/setup/SKILL.md` — prepare the project for test-tree-driven development: framework, reporters, initial trees
