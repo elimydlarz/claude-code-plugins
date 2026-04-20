@@ -20,3 +20,11 @@ run_hook_in() {
   run_hook_in "$project"
   [[ "$output" == *"UNIQUE_MENTAL_MODEL_MARKER_STRING"* ]]
 }
+
+@test "session start displays TEST_TREES.md contents when file exists" {
+  local project="$BATS_TEST_TMPDIR/project"
+  mkdir -p "$project"
+  printf 'UNIQUE_TEST_TREES_MARKER_STRING\n' > "$project/TEST_TREES.md"
+  run_hook_in "$project"
+  [[ "$output" == *"UNIQUE_TEST_TREES_MARKER_STRING"* ]]
+}
