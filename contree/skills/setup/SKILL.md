@@ -267,14 +267,15 @@ Then add a pointer line to `CLAUDE.md` identifying `MENTAL_MODEL.md` as the defi
 
 ### 13. VERIFY
 
-Run each layer's test suite and confirm:
+Run each layer's test suite and confirm tree-shaped output at each layer:
 
-- Domain test output is tree-shaped (or best available for the language)
-- Use-case test output is tree-shaped
-- Adapter test output is tree-shaped
-- System test output is tree-shaped
+- Domain (`*.domain.test.*`) — tree-shaped (or best available for the language)
+- Use-case (`*.use-case.test.*`) — tree-shaped
+- Adapter (`*.adapter.test.*`) — tree-shaped
+- System (`*.system.test.*`) — tree-shaped
 - Mutation testing runs and produces a score report
-- If no tests exist yet, create minimal smoke tests at each layer with nested describe/it blocks, run to confirm tree-shaped output
+
+**Do NOT create test files to verify the reporter.** If no tests exist yet, the empty suite's output (no tests found, reporter-formatted) is sufficient evidence that the reporter is wired correctly. Writing smoke tests or stubs violates rule #6 and rule #3 above (No fake code). The `tdd` skill writes tests later, from the trees.
 
 ---
 
