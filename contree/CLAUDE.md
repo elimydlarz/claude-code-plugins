@@ -320,7 +320,7 @@ composable-testing
 pressure-phrase-on-session-start
   when a session starts
     then one pressure phrase is appended to the rules output
-    and the phrase is randomly drawn from the inline pressure-phrase pool
+    and the phrase is randomly drawn from the pressure-phrase pool in hooks/pressure-phrases.sh
   then the pressure-phrase pool spans tip-framing, career-stakes, boss-watching, and urgency registers
   then phrases vary in wording across the pool
 ```
