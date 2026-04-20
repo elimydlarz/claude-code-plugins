@@ -288,6 +288,8 @@ The seven H2 sections, in this order:
 6. `## Decision Rationale`
 7. `## Temporal View`
 
+Under each heading, write a one-line placeholder describing what belongs there. The placeholders are replaced as the project accrues real content; their purpose is to make the expected contents of each section legible without content yet.
+
 ### 12. VERIFY
 
 Run each layer's test suite and confirm:
