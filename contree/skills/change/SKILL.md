@@ -167,7 +167,7 @@ scoreRepositoryContract(() => new PostgresScoreRepository(testDb))
 
 The contract suite IS the port-contract tree (`ScoreRepository`). Both adapter tests run the shared suite. The real adapter's test file *also* has tests for behaviour that only exists at its seam (timeouts, retries, constraint violations) — those live in the same `*.adapter.test.*` file but outside the shared suite.
 
-The tree in `## Test Trees`:
+The tree in `TEST_TREES.md`:
 
 ```
 ScoreRepository
