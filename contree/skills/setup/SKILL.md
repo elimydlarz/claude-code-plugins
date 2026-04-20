@@ -216,17 +216,13 @@ Configure commands to run only tests affected by recent changes. Be aware of the
 
 Commands should be simple to invoke — package.json scripts, Makefile targets, or mix aliases.
 
-### 10. CREATE TEST_TREES.md AND OFFER TO COMPOSE INITIAL TREES
+### 10. CREATE TEST_TREES.md AND HAND OFF TREE COMPOSITION TO THE CHANGE SKILL
 
 Create `TEST_TREES.md` at the project root if it does not already exist, containing a short header noting that the file holds the project's test trees and that new trees should be added as `###` subsections using EARS patterns.
 
-**Do not compose the trees yourself in this step.** Tree decomposition is the `change` skill's expertise — it enforces one-tree-one-file, the system/inner-layer naming heuristic, the EARS-by-requirement-nature rule, and causal nesting. Doing it inline here tends to drop those rules.
+**Do not compose the trees yourself in this step.** Tree decomposition is the `change` skill's expertise — it enforces one-tree-one-file, the system/inner-layer naming heuristic, the EARS-by-requirement-nature rule, and causal nesting. Doing it inline here tends to drop those rules and produce grouped or mis-layered trees.
 
-Instead, once the framework is configured and `TEST_TREES.md` exists, offer the user:
-
-> "Framework is set up and `TEST_TREES.md` is in place. To compose the initial test trees, I'd recommend running `/contree:change` — it has deeper decomposition guidance. Want me to invoke it now, or compose them later yourself?"
-
-If the user accepts, invoke `/contree:change` and let that skill drive the tree composition.
+Once the framework is configured and `TEST_TREES.md` exists, invoke `/contree:change` and let that skill drive the tree composition. Do not attempt it yourself, even if the project looks simple.
 
 **Do not create any `*.test.*` or `*.spec.*` files in this step**, not even with `.todo`/`.skip` stubs. Tests are the `tdd` skill's output.
 
