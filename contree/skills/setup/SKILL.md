@@ -220,7 +220,7 @@ Commands should be simple to invoke — package.json scripts, Makefile targets, 
 
 This is the key step that distinguishes contree from a plain test framework setup.
 
-**Read the codebase and generate test trees that describe what the system does today.** These become the `## Test Trees` section in CLAUDE.md.
+**Read the codebase and generate test trees that describe what the system does today.** Write them into `TEST_TREES.md` at the project root — one file, flat subsections, one `###` heading per behavioural unit.
 
 Process:
 1. Identify the system's capabilities — what does it do from the consumer's perspective?
@@ -230,13 +230,11 @@ Process:
 5. If existing tests exist, use them as input — but rewrite as principle-describing trees, don't copy test names verbatim
 6. If the system is new/empty, write requirement trees for the planned capabilities based on what the user describes
 
-**Do NOT implement the test trees** — they are requirements only at this stage. The `tdd` skill handles implementation later.
+**Do NOT implement the test trees** — they are requirements only at this stage. The `tdd` skill handles implementation later. In particular, **do not create any `*.test.*` or `*.spec.*` files in this step**, not even with `.todo`/`.skip` stubs. Tests are the `tdd` skill's output.
 
-Write the trees into `## Test Trees` in CLAUDE.md. Each capability gets its own subsection:
+Write the trees into `TEST_TREES.md`. Each capability gets its own `###` subsection:
 
 ```markdown
-## Test Trees
-
 ### UserRegistration
 
 UserRegistration
@@ -264,7 +262,6 @@ InvoiceGeneration
 Add or update the following sections:
 
 - A pointer line identifying `TEST_TREES.md` as the definition of the project's test trees. If `CLAUDE.md` already references `TEST_TREES.md`, do not duplicate the pointer.
-- `## Test Trees` — the trees from step 10
 - Testing commands section with:
   - Command to run Domain tests with tree output
   - Command to run Use-case tests with tree output
