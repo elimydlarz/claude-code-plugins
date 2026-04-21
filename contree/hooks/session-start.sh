@@ -5,6 +5,8 @@
 cat <<'EOF'
 # Directions
 
+Eagerly use these skills to fulfil operator requests, where applicable:
+
 - **change** — any behaviour change, before any code is discussed or written
 - **tdd** — implementing behaviour, writing code, or writing tests
 - **sync** — drift, gaps, staleness, or completeness
