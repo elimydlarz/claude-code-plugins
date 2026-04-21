@@ -72,7 +72,7 @@ run_claude() {
     --plugin-dir "$CONTREE_ROOT" \
     --dangerously-skip-permissions \
     --model sonnet \
-    --max-budget-usd 0.50 \
+    --max-budget-usd 2.00 \
     --output-format stream-json \
     --verbose \
     "$@" 2>&1) | tee -a "$TRANSCRIPT_FILE" || true
