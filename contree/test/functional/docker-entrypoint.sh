@@ -274,8 +274,9 @@ VERIFY
     echo "Unknown test: $TEST_NAME" >&2
     echo ""
     echo "Available tests:"
-    echo "  full-workflow     — pure utility: setup → workflow → drift → sync (Domain-weighted)"
-    echo "  layered-workflow  — HTTP API: setup → workflow → drift → sync (exercises all four layers + ports + in-memory adapters)"
+    echo "  full-workflow                  — pure utility: setup → workflow → drift → sync (Domain-weighted)"
+    echo "  layered-workflow               — HTTP API: setup → workflow → drift → sync (exercises all four layers + ports + in-memory adapters)"
+    echo "  mental-model-validator-smoke   — one-shot: malformed MM + Claude edit → verifies PostToolUse hook emits validator findings"
     exit 1
     ;;
 esac
