@@ -59,6 +59,46 @@ run_hook_in() {
   [[ "$output" == *"behaviour contract"* ]]
 }
 
+# --- Skill directions ---
+
+@test "session start directs the agent to use the change skill for behaviour changes before any code is discussed or written" {
+  run_hook_in "$BATS_TEST_TMPDIR"
+  [[ "$output" == *"change"* ]]
+  [[ "$output" == *"behaviour change"* ]]
+  [[ "$output" == *"before any code is discussed or written"* ]]
+}
+
+@test "session start directs the agent to use the tdd skill when implementing behaviour, writing code, or writing tests" {
+  run_hook_in "$BATS_TEST_TMPDIR"
+  [[ "$output" == *"tdd"* ]]
+  [[ "$output" == *"implementing behaviour, writing code, or writing tests"* ]]
+}
+
+@test "session start directs the agent to use the sync skill for drift, gaps, staleness, or completeness" {
+  run_hook_in "$BATS_TEST_TMPDIR"
+  [[ "$output" == *"sync"* ]]
+  [[ "$output" == *"drift, gaps, staleness, or completeness"* ]]
+}
+
+@test "session start directs the agent to use the setup skill when no framework is configured or TEST_TREES.md is absent" {
+  run_hook_in "$BATS_TEST_TMPDIR"
+  [[ "$output" == *"setup"* ]]
+  [[ "$output" == *"no test framework"* ]]
+  [[ "$output" == *"TEST_TREES.md"* ]]
+}
+
+@test "session start directs the agent to use the workflow skill for the full arc from idea to verified working software" {
+  run_hook_in "$BATS_TEST_TMPDIR"
+  [[ "$output" == *"workflow"* ]]
+  [[ "$output" == *"full arc from idea to verified working software"* ]]
+}
+
+@test "session start directs the agent to use the distill skill when CLAUDE.md grows too large" {
+  run_hook_in "$BATS_TEST_TMPDIR"
+  [[ "$output" == *"distill"* ]]
+  [[ "$output" == *"CLAUDE.md"* ]]
+}
+
 # --- Pressure phrase integration (pressure-phrase-on-session-start tree) ---
 
 @test "session start prints a random pressure phrase from the pool" {
