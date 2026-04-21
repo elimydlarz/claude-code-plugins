@@ -12,8 +12,6 @@ Three products live in this repo:
 
 Users add this repo as a marketplace (`claude plugin marketplace add elimydlarz/claude-code-plugins`), then install individual plugins. The marketplace uses relative paths (`"source": "./trunk-sync"`) so plugins are installed directly from this repo.
 
-Note: trunk-sync's `install` command (`trunk-sync/src/commands/install.ts`) currently adds the old trunk-sync repo as the marketplace source — this needs updating to point to `elimydlarz/claude-code-plugins`.
-
 ## Repo Map
 
 ```
