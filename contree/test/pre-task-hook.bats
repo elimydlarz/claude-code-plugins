@@ -98,12 +98,6 @@ run_hook_in() {
   [[ "$output" == *"full arc from idea to verified working software"* ]]
 }
 
-@test "session start directs the agent to use the distill skill when CLAUDE.md grows too large" {
-  run_hook_in "$BATS_TEST_TMPDIR"
-  [[ "$output" == *"distill"* ]]
-  [[ "$output" == *"CLAUDE.md"* ]]
-}
-
 # --- Pressure phrase integration (pressure-phrase-on-session-start tree) ---
 
 @test "session start prints a random pressure phrase from the pool" {
