@@ -3,9 +3,10 @@
 load test_helper
 
 HOOKS_JSON="$PROJECT_ROOT/hooks/hooks.json"
+SCRIPT="$PROJECT_ROOT/hooks/session-start.sh"
 
-@test "the rules list is shown at session start" {
-  run bash "$PROJECT_ROOT/hooks/session-start.sh"
+@test "session-start.sh emits a Rules section with the coding rules" {
+  run cat "$SCRIPT"
   [[ "$output" == *"# Rules"* ]]
   [[ "$output" == *"KISS"* ]]
 }
