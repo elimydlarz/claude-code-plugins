@@ -105,12 +105,17 @@ case "$TEST_NAME" in
     echo ""
     echo "=== Phase 3: drift injection + sync ==="
     # Inject drift: add an undocumented capability to the source without updating the trees.
-    if [ -f "$PROJECT_DIR/src/codes.js" ]; then
-      DRIFT_TARGET="$PROJECT_DIR/src/codes.js"
-    elif [ -f "$PROJECT_DIR/src/index.js" ]; then
-      DRIFT_TARGET="$PROJECT_DIR/src/index.js"
-    else
-      DRIFT_TARGET="$(find "$PROJECT_DIR/src" -maxdepth 2 -name '*.js' -not -name '*.test.*' | head -n 1)"
+    DRIFT_TARGET=""
+    for candidate in \
+      "$PROJECT_DIR/src/codes.ts" "$PROJECT_DIR/src/codes.js" \
+      "$PROJECT_DIR/src/index.ts" "$PROJECT_DIR/src/index.js"; do
+      if [ -f "$candidate" ]; then
+        DRIFT_TARGET="$candidate"
+        break
+      fi
+    done
+    if [ -z "$DRIFT_TARGET" ]; then
+      DRIFT_TARGET="$(find "$PROJECT_DIR/src" -maxdepth 2 \( -name '*.ts' -o -name '*.js' \) -not -name '*.test.*' -not -name '*.spec.*' | head -n 1)"
     fi
     if [ -n "$DRIFT_TARGET" ] && [ -f "$DRIFT_TARGET" ]; then
       cat >> "$DRIFT_TARGET" <<'DRIFT'
