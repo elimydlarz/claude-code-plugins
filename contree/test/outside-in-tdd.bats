@@ -18,7 +18,7 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
 }
 
 @test "tdd mirrors the tree in describe/it hierarchy" {
-  run cat "$SKILL"
+  run cat "$PROJECT_ROOT/skills/tdd/SKILL.md" "$PROJECT_ROOT/skills/change/SKILL.md"
   [[ "$output" == *"describe"* ]]
   [[ "$output" == *"mirror"* || "$output" == *"mirrors"* ]]
 }
