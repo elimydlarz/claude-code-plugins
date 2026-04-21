@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A Claude Code plugin that unifies test-tree-driven development with living requirements. Test trees ARE the requirements — they live in `## Test Trees` of the project's CLAUDE.md, describe what the system does using EARS syntax, and are kept in sync with implementation automatically.
+A Claude Code plugin that unifies test-tree-driven development with living requirements. Test trees ARE the requirements — they live in `TEST_TREES.md` at the project root, describe what the system does using EARS syntax, and are kept in sync with implementation automatically.
 
 Mechanisms:
 
