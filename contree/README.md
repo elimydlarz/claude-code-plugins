@@ -33,11 +33,9 @@ claude plugin install contree@susu-eng --scope project
 
 ## Test tree format
 
-Trees in `CLAUDE.md` look like this:
+Trees in `TEST_TREES.md` look like this:
 
 ```markdown
-## Test Trees
-
 ### UserRegistration
 
 UserRegistration
