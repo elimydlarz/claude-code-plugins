@@ -3,6 +3,15 @@
 # Claude Code injects SessionStart stdout (exit 0) into the model's context.
 
 cat <<'EOF'
+# Directions
+
+- **change** — any behaviour change, before any code is discussed or written
+- **tdd** — implementing behaviour, writing code, or writing tests
+- **sync** — drift, gaps, staleness, or completeness
+- **setup** — no test framework is configured or TEST_TREES.md is absent
+- **workflow** — the full arc from idea to verified working software
+- **distill** — CLAUDE.md grows too large
+
 # Rules
 
 - **KISS** — complexity is bad; simplicity above almost all else
