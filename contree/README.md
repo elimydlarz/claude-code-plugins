@@ -1,6 +1,6 @@
 # contree
 
-Test trees as living requirements. Combines test-driven development with automatic requirements synchronisation — your test trees in `CLAUDE.md` ARE the specification, always up to date. Tests are layered by hexagonal seam — Domain, Use-case, Adapter, System — with in-memory adapters so application-level tests run at unit speed and a shared port contract suite keeping in-memory and real adapters honest.
+Test trees as living requirements. Combines test-driven development with automatic requirements synchronisation — your test trees in `TEST_TREES.md` ARE the specification, always up to date. Tests are layered by hexagonal seam — Domain, Use-case, Adapter, System — with in-memory adapters so application-level tests run at unit speed and a shared port contract suite keeping in-memory and real adapters honest.
 
 ## What it does
 
