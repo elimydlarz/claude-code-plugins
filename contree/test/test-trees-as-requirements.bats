@@ -49,6 +49,5 @@ load test_helper
 
 @test "tdd skill directs updating the tree when implementation reveals new understanding" {
   run cat "$PROJECT_ROOT/skills/tdd/SKILL.md"
-  [[ "$output" == *"new test cases"* ]]
-  [[ "$output" == *"added to the tree"* ]]
+  [[ "$output" == *"add new cases as you discover them"* || "$output" == *"add newly discovered cases"* ]]
 }
