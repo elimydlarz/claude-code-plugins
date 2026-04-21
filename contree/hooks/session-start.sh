@@ -12,7 +12,6 @@ Eagerly use these skills to fulfil operator requests, where applicable:
 - **sync** — drift, gaps, staleness, or completeness
 - **setup** — no test framework is configured or TEST_TREES.md is absent
 - **workflow** — the full arc from idea to verified working software
-- **distill** — CLAUDE.md grows too large
 
 # Rules
 
