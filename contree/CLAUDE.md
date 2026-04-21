@@ -25,6 +25,7 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 ## Repo Map
 
 - `CLAUDE.md` — this file
+- `TEST_TREES.md` — functional and cross-functional requirements as test trees (see `## Test Trees` below for pointer)
 - `.claude-plugin/plugin.json` — plugin manifest (name, version, description)
 - `package.json` — dev dependencies (bats-support, bats-assert) and test scripts
 - `hooks/hooks.json` — SessionStart hook printing rules plus a pressure phrase; Stop hook detecting drift; UserPromptSubmit self-care hook
