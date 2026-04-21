@@ -75,6 +75,12 @@ pre-task-hook
     and the agent is directed to preserve the mental model's invariants, surfacing conflict when a task appears to require breaking one rather than routing around it
     and the agent is directed to flag the mental model as wrong, incomplete, or misleading rather than silently reshaping it through code
     and the agent is directed to treat test trees as the authoritative behaviour contract
+    and the agent is directed to use the change skill for any behaviour change, before any code is discussed or written
+    and the agent is directed to use the tdd skill when implementing behaviour, writing code, or writing tests
+    and the agent is directed to use the sync skill when asked about drift, gaps, staleness, or completeness
+    and the agent is directed to use the setup skill when no test framework is configured or TEST_TREES.md is absent
+    and the agent is directed to use the workflow skill for the full arc from idea to verified working software
+    and the agent is directed to use the distill skill when CLAUDE.md grows too large
 ```
 
 ## post-task-hook
