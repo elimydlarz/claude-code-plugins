@@ -47,8 +47,8 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
 
 @test "tdd adds newly discovered cases without removing existing paths" {
   run cat "$SKILL"
-  [[ "$output" == *"new test cases"* ]]
-  [[ "$output" == *"added to the tree"* ]]
+  [[ "$output" == *"add new cases as you discover them"* || "$output" == *"add newly discovered cases"* ]]
+  [[ "$output" == *"Never modify or remove an existing path"* || "$output" == *"not modify or remove"* ]]
 }
 
 @test "tdd breaks the implementation intentionally when a red test passes" {
