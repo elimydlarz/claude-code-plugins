@@ -81,7 +81,6 @@ pre-task-hook
     and the agent is directed to use the sync skill when asked about drift, gaps, staleness, or completeness
     and the agent is directed to use the setup skill when no test framework is configured or TEST_TREES.md is absent
     and the agent is directed to use the workflow skill for the full arc from idea to verified working software
-    and the agent is directed to use the distill skill when CLAUDE.md grows too large
 ```
 
 ## post-task-hook
