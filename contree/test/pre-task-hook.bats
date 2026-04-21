@@ -61,6 +61,11 @@ run_hook_in() {
 
 # --- Skill directions ---
 
+@test "session start directs the agent to eagerly use the listed skills to fulfil operator requests where applicable" {
+  run_hook_in "$BATS_TEST_TMPDIR"
+  [[ "$output" == *"Eagerly use these skills to fulfil operator requests, where applicable"* ]]
+}
+
 @test "session start directs the agent to use the change skill for behaviour changes before any code is discussed or written" {
   run_hook_in "$BATS_TEST_TMPDIR"
   [[ "$output" == *"change"* ]]
