@@ -87,6 +87,69 @@ write_verify() {
 # --- Test ---
 
 case "$TEST_NAME" in
+  mental-model-validator-smoke)
+    # Verifies that the PostToolUse hook fires on a MENTAL_MODEL.md edit and
+    # the mental-model validator's findings reach Claude's next response via
+    # additionalContext JSON (visible in the transcript as a hook event).
+    seed_project "greenfield"
+
+    # Seed MENTAL_MODEL.md deliberately malformed: missing the Temporal View
+    # section, plus a rogue H2. Hook fires after Claude edits it.
+    cat > "$PROJECT_DIR/MENTAL_MODEL.md" <<'MM'
+## Core Domain Identity
+
+- placeholder
+
+## World-to-Code Mapping
+
+- placeholder
+
+## Ubiquitous Language
+
+- placeholder
+
+## Bounded Contexts
+
+- placeholder
+
+## Invariants
+
+- placeholder
+
+## Decision Rationale
+
+- placeholder
+
+## Rogue Extra Section
+
+- this heading is not one of the seven
+MM
+    (cd "$PROJECT_DIR" && git add -A && git commit -q -m "seed: malformed MENTAL_MODEL.md")
+
+    run_claude \
+      "Read MENTAL_MODEL.md and add one placeholder bullet to the Invariants section. Save the file. Do nothing else."
+
+    write_verify << 'VERIFY'
+Evaluate the transcript against the `post-update-hook` and `mental-model-validator` trees.
+
+The scenario: MENTAL_MODEL.md was seeded malformed (missing the Temporal View
+section; contains an extra "Rogue Extra Section" heading that is not one of
+the seven named sections). Claude then edits the file. The PostToolUse hook
+must fire, invoke the validator, and surface its findings via additionalContext
+JSON, visible in the transcript as a hook event.
+
+Expected signals in the transcript:
+
+  - a hook-event entry whose hookEventName is "PostToolUse"
+  - additionalContext naming the missing "Temporal View" section
+  - additionalContext naming the rogue "Rogue Extra Section" heading
+  - Claude acknowledges the findings in its next response
+
+For each `when/then` path in `post-update-hook` and `mental-model-validator`,
+return PASS / FAIL / N/A with quoted evidence. Report counts at the end.
+VERIFY
+    ;;
+
   full-workflow)
     # One scenario, three phases in one session, covers every tree in
     # contree/CLAUDE.md ## Test Trees.
