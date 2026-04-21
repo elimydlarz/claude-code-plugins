@@ -6,6 +6,7 @@ A Claude Code plugin that unifies test-tree-driven development with living requi
 
 Mechanisms:
 
+- **Directions** — skill routing printed by the SessionStart hook. Names each skill (`change`, `tdd`, `sync`, `setup`, `workflow`) with a one-line trigger so the agent reaches for skills eagerly rather than relying on skill-frontmatter discovery alone. Lives inline in `hooks/session-start.sh`.
 - **Rules** — coding principles printed by the SessionStart hook (simplicity, expressiveness, fail-fast, no fake code, etc.). The rules list lives inline in `hooks/session-start.sh` so it ships with the plugin install.
 - **setup skill** — prepare the project for ongoing test-tree-driven development. Configures test framework with tree reporters, generates initial test trees, establishes the contract.
 - **change skill** — set expected behaviour. Talks through the change, writes or modifies test trees before code exists.
