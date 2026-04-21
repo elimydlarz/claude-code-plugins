@@ -28,28 +28,38 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `TEST_TREES.md` — functional and cross-functional requirements as test trees (the authoritative behaviour contract)
 - `.claude-plugin/plugin.json` — plugin manifest (name, version, description)
 - `package.json` — dev dependencies (bats-support, bats-assert) and test scripts
-- `hooks/hooks.json` — SessionStart hook printing rules plus a pressure phrase; Stop hook detecting drift; UserPromptSubmit self-care hook
-- `hooks/session-start.sh` — SessionStart hook: prints the inline rules list plus one random pressure phrase (sourced from `hooks/pressure-phrases.sh`) to stdout
+- `hooks/hooks.json` — wires SessionStart (rules + pressure phrase), Stop (drift check), UserPromptSubmit (self-care), and PostToolUse (mental-model validator)
+- `hooks/session-start.sh` — SessionStart hook: prints the skill Directions block, the inline rules list, and one random pressure phrase (sourced from `hooks/pressure-phrases.sh`) to stdout
 - `hooks/pressure-phrases.sh` — pressure-phrase pool: prints one random phrase when run, exposes `pressure_phrases` array when sourced
-- `scripts/validate-skill-frontmatter.sh` — bats-only utility: asserts every `skills/*/SKILL.md` has non-empty `name` and `description`
 - `hooks/stop-drift-check.sh` — Stop hook: injects drift-check prompt unless Claude's last response ends with a question, in which case it yields the turn to the user
 - `hooks/self-care-20-20-20.sh` — UserPromptSubmit hook: reminds user of the 20-20-20 rule after 20 min of keyboard time
+- `hooks/post-update-check.sh` — PostToolUse hook: when MENTAL_MODEL.md is edited, runs `validate-mental-model.sh` and surfaces findings to Claude via additionalContext JSON
+- `hooks/validate-mental-model.sh` — advisory validator: checks MENTAL_MODEL.md for the seven named sections, section caps, rogue headings, and file presence
+- `rules/integration-testing.md` — standalone integration-testing rules (not a skill)
+- `scripts/validate-skill-frontmatter.sh` — bats-only utility: asserts every `skills/*/SKILL.md` has non-empty `name` and `description`
 - `skills/setup/SKILL.md` — prepare the project for test-tree-driven development: framework, reporters, initial trees
 - `skills/change/SKILL.md` — set expected behaviour: write or modify test trees before code exists
 - `skills/sync/SKILL.md` — identify gaps and cruft: test trees vs implementation in both directions
 - `skills/tdd/SKILL.md` — close gaps: outside-in TDD, one failing test at a time
 - `skills/workflow/SKILL.md` — the full arc: idea → contract → verified implementation
-- `test/plugin.bats` — structural tests: plugin manifest, skill files, frontmatter
-- `test/hook.bats` — hook behaviour tests: loop prevention, exit codes, prompt content
-- `test/self-care.bats` — self-care hook tests: nudge timing, file creation, error handling
+- `test/plugin.bats` — structural tests: plugin manifest, skill files, frontmatter, hook wiring
+- `test/pre-task-hook.bats` — SessionStart hook tests: rules, Directions, mental-model and test-tree framing, file interpolation, pressure phrase
+- `test/post-task-hook.bats` — Stop hook tests: loop prevention, exit codes, question-mark yielding, nudge content
+- `test/post-update-hook.bats` — PostToolUse hook tests: validator runs only on MENTAL_MODEL.md edits, findings surface via additionalContext
+- `test/mental-model-validator.bats` — validator tests: seven-section enforcement, cap overflow, rogue-heading flagging, missing-file flagging
+- `test/pressure-phrases.bats` — pool tests: minimum size, randomness, register coverage, source-vs-run behaviour
+- `test/self-care.bats` — self-care hook tests: heartbeat pruning, 20-minute continuity, reminder throttling, silent failure
+- `test/validate-skill-frontmatter.bats` — frontmatter validator tests
 - `test/functional/Dockerfile` — Docker image for functional tests (node + git + jq + claude CLI, fixture deps pre-installed)
 - `test/functional/docker-run.sh` — runs functional tests in Docker (parallel), passes secrets via env vars
-- `test/functional/docker-entrypoint.sh` — test cases with VERIFY criteria; transcripts saved as JSONL and analysed by Claude directly
-- `test/fixtures/seed-project/` — tiny JS counter module used as test target
-- `test/fixtures/incidental-pass/` — counter with reset() pre-implemented (for incidental-pass test)
+- `test/functional/docker-entrypoint.sh` — named functional test cases (`full-workflow`, `layered-workflow`, `mental-model-validator-smoke`); each writes a transcript and a VERIFY prompt that evaluates the trees
+- `test/fixtures/greenfield/` — empty JS project used as the starting state for `full-workflow`
+- `test/fixtures/bookmarks-api/` — HTTP API fixture for `layered-workflow` (exercises all four hex layers + ports)
+- `test/fixtures/ears-project/` — media player module for EARS pattern functional test
+- `test/fixtures/seed-project/` — tiny JS counter module used as a legacy test target
+- `test/fixtures/incidental-pass/` — counter with reset() pre-implemented (for incidental-pass scenarios)
 - `test/fixtures/sync-drift/` — counter with deliberate drift (amount param without tree, decrement tree without impl)
 - `test/fixtures/tdd-ready/` — counter with vitest configured + requirements, no tests
-- `test/fixtures/ears-project/` — media player module for EARS pattern functional test
 
 ## Functional Testing
 
