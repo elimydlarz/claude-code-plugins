@@ -169,7 +169,7 @@ VERIFY
     echo ""
     echo "=== Phase 3: drift injection + sync ==="
     # Inject drift: add an undocumented DELETE endpoint without updating trees.
-    HANDLER_FILE="$(find "$PROJECT_DIR/src" -maxdepth 3 -name '*.js' -not -name '*.test.*' | xargs grep -l 'router\|app\.\(get\|post\|delete\|put\)' 2>/dev/null | head -n 1)"
+    HANDLER_FILE="$(find "$PROJECT_DIR/src" -maxdepth 3 \( -name '*.ts' -o -name '*.js' \) -not -name '*.test.*' -not -name '*.spec.*' -print0 | xargs -0 grep -l 'router\|app\.\(get\|post\|delete\|put\)' 2>/dev/null | head -n 1)"
     if [ -n "$HANDLER_FILE" ] && [ -f "$HANDLER_FILE" ]; then
       cat >> "$HANDLER_FILE" <<'DRIFT'
 
