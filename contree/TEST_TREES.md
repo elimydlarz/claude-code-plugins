@@ -75,6 +75,7 @@ pre-task-hook
     and the agent is directed to preserve the mental model's invariants, surfacing conflict when a task appears to require breaking one rather than routing around it
     and the agent is directed to flag the mental model as wrong, incomplete, or misleading rather than silently reshaping it through code
     and the agent is directed to treat test trees as the authoritative behaviour contract
+    and the agent is directed to eagerly use the listed skills to fulfil operator requests where applicable
     and the agent is directed to use the change skill for any behaviour change, before any code is discussed or written
     and the agent is directed to use the tdd skill when implementing behaviour, writing code, or writing tests
     and the agent is directed to use the sync skill when asked about drift, gaps, staleness, or completeness
