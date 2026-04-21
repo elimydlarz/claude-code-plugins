@@ -4,7 +4,7 @@ Test trees as living requirements. Combines test-driven development with automat
 
 ## What it does
 
-**Test trees become requirements.** Instead of separate requirement documents and test code, contree puts `when/then` test trees directly in your project's `## Test Trees` section in `CLAUDE.md`. Every test you write reifies exactly one tree.
+**Test trees become requirements.** Instead of separate requirement documents and test code, contree puts `when/then` test trees directly in your project's `TEST_TREES.md` at the project root. Every test you write reifies exactly one tree.
 
 Five skills:
 
