@@ -42,7 +42,7 @@ For each test tree, check three things:
 
 ### 4. COMPARE: IMPLEMENTATION → TREES
 
-Check the reverse — does the implementation do things no test tree describes?
+Check the reverse — does the implementation do things no test tree describes? At Domain, Use-case, and Port-contract, any branch without a corresponding tree path is drift. At Adapter and System, any observable behaviour at the seam without a tree is drift.
 
 ### 5. RESOLVE DRIFT
 
