@@ -48,17 +48,13 @@ Install from the `susu-eng` marketplace:
 /plugin install climber@susu-eng
 ```
 
-Then run `/climb` once to populate `~/.claude/climber/`. To activate the clone in a project, add `.claude/settings.json` at the project root with:
+Then run `/climb` once to populate `~/.claude/climber/`. To activate the clone in a project, run from that project's root:
 
-```json
-{
-  "enabledPlugins": {
-    "climber@susu-eng": true
-  }
-}
+```
+claude plugin install climber@susu-eng --scope project
 ```
 
-In opted-in projects, the SessionStart hook injects `~/.claude/climber/manual.md` automatically, the three test-time skills fire on their triggers, and the Stop hook drives toward `VISION.md`. In projects without this entry, climber stays dormant.
+Commit the resulting `.claude/settings.json` so teammates inherit the opt-in. In opted-in projects, the SessionStart hook injects `~/.claude/climber/manual.md` automatically, the three test-time skills fire on their triggers, and the Stop hook drives toward `VISION.md`. In projects without this entry, climber stays dormant.
 
 ## Publishing
 
