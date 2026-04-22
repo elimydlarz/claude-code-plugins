@@ -42,7 +42,7 @@ Dispatch via `run_in_background: true` so the main context stays clean.
 
 - **Lens 1 — correction triggers & frustration.** Characterise Claude's BEHAVIOUR before short interruptions ("no", "stop", "huh?", "wrong", "actually", "wait") or frustration markers (profanity, CAPS). Probe for: preamble/recap, "shall I proceed?" theatre, trade-off tables answering yes/no, menus after decisions, plan-doc editing mid-conversation, fabricated content, adjacent work the user reserved, "for consistency" smuggling, partial-read → proposal, racing past unresolved questions, unasked renames, silent error swallowing, defensive defaults.
 - **Lens 2 — taste from acceptance/rejection.** What accepted-vs-rejected proposals reveal: loaded vocabulary with specific meanings, unusual structural choices, the "Claude worried, user shrugged" cases.
-- **Lens 3 — cross-session meta-patterns.** Same lesson re-taught in new clothing; session rhythm (openers, `/clear` vs new session, abandoned threads); division-of-labour signals; recurring friction.
+- **Lens 3 — cross-session meta-patterns & approach to goals.** Same lesson re-taught in new clothing; session rhythm (openers, `/clear` vs new session, abandoned threads); approach to a goal (opening moves, turn rhythm, widen-vs-narrow, exit conditions); recurring friction.
 
 Each returns bulleted lessons with 2–3 concrete citations.
 
