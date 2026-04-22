@@ -175,10 +175,16 @@ setup-installs-architectural-linter
 change-writes-trees
   when a behaviour change is needed
     then the change is discussed with the user before modifying trees
-    and test trees are written from the consumer's perspective
     and EARS patterns are chosen to match each requirement's nature
     and every then clause asserts something the when clause does not already imply
     and System → inner-layer decomposition is planned, one tree per behavioural unit
+    and every tree's paths map verbatim to a describe/it hierarchy in one test file
+  when an Adapter or System tree is written
+    then paths use the consumer's vocabulary, not implementation internals
+    and paths describe principles, not enumerated cases
+  when a Domain, Use-case, or Port-contract tree is written
+    then top-level nodes name the unit's exported functions, methods, or port operations
+    and each path corresponds to an observable branch in the unit
   when modifying existing behaviour
     then only affected paths are changed
   when removing a capability
