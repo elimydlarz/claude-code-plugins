@@ -29,7 +29,8 @@ Read the codebase to understand what's actually implemented:
 
 - Source code — what capabilities exist? What domain objects, use-cases, ports, adapters?
 - Existing tests at each layer (`*.domain.test.*`, `*.use-case.test.*`, `*.adapter.test.*`, `*.system.test.*`) — what's already covered?
-- Test output — run tests and read the tree output per layer
+- **Describe/it hierarchy in each test file** — parse the test source (`describe(`, `it(`, `test(`, `context(`, or the language's equivalent). This is the framework-agnostic comparison point: the hierarchy must mirror its tree verbatim.
+- Test output — where the framework supports nested output, run tests and read the tree reporter output. Supplementary to describe/it parsing.
 
 ### 3. COMPARE: TREES → IMPLEMENTATION
 
