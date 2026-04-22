@@ -15,7 +15,7 @@ Climber splits the job into **build time** and **test time**:
   - `antipatterns.md` — the if-then list `review-turn` consumes.
   - `precedents.md` — the decision table `predict-user` consumes.
   - `lessons.md` — two-halved human-readable doc (explicit + implicit) for the user to review.
-- **Test time** — the clone operates a Claude Code session on the user's behalf. Three skills fire on their triggers and consume the artefacts. **No skill ever touches raw transcripts at test time.**
+- **Test time** — the clone operates a Claude Code session on the user's behalf. Three skills fire on their triggers and consume the artefacts. **No skill ever touches raw transcripts at test time.** A **Stop hook** (`hooks/drive-to-vision.sh`) enforces climbing: while `./VISION.md` exists and isn't marked `Status: Achieved`, it blocks turn-end and nudges the clone to keep driving. It yields when the clone's last message ends with `?` (escalation), when VISION.md is absent (vision-definition phase), or when it's marked achieved.
 
 ## Skills
 
