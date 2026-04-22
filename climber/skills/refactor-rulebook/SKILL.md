@@ -6,7 +6,7 @@ description: Fold a newly-learned pattern into the rulebook by tightening an exi
 Target file is one of:
 
 - `~/.claude/climber/manual.md` — ambient rules (vocabulary, protocols, taste, signals).
-- `~/.claude/climber/antipatterns.md` — coding-agent behaviours to interrupt on.
+- `~/.claude/climber/antipatterns.md` — clone behaviours to self-correct on.
 - `~/.claude/climber/precedents.md` — past decisions and how to apply them.
 
 Process:
