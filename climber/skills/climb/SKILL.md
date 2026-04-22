@@ -85,7 +85,7 @@ Response: <what the clone does>
 Evidence: <1–2 transcript citations>
 ```
 
-Order by frequency. Compress aggressively — this file is read on every coding-agent turn.
+Order by frequency. Compress aggressively — this file is read on every turn.
 
 **`precedents.md`** — `predict-user`'s decision table. One entry per non-obvious past decision:
 
