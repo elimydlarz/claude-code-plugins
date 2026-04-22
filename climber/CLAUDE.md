@@ -20,8 +20,8 @@ Climber splits the job into **build time** and **test time**:
 ## Skills
 
 - `climb` — build-time mining + artefact generation. Trigger: `/climb` or equivalent requests.
-- `drive-to-vision` — sequences the clone one step at a time toward `./VISION.md`. Trigger: the Stop hook directs the clone to invoke it; also on clone-session start with an existing VISION.md.
-- `review-turn` — audits the coding agent's most recent turn against `antipatterns.md`; returns a verdict. Trigger: after every non-trivial coding-agent turn.
+- `drive-to-vision` — does one turn of work toward `./VISION.md`, per the manual's "How you work toward a goal" section. Trigger: the Stop hook directs the clone to invoke it; also on clone-session start with an existing VISION.md.
+- `review-turn` — audits the clone's own most recent turn against `antipatterns.md`; returns a verdict. Trigger: after every non-trivial turn.
 - `predict-user` — consults `precedents.md` before the clone asks the user anything; returns a prediction + confidence. Trigger: before escalating or when choosing between two valid paths.
 - `refactor-rulebook` — enforces tighten-existing-line over append when folding a new lesson into one of the artefacts. Trigger: when the clone learns something new.
 
