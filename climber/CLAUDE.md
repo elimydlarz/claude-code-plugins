@@ -15,7 +15,19 @@ Climber splits the job into **build time** and **test time**:
   - `antipatterns.md` — the if-then list `review-turn` consumes.
   - `precedents.md` — the decision table `predict-user` consumes.
   - `lessons.md` — two-halved human-readable doc (explicit + implicit) for the user to review.
-- **Test time** — the clone operates a Claude Code session on the user's behalf. Three skills fire on their triggers and consume the artefacts. **No skill ever touches raw transcripts at test time.** A **Stop hook** (`hooks/drive-to-vision.sh`) enforces climbing: while `./VISION.md` exists and isn't marked `Status: Achieved`, it blocks turn-end and nudges the clone to keep driving. It yields when the clone's last message ends with `?` (escalation), when VISION.md is absent (vision-definition phase), or when it's marked achieved.
+- **Test time** — the clone operates a Claude Code session on the user's behalf. Three skills fire on their triggers and consume the artefacts. **No skill ever touches raw transcripts at test time.** A **SessionStart hook** (`hooks/inject-manual.sh`) reads `~/.claude/climber/manual.md` and injects it as session context, so the clone is ambient from turn one without the user pasting anything. A **Stop hook** (`hooks/drive-to-vision.sh`) enforces climbing: while `./VISION.md` exists and isn't marked `Status: Achieved`, it blocks turn-end and nudges the clone to keep driving. It yields when the clone's last message ends with `?` (escalation), when VISION.md is absent (vision-definition phase), or when it's marked achieved.
+
+**Per-project opt-in.** Climber is installed user-level but activates only in projects that opt in via `.claude/settings.json`:
+
+```json
+{
+  "enabledPlugins": {
+    "climber@susu-eng": true
+  }
+}
+```
+
+In projects without this entry, the plugin's hooks and skills never fire. Commit the file to share opt-in with teammates.
 
 ## Skills
 
