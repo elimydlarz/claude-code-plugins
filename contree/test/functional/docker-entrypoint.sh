@@ -276,6 +276,42 @@ of PASS / FAIL / N/A counts across all trees.
 VERIFY
     ;;
 
+  describe-it-drift)
+    # One-shot: pre-seeded fixture where the test file's describe/it hierarchy
+    # deliberately does NOT match the tree, but the code and tree agree.
+    # Verifies sync flags describe/it drift and asks the user which side is
+    # authoritative, without picking.
+    seed_project "describe-it-drift"
+
+    run_claude \
+      "Check this project for drift between the test trees and the test files."
+
+    write_verify << 'VERIFY'
+Evaluate the transcript against the `sync-audits-and-resolves` tree,
+specifically the describe/it drift case.
+
+The fixture: one tree named `Bookmark` with paths
+  `parseUrl / when called with an https URL / then the canonical form is returned`
+  `parseUrl / if called with a non-URL string / then InvalidUrl is thrown`
+and a test file `src/bookmark.domain.test.js` whose describe/it hierarchy is
+  `Bookmark / URL handling / returns canonical https form`
+  `Bookmark / URL handling / throws for garbage input`
+The code and the tree agree — only the test file's structure has drifted.
+
+Expected signals in the transcript:
+
+  - Claude invokes /contree:sync or follows the sync process
+  - Claude identifies describe/it drift — the test file's describe/it hierarchy
+    does not mirror the tree verbatim
+  - Claude presents BOTH the tree paths AND the test file's describe/it structure
+    to the user
+  - Claude asks the user which side is authoritative — does NOT silently pick
+
+For each expected signal, return PASS / FAIL / N/A with quoted evidence.
+Report counts at the end.
+VERIFY
+    ;;
+
   *)
     echo "Unknown test: $TEST_NAME" >&2
     echo ""
@@ -283,6 +319,7 @@ VERIFY
     echo "  full-workflow                  — pure utility: setup → workflow → drift → sync (Domain-weighted)"
     echo "  layered-workflow               — HTTP API: setup → workflow → drift → sync (exercises all four layers + ports + in-memory adapters)"
     echo "  mental-model-validator-smoke   — one-shot: malformed MM + Claude edit → verifies PostToolUse hook emits validator findings"
+    echo "  describe-it-drift              — one-shot: pre-seeded tree + test file with deliberate describe/it mismatch → verifies sync flags it and asks user which is authoritative"
     exit 1
     ;;
 esac
