@@ -49,3 +49,16 @@ SKILL="$PROJECT_ROOT/skills/sync/SKILL.md"
   run cat "$SKILL"
   [[ "$output" == *"Never resolve drift unilaterally"* ]]
 }
+
+@test "sync parses the describe/it hierarchy in each test file and compares it to its tree" {
+  run cat "$SKILL"
+  [[ "$output" == *"describe/it hierarchy"* ]]
+  [[ "$output" == *"parse"* || "$output" == *"Parse"* ]]
+  [[ "$output" == *"framework-agnostic"* ]]
+}
+
+@test "sync flags describe/it drift and presents both sides without picking" {
+  run cat "$SKILL"
+  [[ "$output" == *"Describe/it drift"* ]]
+  [[ "$output" == *"Do not pick"* ]]
+}
