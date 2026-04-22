@@ -1,5 +1,5 @@
 {
   "name": "climber",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Climb up a level of abstraction — build an autonomous clone that directs a Claude Code session the way you do"
 }
