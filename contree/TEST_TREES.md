@@ -216,11 +216,15 @@ change-decomposes-across-layers
 sync-audits-and-resolves
   when sync is run
     then every when/then path is checked for implementation and tests
+    and each test file's describe/it hierarchy is parsed and compared to its tree
     and drift between trees and implementation is identified
   when implementation exists without a tree
     then it is discussed with the user — may need a tree or may need removing
   when a tree exists without implementation
     then it is flagged as a gap to implement
+  when a test file's describe/it hierarchy disagrees with its tree
+    then both are presented to the user for resolution
+    and sync does not pick a side
   when stale trees or dead paths are found
     then they are discussed with the user before removal
   when gaps are identified
