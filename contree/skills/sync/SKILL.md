@@ -60,6 +60,9 @@ Check the reverse — does the implementation do things no test tree describes? 
 **Dead paths** (a `when/then` path that no longer reflects reality):
 - Present to the user. The path may need updating, or the implementation may be wrong — ask which.
 
+**Describe/it drift** (test file's describe/it hierarchy disagrees with its tree):
+- Present both the tree text and the describe/it hierarchy to the user. Ask which is authoritative — update the test to match the tree, or update the tree to match the test. Do not pick.
+
 After this step, test trees and implementation intent should be aligned, and the user has approved every change.
 
 ### 6. IMPLEMENT GAPS
