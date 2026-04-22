@@ -138,6 +138,7 @@ Tactical cheatsheet for the RED/GREEN cycle. See `skills/change/SKILL.md` for th
 - Import: the use-case plus the in-memory adapter for each outbound port it depends on.
 - Wire: instantiate the use-case with the in-memory adapters.
 - Assert on returned data and on the in-memory adapter's state (what was saved, what was queried).
+- **Shape**: top-level describe is the use-case; second-level describes are its entry points (usually one — `execute` or the function); inner describes are branches.
 
 ### Adapter — driving (`*.adapter.test.*`, colocated)
 - Import: the driving adapter plus a mock of the use-case.
