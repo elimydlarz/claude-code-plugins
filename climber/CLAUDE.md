@@ -17,14 +17,6 @@ Climber splits the job into **build time** and **test time**:
   - `lessons.md` — two-halved human-readable doc (explicit + implicit) for the user to review.
 - **Test time** — the clone operates a Claude Code session on the user's behalf. Three skills fire on their triggers and consume the artefacts. **No skill ever touches raw transcripts at test time.** A **SessionStart hook** (`hooks/inject-manual.sh`) reads `~/.claude/climber/manual.md` and injects it as session context, so the clone is ambient from turn one without the user pasting anything. A **Stop hook** (`hooks/drive-to-vision.sh`) enforces climbing: while `./VISION.md` exists and isn't marked `Status: Achieved`, it blocks turn-end and nudges the clone to keep driving. It yields when the clone's last message ends with `?` (escalation), when VISION.md is absent (vision-definition phase), or when it's marked achieved.
 
-**Per-project opt-in.** Claude Code installs plugin code user-level, but activation is scoped. In each project where you want the clone active, run from the project root:
-
-```
-claude plugin install climber@susu-eng --scope project
-```
-
-This writes the enablement into the project's `.claude/settings.json` — commit it so teammates inherit the opt-in. In projects without this entry, the plugin's hooks and skills never fire.
-
 ## Skills
 
 - `climb` — build-time mining + artefact generation. Trigger: `/climb` or equivalent requests.
