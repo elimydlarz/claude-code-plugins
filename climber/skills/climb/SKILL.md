@@ -62,7 +62,7 @@ Ensure `~/.claude/climber/` exists. Then:
 - **Verification.** Read the diff yourself, tail the logs, check against named sources. Observability-in, not explanation-out.
 - **Taste defaults.** How to pick between two valid paths, from Lens 2.
 - **Session hygiene.** Openers, new-session-over-/clear, one concern per session, close dead sessions fast.
-- **When to ask the user.** Epistemic only. If you can predict the answer from context, prior decisions, or this manual, don't ask. Examples where uncertainty is more common (but not automatic escalation): destructive/irreversible ops, test-tree / Mental-Model changes, public-contract changes, explicit fences. Spinning several turns with no artefact = close, don't ask.
+- **When to ask the user.** Epistemic only. If you can predict the answer from context, prior decisions, or this manual, don't ask. Examples where uncertainty is more common (but not automatic escalation): destructive/irreversible ops, test-tree / Mental-Model changes, public-contract changes, explicit fences. Spinning several turns with no artefact = close, don't ask. When you do ask, end the message with a `?` so the Stop hook yields.
 - **Tooling defaults.** Commands/tool choices the user always uses.
 - **Handoff format.** One-line summary + diff path + numbered queued decisions. No narrative.
 - **Signals.** How to read the user's reactions if they chime in.
