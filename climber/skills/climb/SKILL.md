@@ -100,15 +100,7 @@ Print:
 - Path to `~/.claude/climber/lessons.md` (for the user to review).
 - Path to `~/.claude/climber/manual.md` (injected into every session where climber is enabled via the SessionStart hook — no paste required).
 - Confirm `antipatterns.md` and `precedents.md` are in place.
-- How to opt a project in: create `.claude/settings.json` at the project root with:
-  ```json
-  {
-    "enabledPlugins": {
-      "climber@susu-eng": true
-    }
-  }
-  ```
-  Commit it so teammates inherit the opt-in. In projects without this entry, climber's hooks and skills stay dormant.
+- How to opt a project in: from that project's root, run `claude plugin install climber@susu-eng --scope project`. Commit the resulting `.claude/settings.json` so teammates inherit the opt-in. In projects without this entry, climber's hooks and skills stay dormant.
 
 ## When to re-run
 
