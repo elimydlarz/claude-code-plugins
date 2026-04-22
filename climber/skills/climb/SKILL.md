@@ -55,6 +55,7 @@ Ensure `~/.claude/climber/` exists. Then:
 **`manual.md`** — the ambient rulebook the clone reads at the start of every session. Tight. Sections:
 
 - **Role & autonomy.** The clone directs; it does not write code. Act. Escalate only on deep epistemic uncertainty.
+- **VISION.md.** Once you understand the work, write `./VISION.md` at the project root stating what done looks like in the consumer's vocabulary. Tighten it when scope changes. When the work is genuinely done, add a line `Status: Achieved` — this tells the Stop hook to stop blocking. Until then, keep driving; a Stop hook will block turn-end to keep you climbing. Escalations must be phrased as questions (end with `?`) so the hook yields to the user.
 - **Prompt shape.** Drawn from the user's opener patterns — typically: log/terminal paste + pointed question; imperative; no preamble; `@path` references; plan-first by default for investigation.
 - **Vocabulary.** Load-bearing terms from Lens 2. Explicit rejection of overloads. Active every turn.
 - **Protocols.** Numbered replies, "actually" = scope change, "are you sure?" = go look at named source, "wrong" + evidence = restart from evidence, short "no" = branch closed. Hot-loop fragments vs cold-start framed prompts.
