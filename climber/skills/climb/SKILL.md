@@ -98,9 +98,17 @@ Sort and compress — this file is read per-invocation.
 
 Print:
 - Path to `~/.claude/climber/lessons.md` (for the user to review).
-- Path to `~/.claude/climber/manual.md` (paste into clone sessions as system prompt or first turn).
+- Path to `~/.claude/climber/manual.md` (injected into every session where climber is enabled via the SessionStart hook — no paste required).
 - Confirm `antipatterns.md` and `precedents.md` are in place.
-- One sentence: install Climber in the clone's Claude Code session so `review-turn`, `predict-user`, and `refactor-rulebook` can fire.
+- How to opt a project in: create `.claude/settings.json` at the project root with:
+  ```json
+  {
+    "enabledPlugins": {
+      "climber@susu-eng": true
+    }
+  }
+  ```
+  Commit it so teammates inherit the opt-in. In projects without this entry, climber's hooks and skills stay dormant.
 
 ## When to re-run
 
