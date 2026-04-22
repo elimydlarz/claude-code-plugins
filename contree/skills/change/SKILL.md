@@ -112,6 +112,37 @@ Layers are named for the hex seam under test, not for infrastructure presence. C
 | Adapter  | adapter being exercised              | `score-http-handler`, `ScoreRepository-Postgres`|
 | System   | capability/slice or cross-cutting policy | `save-score`, `auth-enforcement`            |
 
+**Tree shape per layer** — the naming heuristic names the tree; the shape rule organises its paths.
+
+| Layer          | Shape            | Top-level nodes                                                                                 |
+| -------------- | ---------------- | ----------------------------------------------------------------------------------------------- |
+| Domain         | Code-shaped      | The unit's exported functions/methods. Paths = observable branches.                             |
+| Use-case       | Code-shaped      | The use-case's entry point (usually `execute` or the function name). Paths = observable branches. |
+| Port contract  | Method-shaped    | The port's methods. Paths = behaviours the contract requires of every implementation.           |
+| Adapter        | Protocol-shaped  | The adapter's exposed operations (HTTP routes, CLI commands, queue topics, real-infra concerns). |
+| System         | Consumer-shaped  | Consumer-visible events on the slice. Consumer vocabulary; principles, not cases.               |
+
+At Domain, Use-case, and Port-contract, TDD + YAGNI means no branch without a path and no path without a branch — the tree maps onto the code's methods and branches. At Adapter and System, the tree describes observable behaviour at the seam, not the internal branches that produce it.
+
+A Domain tree is shaped like its class/module:
+
+```
+Money
+  add
+    when called with another Money of the same currency
+      then the sum's amount is the sum of the two amounts
+      and the currency is preserved
+    if called with another Money of a different currency
+      then CurrencyMismatch is thrown
+  multiply
+    when called with a positive factor
+      then the amount is multiplied by the factor
+    if called with a negative factor
+      then NegativeMultiplier is thrown
+```
+
+The test file's describe/it hierarchy mirrors this verbatim.
+
 **The in-memory adapter pattern**
 
 This is the linchpin of the whole scheme. Without it, Use-case and System tests either get slow (real infra) or dishonest (mocks that don't match reality).
