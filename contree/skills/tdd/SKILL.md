@@ -117,12 +117,13 @@ UserRegistration
 
 ### Rules
 
-- Top level names the subject — see the naming heuristic in Test Layers (domain object for Domain, use-case for Use-case, port interface for port contract, adapter for Adapter, slice name for System).
+- Top level names the subject — see the naming heuristic in `skills/change/SKILL.md`.
+- Tree shape depends on the layer — see "Tree shape per layer" in `skills/change/SKILL.md`. At Domain, Use-case, and Port-contract, top-level describes are the unit's functions/methods and every path is an observable branch. At Adapter and System, the tree describes behaviour at the seam.
 - Use EARS keywords (`when`, `while`, `if`, `where`, or bare `then`) to match the requirement's nature.
-- `then` describes outcomes (what the consumer observes at this layer).
+- `then` describes outcomes.
 - Use `if/then` for error cases and unwanted behaviour.
-- Describe principles, not specific values.
 - Tree names must be unique within `## Test Trees`. One tree, one test file.
+- **Tree ≡ describe/it hierarchy verbatim** — every path in the tree appears as a describe/it in the test file; every describe/it in the test file appears as a path in the tree.
 
 ## Writing Tests at Each Layer
 
