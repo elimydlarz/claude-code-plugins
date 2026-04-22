@@ -9,9 +9,36 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   [[ "$output" == *"Talk it through with the user"* || "$output" == *"discuss"* ]]
 }
 
-@test "change writes trees from the consumer's perspective" {
+@test "change scopes consumer vocabulary to Adapter and System layers" {
   run cat "$SKILL"
   [[ "$output" == *"consumer"* ]]
+  [[ "$output" == *"Adapter and System"* ]]
+  [[ "$output" == *"vocabulary"* ]]
+}
+
+@test "change scopes principles-not-cases to Adapter and System layers" {
+  run cat "$SKILL"
+  [[ "$output" == *"Adapter and System"* ]]
+  [[ "$output" == *"principles, not cases"* ]]
+}
+
+@test "change writes Domain, Use-case, and Port-contract trees with top-level nodes naming exported functions, methods, or port operations" {
+  run cat "$SKILL"
+  [[ "$output" == *"Domain"* ]]
+  [[ "$output" == *"Use-case"* ]]
+  [[ "$output" == *"Port-contract"* || "$output" == *"port contract"* ]]
+  [[ "$output" == *"exported functions"* || "$output" == *"functions/methods"* ]]
+}
+
+@test "change writes Domain, Use-case, and Port-contract tree paths as observable branches" {
+  run cat "$SKILL"
+  [[ "$output" == *"observable branch"* ]]
+}
+
+@test "change enforces that every tree's describe/it hierarchy mirrors the tree verbatim" {
+  run cat "$SKILL"
+  [[ "$output" == *"describe/it"* ]]
+  [[ "$output" == *"verbatim"* ]]
 }
 
 @test "change chooses EARS patterns matching each requirement's nature" {
