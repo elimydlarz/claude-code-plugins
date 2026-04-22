@@ -62,6 +62,7 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `test/fixtures/incidental-pass/` — counter with reset() pre-implemented (for incidental-pass scenarios)
 - `test/fixtures/sync-drift/` — counter with deliberate drift (amount param without tree, decrement tree without impl)
 - `test/fixtures/tdd-ready/` — counter with vitest configured + requirements, no tests
+- `test/fixtures/describe-it-drift/` — pre-seeded tree + test file whose describe/it deliberately does not mirror the tree (for the `describe-it-drift` functional case)
 
 ## Functional Testing
 
