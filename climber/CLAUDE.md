@@ -11,7 +11,7 @@ See [TEST_TREES.md](TEST_TREES.md) — the definition of functional and cross-fu
 Climber splits the job into **build time** and **test time**:
 
 - **Build time** — the `/climb` skill mines the user's Claude Code transcripts (`~/.claude/projects/**/*.jsonl`) and produces user-specific artefacts under `~/.claude/climber/`:
-  - `manual.md` — the ambient rulebook; the user pastes this into a clone session.
+  - `manual.md` — the ambient rulebook; the SessionStart hook injects it into every session where climber is enabled.
   - `antipatterns.md` — the if-then list `review-turn` consumes.
   - `precedents.md` — the decision table `predict-user` consumes.
   - `lessons.md` — two-halved human-readable doc (explicit + implicit) for the user to review.
