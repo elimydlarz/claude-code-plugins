@@ -132,6 +132,7 @@ Tactical cheatsheet for the RED/GREEN cycle. See `skills/change/SKILL.md` for th
 - Import: the domain object/service under test.
 - Collaborators: none.
 - Call functions directly, assert on returned data.
+- **Shape**: top-level describe is the unit; second-level describes are its exported functions/methods; inner describes are branches.
 
 ### Use-case (`*.use-case.test.*`, colocated)
 - Import: the use-case plus the in-memory adapter for each outbound port it depends on.
