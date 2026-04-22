@@ -17,6 +17,21 @@ clone-drives-to-vision
     then the clone asks narrowly for the minimum needed to capture the vision
 ```
 
+## session-start-injects-manual
+
+```
+session-start-injects-manual
+  when a Claude Code session starts in a project where climber is enabled
+    then the SessionStart hook fires
+  while ~/.claude/climber/manual.md exists
+    then the hook prints the manual to stdout
+    and Claude Code injects it as session context
+  while ~/.claude/climber/manual.md does not exist
+    then the hook exits silently
+  where the project has not enabled climber via .claude/settings.json enabledPlugins
+    then the hook does not fire
+```
+
 ## stop-hook-drives-to-vision
 
 ```
