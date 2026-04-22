@@ -54,7 +54,7 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `test/validate-skill-frontmatter.bats` — frontmatter validator tests
 - `test/functional/Dockerfile` — Docker image for functional tests (node + git + jq + claude CLI, fixture deps pre-installed)
 - `test/functional/docker-run.sh` — runs functional tests in Docker (parallel), passes secrets via env vars
-- `test/functional/docker-entrypoint.sh` — named functional test cases (`full-workflow`, `layered-workflow`, `mental-model-validator-smoke`); each writes a transcript and a VERIFY prompt that evaluates the trees
+- `test/functional/docker-entrypoint.sh` — named functional test cases (`full-workflow`, `layered-workflow`, `mental-model-validator-smoke`, `describe-it-drift`); each writes a transcript and a VERIFY prompt that evaluates the trees
 - `test/fixtures/greenfield/` — empty JS project used as the starting state for `full-workflow`
 - `test/fixtures/bookmarks-api/` — HTTP API fixture for `layered-workflow` (exercises all four hex layers + ports)
 - `test/fixtures/ears-project/` — media player module for EARS pattern functional test
