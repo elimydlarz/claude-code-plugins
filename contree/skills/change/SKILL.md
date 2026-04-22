@@ -171,15 +171,17 @@ In-memory substitution is only sound if both adapters really do satisfy the same
 // src/features/score/application/ports/score-repository.contract.ts
 export function scoreRepositoryContract(makeRepo: () => ScoreRepository) {
   describe('ScoreRepository', () => {
-    describe('when save is called with a score', () => {
-      it('is retrievable by its id', async () => {
-        const repo = makeRepo()
-        await repo.save(someScore)
-        expect(await repo.findById(someScore.id)).toEqual(someScore)
+    describe('save', () => {
+      describe('when called with a score', () => {
+        it('makes the score retrievable by its id', async () => {
+          const repo = makeRepo()
+          await repo.save(someScore)
+          expect(await repo.findById(someScore.id)).toEqual(someScore)
+        })
       })
-    })
-    describe('if save is called twice with the same score id', () => {
-      it('rejects the second call without side effects', async () => { /* ... */ })
+      describe('if called twice with the same score id', () => {
+        it('rejects the second call without side effects', async () => { /* ... */ })
+      })
     })
   })
 }
