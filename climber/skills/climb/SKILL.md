@@ -80,7 +80,7 @@ Ensure `~/.claude/climber/` exists. Then:
 
 ```
 ## <pattern name>
-Trigger: <what the coding agent did>
+Trigger: <what the clone did>
 Response: <what the clone does>
 Evidence: <1–2 transcript citations>
 ```
