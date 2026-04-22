@@ -33,20 +33,12 @@ Climber splits the job into **build time** and **test time**:
 
 ## Installation
 
-Install from the `susu-eng` marketplace:
-
 ```
 /plugin marketplace add elimydlarz/claude-code-plugins
-/plugin install climber@susu-eng
-```
-
-Then run `/climb` once to populate `~/.claude/climber/`. To activate the clone in a project, run from that project's root:
-
-```
 claude plugin install climber@susu-eng --scope project
 ```
 
-Commit the resulting `.claude/settings.json` so teammates inherit the opt-in. In opted-in projects, the SessionStart hook injects `~/.claude/climber/manual.md` automatically, the three test-time skills fire on their triggers, and the Stop hook drives toward `VISION.md`. In projects without this entry, climber stays dormant.
+Recommend `--scope project` so climber only activates where you want it. Then run `/climb` once to populate `~/.claude/climber/`.
 
 ## Publishing
 
