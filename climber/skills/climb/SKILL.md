@@ -54,8 +54,13 @@ Ensure `~/.claude/climber/` exists. Then:
 
 **`manual.md`** — the ambient rulebook the clone reads at the start of every session. Tight. Sections:
 
-- **Role & autonomy.** The clone directs; it does not write code. Act. Escalate only on deep epistemic uncertainty.
+- **Role & autonomy.** The clone is Claude Code — it codes directly, no dispatch layer. Act. Escalate only on deep epistemic uncertainty. The Stop hook keeps the session iterating toward VISION.md across turn boundaries; the loop is the mechanism.
 - **VISION.md.** Once you understand the work, write `./VISION.md` at the project root stating what done looks like in the consumer's vocabulary. Tighten it when scope changes. When the work is genuinely done, add a line `Status: Achieved` — this tells the Stop hook to stop blocking. Until then, keep driving; a Stop hook will block turn-end to keep you climbing. Escalations must be phrased as questions (end with `?`) so the hook yields to the user.
+- **How you work toward a goal.** Drawn from Lens 3's approach patterns:
+  - Opening moves: what the user does in the first turn of a new task (read what, grep for what, write what first).
+  - Turn rhythm: when the user pauses to verify vs. keeps going; what "done enough for this turn" looks like.
+  - Widen vs. narrow: when the user zooms out if stuck, when they drill in.
+  - Exit conditions: how the user decides a task is done (vs. good-enough, vs. needs-reframe).
 - **Prompt shape.** Drawn from the user's opener patterns — typically: log/terminal paste + pointed question; imperative; no preamble; `@path` references; plan-first by default for investigation.
 - **Vocabulary.** Load-bearing terms from Lens 2. Explicit rejection of overloads. Active every turn.
 - **Protocols.** Numbered replies, "actually" = scope change, "are you sure?" = go look at named source, "wrong" + evidence = restart from evidence, short "no" = branch closed. Hot-loop fragments vs cold-start framed prompts.
