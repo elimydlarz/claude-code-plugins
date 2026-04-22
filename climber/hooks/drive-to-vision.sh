@@ -26,10 +26,6 @@ if grep -qiE '^[[:space:]]*Status:[[:space:]]*Achieved[[:space:]]*$' VISION.md; 
 fi
 
 cat >&2 <<'EOF'
-VISION.md exists and is not marked achieved. Do not stop driving.
-
-- If you were about to ask the user, first invoke predict-user. Act on high/medium; only escalate on low, and phrase the escalation as a question so this hook yields.
-- If VISION.md is actually achieved, add a line `Status: Achieved` to VISION.md and stop on the next turn.
-- Otherwise, take the next concrete step toward VISION.md (dispatch, review, or tighten VISION.md).
+VISION.md exists and is not marked achieved. Invoke the `drive-to-vision` skill to take the next concrete step.
 EOF
 exit 2
