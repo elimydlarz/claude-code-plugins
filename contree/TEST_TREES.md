@@ -9,6 +9,7 @@ test-trees-as-requirements
     and trees are flat subsections — not grouped by kind or layer
     and every tree reifies exactly one test file
     and every test file reifies exactly one tree
+    and every tree names the file path(s) it reifies to — at minimum its test file path; its source file path also where the tree maps 1:1 to one
     and the EARS rule is embedded in skills that use it
   when a behaviour change is needed
     then the tree must exist before implementation starts
