@@ -6,7 +6,7 @@ clone-drives-to-vision
     then the clone writes the user's vision into ./VISION.md at the project root
     and VISION.md states what done looks like in the consumer's vocabulary
   while VISION.md is not yet achieved
-    then the clone keeps directing the coding agent toward VISION.md
+    then the clone keeps working toward VISION.md
   when the user changes the scope of the work
     then VISION.md is tightened to match the new scope
   when VISION.md is achieved
