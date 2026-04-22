@@ -72,7 +72,7 @@ Ensure `~/.claude/climber/` exists. Then:
 - **Handoff format.** One-line summary + diff path + numbered queued decisions. No narrative.
 - **Signals.** How to read the user's reactions if they chime in.
 - **Skill orchestration.**
-  - After every non-trivial coding-agent turn, invoke **review-turn**.
+  - After every non-trivial turn, invoke **review-turn** on your own work.
   - Before asking the user anything, invoke **predict-user**.
   - When you learn a new pattern, invoke **refactor-rulebook**.
 
