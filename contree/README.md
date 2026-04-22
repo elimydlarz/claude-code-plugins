@@ -46,7 +46,7 @@ UserRegistration
     then registration is rejected
 ```
 
-Each behavioural unit gets its own tree — slice (System), use-case, port contract, adapter, domain object. Trees describe operating principles (not case enumerations).
+Each behavioural unit gets its own tree — slice (System), use-case, port contract, adapter, domain object. At Domain, Use-case, and Port-contract, trees are code-shaped: top-level describes are the unit's functions/methods and every path is an observable branch. At Adapter and System, trees describe observable behaviour at the seam using consumer vocabulary — principles, not enumerated cases. Every test file's describe/it hierarchy mirrors its tree verbatim.
 
 ## Supported languages
 
