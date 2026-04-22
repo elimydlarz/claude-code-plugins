@@ -50,3 +50,28 @@ stop-hook-drives-to-vision
   if the hook has already blocked once this turn (stop_hook_active)
     then the hook yields to prevent loops
 ```
+
+## drive-to-vision-skill-takes-one-step
+
+```
+drive-to-vision-skill-takes-one-step
+  when the clone invokes drive-to-vision
+    then the skill reads ./VISION.md and current state
+    and picks the smallest actionable gap
+    and takes one concrete step (dispatch, read, decide, act)
+    and verifies the result via the manual's verification defaults
+  while VISION.md does not exist
+    then the skill asks the user narrowly (ending with `?`) for the minimum needed to write it
+    and stops without sequencing further
+  while VISION.md is marked `Status: Achieved`
+    then the skill reports completion to the user and stops driving
+  when the step requires input only the user has
+    then the skill invokes predict-user first
+    and escalates only on a low-confidence prediction
+    and phrases the escalation as a question so the Stop hook yields
+  when VISION.md is achieved as a result of the step
+    then the skill adds `Status: Achieved` to VISION.md
+  if more than one action is attempted in a single invocation
+    then the skill has over-stepped its contract (one action per invocation; the loop iterates across turns)
+```
+
