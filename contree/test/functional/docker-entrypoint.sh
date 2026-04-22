@@ -256,8 +256,14 @@ Evaluate the transcript against every tree in the plugin's
 
 Focus especially on the trees that exercise hex layering:
   - change-decomposes-across-layers (port decomposition, in-memory + real adapters, shared contract)
-  - outside-in-tdd (Use-case wiring with in-memory adapters, Adapter with shared contract, System through driving adapter)
+  - change-writes-trees (Domain/Use-case/Port-contract trees must be code-shaped: top-level describes name the unit's exported functions/methods/port operations, and each path corresponds to an observable branch; Adapter and System trees use consumer vocabulary and describe principles, not enumerated cases)
+  - outside-in-tdd (Use-case wiring with in-memory adapters, Adapter with shared contract, System through driving adapter; every test file's describe/it hierarchy mirrors its tree verbatim)
   - composable-testing (four file naming conventions, port contract suite)
+
+Specific layer-shape checks for generated trees/tests:
+  - Inspect TEST_TREES.md — at least one Domain, Use-case, or Port-contract tree has top-level nodes named after the unit's functions/methods/operations (not as `when X is called` patterns at the root).
+  - Inspect the corresponding test file for at least one such tree — its describe/it hierarchy mirrors the tree verbatim (top-level `describe` names the unit, second-level `describe` names a function/method/operation, inner `describe`/`it` names the when/then path).
+  - Any Adapter or System tree uses consumer vocabulary, not implementation internals, and describes principles rather than enumerated concrete values.
 
 For each `when/then` (or `if/then`) path in each tree, return one of:
 
