@@ -52,7 +52,17 @@ Install from the `susu-eng` marketplace:
 /plugin install climber@susu-eng
 ```
 
-Then run `/climb` once to populate `~/.claude/climber/`. After that, the clone can be spun up in any Claude Code session: paste `~/.claude/climber/manual.md` as the system prompt or initial turn, and the three test-time skills will fire on their triggers.
+Then run `/climb` once to populate `~/.claude/climber/`. To activate the clone in a project, add `.claude/settings.json` at the project root with:
+
+```json
+{
+  "enabledPlugins": {
+    "climber@susu-eng": true
+  }
+}
+```
+
+In opted-in projects, the SessionStart hook injects `~/.claude/climber/manual.md` automatically, the three test-time skills fire on their triggers, and the Stop hook drives toward `VISION.md`. In projects without this entry, climber stays dormant.
 
 ## Publishing
 
