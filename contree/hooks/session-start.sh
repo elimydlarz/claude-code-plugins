@@ -36,7 +36,7 @@ Eagerly use these skills to fulfil operator requests, where applicable:
 - **Hexagonal** — domain pure; I/O in adapters; dependencies point inward; each driven port ships with an in-memory twin
 - **Test layers** — Domain (pure), Use-case (in-memory adapters), Adapter (driving mocks app, driven hits real infra), System (whole app, in-memory by default)
 - **Shared port contract** — one `*.contract.ts` suite per port, imported by both in-memory-adapter and real-adapter test files
-- **One tree, one test file** — each tree in `## Test Trees` reifies exactly one test file; describe/it hierarchy mirrors the tree
+- **One tree, one test file** — each tree in `## Test Trees` reifies exactly one test file; the test file's describe/it hierarchy mirrors the tree verbatim (framework-agnostic contract)
 EOF
 
 printf '\n'
