@@ -242,9 +242,10 @@ Once aligned, suggest the user runs `sync` to audit completeness and implement g
 - **Use EARS patterns** — choose the right keyword for each requirement (see EARS Patterns below). Don't force everything into `when/then`.
 - **`then` describes outcomes, including side effects** — what the consumer observes, what changes, what's produced, what's prevented, what's written externally (files, network, logs, state), what's cleaned up. A side effect that another invocation, hook, process, or operator could detect is behaviour and belongs in the tree.
 - **Every `then` must assert something the `when` clause does not already imply** — if a `then` merely restates the condition, it's a tautology and adds no value. "when created / then it is created" tests nothing. "when created with default / then value is zero" asserts a concrete outcome.
-- **Describe principles, not cases** — "when the input is invalid" not "when the input is empty / when the input is null / when the input is too long".
 - **Include the negative** — use `if/then` for error cases and unwanted behaviour. Absence of behaviour is part of the specification.
-- **Use the consumer's vocabulary** — describe what the consumer sees, not implementation internals.
+- **Describe principles, not cases** — applies at Adapter and System layers: "when the input is invalid" not "when the input is empty / when the input is null / when the input is too long". At Domain, Use-case, and Port-contract, each observable branch *is* a principle; enumerate them all.
+- **Use the consumer's vocabulary** — applies at Adapter and System layers: describe what the consumer sees, not implementation internals. At Domain, Use-case, and Port-contract, speak in the unit's own vocabulary (its function names, its types, its errors).
+- **Tree ≡ describe/it hierarchy verbatim** — every path in the tree appears as a describe/it in the test file; every describe/it in the test file appears as a path in the tree. This is the framework-agnostic contract; `sync` compares these two directly.
 
 ## Examples
 
