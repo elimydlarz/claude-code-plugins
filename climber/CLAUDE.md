@@ -2,6 +2,10 @@
 
 Build an autonomous clone that directs a Claude Code session the way you do, so you can climb up a level of abstraction completely.
 
+## Test Trees
+
+See [TEST_TREES.md](TEST_TREES.md) — the definition of functional and cross-functional requirements.
+
 ## Mental Model
 
 Climber splits the job into **build time** and **test time**:
