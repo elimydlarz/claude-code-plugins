@@ -186,6 +186,9 @@ change-writes-trees
   when a Domain, Use-case, or Port-contract tree is written
     then top-level nodes name the unit's exported functions, methods, or port operations
     and each path corresponds to an observable branch in the unit
+  when a tree is written
+    then its file path(s) are named alongside the tree name — the test file it reifies to, and any source file it maps 1:1 to
+    and if naming a (sub)tree's path reveals an awkward shape, the tree or implementation is reshaped — the path is not stripped to hide the mismatch
   when modifying existing behaviour
     then only affected paths are changed
   when removing a capability
