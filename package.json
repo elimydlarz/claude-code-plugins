@@ -3,6 +3,7 @@
   "scripts": {
     "publish:trunk-sync": "./scripts/publish-trunk-sync.sh",
     "publish:contree": "./scripts/publish-contree.sh",
-    "publish:openclaw-notifier": "./scripts/publish-openclaw-notifier.sh"
+    "publish:openclaw-notifier": "./scripts/publish-openclaw-notifier.sh",
+    "publish:climber": "./scripts/publish-climber.sh"
   }
 }

@@ -36,6 +36,16 @@
       },
       "license": "MIT",
       "keywords": ["hooks", "openclaw", "subagent", "notification", "multi-agent"]
+    },
+    {
+      "name": "climber",
+      "source": "./climber",
+      "description": "Climb up a level of abstraction — build an autonomous clone that directs a Claude Code session the way you do",
+      "author": {
+        "name": "Eli Mydlarz"
+      },
+      "license": "MIT",
+      "keywords": ["skills", "autonomy", "clone", "agent", "director", "proxy"]
     }
   ]
 }
