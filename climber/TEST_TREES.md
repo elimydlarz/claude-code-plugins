@@ -10,8 +10,28 @@ clone-drives-to-vision
   when the user changes the scope of the work
     then VISION.md is tightened to match the new scope
   when VISION.md is achieved
-    then the clone reports completion to the user
+    then the clone adds `Status: Achieved` to VISION.md
+    and reports completion to the user
     and stops driving
   if the user's input is too vague to write VISION.md
     then the clone asks narrowly for the minimum needed to capture the vision
+```
+
+## stop-hook-drives-to-vision
+
+```
+stop-hook-drives-to-vision
+  when the clone's turn ends
+    then the Stop hook fires
+  while VISION.md does not exist at the project root
+    then the hook yields the turn
+  while the last assistant text ends with a question mark
+    then the hook yields the turn
+  while VISION.md contains `Status: Achieved` (start of line, case-insensitive)
+    then the hook yields the turn
+  while VISION.md exists without `Status: Achieved`
+    then the hook blocks the stop
+    and nudges the clone to consult predict-user, mark VISION.md achieved, or take the next concrete step
+  if the hook has already blocked once this turn (stop_hook_active)
+    then the hook yields to prevent loops
 ```
