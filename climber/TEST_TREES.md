@@ -46,7 +46,7 @@ stop-hook-drives-to-vision
     then the hook yields the turn
   while VISION.md exists without `Status: Achieved`
     then the hook blocks the stop
-    and nudges the clone to consult predict-user, mark VISION.md achieved, or take the next concrete step
+    and directs the clone to invoke the drive-to-vision skill
   if the hook has already blocked once this turn (stop_hook_active)
     then the hook yields to prevent loops
 ```
