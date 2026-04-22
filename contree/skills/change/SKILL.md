@@ -206,10 +206,11 @@ The tree in `TEST_TREES.md`:
 
 ```
 ScoreRepository
-  when save is called with a score
-    then the score is retrievable by its id
-  if save is called twice with the same score id
-    then the second call is rejected without side effects
+  save
+    when called with a score
+      then the score is retrievable by its id
+    if called twice with the same score id
+      then the second call is rejected without side effects
 ```
 
 **Feature-first module layout** — use this directory shape when adding or touching a capability:
