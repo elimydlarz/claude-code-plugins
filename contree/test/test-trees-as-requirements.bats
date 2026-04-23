@@ -52,28 +52,30 @@ load test_helper
   [[ "$output" == *"add new cases as you discover them"* || "$output" == *"add newly discovered cases"* ]]
 }
 
-@test "every tree in TEST_TREES.md names the file path(s) it reifies to" {
-  # For each tree name (the first non-blank line inside a fenced code block
-  # following a `## <tree-name>` heading), assert it contains a parenthesised
-  # path. Skip the Cross-Functional Requirements section (not a tree).
+@test "every tree in TEST_TREES.md names its coverage in parenthesised labelled pairs" {
+  # Tree name line must contain (...) with at least one recognised label,
+  # drawn from: src, unit, integration, functional.
   local file="$PROJECT_ROOT/TEST_TREES.md"
   local missing=()
   while IFS= read -r tree; do
     [ -z "$tree" ] && continue
-    # Find the code block that follows this H2 heading and grab its first line.
     local first_line
     first_line=$(awk -v h="## $tree" '
       $0 == h { in_section = 1; next }
       in_section && /^```/ { in_block = !in_block; next }
       in_section && in_block && NF { print; exit }
     ' "$file")
-    if [[ "$first_line" != *"("*")"* ]]; then
-      missing+=("$tree")
+    if ! [[ "$first_line" == *"("*")"* ]]; then
+      missing+=("$tree (no parens)")
+      continue
+    fi
+    if ! [[ "$first_line" =~ \((src|unit|integration|functional):[[:space:]] ]]; then
+      missing+=("$tree (no labelled pair)")
     fi
   done < <(grep -E "^## [a-z-]+" "$file" | sed 's/^## //')
 
   if [ ${#missing[@]} -gt 0 ]; then
-    printf 'Trees missing file paths:\n'
+    printf 'Trees with non-conforming path declarations:\n'
     printf '  - %s\n' "${missing[@]}"
     false
   fi
