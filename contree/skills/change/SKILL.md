@@ -59,28 +59,35 @@ Find the existing tree. Add, change, or remove `when/then` paths to reflect the 
 
 Remove the tree from `TEST_TREES.md`. Confirm with the user first.
 
-**Name the file path(s) the tree reifies to.**
+**Name the tree's coverage per category.**
 
-Every tree must name the file path(s) it reifies to, in parentheses at the end of the tree name line — at minimum the test file path; the source file path also when the tree maps 1:1 to one:
+Every tree must name its coverage in parentheses at the end of the tree-name line as semicolon-separated labelled pairs. The four categories are:
+
+- `src` — implementation file (the source the tree's behaviour lives in)
+- `unit` — fast, isolated test (Domain / Use-case / in-memory Adapter in hex terms; or structural checks where the tree's "implementation" is prose)
+- `integration` — test that exercises a real seam (driven Adapter against real infra, port contract against a real implementation)
+- `functional` — whole-system end-to-end test (System layer, or an in-docker full-app test)
 
 ```
-Money (src/features/money/domain/money.ts, src/features/money/domain/money.domain.test.ts)
+Money (src: src/features/money/domain/money.ts; unit: src/features/money/domain/money.domain.test.ts; integration: none; functional: none)
   add
     when called with another Money of the same currency
       then the sum's amount is the sum of the two amounts
 ```
 
-A System tree with no 1:1 source file names just the test file:
+A System tree with no 1:1 source file omits `src`:
 
 ```
-save-score (test/system/save-score.system.test.ts)
+save-score (unit: src/features/score/application/save-score.use-case.test.ts; functional: test/system/save-score.system.test.ts)
   when a user submits a valid score
     then the score is persisted
 ```
 
+**Gaps are declared explicitly.** A category that is expected but not yet covered uses the value `none` so the gap is visible to readers and to `sync`. A category that is genuinely not applicable to the tree is omitted entirely — no placeholder needed.
+
 Paths may also appear on a subtree or `then` line when the behaviour at that node is implemented by a distinct file — rare in practice, but the rule applies wherever a 1:1 file mapping holds.
 
-If naming a (sub)tree's path reveals an awkward shape — the tree doesn't sit naturally with where the code lives, or one tree spans multiple source files — treat that as design feedback: reshape the tree or the implementation until the paths fit. Do not strip the path to hide the mismatch.
+If naming a (sub)tree's paths reveals an awkward shape — the tree doesn't sit naturally with where the code lives, or one tree spans multiple source files — treat that as design feedback: reshape the tree or the implementation until the paths fit. Do not strip the paths to hide the mismatch.
 
 ### 4. Decompose Across Layers and Positions
 
