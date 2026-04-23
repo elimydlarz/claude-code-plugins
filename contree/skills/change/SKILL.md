@@ -57,6 +57,29 @@ Find the existing tree. Add, change, or remove `when/then` paths to reflect the 
 
 Remove the tree from `TEST_TREES.md`. Confirm with the user first.
 
+**Name the file path(s) the tree reifies to.**
+
+Every tree must name the file path(s) it reifies to, in parentheses at the end of the tree name line — at minimum the test file path; the source file path also when the tree maps 1:1 to one:
+
+```
+Money (src/features/money/domain/money.ts, src/features/money/domain/money.domain.test.ts)
+  add
+    when called with another Money of the same currency
+      then the sum's amount is the sum of the two amounts
+```
+
+A System tree with no 1:1 source file names just the test file:
+
+```
+save-score (test/system/save-score.system.test.ts)
+  when a user submits a valid score
+    then the score is persisted
+```
+
+Paths may also appear on a subtree or `then` line when the behaviour at that node is implemented by a distinct file — rare in practice, but the rule applies wherever a 1:1 file mapping holds.
+
+If naming a (sub)tree's path reveals an awkward shape — the tree doesn't sit naturally with where the code lives, or one tree spans multiple source files — treat that as design feedback: reshape the tree or the implementation until the paths fit. Do not strip the path to hide the mismatch.
+
 ### 4. Decompose Across Layers and Positions
 
 A System tree describes a slice's consumer-visible behaviour. Below it sits a set of smaller trees — one per behavioural unit the slice produces. Each smaller tree reifies one test file at one test layer.
