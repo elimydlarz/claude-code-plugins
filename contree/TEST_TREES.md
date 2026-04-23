@@ -60,7 +60,8 @@ outside-in-tdd (skills/tdd/SKILL.md, test/outside-in-tdd.bats)
     and any prior "none" value under that category is replaced with the new path
     and the update happens before moving to the next test
   when TDD moves or renames a file that a tree names
-    then the tree's labelled parenthesised paths are updated to reflect the new location in the same step as the move
+    then the tree's labelled parenthesised paths are updated to reflect the new location
+    and the update happens in the same step as the move
   when reading a tree reveals an error in its leaf text
     then the tree's leaf text is corrected
     and the correction happens before writing the test
