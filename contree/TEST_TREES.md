@@ -56,6 +56,9 @@ outside-in-tdd (skills/tdd/SKILL.md, test/outside-in-tdd.bats)
     then the tree's parenthesised paths are updated to include the new file before moving to the next test
   when TDD moves or renames a file that a tree names
     then the tree's parenthesised paths are updated to reflect the new location in the same step as the move
+  when reading a tree reveals an error in its leaf text — a typo, inaccuracy, or mismatch with what the test should actually assert
+    then the tree's leaf text is corrected before writing the test
+    and the test mirrors the corrected text, not the original error
   when an expected-red test passes incidentally
     then break the implementation intentionally
     and observe the test failing
