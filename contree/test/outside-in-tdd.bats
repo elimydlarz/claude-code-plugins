@@ -85,3 +85,10 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
   [[ "$output" == *"move"* || "$output" == *"rename"* || "$output" == *"moved or renamed"* ]]
   [[ "$output" == *"parenthesised path"* || "$output" == *"tree's named paths"* ]]
 }
+
+@test "tdd corrects errors it notices in tree leaf text before writing the test" {
+  run cat "$SKILL"
+  [[ "$output" == *"leaf"* ]]
+  [[ "$output" == *"typo"* || "$output" == *"inaccuracy"* || "$output" == *"error"* ]]
+  [[ "$output" == *"corrected"* || "$output" == *"fix"* || "$output" == *"reconcile"* ]]
+}
