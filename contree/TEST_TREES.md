@@ -234,7 +234,8 @@ sync-audits-and-resolves (skills/sync/SKILL.md, test/sync-audits-and-resolves.ba
   when sync is run
     then every when/then path is checked for implementation and tests
     and each test file's describe/it hierarchy is parsed and compared to its tree
-    and each tree's named file paths are verified against the filesystem
+    and each tree's labelled parenthesised paths are verified against the filesystem per category
+    and every "none" value is surfaced as an explicit gap for the user to resolve
     and drift between trees and implementation is identified
   when implementation exists without a tree
     then it is discussed with the user — may need a tree or may need removing
