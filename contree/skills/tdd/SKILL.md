@@ -14,6 +14,7 @@ description: "Close gaps between intent and implementation — one failing test 
 5. **Tree output at every layer** — nested, indented, human-readable. Test output reads like the tree.
 6. **Don't change existing trees silently** — add new cases as you discover them. Never modify or remove an existing path without asking. The stop hook enforces this.
 7. **Keep the tree's parenthesised paths current** — when you create a test or source file at a path the tree does not yet name, update the tree's parenthesised paths to include the new file before moving to the next test. When you move or rename a file the tree names, update the paths in the same step as the move. TDD is where coverage actually lands on disk, so it is where paths must stay honest.
+8. **Correct errors you notice in tree leaf text** — if reading a tree reveals a typo, inaccuracy, or mismatch between a leaf's text and what the test should actually assert, fix the tree leaf first, then write the test mirroring the corrected text. Do not replicate the error in the test. TDD is a second pair of eyes on the tree; leaving known errors unfixed poisons every downstream test.
 
 The layer taxonomy, in-memory adapter pattern, shared port contract suite, and tree-naming heuristic all live in `skills/change/SKILL.md` — that's where decomposition decisions are made. This skill is the tactical cycle that implements those decisions.
 
