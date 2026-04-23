@@ -194,8 +194,10 @@ change-writes-trees (skills/change/SKILL.md, test/change-writes-trees.bats)
     then top-level nodes name the unit's exported functions, methods, or port operations
     and each path corresponds to an observable branch in the unit
   when a tree is written
-    then its file path(s) are named in parentheses at the end of the tree name line — the test file it reifies to, and any source file it maps 1:1 to
-    and if naming a (sub)tree's path reveals an awkward shape, the tree or implementation is reshaped — the path is not stripped to hide the mismatch
+    then its coverage per category is named in parentheses at the end of the tree name line as labelled semicolon-separated pairs — categories are src, unit, integration, functional
+    and a category that is expected but uncovered is declared "none" so the gap is visible
+    and a category that is genuinely not applicable to the tree is omitted
+    and if naming a (sub)tree's paths reveals an awkward shape, the tree or implementation is reshaped — paths are not stripped to hide the mismatch
   when planning a change to an area that already has a tree and implementation
     then the current tree's leaves and parenthesised paths are compared against the actual test and source files in that area before drafting the change
     and any pre-existing tree-code drift in that area is reconciled as part of the change so the new tree is coherent with post-change reality
