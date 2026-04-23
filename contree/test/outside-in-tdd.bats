@@ -80,6 +80,16 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
   [[ "$output" == *"before moving to the next test"* || "$output" == *"before the next test"* ]]
 }
 
+@test "tdd places new files under the correct coverage category and closes 'none' gaps" {
+  run cat "$SKILL"
+  [[ "$output" == *"category"* ]]
+  [[ "$output" == *"src"* ]]
+  [[ "$output" == *"unit"* ]]
+  [[ "$output" == *"integration"* ]]
+  [[ "$output" == *"functional"* ]]
+  [[ "$output" == *"none"* ]]
+}
+
 @test "tdd updates the tree's parenthesised paths when moving or renaming a file the tree names" {
   run cat "$SKILL"
   [[ "$output" == *"move"* || "$output" == *"rename"* || "$output" == *"moved or renamed"* ]]
