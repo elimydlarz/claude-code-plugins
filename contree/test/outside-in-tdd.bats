@@ -73,3 +73,15 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
   [[ "$output" == *"change"* ]]
   [[ "$output" == *"no tree"* ]]
 }
+
+@test "tdd updates the tree's parenthesised paths when creating a file at a path the tree does not yet name" {
+  run cat "$SKILL"
+  [[ "$output" == *"parenthesised path"* || "$output" == *"parenthesised paths"* || "$output" == *"tree's named paths"* ]]
+  [[ "$output" == *"before moving to the next test"* || "$output" == *"before the next test"* ]]
+}
+
+@test "tdd updates the tree's parenthesised paths when moving or renaming a file the tree names" {
+  run cat "$SKILL"
+  [[ "$output" == *"move"* || "$output" == *"rename"* || "$output" == *"moved or renamed"* ]]
+  [[ "$output" == *"parenthesised path"* || "$output" == *"tree's named paths"* ]]
+}
