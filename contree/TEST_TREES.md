@@ -9,7 +9,10 @@ test-trees-as-requirements (test/test-trees-as-requirements.bats)
     and trees are flat subsections — not grouped by kind or layer
     and every tree reifies exactly one test file
     and every test file reifies exactly one tree
-    and every tree names its coverage per category using labelled parenthesised paths on the tree-name line — categories are src, unit, integration, functional — missing-but-expected coverage is declared "none" so gaps are visible; absent labels mean "not expected for this tree"
+    and every tree names its coverage in parenthesised labelled pairs on the tree-name line
+    and the coverage categories are src, unit, integration, functional
+    and a category that is expected but uncovered is declared "none"
+    and a category that is not applicable to the tree is omitted
     and the EARS rule is embedded in skills that use it
   when a behaviour change is needed
     then the tree must exist before implementation starts
