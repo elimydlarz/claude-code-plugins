@@ -159,7 +159,7 @@ At Domain, Use-case, and Port-contract, TDD + YAGNI means no branch without a pa
 A Domain tree is shaped like its class/module:
 
 ```
-Money (src/features/money/domain/money.ts, src/features/money/domain/money.domain.test.ts)
+Money (src: src/features/money/domain/money.ts; unit: src/features/money/domain/money.domain.test.ts; integration: none; functional: none)
   add
     when called with another Money of the same currency
       then the sum's amount is the sum of the two amounts
