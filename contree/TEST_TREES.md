@@ -1,7 +1,7 @@
 ## test-trees-as-requirements
 
 ```
-test-trees-as-requirements
+test-trees-as-requirements (test/test-trees-as-requirements.bats)
   when a project uses contree
     then CLAUDE.md identifies TEST_TREES.md as the definition of functional and cross-functional requirements
     and TEST_TREES.md defines functional requirements using EARS syntax
@@ -20,7 +20,7 @@ test-trees-as-requirements
 ## setup-scaffolds-mental-model
 
 ```
-setup-scaffolds-mental-model
+setup-scaffolds-mental-model (skills/setup/SKILL.md, test/setup-scaffolds-mental-model.bats)
   when setup is run and MENTAL_MODEL.md does not exist
     then MENTAL_MODEL.md is created with seven H2 sections
     and the seven sections are: Core Domain Identity, World-to-Code Mapping, Ubiquitous Language, Bounded Contexts, Invariants, Decision Rationale, Temporal View
@@ -36,7 +36,7 @@ setup-scaffolds-mental-model
 ## outside-in-tdd
 
 ```
-outside-in-tdd
+outside-in-tdd (skills/tdd/SKILL.md, test/outside-in-tdd.bats)
   when implementing a tree
     then each when/then path becomes one failing test, written one at a time in tree order
     and the test is written at the tree's layer (Domain / Use-case / Adapter / System)
@@ -68,7 +68,7 @@ outside-in-tdd
 ## pre-task-hook
 
 ```
-pre-task-hook
+pre-task-hook (hooks/session-start.sh, test/pre-task-hook.bats)
   when a session starts
     then MENTAL_MODEL.md contents are displayed
     and TEST_TREES.md contents are displayed
@@ -87,7 +87,7 @@ pre-task-hook
 ## post-task-hook
 
 ```
-post-task-hook
+post-task-hook (hooks/stop-drift-check.sh, test/post-task-hook.bats)
   when Claude stops after a response that does not end with a question
     then a mental-model nudge prompts consideration of whether the task revealed something a future agent could not recover from code and tests, and whose removal would cause a mistake a competent human would not make, defaulting to no change
       when a change is warranted
@@ -110,7 +110,7 @@ post-task-hook
 ## post-update-hook
 
 ```
-post-update-hook
+post-update-hook (hooks/post-update-check.sh, test/post-update-hook.bats)
   when MENTAL_MODEL.md is edited via a tool call
     then the validator runs against the post-edit content
     and its findings are surfaced to Claude's next response via additional context
@@ -121,7 +121,7 @@ post-update-hook
 ## mental-model-validator
 
 ```
-mental-model-validator
+mental-model-validator (hooks/validate-mental-model.sh, test/mental-model-validator.bats)
   then the validator's output is advisory and does not block edits
   when MENTAL_MODEL.md is well-formed
     then the validator reports no issues
@@ -138,7 +138,7 @@ mental-model-validator
 ## setup-generates-trees
 
 ```
-setup-generates-trees
+setup-generates-trees (skills/setup/SKILL.md, test/setup-generates-trees.bats)
   when setup is run on an existing project
     then existing test config is detected and merged into, not overwritten
     and tree reporters are configured for both local dev and CI (dual reporters)
@@ -165,7 +165,7 @@ setup-generates-trees
 ## setup-installs-architectural-linter
 
 ```
-setup-installs-architectural-linter
+setup-installs-architectural-linter (skills/setup/SKILL.md, test/setup-installs-architectural-linter.bats)
   when setup is run
     then a hex-boundary linter is installed and configured
 ```
@@ -173,7 +173,7 @@ setup-installs-architectural-linter
 ## change-writes-trees
 
 ```
-change-writes-trees
+change-writes-trees (skills/change/SKILL.md, test/change-writes-trees.bats)
   when a behaviour change is needed
     then the change is discussed with the user before modifying trees
     and EARS patterns are chosen to match each requirement's nature
@@ -187,7 +187,7 @@ change-writes-trees
     then top-level nodes name the unit's exported functions, methods, or port operations
     and each path corresponds to an observable branch in the unit
   when a tree is written
-    then its file path(s) are named alongside the tree name — the test file it reifies to, and any source file it maps 1:1 to
+    then its file path(s) are named in parentheses at the end of the tree name line — the test file it reifies to, and any source file it maps 1:1 to
     and if naming a (sub)tree's path reveals an awkward shape, the tree or implementation is reshaped — the path is not stripped to hide the mismatch
   when modifying existing behaviour
     then only affected paths are changed
@@ -201,7 +201,7 @@ change-writes-trees
 ## change-decomposes-across-layers
 
 ```
-change-decomposes-across-layers
+change-decomposes-across-layers (skills/change/SKILL.md, test/change-decomposes-across-layers.bats)
   when a behaviour change is planned
     then the slice is captured as a System tree named for the consumer capability
     and each behavioural unit with observable choices becomes its own tree at its layer: Domain, Use-case, Adapter, or port contract
@@ -217,15 +217,18 @@ change-decomposes-across-layers
 ## sync-audits-and-resolves
 
 ```
-sync-audits-and-resolves
+sync-audits-and-resolves (skills/sync/SKILL.md, test/sync-audits-and-resolves.bats)
   when sync is run
     then every when/then path is checked for implementation and tests
     and each test file's describe/it hierarchy is parsed and compared to its tree
+    and each tree's named file paths are verified against the filesystem
     and drift between trees and implementation is identified
   when implementation exists without a tree
     then it is discussed with the user — may need a tree or may need removing
   when a tree exists without implementation
     then it is flagged as a gap to implement
+  when a tree's named path does not exist on disk
+    then it is flagged as drift
   when a test file's describe/it hierarchy disagrees with its tree
     then both are presented to the user for resolution
     and sync does not pick a side
@@ -238,7 +241,7 @@ sync-audits-and-resolves
 ## workflow-runs-end-to-end
 
 ```
-workflow-runs-end-to-end
+workflow-runs-end-to-end (skills/workflow/SKILL.md, test/workflow-runs-end-to-end.bats)
   when workflow is run with an idea
     then change, sync, and tdd run in sequence without pausing
   when change completes
@@ -252,7 +255,7 @@ workflow-runs-end-to-end
 ## skill-discoverability
 
 ```
-skill-discoverability
+skill-discoverability (hooks/session-start.sh, test/skill-discoverability.bats)
   when a user describes a behaviour change without naming a skill
     then the change skill is triggered
   when a user asks about drift between code and requirements without naming a skill
@@ -266,7 +269,7 @@ skill-discoverability
 ## composable-testing
 
 ```
-composable-testing
+composable-testing (skills/setup/SKILL.md, test/composable-testing.bats)
   when a project uses contree
     then Domain tests are colocated with source (*.domain.test.*)
     and Use-case tests are colocated with the use-case (*.use-case.test.*)
@@ -281,7 +284,7 @@ composable-testing
 ## pressure-phrase-on-session-start
 
 ```
-pressure-phrase-on-session-start
+pressure-phrase-on-session-start (hooks/pressure-phrases.sh, test/pressure-phrases.bats)
   when a session starts
     then one pressure phrase is appended to the rules output
     and the phrase is randomly drawn from the pressure-phrase pool in hooks/pressure-phrases.sh
@@ -292,7 +295,7 @@ pressure-phrase-on-session-start
 ## rules-loading
 
 ```
-rules-loading
+rules-loading (hooks/session-start.sh, test/rules-loading.bats)
   when a session starts
     then the rules list is shown
     and not repeated on every response
@@ -301,7 +304,7 @@ rules-loading
 ## self-care-20-20-20
 
 ```
-self-care-20-20-20
+self-care-20-20-20 (hooks/self-care-20-20-20.sh, test/self-care.bats)
   when the UserPromptSubmit hook fires in any session
     when the heartbeat is recorded
       then heartbeats older than one hour are pruned
