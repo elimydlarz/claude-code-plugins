@@ -21,6 +21,8 @@ Sets expected behaviour before code exists. Talks through a behaviour change wit
 
 What behaviour is being added, modified, or removed? Talk it through with the user. Clarify scope and boundaries before touching any trees.
 
+**Read the actual tests and source of the area being changed before drafting the tree edit.** The existing tree is a claim about what the code does; the code is what it actually does. If they disagree, a tree edit grounded only in the tree will compound the drift. Reconcile pre-existing tree-code drift in the working area as part of the change — the new tree must be coherent with post-change reality, not with a stale snapshot. If reconciliation is non-trivial, surface it to the user and decide together whether to fold it in or split it out before proceeding.
+
 ### 2. Identify the Consumer
 
 Who or what consumes this behaviour? A user? An API client? Another module? The consumer's perspective is where you start — not the internals.
