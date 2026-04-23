@@ -52,6 +52,10 @@ outside-in-tdd (skills/tdd/SKILL.md, test/outside-in-tdd.bats)
   when TDD discovers new test cases
     then new cases are added to the tree
     but existing when/then paths are not changed or removed
+  when TDD creates a test or source file at a path the tree does not yet name
+    then the tree's parenthesised paths are updated to include the new file before moving to the next test
+  when TDD moves or renames a file that a tree names
+    then the tree's parenthesised paths are updated to reflect the new location in the same step as the move
   when an expected-red test passes incidentally
     then break the implementation intentionally
     and observe the test failing
