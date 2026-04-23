@@ -38,7 +38,7 @@ Trees in `TEST_TREES.md` look like this:
 ```markdown
 ### UserRegistration
 
-UserRegistration
+UserRegistration (src/features/user/domain/user-registration.ts, src/features/user/domain/user-registration.domain.test.ts)
   when a new user registers with valid details
     then the user account is created
     and a welcome email is sent
@@ -46,7 +46,7 @@ UserRegistration
     then registration is rejected
 ```
 
-Each behavioural unit gets its own tree — slice (System), use-case, port contract, adapter, domain object. At Domain, Use-case, and Port-contract, trees are code-shaped: top-level describes are the unit's functions/methods and every path is an observable branch. At Adapter and System, trees describe observable behaviour at the seam using consumer vocabulary — principles, not enumerated cases. Every test file's describe/it hierarchy mirrors its tree verbatim.
+Each behavioural unit gets its own tree — slice (System), use-case, port contract, adapter, domain object. Every tree names, in parentheses, the file path(s) it reifies to — at minimum its test file, plus any 1:1 source file — so the trees double as a repo map and sync can check the mapping against the filesystem. At Domain, Use-case, and Port-contract, trees are code-shaped: top-level describes are the unit's functions/methods and every path is an observable branch. At Adapter and System, trees describe observable behaviour at the seam using consumer vocabulary — principles, not enumerated cases. Every test file's describe/it hierarchy mirrors its tree verbatim.
 
 ## Supported languages
 
