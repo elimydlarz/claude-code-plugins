@@ -36,7 +36,7 @@ Read the codebase to understand what's actually implemented:
 
 For each test tree, check four things:
 
-1. **Path parity** — every named file path in the tree exists on the filesystem. A tree that names `src/foo.ts` when the file lives at `src/bar.ts` (or nowhere) is drift.
+1. **Path parity per category** — for each labelled pair in the tree's parenthesised paths (`src`, `unit`, `integration`, `functional`), verify the named file exists on the filesystem. A tree that names `src/foo.ts` when the file lives at `src/bar.ts` (or nowhere) is drift. Any category declared `none` is surfaced as an explicit gap for the user to resolve — intentional-but-open, awaiting coverage.
 2. **Describe/it parity** — every path in the tree appears as a describe/it in the test file, and every describe/it in the test file appears as a path in the tree. Verbatim match.
 3. **Test passes** — the tests exist and are green.
 4. **Branch parity** (Domain, Use-case, Port-contract) — every observable branch in the unit's code corresponds to a tree path, and every path corresponds to a branch. YAGNI plus the code-shaped-tree rule makes this tight.
