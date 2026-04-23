@@ -77,3 +77,15 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   run cat "$SKILL"
   [[ "$output" == *"sync"* ]]
 }
+
+@test "change names file path(s) alongside the tree name in parentheses" {
+  run cat "$SKILL"
+  [[ "$output" == *"in parentheses"* || "$output" == *"parenthesised"* || "$output" == *"parens"* ]]
+  [[ "$output" == *"file path"* ]]
+}
+
+@test "change treats awkward path naming as design feedback, not a reason to strip paths" {
+  run cat "$SKILL"
+  [[ "$output" == *"awkward"* ]]
+  [[ "$output" == *"reshape"* || "$output" == *"reshaped"* ]]
+}
