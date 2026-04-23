@@ -63,9 +63,9 @@ SKILL="$PROJECT_ROOT/skills/sync/SKILL.md"
   [[ "$output" == *"Do not pick"* ]]
 }
 
-@test "sync verifies each tree's named file paths against the filesystem" {
+@test "sync verifies each tree's labelled paths against the filesystem per category" {
   run cat "$SKILL"
-  [[ "$output" == *"named file paths"* || "$output" == *"named paths"* ]]
+  [[ "$output" == *"labelled"* || "$output" == *"per category"* ]]
   [[ "$output" == *"filesystem"* ]]
 }
 
@@ -73,4 +73,10 @@ SKILL="$PROJECT_ROOT/skills/sync/SKILL.md"
   run cat "$SKILL"
   [[ "$output" == *"does not exist"* || "$output" == *"not exist on disk"* ]]
   [[ "$output" == *"drift"* ]]
+}
+
+@test "sync surfaces every 'none' value as an explicit declared gap" {
+  run cat "$SKILL"
+  [[ "$output" == *"none"* ]]
+  [[ "$output" == *"Declared gap"* || "$output" == *"declared gap"* || "$output" == *"explicit gap"* ]]
 }
