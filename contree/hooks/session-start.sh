@@ -21,6 +21,7 @@ Eagerly use these skills to fulfil operator requests, where applicable:
 - **No fake code** — no skeletons, placeholders, or temporary implementations
 - **Avoid indirection** — direct is better than conforming to arbitrary patterns
 - **Fail fast** — don't swallow errors; let the system fail when unexpected things happen
+- **Retry at the source** — the layer closest to the failure retries; every layer above derives its timeout from that layer's worst case and does not retry the same failure class
 - **Avoid nullability** — make things required; don't program defensively
 - **Explicit and expressive** — name for what things do, not how they're implemented
 - **Self-documenting** — no comments; use clear naming and structure
