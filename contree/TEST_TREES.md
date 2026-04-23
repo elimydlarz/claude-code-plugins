@@ -209,8 +209,11 @@ change-writes-trees (skills/change/SKILL.md, test/change-writes-trees.bats)
     and if naming a (sub)tree's paths reveals an awkward shape, the tree or implementation is reshaped
     and paths are never stripped to hide a mismatch
   when planning a change to an area that already has a tree and implementation
-    then the current tree's leaves and parenthesised paths are compared against the actual test and source files in that area before drafting the change
-    and any pre-existing tree-code drift in that area is reconciled as part of the change so the new tree is coherent with post-change reality
+    then the current tree's leaves are compared against the actual test files in that area
+    and the current tree's parenthesised paths are compared against actual file locations
+    and the comparison happens before drafting the change
+    and any pre-existing tree-code drift in that area is reconciled as part of the change
+    and the new tree is coherent with post-change reality
   when modifying existing behaviour
     then only affected paths are changed
   when removing a capability
