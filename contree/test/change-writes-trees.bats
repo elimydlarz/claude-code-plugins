@@ -89,3 +89,15 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   [[ "$output" == *"awkward"* ]]
   [[ "$output" == *"reshape"* || "$output" == *"reshaped"* ]]
 }
+
+@test "change reads the actual tests and source of the area it is changing before drafting the tree edit" {
+  run cat "$SKILL"
+  [[ "$output" == *"actual test"* || "$output" == *"actual tests and source"* || "$output" == *"read the existing tests"* ]]
+  [[ "$output" == *"before drafting"* || "$output" == *"before proposing"* || "$output" == *"before modifying"* ]]
+}
+
+@test "change reconciles pre-existing tree-code drift in the area as part of the change" {
+  run cat "$SKILL"
+  [[ "$output" == *"pre-existing"* || "$output" == *"existing drift"* || "$output" == *"tree-code drift"* ]]
+  [[ "$output" == *"reconcile"* || "$output" == *"reconciled"* || "$output" == *"coherent"* ]]
+}
