@@ -13,6 +13,7 @@ description: "Close gaps between intent and implementation — one failing test 
 4. **Mutation testing validates finished work** — run at the end, against Domain and Use-case layers only. Never during the cycle.
 5. **Tree output at every layer** — nested, indented, human-readable. Test output reads like the tree.
 6. **Don't change existing trees silently** — add new cases as you discover them. Never modify or remove an existing path without asking. The stop hook enforces this.
+7. **Keep the tree's parenthesised paths current** — when you create a test or source file at a path the tree does not yet name, update the tree's parenthesised paths to include the new file before moving to the next test. When you move or rename a file the tree names, update the paths in the same step as the move. TDD is where coverage actually lands on disk, so it is where paths must stay honest.
 
 The layer taxonomy, in-memory adapter pattern, shared port contract suite, and tree-naming heuristic all live in `skills/change/SKILL.md` — that's where decomposition decisions are made. This skill is the tactical cycle that implements those decisions.
 
