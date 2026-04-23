@@ -78,10 +78,24 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   [[ "$output" == *"sync"* ]]
 }
 
-@test "change names file path(s) alongside the tree name in parentheses" {
+@test "change names coverage in parenthesised labelled pairs" {
   run cat "$SKILL"
-  [[ "$output" == *"in parentheses"* || "$output" == *"parenthesised"* || "$output" == *"parens"* ]]
-  [[ "$output" == *"file path"* ]]
+  [[ "$output" == *"parenthesised"* || "$output" == *"in parentheses"* ]]
+  [[ "$output" == *"labelled"* ]]
+}
+
+@test "change specifies the four coverage categories" {
+  run cat "$SKILL"
+  [[ "$output" == *"src"* ]]
+  [[ "$output" == *"unit"* ]]
+  [[ "$output" == *"integration"* ]]
+  [[ "$output" == *"functional"* ]]
+}
+
+@test "change declares gaps explicitly with 'none' and omits not-applicable categories" {
+  run cat "$SKILL"
+  [[ "$output" == *"none"* ]]
+  [[ "$output" == *"omitted"* || "$output" == *"omission"* ]]
 }
 
 @test "change treats awkward path naming as design feedback, not a reason to strip paths" {
