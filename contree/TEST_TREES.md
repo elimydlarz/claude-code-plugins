@@ -53,9 +53,10 @@ outside-in-tdd (skills/tdd/SKILL.md, test/outside-in-tdd.bats)
     then new cases are added to the tree
     but existing when/then paths are not changed or removed
   when TDD creates a test or source file at a path the tree does not yet name
-    then the tree's parenthesised paths are updated to include the new file before moving to the next test
+    then the tree's labelled parenthesised paths are updated to include the new file under its category (src, unit, integration, functional) before moving to the next test
+    and any prior "none" value under that category is replaced with the new path
   when TDD moves or renames a file that a tree names
-    then the tree's parenthesised paths are updated to reflect the new location in the same step as the move
+    then the tree's labelled parenthesised paths are updated to reflect the new location in the same step as the move
   when reading a tree reveals an error in its leaf text — a typo, inaccuracy, or mismatch with what the test should actually assert
     then the tree's leaf text is corrected before writing the test
     and the test mirrors the corrected text, not the original error
