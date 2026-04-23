@@ -55,6 +55,9 @@ Check the reverse — does the implementation do things no test tree describes? 
 **Implementation exists without a tree** (code exists, no test tree):
 - Present the two options to the user, with a quick read of the evidence: (a) the implementation is accidental scope creep → remove it, or (b) it's a legitimate capability → write a tree for it. Do not choose. Ask.
 
+**Path drift** (a tree names a file path that does not exist on the filesystem):
+- Flag as drift. The path may be wrong (update the tree), the file may have been moved (update the tree), or the implementation is missing (hand to `tdd`). Present to the user and ask.
+
 **Stale trees** (test tree for capabilities that no longer exist):
 - Present to the user before removing. Ask whether the capability should come back (write/restore it) or the tree is truly obsolete (remove it).
 
