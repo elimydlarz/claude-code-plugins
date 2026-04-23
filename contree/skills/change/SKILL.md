@@ -228,7 +228,7 @@ The contract suite IS the port-contract tree (`ScoreRepository`). Both adapter t
 The tree in `TEST_TREES.md`:
 
 ```
-ScoreRepository
+ScoreRepository (src/features/score/application/ports/score-repository.ts, src/features/score/application/ports/score-repository.contract.ts)
   save
     when called with a score
       then the score is retrievable by its id
