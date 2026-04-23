@@ -196,6 +196,9 @@ change-writes-trees (skills/change/SKILL.md, test/change-writes-trees.bats)
   when a tree is written
     then its file path(s) are named in parentheses at the end of the tree name line — the test file it reifies to, and any source file it maps 1:1 to
     and if naming a (sub)tree's path reveals an awkward shape, the tree or implementation is reshaped — the path is not stripped to hide the mismatch
+  when planning a change to an area that already has a tree and implementation
+    then the current tree's leaves and parenthesised paths are compared against the actual test and source files in that area before drafting the change
+    and any pre-existing tree-code drift in that area is reconciled as part of the change so the new tree is coherent with post-change reality
   when modifying existing behaviour
     then only affected paths are changed
   when removing a capability
