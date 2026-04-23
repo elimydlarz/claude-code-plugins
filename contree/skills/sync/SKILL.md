@@ -58,6 +58,9 @@ Check the reverse — does the implementation do things no test tree describes? 
 **Path drift** (a tree names a file path that does not exist on the filesystem):
 - Flag as drift. The path may be wrong (update the tree), the file may have been moved (update the tree), or the implementation is missing (hand to `tdd`). Present to the user and ask.
 
+**Declared gap** (a category value is `none`):
+- Surface it. This is not drift in the broken-state sense — it's an intentional marker that a category is expected but uncovered. List each `none` value per tree so the user can prioritise which gaps to close via `tdd`.
+
 **Stale trees** (test tree for capabilities that no longer exist):
 - Present to the user before removing. Ask whether the capability should come back (write/restore it) or the tree is truly obsolete (remove it).
 
