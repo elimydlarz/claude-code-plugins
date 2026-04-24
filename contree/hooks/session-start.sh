@@ -24,7 +24,7 @@ Eagerly use these skills to fulfil operator requests, where applicable:
 - **Retry at the source** — the layer closest to the failure retries; every layer above derives its timeout from that layer's worst case and does not retry the same failure class
 - **Avoid nullability** — make things required; don't program defensively
 - **Explicit and expressive** — name for what things do, not how they're implemented
-- **Self-documenting** — no comments; use clear naming and structure
+- **No comments** — descriptive tests and expressive code obviate comments; comments bias agents against change, but trees and tests make the contract explicit so code can change radically. Never pollute the codebase with comments, fallbacks, or excuses — set expectations in test trees, enforce them in tests, express them in code.
 - **Composition over inheritance** — no `extends`; use hooks, functional utilities, component composition
 - **Typing** — type everything; no `any`
 - **Z-index** — avoid z-index; good layout doesn't rely on it
