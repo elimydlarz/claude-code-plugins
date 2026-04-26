@@ -33,12 +33,14 @@ Use the consumer's vocabulary. If the consumer says "register", the tree says "r
 
 **Adding a new capability:**
 
-Name the tree — a short noun phrase describing what the system does. **One tree reifies exactly one test file.** If a capability exposes multiple behavioural units (e.g. a module with `generate` AND `isValid`, each testable independently), write **one tree per unit**, not one tree grouping them under a shared header. Grouping destroys the one-tree-one-file invariant and forces the TDD skill to fabricate ambiguous test structure.
+Name the tree — **always `<Layer>: <Subject>`** where `<Layer>` is one of `Domain`, `Use-case`, `Port`, `Adapter`, `System`, and `<Subject>` is a short noun phrase naming the unit under test. Without the layer prefix, readers and `sync` cannot tell what level a tree exercises and cannot detect duplication across layers. Without a clear subject, the tree's tests are unreadable.
+
+**One tree reifies exactly one test file.** If a capability exposes multiple behavioural units (e.g. a module with `generate` AND `isValid`, each testable independently), write **one tree per unit**, not one tree grouping them under a shared header. Grouping destroys the one-tree-one-file invariant and forces the TDD skill to fabricate ambiguous test structure.
 
 Write paths using EARS patterns (see EARS Patterns below) to describe the capability's operating principles:
 
 ```
-capability-name
+<Layer>: <Subject>
   then <ubiquitous outcome>
   while <precondition>
     then <outcome>
