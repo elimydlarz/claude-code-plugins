@@ -286,7 +286,7 @@ Once aligned, suggest the user runs `sync` to audit completeness and implement g
 
 **Good** — uses EARS patterns to match each requirement's nature:
 ```
-media-player
+System: media-player
   then supports mp3 and wav formats
   while playing
     when pause is pressed
