@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-FILE="$1"
-
-if [ -z "$FILE" ]; then
-  printf 'validate-mental-model.sh requires a file path argument\n' >&2
+if [ -z "$CLAUDE_PROJECT_DIR" ]; then
+  printf 'validate-mental-model.sh requires CLAUDE_PROJECT_DIR\n' >&2
   exit 1
 fi
+
+FILE="$CLAUDE_PROJECT_DIR/MENTAL_MODEL.md"
 
 if [ ! -f "$FILE" ]; then
   printf 'MENTAL_MODEL.md is missing\n'
