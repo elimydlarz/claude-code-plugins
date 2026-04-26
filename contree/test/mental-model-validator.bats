@@ -6,7 +6,7 @@ VALIDATOR="$PROJECT_ROOT/hooks/validate-mental-model.sh"
 
 @test "validator flags that the file is missing when MENTAL_MODEL.md does not exist" {
   cd "$BATS_TEST_TMPDIR"
-  run bash "$VALIDATOR"
+  run bash "$VALIDATOR" "$BATS_TEST_TMPDIR/MENTAL_MODEL.md"
   [[ "$output" == *"MENTAL_MODEL.md"* ]]
   [[ "$output" == *"missing"* || "$output" == *"not exist"* || "$output" == *"does not"* ]]
 }
@@ -14,7 +14,7 @@ VALIDATOR="$PROJECT_ROOT/hooks/validate-mental-model.sh"
 @test "validator exits 0 even when issues are present (advisory, not blocking)" {
   cd "$BATS_TEST_TMPDIR"
   printf '## Glossary\n\n- one\n' > MENTAL_MODEL.md
-  run bash "$VALIDATOR"
+  run bash "$VALIDATOR" "$BATS_TEST_TMPDIR/MENTAL_MODEL.md"
   [ "$status" -eq 0 ]
   [ -n "$output" ]
 }
@@ -54,7 +54,7 @@ EOF
 @test "validator reports no issues when MENTAL_MODEL.md is well-formed" {
   cd "$BATS_TEST_TMPDIR"
   write_well_formed "$BATS_TEST_TMPDIR"
-  run bash "$VALIDATOR"
+  run bash "$VALIDATOR" "$BATS_TEST_TMPDIR/MENTAL_MODEL.md"
   [ -z "$output" ]
 }
 
@@ -85,7 +85,7 @@ EOF
 
 - placeholder
 EOF
-  run bash "$VALIDATOR"
+  run bash "$VALIDATOR" "$BATS_TEST_TMPDIR/MENTAL_MODEL.md"
   [[ "$output" == *"Invariants"* ]]
   [[ "$output" == *"missing"* || "$output" == *"absent"* ]]
 }
@@ -94,7 +94,7 @@ EOF
   cd "$BATS_TEST_TMPDIR"
   write_well_formed "$BATS_TEST_TMPDIR"
   printf '\n## Glossary\n\n- extra\n' >> MENTAL_MODEL.md
-  run bash "$VALIDATOR"
+  run bash "$VALIDATOR" "$BATS_TEST_TMPDIR/MENTAL_MODEL.md"
   [[ "$output" == *"Glossary"* ]]
   [[ "$output" == *"rogue"* || "$output" == *"not one of"* || "$output" == *"unknown"* ]]
 }
@@ -140,7 +140,7 @@ EOF
 
 - placeholder
 EOF
-  run bash "$VALIDATOR"
+  run bash "$VALIDATOR" "$BATS_TEST_TMPDIR/MENTAL_MODEL.md"
   [[ "$output" == *"Invariants"* ]]
   [[ "$output" == *"cap"* || "$output" == *"overflow"* || "$output" == *"exceed"* ]]
 }
