@@ -71,7 +71,7 @@ Every tree must name its coverage in parentheses at the end of the tree-name lin
 - `functional` — whole-system end-to-end test (System layer, or an in-docker full-app test)
 
 ```
-Money (src: src/features/money/domain/money.ts; unit: src/features/money/domain/money.domain.test.ts; integration: none; functional: none)
+Domain: Money (src: src/features/money/domain/money.ts; unit: src/features/money/domain/money.domain.test.ts; integration: none; functional: none)
   add
     when called with another Money of the same currency
       then the sum's amount is the sum of the two amounts
@@ -80,7 +80,7 @@ Money (src: src/features/money/domain/money.ts; unit: src/features/money/domain/
 A System tree with no 1:1 source file omits `src`:
 
 ```
-save-score (unit: src/features/score/application/save-score.use-case.test.ts; functional: test/system/save-score.system.test.ts)
+System: save-score (unit: src/features/score/application/save-score.use-case.test.ts; functional: test/system/save-score.system.test.ts)
   when a user submits a valid score
     then the score is persisted
 ```
