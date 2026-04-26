@@ -136,15 +136,15 @@ Layers are named for the hex seam under test, not for infrastructure presence. C
 - **One tree, one test file.** Each tree's `describe`/`it` hierarchy mirrors the tree verbatim.
 - **Cross-cutting System trees** — for app-level invariants that aren't per-slice (auth enforcement, rate limiting, error envelope), write a System tree named for the policy.
 
-**Tree naming heuristic** — name each tree for the subject with observable behaviour at its layer:
+**Tree naming heuristic** — every tree name is `<Layer>: <Subject>`. Pick the subject with observable behaviour at that layer:
 
-| Layer    | Subject                             | Example                                         |
-| -------- | ----------------------------------- | ----------------------------------------------- |
-| Domain   | domain object or service             | `Money`, `SessionToken`, `LeaderboardRanking`   |
-| Use-case | the use-case                         | `save-score-use-case`                           |
-| Port     | port interface (shared contract)     | `ScoreRepository`, `AuditLog`                   |
-| Adapter  | adapter being exercised              | `score-http-handler`, `ScoreRepository-Postgres`|
-| System   | capability/slice or cross-cutting policy | `save-score`, `auth-enforcement`            |
+| Layer    | Subject                                  | Example                                                       |
+| -------- | ---------------------------------------- | ------------------------------------------------------------- |
+| Domain   | domain object or service                 | `Domain: Money`, `Domain: SessionToken`                       |
+| Use-case | the use-case                             | `Use-case: save-score-use-case`                               |
+| Port     | port interface (shared contract)         | `Port: ScoreRepository`, `Port: AuditLog`                     |
+| Adapter  | adapter being exercised                  | `Adapter: score-http-handler`, `Adapter: ScoreRepository-Postgres` |
+| System   | capability/slice or cross-cutting policy | `System: save-score`, `System: auth-enforcement`              |
 
 **Tree shape per layer** — the naming heuristic names the tree; the shape rule organises its paths.
 
