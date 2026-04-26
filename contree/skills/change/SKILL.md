@@ -307,6 +307,14 @@ media-player
     then track.wav plays
 ```
 
+**Good** — states the principle once:
+```
+media-player
+  then supports mp3 and wav formats
+  when a track is loaded
+    then playback begins from the start
+```
+
 **Bad** — tautological (then restates the when):
 ```
 media-player
@@ -314,6 +322,15 @@ media-player
     then a track is loaded
   when playback is paused
     then it pauses
+```
+
+**Good** — then asserts an outcome the when does not imply:
+```
+media-player
+  when a track is loaded
+    then playback begins from the start
+  when playback is paused
+    then the current position is retained for resume
 ```
 
 **Bad** — flat siblings for causally dependent behaviour:
@@ -339,6 +356,13 @@ auth
 media-player
   when AudioContext.decodeAudioData resolves
     then the Float32Array buffer is assigned to the source node
+```
+
+**Good** — uses consumer vocabulary:
+```
+media-player
+  when a track is loaded
+    then playback begins from the start
 ```
 
 ## EARS Patterns
