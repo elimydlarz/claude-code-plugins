@@ -301,9 +301,23 @@ System: media-player
     then audio can be routed to a bluetooth device
 ```
 
-**Bad** — enumerates cases:
+**Bad** — missing layer and subject (just a bare capability slug):
 ```
 media-player
+  when a track is loaded
+    then playback begins from the start
+```
+
+**Good** — names layer and subject so duplication is detectable and purpose is legible:
+```
+System: media-player
+  when a track is loaded
+    then playback begins from the start
+```
+
+**Bad** — enumerates cases:
+```
+System: media-player
   when file is "song.mp3"
     then song.mp3 plays
   when file is "track.wav"
@@ -312,15 +326,15 @@ media-player
 
 **Good** — states the principle once:
 ```
-media-player
+System: media-player
   then supports mp3 and wav formats
   when a track is loaded
     then playback begins from the start
 ```
 
-**Bad** — tautological (then restates the when):
+**Bad** — tautological (then restates the when, so the path asserts nothing):
 ```
-media-player
+System: media-player
   when a track is loaded
     then a track is loaded
   when playback is paused
@@ -329,7 +343,7 @@ media-player
 
 **Good** — then asserts an outcome the when does not imply:
 ```
-media-player
+System: media-player
   when a track is loaded
     then playback begins from the start
   when playback is paused
@@ -338,7 +352,7 @@ media-player
 
 **Bad** — flat siblings for causally dependent behaviour:
 ```
-auth
+Use-case: auth
   when token is invalid
     then refresh is attempted
   when refresh fails
@@ -347,7 +361,7 @@ auth
 
 **Good** — causal nesting (refresh failure depends on refresh being attempted):
 ```
-auth
+Use-case: auth
   when token is invalid
     then refresh is attempted
       when refresh fails
@@ -356,14 +370,14 @@ auth
 
 **Bad** — uses implementation language:
 ```
-media-player
+System: media-player
   when AudioContext.decodeAudioData resolves
     then the Float32Array buffer is assigned to the source node
 ```
 
 **Good** — uses consumer vocabulary:
 ```
-media-player
+System: media-player
   when a track is loaded
     then playback begins from the start
 ```
