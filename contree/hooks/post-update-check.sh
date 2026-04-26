@@ -7,7 +7,7 @@ if [ "${FILE_PATH##*/}" != "MENTAL_MODEL.md" ]; then
   exit 0
 fi
 
-FINDINGS=$(bash "${CLAUDE_PLUGIN_ROOT}/hooks/validate-mental-model.sh" "$FILE_PATH")
+FINDINGS=$(bash "${CLAUDE_PLUGIN_ROOT}/hooks/validate-mental-model.sh")
 
 if [ -n "$FINDINGS" ]; then
   jq -nc --arg msg "MENTAL_MODEL.md validator findings:
