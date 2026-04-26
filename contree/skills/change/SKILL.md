@@ -280,6 +280,7 @@ Once aligned, suggest the user runs `sync` to audit completeness and implement g
 - **Describe principles, not cases** — applies at Adapter and System layers: "when the input is invalid" not "when the input is empty / when the input is null / when the input is too long". At Domain, Use-case, and Port-contract, each observable branch *is* a principle; enumerate them all.
 - **Use the consumer's vocabulary** — applies at Adapter and System layers: describe what the consumer sees, not implementation internals. At Domain, Use-case, and Port-contract, speak in the unit's own vocabulary (its function names, its types, its errors).
 - **Tree ≡ describe/it hierarchy verbatim** — every path in the tree appears as a describe/it in the test file; every describe/it in the test file appears as a path in the tree. This is the framework-agnostic contract; `sync` compares these two directly.
+- **Name the layer and subject** — every tree's first line is `<Layer>: <Subject>` (e.g. `Domain: Money`, `System: save-score`). The layer disambiguates trees that share a subject across layers; the subject is what is being tested. Without both, duplication can't be spotted and the test's purpose isn't legible.
 
 ## Examples
 
