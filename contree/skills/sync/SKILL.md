@@ -84,9 +84,10 @@ For each tree with no test file (or no passing tests), suggest the user runs `td
 
 ### 7. VERIFY
 
-After all gaps are implemented:
+After all gaps are implemented and all failing tests are resolved:
 
-- Run all tests at every layer — confirm tree output matches `## Test Trees`
+- Run all tests at every layer — **every test must pass**. A red suite means sync is not done; return to step 5.
+- Confirm tree output matches `## Test Trees`
 - Re-read `## Test Trees` — confirm it accurately describes the system
 - If mutation testing is configured, run Stryker against Domain + Use-case as final validation
 
