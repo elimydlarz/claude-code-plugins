@@ -96,7 +96,9 @@ After all gaps are implemented and all failing tests are resolved:
 After sync completes:
 
 1. Every tree in `## Test Trees` has a test file; every `when/then` path has a passing test at that tree's layer
-2. Every test file reifies exactly one tree
-3. No undocumented capabilities — everything the system does is specified
-4. No stale trees — every tree describes something that exists
-5. Test output reads like `## Test Trees` — same language, same structure
+2. The full test suite is green — zero failures, zero skips that hide drift
+3. Every test file reifies exactly one tree
+4. No undocumented capabilities — everything the system does is specified
+5. No stale trees — every tree describes something that exists
+6. Test output reads like `## Test Trees` — same language, same structure
+7. You can truthfully say: the project behaves as the trees describe, and the trees describe and verify all behaviour
