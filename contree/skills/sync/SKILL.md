@@ -5,7 +5,9 @@ description: "Identify gaps and cruft — where intent and implementation have d
 
 # Sync
 
-Finds where the contract has drifted from reality. Compares the trees in `## Test Trees` against implementation in both directions — surfacing gaps (intent without code), cruft (code without intent), and staleness (trees that no longer reflect the system). Resolves drift with the user, then hands gaps to `tdd`.
+Finds where the contract has drifted from reality. Compares the trees in `## Test Trees` against implementation in both directions — surfacing gaps (intent without code), cruft (code without intent), staleness (trees that no longer reflect the system), and **failing tests** (trees claim behaviour the system does not actually deliver). Resolves drift with the user, then hands gaps to `tdd`.
+
+After sync, the project must behave exactly as the test trees describe, and the test trees must describe and verify all behaviour. **A failing test means we are not synced.** Fixing existing test failures is part of sync's responsibility — not a separate concern to defer or hand back to the user untouched.
 
 ## When to Use
 
