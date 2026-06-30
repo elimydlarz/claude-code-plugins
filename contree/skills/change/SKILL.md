@@ -90,7 +90,7 @@ Domain: Money (src: src/features/money/domain/money.ts; unit: src/features/money
 A System tree with no 1:1 source file omits `src`:
 
 ```
-System: save-score (unit: src/features/score/application/save-score.use-case.test.ts; functional: test/system/save-score.system.test.ts)
+System: save-score (use-case: src/features/score/application/save-score.use-case.test.ts; system: test/system/save-score.system.test.ts)
   when a user submits a valid score
     then the score is persisted
 ```
