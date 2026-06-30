@@ -1519,8 +1519,8 @@ export REDIS_URL="redis://localhost:6380"
 # Run migrations if needed
 # npm run db:migrate  (or equivalent)
 
-# Run functional tests
-npm run test:functional
+# Run system tests
+npm run test:system
 ```
 
 #### package.json scripts (Node.js)
