@@ -84,12 +84,14 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   [[ "$output" == *"labelled"* ]]
 }
 
-@test "change specifies the five coverage categories" {
+@test "change specifies the seven coverage categories" {
   run cat "$SKILL"
   [[ "$output" == *"src"* ]]
-  [[ "$output" == *"unit"* ]]
-  [[ "$output" == *"integration"* ]]
-  [[ "$output" == *"functional"* ]]
+  [[ "$output" == *"domain"* ]]
+  [[ "$output" == *"use-case"* ]]
+  [[ "$output" == *"adapter"* ]]
+  [[ "$output" == *"component"* ]]
+  [[ "$output" == *"system"* ]]
   [[ "$output" == *"journey"* ]]
 }
 
