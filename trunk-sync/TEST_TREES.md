@@ -550,12 +550,20 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
     when the git command is in the read-only allowlist
       then it is allowed through
   every session start
-    then the starting agent is handed its own session id and the command to record its progress
-    when other sessions have work in progress on the project
-      then their progress — branch, task, last completed step, and remaining steps — is surfaced so the starting agent discovers work already in flight
-      and the starting agent is told to resume unfinished WIP, coordinating only if another agent is still actively working it
-    when an agent records progress and the hook later fires
-      then the progress-bearing timecard is committed and pushed, propagating the handover to other machines
+    then the starting agent is handed its own session id and the command to clock in
+    when other sessions have disrupted cards
+      then that disrupted work is surfaced as the handover to resume
+    when other sessions have active cards
+      then that active work is surfaced to coordinate around — labelled certain for a local live PID, possibly-disrupted for a remote heartbeat
+    when only done cards remain
+      then nothing is surfaced beyond the agent's own clock-in instruction
+  every end of task
+    then the agent's timecard heartbeat is bumped, marking it live
+    and the agent is forced to record its progress, or clock out if the task is complete
+    when stop_hook_active is set
+      then the force is skipped to prevent loops
+  when an agent records progress and the hook later fires
+    then the progress-bearing timecard is committed and pushed, propagating the handover to other machines
   when a merge conflict arises during sync
     then exit 2 surfaces self-contained conflict-resolution instructions
     when the agent edits the conflicted file and the hook fires again
