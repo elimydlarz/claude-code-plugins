@@ -703,30 +703,30 @@ def describe_wallet():
 
 **pytest-spec** formats the output as indented tree. They compose — use both together for best results.
 
-**Separating unit and functional tests:**
+**Separating domain and system tests:**
 ```
 tests/
-  unit/
-    conftest.py       # auto-marks all tests as @pytest.mark.unit
+  domain/
+    conftest.py       # auto-marks all tests as @pytest.mark.domain
     test_models.py
-  functional/
-    conftest.py       # auto-marks all tests as @pytest.mark.functional
+  system/
+    conftest.py       # auto-marks all tests as @pytest.mark.system
     test_api.py
   conftest.py         # shared fixtures
 ```
 
-Auto-mark by directory in `tests/unit/conftest.py`:
+Auto-mark by directory in `tests/domain/conftest.py`:
 ```python
 import pytest
 def pytest_collection_modifyitems(items):
     for item in items:
-        item.add_marker(pytest.mark.unit)
+        item.add_marker(pytest.mark.domain)
 ```
 
 Run independently:
 ```bash
-pytest tests/unit/            # or: pytest -m unit
-pytest tests/functional/      # or: pytest -m functional
+pytest tests/domain/          # or: pytest -m domain
+pytest tests/system/          # or: pytest -m system
 ```
 
 **Changed-test runner — pytest-testmon:**
