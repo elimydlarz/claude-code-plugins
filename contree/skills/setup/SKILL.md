@@ -1536,12 +1536,12 @@ npm run test:system
 #### Makefile (language-agnostic)
 
 ```makefile
-.PHONY: test-functional
-test-functional:
-	docker compose -f test/functional/docker-compose.yml up -d --wait
+.PHONY: test-system
+test-system:
+	docker compose -f test/system/docker-compose.yml up -d --wait
 	DATABASE_URL=postgres://test:test@localhost:5433/test \
-	  pytest tests/functional/ || (docker compose -f test/functional/docker-compose.yml down -v; exit 1)
-	docker compose -f test/functional/docker-compose.yml down -v
+	  pytest tests/system/ || (docker compose -f test/system/docker-compose.yml down -v; exit 1)
+	docker compose -f test/system/docker-compose.yml down -v
 ```
 
 ---
