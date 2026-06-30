@@ -502,9 +502,34 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
     then `--help` prints usage
     when called with a session id, a last step, and remaining steps
       then the matching timecard's lastStep and remainingSteps are set
+      and its heartbeat (lastActiveAt) is refreshed
       and clockedInAt, task, pid, and branch are preserved
     when no timecard yet exists for the session id
       then a timecard is created carrying the recorded progress
+    if the session id is missing
+      then it exits 1 with a usage message
+
+### Use-case: clockin (src: src/commands/clockin.ts; unit: src/commands/clockin.test.ts; integration: none; functional: test/trunk-sync.test.sh)
+
+  clockin command
+    then `--help` prints usage
+    when called with a session id
+      then a timecard for that session is created, or its heartbeat refreshed if it already exists
+      and the session id is echoed back as confirmation for use in later updates
+    when called with `--task <text>`
+      then the task description is recorded on the card
+    if the session id is missing
+      then it exits 1 with a usage message
+
+### Use-case: clockout (src: src/commands/clockout.ts; unit: src/commands/clockout.test.ts; integration: none; functional: test/trunk-sync.test.sh)
+
+  clockout command
+    then `--help` prints usage
+    when called with a session id
+      then the card's remaining steps are cleared, marking the work done
+      and the card becomes reapable once it is no longer live
+    when called with `--last <text>`
+      then the final completed step is recorded before the remaining steps are cleared
     if the session id is missing
       then it exits 1 with a usage message
 
