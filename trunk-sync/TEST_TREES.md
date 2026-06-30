@@ -363,8 +363,10 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       then exit 2 is returned with a throttled clock-in message
     when the throttle file is fresh
       then the clock-in message is suppressed
-    when a clocked-in agent has a dead PID
-      then it is clocked out as part of the same commit
+    when another agent's card is classified done and reapable
+      then it is reaped as part of the same commit
+    when another agent's card is disrupted (unfinished, but ended)
+      then it is preserved, not reaped — it is a handover for someone to resume
     if `.trunk-sync` is unwritable
       then the hook still exits 0 (clock-in is best-effort)
 
