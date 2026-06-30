@@ -678,6 +678,54 @@ describe("formatClockInMessage", () => {
   });
 });
 
+describe("formatSessionStartSummary", () => {
+  const now = new Date("2026-03-27T10:05:00.000Z");
+
+  function card(overrides: Partial<Timecard> = {}): Timecard {
+    return {
+      sessionId: "aaaa0000-0000-0000-0000-000000000000",
+      pid: 1, hostname: "mac-1",
+      clockedInAt: "2026-03-27T10:00:00.000Z",
+      lastActiveAt: "2026-03-27T10:04:00.000Z",
+      branch: "main", task: null, lastStep: null, remainingSteps: null,
+      ...overrides,
+    };
+  }
+
+  it("returns null when no other timecards are clocked in", () => {
+    assert.equal(formatSessionStartSummary([], now), null);
+  });
+
+  it("lists branch, task, last step, and remaining steps for an agent with progress", () => {
+    const msg = formatSessionStartSummary([card({
+      task: "Add handover", lastStep: "wired the CLI", remainingSteps: "add the functional test",
+    })], now)!;
+    assert.match(msg, /aaaa0000 on mac-1/);
+    assert.match(msg, /branch: main/);
+    assert.match(msg, /task: Add handover/);
+    assert.match(msg, /last: wired the CLI/);
+    assert.match(msg, /next: add the functional test/);
+    assert.match(msg, /Resume any unfinished WIP/);
+  });
+
+  it("shows the task without progress fields when none is recorded", () => {
+    const msg = formatSessionStartSummary([card({ task: "Some task" })], now)!;
+    assert.match(msg, /task: Some task/);
+    assert.doesNotMatch(msg, /last:/);
+    assert.doesNotMatch(msg, /next:/);
+  });
+
+  it("lists multiple agents", () => {
+    const msg = formatSessionStartSummary([
+      card({ sessionId: "aaaa0000-0000-0000-0000-000000000000", hostname: "mac-1" }),
+      card({ sessionId: "bbbb0000-0000-0000-0000-000000000000", hostname: "mac-2" }),
+    ], now)!;
+    assert.match(msg, /2 other agents have work in progress/);
+    assert.match(msg, /aaaa0000 on mac-1/);
+    assert.match(msg, /bbbb0000 on mac-2/);
+  });
+});
+
 // ── Helper ───────────────────────────────────────────────────────────
 
 function jsonl(...objects: unknown[]): string {
