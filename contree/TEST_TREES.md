@@ -58,7 +58,7 @@ outside-in-tdd (src: skills/tdd/SKILL.md; unit: test/outside-in-tdd.bats; functi
     then real driving and driven adapters are wired whole-app for one capability, with externals doubled only at the edge — an in-memory database and stubbed outbound HTTP
     and exhaustive single-capability behaviour coverage lives here, because doubling only the edges keeps it cheap enough to always write
   when breadth coverage is required
-    then it is carried by the exhaustive cheap layers — Use-case and Component — never by a broad real-infrastructure System suite
+    then it is carried by the exhaustive cheap layers — Use-case and Component
   when writing a Use-case test
     then the in-memory adapter for each outbound port is wired
     and exhaustive single-behaviour orchestration coverage lives here, isolated from real adapters
