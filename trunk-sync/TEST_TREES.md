@@ -134,15 +134,22 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
 
   classifyTimecards
     then the own session is excluded
-    where a card has unfinished remaining steps
-      when its local PID is alive, or its heartbeat is within the staleness window
-        then it is classified active — another agent is still working it
-      when its local PID is dead, or its heartbeat is older than the staleness window
-        then it is classified disrupted — work left mid-task, resumable
-    where a card has no remaining steps
-      then it is classified done
-    when a mix of active, disrupted, and done cards is present
-      then each is classified correctly
+    when a card is local with a live PID
+      then it is live, with certainty — the process is running
+    when a card is local with a dead PID
+      then it is ended, with certainty — the process is gone
+    when a card is remote with a heartbeat within the staleness window
+      then it is live, presumed — a remote PID cannot be checked
+    when a card is remote with a heartbeat older than the staleness window
+      then it is ended, presumed
+    where a card is live and has unfinished remaining steps
+      then it is classified active
+    where a card is ended and has unfinished remaining steps
+      then it is classified disrupted
+    where a card is live and has no remaining steps
+      then it is classified done and kept — the agent may take another task
+    where a card is ended and has no remaining steps
+      then it is classified done and reapable
 
   formatClockInMessage
     when no other agents are clocked in and this is not the first clock-in
