@@ -18,7 +18,8 @@ if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
     | if length > 0 then .[-1:] else "" end
   ' "$TRANSCRIPT" 2>/dev/null)
   if [ "$LAST_CHAR" = "?" ]; then
-    exit 0
+    echo "QUESTION STOP: Your response ended with a question to the user. Before handing it over, check whether the Rules, the mental model, and the test trees already determine the answer. If they do, do not ask — decide and act on what they say, then continue. Put the question to the user only when the answer is genuinely under-determined by all of them." >&2
+    exit 2
   fi
 fi
 
