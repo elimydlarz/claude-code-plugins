@@ -54,12 +54,13 @@ contree imposes one architecture on every project, so the harness it bootstraps 
 Tests are **layered outside-in**, each layer owning complete coverage of its own seam:
 
 - **Journey** (`test/journey/*.journey.test.*`) — the outermost layer and outside-in entry point: a curated, max-realism user arc spanning multiple capabilities, kept under 5 minutes.
-- **System** (`test/system/*.system.test.*`) — one capability wired whole-app with real driven adapters, interior to the Journey.
+- **System** (`test/system/*.system.test.*`) — one capability wired whole-app with real infrastructure, interior to the Journey. The same single-capability surface a Component test covers, validated for real; selective, not exhaustive.
+- **Component** (`test/component/*.component.test.*`) — one capability wired whole-app with real driving and driven adapters, externals doubled only at the edge — an in-memory database and stubbed outbound HTTP. Runs in-process; carries the exhaustive single-capability behaviour coverage.
 - **Adapter** (`*.adapter.test.*`) — one adapter against the real infrastructure it fronts.
 - **Use-case** (`*.use-case.test.*`) — orchestration over in-memory ports.
 - **Domain** (`*.domain.test.*`) — the pure core, no I/O.
 
-Journey and System are max-validity functional tests; the hex inner layers — Adapter, Use-case, Domain — emerge only when a failing journey/functional test demands them. **Higher-layer coverage is never coverage of the layers beneath:** implementation waits for a ground-level failing test at the behaviour's own native layer, sitting under the journey/functional failure that motivated it. Overlap across layers is intentional, not waste.
+**Use-case is to Component as Journey is to System** — two orientations (behaviour-oriented: Use-case, Journey; system-oriented: Component, System) across two realism tiers. The cheap tier doubles what it can (in-memory twins; edge doubles) and so is always written and exhaustive; the real tier integrates everything affordable and so is selective. The hex inner layers — Adapter, Use-case, Domain — emerge only when a failing higher-layer test demands them. **Higher-layer coverage is never coverage of the layers beneath:** implementation waits for a ground-level failing test at the behaviour's own native layer, sitting under the failure that motivated it. Overlap across layers is intentional, not waste.
 
 This is the standardised foundation. Your project's own fixtures, runners, and conventions are layered on top of it.
 
