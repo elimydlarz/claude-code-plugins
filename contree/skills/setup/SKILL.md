@@ -1584,7 +1584,7 @@ describe('UserRegistration', () => {
 
 **Python example:**
 ```python
-# tests/functional/test_user_registration.py
+# tests/system/test_user_registration.py
 import os
 import pytest
 import httpx
