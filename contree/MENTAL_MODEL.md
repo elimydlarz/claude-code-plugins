@@ -64,7 +64,7 @@
 
 - Journey is canonised as distinct from System so the outside-in entry point is a real multi-capability arc — not a per-capability System test pressed into doing the arc's job; it is kept curated and under 5 minutes (highest-impact + most-recent steps) because it cannot be exhaustive — the lower layers carry the rest.
 - The ground-level gate exists because agents skip lower tests claiming "already covered"; declaring journey/functional coverage not-coverage forces implementation down to a failing test at the behaviour's own layer.
-- Hexagonal layering is chosen over "unit/integration/functional" because seams give sharper targets; a green higher layer can still hide an untested seam.
+- Hexagonal layering is chosen over "unit/integration/functional" because seams give sharper targets; a green higher layer can still hide an untested seam. The cheap tier splits into Use-case (behaviour, in-memory twins) and Component (system, real adapters with edges doubled) so the assembled wiring the twins skip is still covered exhaustively without paying for real infrastructure.
 - Trees live in `TEST_TREES.md`, not a separate requirements doc, so spec and tests can never drift into two truths.
 - One source directory with parallel manifests avoids duplicating skills/hooks per harness; `CLAUDE_PLUGIN_ROOT` lets identical commands run on both.
 - Enforcement is hook-driven (Stop, PostToolUse) rather than advisory prose, because rules in text alone get ignored under pressure.
