@@ -1122,9 +1122,9 @@ testing {
             useJUnitJupiter()
             // src/test/java — unit tests
         }
-        val functionalTest by registering(JvmTestSuite::class) {
+        val systemTest by registering(JvmTestSuite::class) {
             useJUnitJupiter()
-            // src/functionalTest/java — functional tests
+            // src/systemTest/java — system tests
             dependencies {
                 implementation(project())
             }
