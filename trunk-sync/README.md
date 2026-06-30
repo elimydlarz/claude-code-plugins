@@ -57,6 +57,27 @@ agent's work is unfinished WIP for you to resume.
 
 Failing tests are the checkpoint of a previous agent's progress. Cross-referencing them against who is still clocked in tells a fresh agent which unfinished work is orphaned and safe to pick up.
 
+## Handover — continue across sessions and context limits
+
+When a session is running low on context, it can hand off to the next one. At session start the hook gives the agent its own session id and shows it how to record progress:
+
+```bash
+trunk-sync progress <session-id> --last "implemented the parser" --next "wire the CLI and write tests"
+```
+
+That last step and remaining steps are written into the agent's timecard and committed/pushed like any other. When the next session starts — yours after a fresh start, or another agent's, on any machine — its SessionStart surfaces the handover:
+
+```
+TRUNK-SYNC HANDOVER: 1 other session has work in progress:
+- 43605dd6 on dev-macbook (branch: main, 2m ago)
+    task: Add agent-authored progress to trunk-sync
+    last: implemented the parser
+    next: wire the CLI and write tests
+Resume any unfinished WIP above; if another agent is still actively working it, coordinate rather than duplicate.
+```
+
+So you can stop a session that's low on context and pick the work up in a fresh one without re-explaining where you were. The handover lives in the timecard and is surfaced to the next session that starts; it is cleaned up by the normal timeclock as ended sessions are reaped, so it's best suited to switching soon rather than resuming days later.
+
 ## Seance — summon the author of any line of code
 
 Point at any line, and seance rewinds the codebase and the agent's session back to the exact moment that line was written. Ask the agent what it was thinking, why it made that choice, what it considered and rejected. Works for both Claude and Codex commits — seance reads the commit body's `Agent:` field and forks the matching CLI.
