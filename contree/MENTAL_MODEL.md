@@ -13,7 +13,7 @@
 - The user-visible arc across capabilities → the **Journey** layer (`test/journey/*.journey.test.*`), the outermost layer and outside-in entry point.
 - A single capability wired whole-app → the **System** layer (real infrastructure; `test/system/*.system.test.*`) and the **Component** layer (externals doubled at the edge — in-memory database, stubbed outbound HTTP; `test/component/*.component.test.*`), both interior to the Journey.
 - Hexagonal seams → inner layers: Adapter (`*.adapter.test.*`), Use-case (`*.use-case.test.*`), Domain (`*.domain.test.*`).
-- A tree's coverage on disk → a parenthesised label set: `src`, `unit`, `integration`, `functional` (System), `journey` (Journey); `none` marks a declared gap.
+- A tree's coverage on disk → a parenthesised label set, one per layer: `src`, `domain`, `use-case`, `adapter`, `component`, `system`, `journey`; `none` marks a declared gap.
 - An outbound dependency → a Port; each Port ships an in-memory twin plus a real adapter, both bound by one shared `*.contract.ts` suite.
 - Workflow phases → skills: `setup`, `change`, `sync`, `tdd`, `second-opinion`, `workflow`.
 - Enforcement → hooks: SessionStart (rules + trees), Stop (drift check), PostToolUse (mental-model validator), UserPromptSubmit (self-care).
