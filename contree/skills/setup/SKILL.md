@@ -1498,7 +1498,7 @@ services:
 
 ```bash
 #!/usr/bin/env bash
-# test/functional/run-docker.sh
+# test/system/run-docker.sh
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
