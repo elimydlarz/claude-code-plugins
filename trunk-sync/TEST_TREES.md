@@ -172,20 +172,16 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       then both the clocked-in roster and the run-tests nudge are included
 
   formatSessionStartSummary
-    when no other session has an active or disrupted card
+    when no card is active or disrupted
       then null is returned
     when a disrupted card is present
-      then it is listed with its branch, task, last completed step, and remaining steps, labelled disrupted
-      and the agent is told this work was left mid-task and is the handover to resume
-    when an active card is present
-      then it is listed labelled active
-      and the agent is told another agent is still working it — coordinate, do not duplicate
-    when a card is local with a dead PID
-      then it is labelled disrupted with certainty, not merely presumed
-    when a card is remote and within the staleness window
-      then it is labelled active but noted as possibly disrupted until its heartbeat goes stale
-    when only done cards remain
-      then they are not listed — finished work is not a handover
+      then it is listed with branch, task, last completed step, and remaining steps, labelled disrupted — the handover to resume
+    when an active card was determined live with certainty (local, live PID)
+      then it is listed labelled active — another agent's running process holds it; coordinate, do not duplicate
+    when an active card's liveness is only presumed (remote, fresh heartbeat)
+      then it is listed labelled active but flagged possibly-disrupted — liveness is inferred from a heartbeat, not a checked PID
+    when a card is done
+      then it is not listed — finished work is not a handover
 
 ### Domain: git (src: src/lib/git.ts; unit: src/lib/git.test.ts; integration: none; functional: none)
 
