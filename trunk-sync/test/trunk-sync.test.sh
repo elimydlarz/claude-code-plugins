@@ -903,16 +903,17 @@ assert_equals "$AFTER" "$BEFORE" "codex apply_patch no-op: no commit when nothin
 
 # --- Transcript snapshots ---
 
-# 28. Default: no .transcripts/ created
+# 28. Default: .transcripts/ IS created (commit-transcripts defaults on for seance)
 setup_repos
-echo "no snapshot" > "$WT_A/seed.txt"
-TRANSCRIPT="$TMPDIR_BASE/transcript-nosnapshot.jsonl"
-create_transcript "$TRANSCRIPT" "No snapshot task"
+echo "default snapshot" > "$WT_A/seed.txt"
+TRANSCRIPT="$TMPDIR_BASE/transcript-defaultsnapshot.jsonl"
+create_transcript "$TRANSCRIPT" "Default snapshot task"
 cd "$WT_A"
-run_hook "$(make_input "$WT_A/seed.txt" "nosn1234" "Edit" "$TRANSCRIPT")"
-assert_exit 0 "default: commit succeeds without snapshot"
-REMOTE_FILES=$(git -C "$REMOTE" ls-tree --name-only -r main)
-assert_not_contains "$REMOTE_FILES" ".transcripts" "default: no .transcripts/ created"
+run_hook "$(make_input "$WT_A/seed.txt" "dfsn1234" "Edit" "$TRANSCRIPT")"
+assert_exit 0 "default: commit succeeds"
+LAST_SHA=$(git -C "$WT_A" rev-parse HEAD)
+SNAPSHOT_FILES=$(git -C "$WT_A" diff-tree --no-commit-id --name-only -r "$LAST_SHA" -- .transcripts/)
+assert_contains "$SNAPSHOT_FILES" ".transcripts" "default: .transcripts/ created without opt-in"
 
 # 29. Enabled: snapshot in same commit as code change
 setup_repos
