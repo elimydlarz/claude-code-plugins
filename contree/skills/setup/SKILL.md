@@ -534,33 +534,35 @@ extension:
 
 **Separating test suites** — use separate config files:
 
-`.mocharc.unit.yml`:
+`.mocharc.domain.yml`:
 ```yaml
 require: [tsx]
-spec: 'src/**/*.unit.test.{ts,js}'
+spec: 'src/**/*.domain.test.{ts,js}'
 reporter: spec
 parallel: true
 jobs: 4
 timeout: 5000
 ```
 
-`.mocharc.functional.yml`:
+`.mocharc.system.yml`:
 ```yaml
 require: [tsx]
-spec: 'test/functional/**/*.functional.test.{ts,js}'
+spec: 'test/system/**/*.system.test.{ts,js}'
 reporter: spec
-parallel: false  # functional tests often need serial execution
+parallel: false  # system and journey tests often need serial execution
 timeout: 30000
 ```
 
 **Scripts:**
 ```json
 {
-  "test:unit": "mocha --config .mocharc.unit.yml",
-  "test:functional": "mocha --config .mocharc.functional.yml",
+  "test:domain": "mocha --config .mocharc.domain.yml",
+  "test:system": "mocha --config .mocharc.system.yml",
   "test:mutate": "stryker run"
 }
 ```
+
+Add one project per layer — domain, use-case, component, adapter, system, journey — as shown for Vitest above.
 
 **Gotchas:**
 - No built-in `--changed` flag — use file watcher or script: `mocha $(git diff --name-only -- '*.test.ts')`
