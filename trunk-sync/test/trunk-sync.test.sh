@@ -949,7 +949,18 @@ LAST_SHA=$(git -C "$WT_A" rev-parse HEAD)
 SNAPSHOT_FILES=$(git -C "$WT_A" diff-tree --no-commit-id --name-only -r "$LAST_SHA" -- .transcripts/)
 assert_equals "" "$SNAPSHOT_FILES" "snapshot with no transcript_path: no .transcripts/ created"
 
-# Clean up config
+# 30b. Opt-out: commit-transcripts=false → no snapshot
+setup_repos
+echo "commit-transcripts=false" > "$HOME/.trunk-sync"
+echo "opt out" > "$WT_A/seed.txt"
+TRANSCRIPT="$TMPDIR_BASE/transcript-optout.jsonl"
+create_transcript "$TRANSCRIPT" "Opt-out task"
+cd "$WT_A"
+run_hook "$(make_input "$WT_A/seed.txt" "opto1234" "Edit" "$TRANSCRIPT")"
+assert_exit 0 "opt-out: commit succeeds"
+LAST_SHA=$(git -C "$WT_A" rev-parse HEAD)
+SNAPSHOT_FILES=$(git -C "$WT_A" diff-tree --no-commit-id --name-only -r "$LAST_SHA" -- .transcripts/)
+assert_equals "" "$SNAPSHOT_FILES" "opt-out: no .transcripts/ created when commit-transcripts=false"
 rm -f "$HOME/.trunk-sync"
 
 # ── Handover: agent-authored progress in timecards ───────────────────────────
