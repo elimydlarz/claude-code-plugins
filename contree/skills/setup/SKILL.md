@@ -15,6 +15,7 @@ Prepares the project for ongoing test-tree-driven development. Configures the te
    - **Domain** — pure domain objects and services. No collaborators. Colocated with source. `*.domain.test.*`.
    - **Use-case** — application orchestration. In-memory driven adapters as collaborators (real port implementations, not mocks). Colocated. `*.use-case.test.*`.
    - **Adapter** — one adapter against its port contract. Driving: mock the use-case. Driven: real infrastructure. Colocated. `*.adapter.test.*`.
+   - **Component** — the whole app for one capability with real driving and driven adapters, externals doubled only at the edge — an in-memory database and stubbed outbound HTTP. Runs in-process, needs no external services; carries exhaustive single-capability coverage. `test/component/`. `*.component.test.*`.
    - **System** — the whole app for one capability, real driving and driven adapters at the highest tolerable realism. `test/system/`. `*.system.test.*`.
    - **Journey** — the full user arc across capabilities and contexts at max realism, real everything; walks representative error paths and eventually succeeds. The outside-in entry point. `test/journey/`. `*.journey.test.*`.
 
