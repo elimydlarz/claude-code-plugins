@@ -714,10 +714,10 @@ findings=$(validate-mental-model.sh)             <span class="co"># 7 named sect
 <span class="co">#           bail, or we'd drift-check our own drift-check forever.</span>
 <span class="fn">jq</span> -e .stop_hook_active &lt;&lt;&lt;"$INPUT" &amp;&amp; <span class="fn">exit</span> 0
 
-<span class="co"># guard 2 — if my last reply ended in “?”, I'm waiting on the human.</span>
-<span class="co">#           yield silently so the question isn't buried under drift output.</span>
+<span class="co"># question stop — if my last reply ended in “?”, don't just hand it over:</span>
+<span class="co">#           re-prompt me to answer it from the rules before bothering you.</span>
 last=$(<span class="fn">jq</span> -rs '<span class="st">last assistant text | trim | final char</span>' "$transcript_path")
-[ "$last" = "?" ] &amp;&amp; <span class="fn">exit</span> 0
+[ "$last" = "?" ] &amp;&amp; { <span class="fn">echo</span> "QUESTION STOP: do the rules, mental model, and trees already answer this? if so, decide and act — only ask when genuinely under-determined." &gt;&amp;2; <span class="fn">exit</span> 2; }
 
 <span class="co"># otherwise — push back the four reconciliation prompts and force a turn</span>
 <span class="fn">echo</span> "MENTAL MODEL: did this task reveal knowledge not in the docs?" &gt;&amp;2
