@@ -348,10 +348,12 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       then false is returned
 
   clockOutStale
-    when a card is done (no remaining steps) and its heartbeat is stale
+    when a card is classified done and reapable
       then it is removed and its path returned
     when a card has unfinished remaining steps
-      then it is never removed, however stale — a disrupted handover is preserved for resumption
+      then it is never removed — a handover (active or disrupted) is preserved for resumption
+    when a card is classified done and kept
+      then it is left in place — the agent is still live and may take another task
     when a timecard file is already gone
       then it is handled gracefully
 
