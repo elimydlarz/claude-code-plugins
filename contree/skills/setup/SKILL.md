@@ -1552,7 +1552,7 @@ The tests themselves should not know about Docker — they connect to services v
 
 **Node.js/TypeScript example:**
 ```typescript
-// test/functional/user-registration.functional.test.ts
+// test/system/user-registration.system.test.ts
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createApp } from '../../src/app'
 
