@@ -686,8 +686,8 @@ spec_skipped_indicator = "?"
 
 # Markers for test categorisation
 markers = [
-    "unit: Fast isolated unit tests",
-    "functional: End-to-end functional tests",
+    "domain: Fast isolated domain-layer tests",
+    "system: Whole-app system tests against real infra",
     "slow: Tests taking >5s",
 ]
 strict_markers = true
