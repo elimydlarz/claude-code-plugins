@@ -160,24 +160,48 @@ run_hook_with_last_text() {
   [[ "$output" == *"use"* ]]
 }
 
-# --- Yield on question ---
+# --- Question stop ---
 
-@test "hook exits 0 silently when last assistant message ends with a question mark" {
+@test "hook injects the question-stop prompt and exits 2 when last assistant message ends with a question mark" {
   run_hook_with_last_text "Want me to do that?"
-  [ "$status" -eq 0 ]
-  [ -z "$output" ]
-}
-
-@test "hook exits 2 and emits the prompt when last assistant message does not end with a question mark" {
-  run_hook_with_last_text "Did the tests pass? Yes! Finished."
   [ "$status" -eq 2 ]
   [ -n "$output" ]
 }
 
-@test "hook yields when question mark is followed by trailing whitespace" {
+@test "question-stop prompt replaces the drift nudges" {
+  run_hook_with_last_text "Which way?"
+  [[ "$output" != *"README"* ]]
+  [[ "$output" != *"Default is no change"* ]]
+}
+
+@test "question-stop prompt directs checking the rules, mental model, and test trees for the answer" {
+  run_hook_with_last_text "Which way?"
+  [[ "$output" == *"Rules"* ]]
+  [[ "$output" == *"mental model"* ]]
+  [[ "$output" == *"test trees"* ]]
+}
+
+@test "question-stop prompt directs deciding and acting rather than asking when they determine the answer" {
+  run_hook_with_last_text "Which way?"
+  [[ "$output" == *"decide"* ]]
+  [[ "$output" == *"not ask"* ]]
+}
+
+@test "question-stop prompt directs asking the user only when genuinely under-determined" {
+  run_hook_with_last_text "Which way?"
+  [[ "$output" == *"under-determined"* ]]
+}
+
+@test "hook exits 2 and emits the drift prompt when last assistant message does not end with a question mark" {
+  run_hook_with_last_text "Did the tests pass? Yes! Finished."
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"README"* ]]
+}
+
+@test "hook detects the question after trailing whitespace and injects the question-stop prompt" {
   run_hook_with_last_text $'Want me to do that?\n\n'
-  [ "$status" -eq 0 ]
-  [ -z "$output" ]
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"under-determined"* ]]
 }
 
 @test "hook emits the prompt when earlier text ended with ? but the most recent assistant text is a statement" {
