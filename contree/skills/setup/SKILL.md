@@ -641,8 +641,8 @@ export default {
 ```js
   testRunner: 'mocha',
   mochaOptions: {
-    spec: ['src/**/*.unit.test.ts'],
-    config: '.mocharc.unit.yml',
+    spec: ['src/**/*.domain.test.ts'],
+    config: '.mocharc.domain.yml',
     require: ['tsx'],
     timeout: 10_000,
     ui: 'bdd',
