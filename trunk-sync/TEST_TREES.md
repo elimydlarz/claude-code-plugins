@@ -133,16 +133,15 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       then a clock-in plan is included on commit-merge
 
   classifyTimecards
-    then own session is excluded from clocked-in and clocked-out lists
-    when a local agent has a dead PID
-      then it is clocked out
-    when a local agent has a live PID
-      then it stays clocked in
-    when a remote agent's lastActiveAt is older than the stale threshold
-      then it is clocked out
-    when a remote agent's lastActiveAt is recent
-      then it stays clocked in
-    when a mix of clocked-in and clocked-out agents is present
+    then the own session is excluded
+    where a card has unfinished remaining steps
+      when its local PID is alive, or its heartbeat is within the staleness window
+        then it is classified active — another agent is still working it
+      when its local PID is dead, or its heartbeat is older than the staleness window
+        then it is classified disrupted — work left mid-task, resumable
+    where a card has no remaining steps
+      then it is classified done
+    when a mix of active, disrupted, and done cards is present
       then each is classified correctly
 
   formatClockInMessage
