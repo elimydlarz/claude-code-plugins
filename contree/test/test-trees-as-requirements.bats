@@ -54,7 +54,7 @@ load test_helper
 
 @test "every tree in TEST_TREES.md names its coverage in parenthesised labelled pairs" {
   # Tree name line must contain (...) with at least one recognised label,
-  # drawn from: src, unit, integration, functional, journey.
+  # drawn from: src, domain, use-case, adapter, component, system, journey.
   local file="$PROJECT_ROOT/TEST_TREES.md"
   local missing=()
   while IFS= read -r tree; do
