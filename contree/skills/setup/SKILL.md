@@ -1527,9 +1527,9 @@ npm run test:system
 
 ```json
 {
-  "test:functional": "vitest run --project functional",
-  "test:functional:docker": "bash test/functional/run-docker.sh",
-  "test:functional:ci": "bash test/functional/run-docker.sh"
+  "test:system": "vitest run --project system",
+  "test:system:docker": "bash test/system/run-docker.sh",
+  "test:system:ci": "bash test/system/run-docker.sh"
 }
 ```
 
