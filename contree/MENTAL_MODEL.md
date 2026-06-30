@@ -26,7 +26,8 @@
 - EARS keywords — `when` (event), `while` (state), `if` (unwanted), `where` (optional), bare `then` (ubiquitous).
 - Causal nesting — a `when` that can only occur after a prior `then` nests under it, not as a sibling.
 - Journey — the outermost layer: a curated, non-exhaustive user arc across capabilities and contexts, at max realism, kept runnable in under 5 minutes, walking representative errors and eventually succeeding.
-- System — a single capability wired whole-app with real driven adapters, interior to the Journey.
+- System — a single capability wired whole-app against real infrastructure, interior to the Journey; validates the same surface a Component test covers, selectively.
+- Component — that same whole-app capability with externals doubled only at the edge (in-memory database, stubbed outbound HTTP); in-process, exhaustive, cheap.
 - Adapter / Use-case / Domain — one adapter vs its contract / orchestration over in-memory ports / the pure core.
 - Port — an outbound interface; ships an in-memory twin and a real adapter.
 - Shared contract suite — one `*.contract.ts` both adapters must pass, making in-memory substitution sound.
