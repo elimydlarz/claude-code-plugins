@@ -1142,7 +1142,7 @@ tasks.named("check") {
 }
 ```
 
-Run: `./gradlew test` (unit) vs `./gradlew functionalTest`.
+Run: `./gradlew test` (the fast colocated layers) vs `./gradlew systemTest`.
 
 **JUnit 5 @Nested for tree structure:**
 ```java
