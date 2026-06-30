@@ -232,7 +232,7 @@ run_hook_with_last_text() {
   [ -n "$output" ]
 }
 
-@test "hook selects the last assistant text across multiple messages" {
+@test "hook selects the last assistant text and injects the question-stop prompt when it ends with a question" {
   local transcript="$BATS_TEST_TMPDIR/transcript.jsonl"
   {
     echo '{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"Statement one."}]}}'
@@ -244,8 +244,8 @@ run_hook_with_last_text() {
   local cmd; cmd=$(hook_command)
   run env CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" CMD="$cmd" INPUT_FILE="$input_file" CLAUDE_PROJECT_DIR="$BATS_TEST_TMPDIR" \
     bash -c 'bash -c "$CMD" < "$INPUT_FILE" 2>&1'
-  [ "$status" -eq 0 ]
-  [ -z "$output" ]
+  [ "$status" -eq 2 ]
+  [[ "$output" == *"under-determined"* ]]
 }
 
 @test "no missing-file nudge is emitted when MENTAL_MODEL.md and README.md exist at the project root but the hook runs from a subdirectory" {
