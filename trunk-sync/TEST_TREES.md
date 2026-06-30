@@ -334,8 +334,10 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       then false is returned
 
   clockOutStale
-    when stale timecards exist
-      then they are removed and their paths are returned
+    when a card is done (no remaining steps) and its heartbeat is stale
+      then it is removed and its path returned
+    when a card has unfinished remaining steps
+      then it is never removed, however stale — a disrupted handover is preserved for resumption
     when a timecard file is already gone
       then it is handled gracefully
 
