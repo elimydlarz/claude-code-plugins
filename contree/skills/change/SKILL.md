@@ -81,7 +81,7 @@ Every tree must name its coverage in parentheses at the end of the tree-name lin
 - `journey` — expansive end-to-end test of the multi-capability user arc (Journey layer)
 
 ```
-Domain: Money (src: src/features/money/domain/money.ts; unit: src/features/money/domain/money.domain.test.ts; integration: none; functional: none)
+Domain: Money (src: src/features/money/domain/money.ts; domain: src/features/money/domain/money.domain.test.ts)
   add
     when called with another Money of the same currency
       then the sum's amount is the sum of the two amounts
@@ -178,7 +178,7 @@ At Domain, Use-case, and Port-contract, TDD + YAGNI means no branch without a pa
 A Domain tree is shaped like its class/module:
 
 ```
-Domain: Money (src: src/features/money/domain/money.ts; unit: src/features/money/domain/money.domain.test.ts; integration: none; functional: none)
+Domain: Money (src: src/features/money/domain/money.ts; domain: src/features/money/domain/money.domain.test.ts)
   add
     when called with another Money of the same currency
       then the sum's amount is the sum of the two amounts
