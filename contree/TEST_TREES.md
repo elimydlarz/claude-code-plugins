@@ -362,7 +362,7 @@ composable-testing (src: skills/setup/SKILL.md; unit: test/composable-testing.ba
     and Component tests wire real driving and driven adapters for one capability, doubling externals only at the edge — an in-memory database and stubbed outbound HTTP
     and System tests wire real driven adapters at the highest tolerable realism by default
     and Journey tests wire real driving and driven adapters across the multi-capability arc at max realism
-    and exhaustive single-capability breadth lives at the Component and Use-case layers — never a broad real-infrastructure System suite
+    and exhaustive single-capability breadth lives at the Component and Use-case layers
     and each outbound port has an in-memory adapter used by Use-case tests
     and each outbound port has a shared contract suite imported by both in-memory and real adapter tests
     and every layer produces tree-shaped output
