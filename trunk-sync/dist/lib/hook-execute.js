@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { homedir, hostname } from "node:os";
 import { readConfig } from "../commands/config.js";
 import { HOOK_EXPLAINER } from "./hook-types.js";
-import { extractTaskFromTranscript, buildCommitPlanWithTask, classifyTimecards, formatClockInMessage } from "./hook-plan.js";
+import { extractTaskFromTranscript, buildCommitPlanWithTask, classifyTimecards, formatClockInMessage, formatSessionStartSummary } from "./hook-plan.js";
 /**
  * Gather the current git repo state needed for planning.
  * Runs git commands — this is the I/O boundary.
@@ -164,6 +164,21 @@ export function isProcessAlive(pid) {
     catch {
         return false;
     }
+}
+/**
+ * Build the session-start message: hand the starting agent its own session id and the
+ * record-progress instruction, then append the handover roster of other clocked-in agents.
+ * Returns null only when no session id is available.
+ */
+export function runSessionStart(repoRoot, ownSessionId) {
+    if (!ownSessionId)
+        return null;
+    const intro = `TRUNK-SYNC SESSION: your session id is ${ownSessionId}. Record your progress as you work and before you pause:\n` +
+        `  trunk-sync progress ${ownSessionId} --last "<step you just finished>" --next "<steps still to do>"`;
+    const now = new Date();
+    const { clockedIn } = classifyTimecards(ownSessionId, readTimecards(repoRoot), now, hostname(), isProcessAlive);
+    const roster = formatSessionStartSummary(clockedIn, now);
+    return roster ? `${intro}\n\n${roster}` : intro;
 }
 /** Clock out stale agents by removing their timecards. */
 export function clockOutStale(repoRoot, staleIds) {
