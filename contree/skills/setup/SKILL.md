@@ -497,12 +497,14 @@ export default config
 ```json
 {
   "test": "jest",
-  "test:unit": "jest --selectProjects unit",
-  "test:functional": "jest --selectProjects functional",
+  "test:domain": "jest --selectProjects domain",
+  "test:system": "jest --selectProjects system",
   "test:changed": "jest --changedSince=origin/main",
   "test:mutate": "stryker run"
 }
 ```
+
+Add one project per layer — domain, use-case, component, adapter, system, journey — as shown for Vitest above.
 
 **Gotchas:**
 - `verbose` and `reporters` are shared across all projects — you cannot set them per-project
