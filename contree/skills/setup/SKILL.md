@@ -434,6 +434,7 @@ export default defineConfig({
   "test:domain": "vitest run --project domain",
   "test:use-case": "vitest run --project use-case",
   "test:adapter": "vitest run --project adapter",
+  "test:component": "vitest run --project component",
   "test:system": "vitest run --project system",
   "test:journey": "vitest run --project journey",
   "test:changed": "vitest run --changed",
