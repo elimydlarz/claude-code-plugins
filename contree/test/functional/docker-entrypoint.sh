@@ -424,7 +424,7 @@ VERIFY
 ## adder
 
 ```
-adder (src: index.js; unit: none; functional: none)
+adder (src: index.js; domain: none)
   when add is called with two numbers
     then their sum is returned
 ```
@@ -506,7 +506,7 @@ VERIFY
 ## adder
 
 ```
-adder (src: index.js; unit: none; functional: none)
+adder (src: index.js; domain: none)
   when add is called with two numbers
     then their sum is returned
 ```
