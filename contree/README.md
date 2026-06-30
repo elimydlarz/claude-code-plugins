@@ -73,7 +73,7 @@ A slice is described by a few small trees, one per hexagonal seam. For a bookmar
 ```markdown
 ### canonicaliseUrl (Domain)
 
-canonicaliseUrl (src: src/features/bookmarks/domain/canonicalise-url.ts; unit: src/features/bookmarks/domain/canonicalise-url.domain.test.ts)
+canonicaliseUrl (src: src/features/bookmarks/domain/canonicalise-url.ts; domain: src/features/bookmarks/domain/canonicalise-url.domain.test.ts)
   canonicaliseUrl
     when the host contains mixed case
       then the host is lower-cased
