@@ -180,9 +180,11 @@ export function runSessionStart(repoRoot: string, ownSessionId: string | null): 
   const intro =
     `TRUNK-SYNC SESSION: your session id is ${ownSessionId}. Record your progress as you work and before you pause:\n` +
     `  trunk-sync progress ${ownSessionId} --last "<step you just finished>" --next "<steps still to do>"`;
-  const now = new Date();
-  const { clockedIn } = classifyTimecards(ownSessionId, readTimecards(repoRoot), now, hostname(), isProcessAlive);
-  const roster = formatSessionStartSummary(clockedIn, now);
+  // Handover discovery surfaces every OTHER session's progress — including a prior session
+  // of yours that ended (dead pid). Liveness is presence, not handover: an ended session is
+  // exactly the work you want to resume, so it is not filtered out here.
+  const others = readTimecards(repoRoot).filter((tc) => tc.sessionId !== ownSessionId);
+  const roster = formatSessionStartSummary(others, new Date());
   return roster ? `${intro}\n\n${roster}` : intro;
 }
 
