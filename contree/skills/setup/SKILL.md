@@ -1603,10 +1603,10 @@ def describe_user_registration():
 
 **Go example:**
 ```go
-// test/functional/user_test.go
+// test/system/user_test.go
 //go:build integration
 
-package functional
+package system
 
 import (
     "net/http"
