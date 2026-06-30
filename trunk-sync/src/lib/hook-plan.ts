@@ -340,9 +340,9 @@ function formatAge(ms: number): string {
  * with its branch, task, and agent-authored last step + remaining steps, so a starting
  * agent discovers work already in flight. Returns null when no other agents are clocked in.
  */
-export function formatSessionStartSummary(clockedIn: Timecard[], now: Date): string | null {
-  if (clockedIn.length === 0) return null;
-  const lines = clockedIn.map((tc) => {
+export function formatSessionStartSummary(sessions: Timecard[], now: Date): string | null {
+  if (sessions.length === 0) return null;
+  const lines = sessions.map((tc) => {
     const age = formatAge(now.getTime() - new Date(tc.lastActiveAt).getTime());
     let line = `- ${tc.sessionId.slice(0, 8)} on ${tc.hostname} (branch: ${tc.branch}, ${age} ago)`;
     if (tc.task) line += `\n    task: ${tc.task}`;
