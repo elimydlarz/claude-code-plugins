@@ -146,7 +146,10 @@ post-task-hook (src: hooks/stop-drift-check.sh; system: test/post-task-hook.bats
     and a claude-md nudge prompts detection of drift between CLAUDE.md content and reality
     and a readme nudge prompts detection of readme staleness against what the project is, how consumers install it, configure it, and use it
   when Claude stops after a response that ends with a question
-    then the hook yields the turn to the user without injecting the nudges
+    then the hook injects a question-stop prompt in place of the drift nudges
+    and the prompt directs the agent to check whether the rules, mental model, and test trees already determine the answer
+    and the prompt directs the agent to decide and act on that answer rather than ask the user when they determine it
+    and the prompt directs the agent to put the question to the user only when the answer is genuinely under-determined by all of them
   when stop_hook_active is true
     then the hook exits silently to prevent infinite loops
   when no nudge reports anything
