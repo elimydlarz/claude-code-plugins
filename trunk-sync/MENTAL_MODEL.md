@@ -55,6 +55,7 @@
 - The functional-core / imperative-shell split keeps decision logic pure and fast to unit-test.
 - Seance finds Codex rollouts by scanning `~/.codex/sessions/<date>/`; placing a rewritten rollout at the canonical path is sufficient — no DB insertion, do not add it.
 - Timecards are committed (not local-only) so presence is visible across machines.
+- Handover progress is agent-authored via `trunk-sync progress` — transcript prose can't reliably yield last/next — and lives in the ephemeral timecard; transcripts commit by default so seance and handover always have the record.
 - `dist/` is tracked because marketplace installs have no build step.
 - The two distribution channels (npm + marketplace) are bumped together to avoid version skew.
 
