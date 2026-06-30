@@ -45,7 +45,7 @@ TRUNK-SYNC CLOCK-IN: 1 other agent clocked in.
 Consider potential resource conflicts: ports, build locks, test databases.
 ```
 
-Agents with dead processes are automatically clocked out. Remote agents that go silent are clocked out after 5 minutes. The message is throttled to avoid noise.
+Agents with dead processes are automatically clocked out. Remote agents that go silent are clocked out after 30 minutes. The message is throttled to avoid noise.
 
 On its **first** clock-in of a session, an agent is also nudged to run the test suite:
 
