@@ -35,7 +35,7 @@
 - Hook (continuous integration) — the auto commit/pull/push loop and conflict surfacing.
 - CLI install — marketplace registration + plugin install across Claude Code and Codex.
 - Seance — provenance-driven session reconstruction and resume.
-- Timeclock — cross-machine agent presence and resource-conflict signalling.
+- Timeclock — cross-machine agent presence, resource-conflict signalling, and cross-session handover.
 - Config — the `~/.trunk-sync` key=value store.
 
 ## Invariants
