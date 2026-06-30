@@ -15,13 +15,21 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   [[ "$output" == *"tree reporters"* || "$output" == *"tree-shaped"* ]]
 }
 
-@test "setup configures the five test layers as separate commands" {
+@test "setup configures the six test layers as separate commands" {
   run cat "$SKILL"
   [[ "$output" == *"Domain"* ]]
   [[ "$output" == *"Use-case"* ]]
+  [[ "$output" == *"Component"* ]]
   [[ "$output" == *"Adapter"* ]]
   [[ "$output" == *"System"* ]]
   [[ "$output" == *"Journey"* ]]
+}
+
+@test "setup notes Component tests run in-process needing no external services" {
+  run cat "$SKILL"
+  [[ "$output" == *"Component"* ]]
+  [[ "$output" == *"in-process"* ]]
+  [[ "$output" == *"no external services"* || "$output" == *"needs no external"* ]]
 }
 
 @test "setup configures mutation testing with layer-suffix exclusions" {
