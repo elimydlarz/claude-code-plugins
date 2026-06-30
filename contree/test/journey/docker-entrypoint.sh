@@ -314,7 +314,7 @@ VERIFY
     if [ -n "$HANDLER_FILE" ] && [ -f "$HANDLER_FILE" ]; then
       cat >> "$HANDLER_FILE" <<'DRIFT'
 
-// Drift injected by the functional harness — this endpoint is NOT in the trees.
+// Drift injected by the journey harness — this endpoint is NOT in the trees.
 app.delete('/bookmarks/:id', (req, res) => {
   res.status(204).end()
 })
