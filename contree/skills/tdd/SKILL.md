@@ -169,7 +169,12 @@ Tactical cheatsheet for the RED/GREEN cycle. See `skills/change/SKILL.md` for th
 ### System (`*.system.test.*` in `test/system/`)
 - Import: the composition root **wired with real driven adapters at the highest tolerable realism** (Testcontainers, local service, sandbox account), plus the real driving adapter — scoped to a single capability.
 - Drive the real driving adapter; assert on observable effects through the same adapter.
-- Max-validity functional testing of one capability, interior to the journey. When breadth at max realism is unaffordable, lean on the journey rather than wiring many in-memory System tests.
+- System validates the same single-capability surface a Component test covers, but against real infrastructure. It is **selective, not exhaustive** — real-everything is expensive, so it is spent on the highest-impact capabilities and expanded over time. When breadth at max realism is unaffordable, lean on the journey rather than wiring many in-memory System tests.
+
+### Component (`*.component.test.*` in `test/component/`)
+- Import: the composition root **wired with real driving and driven adapters**, with externals doubled only at the edge — an in-memory database and stubbed outbound HTTP. Runs in-process, needs no external services.
+- Drive the real driving adapter; assert on observable effects through the same adapter — scoped to a single capability.
+- Real adapter, serialization, and wiring code is exercised here — unlike the Use-case layer, which swaps each port for its in-memory twin. Carries **exhaustive single-capability behaviour coverage**, because doubling only the edges keeps it cheap enough to always write.
 
 ### Outside-in order
 
