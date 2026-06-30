@@ -1546,7 +1546,7 @@ test-system:
 
 ---
 
-### Writing Functional Tests Against Docker Services
+### Writing System Tests Against Docker Services
 
 The tests themselves should not know about Docker — they connect to services via environment variables or config, same as they would in production.
 
