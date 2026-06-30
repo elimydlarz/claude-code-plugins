@@ -11,7 +11,7 @@ Prepares the project for ongoing test-tree-driven development. Configures the te
 
 1. **Read before write.** Always read existing config files before modifying them. Never overwrite — merge surgically.
 2. **Tree output is non-negotiable.** If a framework can produce nested output, configure it. If it can only produce flat output, use it and be honest.
-3. **Five test layers, always.** Layers are named for the seam under test, not for infrastructure presence:
+3. **Six test layers, always.** Layers are named for the seam under test, not for infrastructure presence:
    - **Domain** — pure domain objects and services. No collaborators. Colocated with source. `*.domain.test.*`.
    - **Use-case** — application orchestration. In-memory driven adapters as collaborators (real port implementations, not mocks). Colocated. `*.use-case.test.*`.
    - **Adapter** — one adapter against its port contract. Driving: mock the use-case. Driven: real infrastructure. Colocated. `*.adapter.test.*`.
