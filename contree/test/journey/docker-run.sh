@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Run contree functional tests in Docker.
+# Run contree journey tests in Docker.
 #
 # Usage:
 #   ./docker-run.sh layered-workflow                  # default harness: claude
