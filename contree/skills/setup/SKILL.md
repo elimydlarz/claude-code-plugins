@@ -1364,8 +1364,8 @@ Or, for projects where `docker-compose.yml` belongs at root (e.g., the project a
 
 ```
 docker-compose.test.yml   # test-specific overrides
-test/functional/
-  *.functional.test.*
+test/system/
+  *.system.test.*
 ```
 
 ---
