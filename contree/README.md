@@ -86,7 +86,7 @@ canonicaliseUrl (src: src/features/bookmarks/domain/canonicalise-url.ts; domain:
 
 ### createBookmark (Use-case)
 
-createBookmark (src: src/features/bookmarks/use-cases/create-bookmark.ts; unit: src/features/bookmarks/use-cases/create-bookmark.usecase.test.ts)
+createBookmark (src: src/features/bookmarks/use-cases/create-bookmark.ts; use-case: src/features/bookmarks/use-cases/create-bookmark.usecase.test.ts)
   createBookmark
     when called with a valid URL for an authenticated user
       then the URL is canonicalised via the Domain
