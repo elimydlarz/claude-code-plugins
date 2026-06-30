@@ -170,6 +170,22 @@ export function isProcessAlive(pid: number): boolean {
   }
 }
 
+/**
+ * Build the session-start message: hand the starting agent its own session id and the
+ * record-progress instruction, then append the handover roster of other clocked-in agents.
+ * Returns null only when no session id is available.
+ */
+export function runSessionStart(repoRoot: string, ownSessionId: string | null): string | null {
+  if (!ownSessionId) return null;
+  const intro =
+    `TRUNK-SYNC SESSION: your session id is ${ownSessionId}. Record your progress as you work and before you pause:\n` +
+    `  trunk-sync progress ${ownSessionId} --last "<step you just finished>" --next "<steps still to do>"`;
+  const now = new Date();
+  const { clockedIn } = classifyTimecards(ownSessionId, readTimecards(repoRoot), now, hostname(), isProcessAlive);
+  const roster = formatSessionStartSummary(clockedIn, now);
+  return roster ? `${intro}\n\n${roster}` : intro;
+}
+
 /** Clock out stale agents by removing their timecards. */
 export function clockOutStale(repoRoot: string, staleIds: string[]): string[] {
   const removed: string[] = [];
