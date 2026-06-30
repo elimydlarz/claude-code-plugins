@@ -707,7 +707,7 @@ findings=$(validate-mental-model.sh)             <span class="co"># 7 named sect
         <span class="stagenum">4</span>
         <div class="stagewhen">Claude finishes its reply</div>
         <div class="stagemeta"><span class="hookbadge">Stop</span><span class="scr">stop-drift-check.sh</span><span class="chan chan-err">stderr · exit 2</span></div>
-        <p class="sub">As the model goes to hand the turn back to you, <code>Stop</code> fires. Two guards run first — they're what make a hook that re-prompts on <em>every</em> turn safe — and only then does the drift check.</p>
+        <p class="sub">As the model goes to hand the turn back to you, <code>Stop</code> fires. A loop guard runs first — it's what makes a hook that re-prompts on <em>every</em> turn safe. Then, if my reply ended in a question, a <em>question stop</em> re-prompts me to check it against the rules before it reaches you; otherwise the drift check runs.</p>
 <pre>INPUT=$(<span class="fn">cat</span>)                                   <span class="co"># the Stop event JSON, on stdin</span>
 
 <span class="co"># guard 1 — set when a hook's own exit 2 re-triggered the model.</span>
