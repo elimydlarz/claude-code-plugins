@@ -255,7 +255,7 @@ The contract suite IS the port-contract tree (`ScoreRepository`). Both adapter t
 The tree in `TEST_TREES.md`:
 
 ```
-Port: ScoreRepository (src: src/features/score/application/ports/score-repository.ts; unit: src/features/score/application/ports/score-repository.contract.ts; integration: src/features/score/adapters/outbound/postgres/postgres-score-repository.adapter.test.ts; functional: none)
+Port: ScoreRepository (src: src/features/score/application/ports/score-repository.ts; adapter: src/features/score/adapters/outbound/postgres/postgres-score-repository.adapter.test.ts)
   save
     when called with a score
       then the score is retrievable by its id
