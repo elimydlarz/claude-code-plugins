@@ -399,6 +399,14 @@ export default defineConfig({
       {
         extends: true,
         test: {
+          name: 'component',
+          include: ['test/component/**/*.component.test.{ts,js}'],
+          // runs in-process (in-memory DB + stubbed HTTP) — no real-infra timeout needed
+        },
+      },
+      {
+        extends: true,
+        test: {
           name: 'system',
           include: ['test/system/**/*.system.test.{ts,js}'],
           testTimeout: 30_000,
