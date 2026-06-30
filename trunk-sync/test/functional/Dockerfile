@@ -1,0 +1,10 @@
+FROM node:22-slim
+
+RUN apt-get update && apt-get install -y git jq procps && rm -rf /var/lib/apt/lists/*
+RUN npm install -g @anthropic-ai/claude-code @openai/codex
+
+RUN useradd -m -s /bin/bash testuser
+
+WORKDIR /work
+RUN chown testuser:testuser /work
+USER testuser
