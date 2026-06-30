@@ -12,6 +12,7 @@ import {
   buildClockInPlan,
   classifyTimecards,
   formatClockInMessage,
+  formatSessionStartSummary,
 } from "./hook-plan.js";
 
 // ── Helpers ──────────────────────────────────────────────────────────
