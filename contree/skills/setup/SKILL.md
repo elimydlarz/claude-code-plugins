@@ -599,8 +599,8 @@ export default {
     // Exclude test files — critical when tests are colocated with source:
     '!src/**/*.test.ts',
     '!src/**/*.spec.ts',
-    '!src/**/*.unit.test.ts',
-    '!src/**/*.functional.test.ts',
+    '!src/**/*.domain.test.ts',
+    '!src/**/*.system.test.ts',
     '!src/**/*.d.ts',
   ],
 
