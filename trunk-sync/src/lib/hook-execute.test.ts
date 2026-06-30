@@ -1062,6 +1062,65 @@ describe("readTimecards", () => {
   });
 });
 
+describe("runSessionStart", () => {
+  let dir: string;
+
+  beforeEach(() => {
+    dir = realpathSync(mkdtempSync(join(tmpdir(), "ts-sessionstart-")));
+  });
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  function writeCard(card: Partial<Timecard> & { sessionId: string }): void {
+    const timeclockDir = join(dir, ".trunk-sync", "timeclock");
+    mkdirSync(timeclockDir, { recursive: true });
+    const full: Timecard = {
+      pid: 1, hostname: "remote-host", clockedInAt: new Date().toISOString(),
+      lastActiveAt: new Date().toISOString(), branch: "main", task: null,
+      lastStep: null, remainingSteps: null, ...card,
+    };
+    writeFileSync(join(timeclockDir, `${card.sessionId}.json`), JSON.stringify(full));
+  }
+
+  it("hands the starting agent its own session id and the record-progress instruction", () => {
+    const msg = runSessionStart(dir, "my-session-id")!;
+    assert.match(msg, /my-session-id/);
+    assert.match(msg, /trunk-sync progress my-session-id --last/);
+  });
+
+  it("appends the handover roster when another agent is clocked in", () => {
+    writeCard({ sessionId: "other-id", task: "build X", lastStep: "did A", remainingSteps: "do B" });
+    const msg = runSessionStart(dir, "my-session-id")!;
+    assert.match(msg, /TRUNK-SYNC HANDOVER/);
+    assert.match(msg, /other-id/.source.slice(0, 8) === "other-id" ? /other-id/ : /other/);
+    assert.match(msg, /last: did A/);
+    assert.match(msg, /next: do B/);
+  });
+
+  it("prints only the own-id instruction when no other agents are clocked in", () => {
+    const msg = runSessionStart(dir, "my-session-id")!;
+    assert.match(msg, /my-session-id/);
+    assert.doesNotMatch(msg, /TRUNK-SYNC HANDOVER/);
+  });
+
+  it("still prints the own-id instruction when the timeclock directory does not exist", () => {
+    const msg = runSessionStart(dir, "my-session-id")!;
+    assert.match(msg, /trunk-sync progress my-session-id/);
+  });
+
+  it("excludes the starting session's own timecard from the roster", () => {
+    writeCard({ sessionId: "my-session-id", task: "my own work" });
+    const msg = runSessionStart(dir, "my-session-id")!;
+    assert.doesNotMatch(msg, /TRUNK-SYNC HANDOVER/);
+  });
+
+  it("returns null when there is no session id", () => {
+    assert.equal(runSessionStart(dir, null), null);
+  });
+});
+
 describe("isProcessAlive", () => {
   it("returns true for own process", () => {
     assert.ok(isProcessAlive(process.pid));
