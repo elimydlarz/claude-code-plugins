@@ -68,9 +68,9 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `test/fixtures/bookmarks-api/` — HTTP API fixture for `layered-workflow` (exercises every test layer, Journey down to Domain, + ports)
 - `test/fixtures/describe-it-drift/` — pre-seeded tree + test file whose describe/it deliberately does not mirror the tree (for the `describe-it-drift` journey case)
 
-## Functional Testing
+## Journey Testing
 
-Run functional tests with `pnpm test:functional` (all `(test, harness)` pairs in MATRIX), `bash test/functional/docker-run.sh <test-name>` (one, default claude harness), or `bash test/functional/docker-run.sh <test-name> codex` (explicit harness). After the script finishes, it prints the exact transcript file paths. **Always read the transcripts and evaluate each against the VERIFY criteria in docker-entrypoint.sh.** Report PASS/FAIL per criterion with evidence.
+Run the journey suite with `pnpm test:journey` (all `(test, harness)` pairs in MATRIX), `bash test/journey/docker-run.sh <test-name>` (one, default claude harness), or `bash test/journey/docker-run.sh <test-name> codex` (explicit harness). After the script finishes, it prints the exact transcript file paths. **Always read the transcripts and evaluate each against the VERIFY criteria in docker-entrypoint.sh.** Report PASS/FAIL per criterion with evidence.
 
 ## Test Trees
 
