@@ -69,7 +69,7 @@ load test_helper
       missing+=("$tree (no parens)")
       continue
     fi
-    if ! [[ "$first_line" =~ \((src|unit|integration|functional|journey):[[:space:]] ]]; then
+    if ! [[ "$first_line" =~ \((src|domain|use-case|adapter|component|system|journey):[[:space:]] ]]; then
       missing+=("$tree (no labelled pair)")
     fi
   done < <(grep -E "^## [a-z-]+" "$file" | sed 's/^## //')
