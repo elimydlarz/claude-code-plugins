@@ -19,6 +19,8 @@ description: "Close gaps between intent and implementation — one failing test 
 
 The layer taxonomy, in-memory adapter pattern, shared port contract suite, and tree-naming heuristic all live in `skills/change/SKILL.md` — that's where decomposition decisions are made. This skill is the tactical cycle that implements those decisions.
 
+**Use-case is to Component as Journey is to System** — two orientations (behaviour-oriented: Use-case, Journey; system-oriented: Component, System) across two realism tiers. The cheap tier doubles what it can (in-memory twins; edge doubles) and is always written and exhaustive; the real tier integrates everything affordable (real infrastructure, maximally integrated) and is selective. The full model lives in `skills/change/SKILL.md`.
+
 ## Before You Start
 
 Read `## Test Trees` in the project's CLAUDE.md. The trees there are the contract. You are implementing against them.
