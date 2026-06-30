@@ -380,6 +380,17 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
     if no session id is provided
       then nothing is printed
 
+  runStop
+    when the stop hook fires and stop_hook_active is set
+      then it exits 0 without forcing, preventing the force → record → stop loop
+    when the stop hook fires at the end of a task
+      then the session's timecard heartbeat (lastActiveAt) is bumped, marking the agent live
+      and the agent is prompted via exit 2 to record progress — `trunk-sync progress <id> --last … --next …` — or to clock out with `trunk-sync clockout <id>` if the task is complete
+    if the session has no timecard yet
+      then one is created first (passive clock-in fallback), then its heartbeat is bumped
+    if no session id is provided
+      then it exits 0 without action
+
 ### Use-case: install (src: src/commands/install.ts; unit: src/commands/install.test.ts; integration: none; functional: none)
 
   install command
