@@ -166,13 +166,13 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       then both the clocked-in roster and the run-tests nudge are included
 
   formatSessionStartSummary
-    when no other timecards are clocked in
+    when no other sessions have a timecard
       then null is returned
-    when other agents are clocked in
+    when other sessions have timecards
       then each is listed with its branch, task, last completed step, and remaining steps
-      and the agent is told to resume unfinished WIP that is not owned by a still-clocked-in agent
-    when a clocked-in timecard has no recorded progress
-      then that agent's line shows its task without progress fields
+      and the agent is told to resume unfinished WIP, coordinating only if another agent is still actively working it
+    when a timecard has no recorded progress
+      then that session's line shows its task without progress fields
 
 ### Domain: git (src: src/lib/git.ts; unit: src/lib/git.test.ts; integration: none; functional: none)
 
