@@ -484,7 +484,7 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
     if the session id is missing
       then it exits 1 with a usage message
 
-### System: hook-sync (functional: test/trunk-sync.test.sh)
+### System: hook-sync (functional: test/trunk-sync.test.sh; journey: test/functional/docker-entrypoint.sh)
 
   every Edit/Write/Bash tool use
     then the changed file is staged and committed
