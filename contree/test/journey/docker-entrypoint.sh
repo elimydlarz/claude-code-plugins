@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Runs a contree functional case against a coding-agent harness.
+# Runs a contree journey case against a coding-agent harness.
 # Works both inside Docker (called by docker-run.sh) and directly on the host.
 #
 # Expects:
