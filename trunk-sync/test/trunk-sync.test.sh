@@ -954,7 +954,7 @@ rm -f "$HOME/.trunk-sync"
 
 # ── Handover: agent-authored progress in timecards ───────────────────────────
 
-DIST_DIR="$(cd "$(dirname "$0")/.." && pwd)/dist"
+DIST_DIR="$(cd "$(dirname "$HOOK")/.." && pwd)/dist"
 
 record_progress() { # cwd id last next
   ( cd "$1" && node "$DIST_DIR/cli.js" progress "$2" --last "$3" --next "$4" )
