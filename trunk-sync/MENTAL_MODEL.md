@@ -8,7 +8,7 @@
 
 ## World-to-Code Mapping
 
-- Pure decision logic → `hook-plan.ts`; git/fs execution → `hook-execute.ts`; entry wiring → `hook-entry.ts`; bash wrapper → `scripts/trunk-sync.sh`.
+- Pure decision logic → `hook-plan.ts`; git/fs execution → `hook-execute.ts`; PostToolUse wiring → `hook-entry.ts`; SessionStart wiring → `session-start-entry.ts`; bash wrappers → `scripts/trunk-sync*.sh`.
 - CLI commands → `src/commands/{install,seance,config}.ts`; shared git utilities → `src/lib/git.ts`.
 - A line of code → `git blame` → commit-body provenance → truncated transcript → worktree at that commit → resumed agent session (seance).
 - "Who is clocked in" → `.trunk-sync/timeclock/<session-id>.json`, committed and pushed.
