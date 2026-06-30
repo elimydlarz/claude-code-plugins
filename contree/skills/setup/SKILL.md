@@ -802,8 +802,8 @@ end
 
 Run by tag:
 ```bash
-rspec --tag unit
-rspec --tag functional
+rspec --tag domain
+rspec --tag system
 rspec --only-failures         # re-run previous failures
 rspec --next-failure          # stop at first failure
 ```
