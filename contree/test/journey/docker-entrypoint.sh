@@ -30,7 +30,7 @@ if [ -f "$ENV_FILE" ]; then
 fi
 FIXTURES="$CONTREE_ROOT/test/fixtures"
 PROJECT_DIR="/tmp/contree-test-project"
-OUTPUT_DIR="$CONTREE_ROOT/test/functional"
+OUTPUT_DIR="$CONTREE_ROOT/test/journey"
 if [ -d "/output" ]; then
   OUTPUT_DIR="/output"
 fi
