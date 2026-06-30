@@ -26,6 +26,20 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   [[ "$output" == *"port contract"* ]]
 }
 
+@test "change names the Component layer between System and Adapter" {
+  run cat "$SKILL"
+  [[ "$output" == *"Component"* ]]
+  [[ "$output" == *"*.component.test.*"* ]]
+  [[ "$output" == *"edge"* ]]
+}
+
+@test "change teaches the 2x2: Use-case is to Component as Journey is to System" {
+  run cat "$SKILL"
+  [[ "$output" == *"Use-case is to Component as Journey is to System"* ]]
+  [[ "$output" == *"behaviour-oriented"* ]]
+  [[ "$output" == *"system-oriented"* ]]
+}
+
 @test "change forbids designing inner-layer trees up front from speculation" {
   run cat "$SKILL"
   [[ "$output" == *"YAGNI failure"* || "$output" == *"speculation"* ]]
