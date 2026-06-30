@@ -951,6 +951,50 @@ assert_equals "" "$SNAPSHOT_FILES" "snapshot with no transcript_path: no .transc
 # Clean up config
 rm -f "$HOME/.trunk-sync"
 
+# ── Handover: agent-authored progress in timecards ───────────────────────────
+
+DIST_DIR="$(cd "$(dirname "$0")/.." && pwd)/dist"
+
+record_progress() { # cwd id last next
+  ( cd "$1" && node "$DIST_DIR/cli.js" progress "$2" --last "$3" --next "$4" )
+}
+run_session_start() { # cwd session_id
+  printf '{"session_id":"%s","cwd":"%s","hook_event_name":"SessionStart","transcript_path":""}' "$2" "$1" \
+    | node "$DIST_DIR/lib/session-start-entry.js"
+}
+
+# 31. Agent A clocks in (hook), then records progress via the real CLI.
+setup_repos
+cd "$WT_A"
+echo "work" > "$WT_A/seed.txt"
+run_hook "$(make_input "$WT_A/seed.txt" "agentaaa" "Edit" "")"   # clock A in, commit timecard
+record_progress "$WT_A" "agentaaa" "wrote the parser" "wire the CLI and add tests"
+CARD="$WT_A/.trunk-sync/timeclock/agentaaa.json"
+assert_equals "wrote the parser" "$(jq -r '.lastStep' "$CARD")" "progress: lastStep written to timecard"
+assert_equals "wire the CLI and add tests" "$(jq -r '.remainingSteps' "$CARD")" "progress: remainingSteps written to timecard"
+assert_equals "agentaaa" "$(jq -r '.sessionId' "$CARD")" "progress: sessionId preserved"
+
+# 32. The hook commits and pushes the progress-updated timecard (cross-machine propagation).
+echo "more" > "$WT_A/seed.txt"
+run_hook "$(make_input "$WT_A/seed.txt" "agentaaa" "Edit" "")"   # next fire commits the updated timecard
+git -C "$WT_A" push origin HEAD:main >/dev/null 2>&1 || true
+REMOTE_CARD=$(git -C "$REMOTE" show "main:.trunk-sync/timeclock/agentaaa.json" 2>/dev/null || echo "")
+assert_contains "$REMOTE_CARD" "wrote the parser" "propagation: progress reaches the remote"
+
+# 33. Agent B's SessionStart surfaces A's handover and B's own record instruction.
+SS_OUT=$(run_session_start "$WT_A" "agentbbb")
+assert_contains "$SS_OUT" "TRUNK-SYNC HANDOVER" "session-start: handover roster shown"
+assert_contains "$SS_OUT" "wrote the parser" "session-start: A's last step surfaced"
+assert_contains "$SS_OUT" "wire the CLI and add tests" "session-start: A's remaining steps surfaced"
+assert_contains "$SS_OUT" "trunk-sync progress agentbbb" "session-start: B told how to record its own progress"
+
+# 34. A clock-in re-fire preserves the agent-authored progress (does not wipe it).
+record_progress "$WT_A" "agentaaa" "all tests green" "ship it"
+echo "again" > "$WT_A/seed.txt"
+run_hook "$(make_input "$WT_A/seed.txt" "agentaaa" "Edit" "")"
+assert_equals "all tests green" "$(jq -r '.lastStep' "$CARD")" "preservation: clock-in keeps lastStep"
+assert_equals "ship it" "$(jq -r '.remainingSteps' "$CARD")" "preservation: clock-in keeps remainingSteps"
+
 # ── Summary ──────────────────────────────────────────────────────────────────
 
 echo ""
