@@ -472,17 +472,17 @@ const config: Config = {
     }]] : []),
   ],
 
-  // Separate unit and functional via projects:
+  // Separate fast colocated layers from real-infra suites via projects:
   projects: [
     {
-      displayName: 'unit',  // required for --selectProjects to work
-      testMatch: ['<rootDir>/src/**/*.unit.test.{ts,js}'],
+      displayName: 'domain',  // required for --selectProjects to work
+      testMatch: ['<rootDir>/src/**/*.domain.test.{ts,js}'],
       transform: { '^.+\\.tsx?$': 'ts-jest' },
       testEnvironment: 'node',
     },
     {
-      displayName: 'functional',
-      testMatch: ['<rootDir>/test/functional/**/*.functional.test.{ts,js}'],
+      displayName: 'system',
+      testMatch: ['<rootDir>/test/system/**/*.system.test.{ts,js}'],
       transform: { '^.+\\.tsx?$': 'ts-jest' },
       testEnvironment: 'node',
       testTimeout: 30_000,
