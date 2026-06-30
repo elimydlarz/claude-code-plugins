@@ -115,7 +115,7 @@ Two functional layers, each its own command/config:
 **Determine whether a Docker harness is needed.** See the Docker Harness Reference below. Key question: do Adapter (driven), System, or Journey tests need external processes — databases, queues, HTTP servers? If yes, set up a Docker Compose harness. If the software is pure in-process, Docker is unnecessary.
 
 When configuring Docker:
-- `docker-compose.yml` lives at project root (or `test/functional/docker-compose.yml` if the project root is already crowded)
+- `docker-compose.yml` lives at project root (or `test/system/docker-compose.yml` if the project root is already crowded)
 - Real-infra test scripts start compose, wait for readiness, run tests, tear down
 - Add a `test:system:real` script (or `test:adapter:real`) that orchestrates the full lifecycle
 - Never assume Docker services are already running — the harness must be self-contained
