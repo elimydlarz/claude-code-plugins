@@ -127,6 +127,8 @@ A Journey tree describes a user-visible arc across capabilities. Beneath it, a S
 
 Journey and System are both real functional testing — Journey spans the user arc across capabilities, System pins one capability. When breadth at max realism is unaffordable, lean on the journey and push combinatorial detail down to inner layers — never a broad in-memory-wired System suite. The hex layers below are named for the seam under test, not infrastructure presence. Classic "unit/integration/functional" conflates pure Domain with mocked Use-case and overloads "integration" — seams give sharper targets.
 
+**Use-case is to Component as Journey is to System** — two orientations (behaviour-oriented: Use-case, Journey; system-oriented: Component, System) across two realism tiers. The cheap tier doubles what it can (in-memory twins; edge doubles) and is always written and exhaustive; the real tier integrates everything affordable and is selective. Use-case and Component carry exhaustive coverage; System and Journey validate the same surfaces with real everything, selectively.
+
 **Hex positions** — the locations in the codebase where code sits:
 
 - **Domain** — entities, value objects, aggregates, domain services. No framework, no I/O, no async. Data in, data out.
