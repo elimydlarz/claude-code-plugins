@@ -75,6 +75,6 @@
 - Per project: `setup` once → then `change` → `sync` → `tdd` → `second-opinion` cycles (or `workflow` end-to-end), repeatedly.
 - Per capability: failing Journey test → failing System test(s) → inner failing tests at each native layer → implement → green upward → refactor.
 - Per failing test: write one, run it, see it fail, implement the minimum, see it pass; never batch.
-- Per turn: the Stop hook fires a drift check unless the response ends in a question.
+- Per turn: the Stop hook fires a drift check, or a question stop when the response ends in a question — re-prompting the agent to resolve it from the rules, mental model, and trees rather than reflexively ask.
 - At end of work: mutation testing runs against Domain and Use-case as final validation.
 - Across sessions: SessionStart injects rules, mental model, and trees so every session starts in-context.
