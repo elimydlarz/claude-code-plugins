@@ -100,7 +100,7 @@ createBookmark (src: src/features/bookmarks/use-cases/create-bookmark.ts; use-ca
 
 ### CreateBookmark (System)
 
-CreateBookmark (src: src/features/bookmarks/system/create-bookmark.ts; functional: test/system/create-bookmark.system.test.ts)
+CreateBookmark (src: src/features/bookmarks/system/create-bookmark.ts; system: test/system/create-bookmark.system.test.ts)
   when an authenticated user submits a bookmark with a valid URL
     then the bookmark is persisted against their library
     and the canonicalised URL is returned to the caller
