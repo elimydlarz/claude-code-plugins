@@ -64,6 +64,7 @@
 - Per edit: stage → commit (provenance + timecard) → pull `origin/main` → push; on conflict, exit 2 → agent edits → next fire completes the merge.
 - First clock-in of a session: nudge the agent to run the tests — failing tests are checkpoints of unfinished WIP, resumable when not owned by a still-clocked-in agent.
 - Throttled (≤ once / 5 min): surface other clocked-in agents so the agent can reason about shared resources.
+- At session start: the SessionStart hook hands the agent its session id and surfaces other sessions' recorded handovers (last step + remaining steps) so work continues across sessions.
 - Auto clock-out: local dead PID, or a remote timecard older than 30 min.
 - Seance, on demand: blame → provenance → transcript truncation → worktree → resume.
 - Release: bump both manifests → build → `pnpm publish` (npm) → push to GitHub (marketplace).
