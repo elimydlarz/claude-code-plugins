@@ -42,13 +42,33 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
   [[ "$output" == *"inner"* ]]
 }
 
-@test "tdd writes tests at the tree's layer (Journey / System / Adapter / Use-case / Domain)" {
+@test "tdd writes tests at the tree's layer (Journey / System / Component / Adapter / Use-case / Domain)" {
   run cat "$SKILL"
   [[ "$output" == *"Domain"* ]]
   [[ "$output" == *"Use-case"* ]]
+  [[ "$output" == *"Component"* ]]
   [[ "$output" == *"Adapter"* ]]
   [[ "$output" == *"System"* ]]
   [[ "$output" == *"Journey"* ]]
+}
+
+@test "tdd describes the Component layer — real adapters, externals doubled at the edge, in-process" {
+  run cat "$SKILL"
+  [[ "$output" == *"Component"* ]]
+  [[ "$output" == *"in-memory database"* ]]
+  [[ "$output" == *"stubbed outbound HTTP"* ]]
+  [[ "$output" == *"in-process"* ]]
+}
+
+@test "tdd threads Component between System and the inner layers in the descent" {
+  run cat "$SKILL"
+  [[ "$output" == *"System → Component"* ]]
+}
+
+@test "tdd reframes System as the same surface a Component test covers, validated against real infrastructure, selective" {
+  run cat "$SKILL"
+  [[ "$output" == *"same single-capability surface a Component test covers"* ]]
+  [[ "$output" == *"selective, not exhaustive"* ]]
 }
 
 @test "tdd mirrors the tree in describe/it hierarchy" {
