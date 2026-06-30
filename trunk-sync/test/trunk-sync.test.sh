@@ -986,12 +986,12 @@ assert_equals "wrote the parser" "$(jq -r '.lastStep' "$CARD")" "progress: lastS
 assert_equals "wire the CLI and add tests" "$(jq -r '.remainingSteps' "$CARD")" "progress: remainingSteps written to timecard"
 assert_equals "agentaaa" "$(jq -r '.sessionId' "$CARD")" "progress: sessionId preserved"
 
-# 32. The hook commits and pushes the progress-updated timecard (cross-machine propagation).
+# 32. The HOOK ALONE commits and pushes the progress-updated timecard (no manual push —
+#     this proves the hook propagates the handover to the remote on its own).
 echo "more" > "$WT_A/seed.txt"
-run_hook "$(make_input "$WT_A/seed.txt" "agentaaa" "Edit" "")"   # next fire commits the updated timecard
-git -C "$WT_A" push origin HEAD:main >/dev/null 2>&1 || true
+run_hook "$(make_input "$WT_A/seed.txt" "agentaaa" "Edit" "")"   # next fire commits + pushes the updated timecard
 REMOTE_CARD=$(git -C "$REMOTE" show "main:.trunk-sync/timeclock/agentaaa.json" 2>/dev/null || echo "")
-assert_contains "$REMOTE_CARD" "wrote the parser" "propagation: progress reaches the remote"
+assert_contains "$REMOTE_CARD" "wrote the parser" "propagation: hook alone pushes the handover to the remote"
 
 # 33. Agent B's SessionStart surfaces A's handover and B's own record instruction.
 SS_OUT=$(run_session_start "$WT_A" "agentbbb")
