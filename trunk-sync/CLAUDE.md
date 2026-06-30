@@ -12,29 +12,34 @@ The mental model lives in [MENTAL_MODEL.md](./MENTAL_MODEL.md) — Core Domain I
 .claude-plugin/plugin.json    — plugin manifest (name, version)
 .claude-plugin/marketplace.json — marketplace definition (name: elimydlarz, lists plugins)
 dist/                         — compiled JS (tracked in git — marketplace installs from repo)
-hooks/hooks.json              — hook registration (Edit|Write|Bash → scripts/trunk-sync.sh)
+hooks/hooks.json              — hook registration (PostToolUse Edit|Write|Bash → trunk-sync.sh; SessionStart → trunk-sync-session-start.sh)
 scripts/trunk-sync.sh         — 4-line bash wrapper: exec node dist/lib/hook-entry.js
+scripts/trunk-sync-session-start.sh — SessionStart wrapper: exec node dist/lib/session-start-entry.js
 scripts/sync-plugin-version.js — npm version hook: syncs plugin.json version from package.json
 
-src/lib/hook-types.ts         — types (HookInput, RepoState, HookPlan)
-src/lib/hook-plan.ts          — pure decision logic (no I/O, no git)
+src/lib/hook-types.ts         — types (HookInput, RepoState, HookPlan, Timecard incl. lastStep/remainingSteps)
+src/lib/hook-plan.ts          — pure decision logic (no I/O, no git); incl. formatSessionStartSummary
 src/lib/hook-plan.test.ts     — unit tests for pure logic (fast, no repos)
-src/lib/hook-execute.ts       — gathers git state, executes the plan
+src/lib/hook-execute.ts       — gathers git state, executes the plan; incl. runSessionStart
 src/lib/hook-execute.test.ts  — integration tests (temp repos)
-src/lib/hook-entry.ts         — entry point: reads stdin, wires layers, exits
+src/lib/hook-entry.ts         — PostToolUse entry point: reads stdin, wires layers, exits
+src/lib/session-start-entry.ts — SessionStart entry point: prints own-id + handover roster to stdout
 
 src/cli.ts                    — CLI entry point, argv dispatch
 src/commands/install.ts       — trunk-sync install
 src/commands/seance.ts        — trunk-sync seance (default/--inspect/--list modes)
-src/commands/config.ts        — trunk-sync config (read/write ~/.trunk-sync)
+src/commands/config.ts        — trunk-sync config (read/write ~/.trunk-sync; commit-transcripts defaults on)
+src/commands/progress.ts      — trunk-sync progress (agent records lastStep/remainingSteps into its timecard)
+src/commands/progress.test.ts — progress command tests (node:test)
 src/commands/config.test.ts   — config command tests (node:test)
 src/commands/install.test.ts  — install command tests (node:test)
-.transcripts/                 — opt-in session snapshots committed by hook
+.transcripts/                 — session snapshots committed by hook (on by default; opt out via commit-transcripts=false)
 src/lib/git.ts                — shared git utilities (blame, parseFileRef, extractSessionId, findSnapshotInCommit)
 src/lib/git.test.ts           — unit tests (node:test)
 src/commands/seance.test.ts   — integration tests (node:test)
 
-test/trunk-sync.test.sh       — hook e2e test suite (TAP, temp repos + bare remote)
+test/trunk-sync.test.sh       — hook e2e test suite (TAP, temp repos + bare remote); System-layer, simulates hook stdin
+test/functional/              — real-CLI System test (Docker): drives actual claude, handover case, deterministic self-verify (manual, billable)
 test/local-setup.sh           — manual test setup
 test/local-cleanup.sh         — manual test teardown
 ```
