@@ -23,7 +23,8 @@
 - Seance — reconstruct and resume the agent session behind a line of code; modes default / `--inspect` / `--list`.
 - Session ID — links a commit to a Claude/Codex conversation.
 - Provenance fields — `Session:`, `Agent:`, `TranscriptPath:` in the commit body.
-- Timecard — `.trunk-sync/timeclock/<id>.json`; who is clocked in and on what.
+- Timecard — `.trunk-sync/timeclock/<id>.json`; who is clocked in, on what, and their handover (last step + remaining steps).
+- Handover — the last step + remaining steps an agent records in its timecard via `trunk-sync progress`, surfaced to the next session at SessionStart; ephemeral, reaped with the timecard.
 - Clock in / clock out — agents register/deregister work; dead PIDs (local) and stale (30 min, remote) timecards auto-clock-out.
 - Worktree — optional isolated working tree for multi-agent runs.
 - Conflict feedback — exit 2 with a stderr message; the agent fixes file content only.
