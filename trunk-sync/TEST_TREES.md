@@ -152,24 +152,24 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       then it is classified done and reapable
 
   formatClockInMessage
-    when no other agents are clocked in and this is not the first clock-in
+    when no other agent is active and this is not the first clock-in
       then null is returned
-    when one other agent is clocked in without a task
+    when one other agent is active without a task
       then a single-agent message is returned
-    when an agent has a task
+    when an active agent has a task
       then the task description is included
-    when an agent has recorded progress
+    when an active agent has recorded progress
       then its last completed step and remaining steps are included on that agent's line
-    when multiple agents are clocked in
+    when multiple agents are active
       then all are listed
     when the elapsed minutes value is rounded
       then the formatting matches the elapsed wall time
     when this is the first clock-in
       then the message tells the agent to run the test suite before starting
       and it explains failing tests are checkpoints of unfinished WIP to resume
-      and it scopes resumable WIP to work not part of a still-clocked-in agent's
-    when this is the first clock-in and other agents are clocked in
-      then both the clocked-in roster and the run-tests nudge are included
+      and it scopes resumable WIP to work not held by an active agent
+    when this is the first clock-in and other agents are active
+      then both the active roster and the run-tests nudge are included
 
   formatSessionStartSummary
     when no card is active or disrupted
