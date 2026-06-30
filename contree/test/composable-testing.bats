@@ -33,6 +33,18 @@ CHANGE="$PROJECT_ROOT/skills/change/SKILL.md"
   [[ "$output" == *"*.journey.test.*"* ]]
 }
 
+@test "setup places Component tests under test/component/ (*.component.test.*)" {
+  run cat "$SETUP"
+  [[ "$output" == *"test/component/"* ]]
+  [[ "$output" == *"*.component.test.*"* ]]
+}
+
+@test "setup wires Component tests with real adapters and externals doubled at the edge" {
+  run cat "$SETUP"
+  [[ "$output" == *"in-memory database"* ]]
+  [[ "$output" == *"stubbed outbound HTTP"* ]]
+}
+
 @test "change pairs each outbound port with an in-memory adapter used by Use-case tests" {
   run cat "$CHANGE"
   [[ "$output" == *"in-memory adapter"* ]]
