@@ -40,7 +40,7 @@ Use the consumer's vocabulary. If the consumer says "register", the tree says "r
 
 Inner trees (System where the journey has not yet pulled it in, Use-case, Domain, Port, Adapter) get added *as `tdd` discovers them* by pulling the failing journey/functional test through the layers — derived from what the outer test demands, not designed ahead of time. The exception is the pure-library case below (no slice), where Domain/Port trees may stand alone. Naming an inner tree before its need has surfaced is YAGNI failure: it commits to a decomposition the implementation hasn't asked for.
 
-Name the tree — **always `<Layer>: <Subject>`** where `<Layer>` is one of `Journey`, `System`, `Adapter`, `Use-case`, `Domain`, `Port`, and `<Subject>` is a short noun phrase naming the unit under test. Without the layer prefix, readers and `sync` cannot tell what level a tree exercises and cannot detect duplication across layers. Without a clear subject, the tree's tests are unreadable.
+Name the tree — **always `<Layer>: <Subject>`** where `<Layer>` is one of `Journey`, `System`, `Component`, `Adapter`, `Use-case`, `Domain`, `Port`, and `<Subject>` is a short noun phrase naming the unit under test. Without the layer prefix, readers and `sync` cannot tell what level a tree exercises and cannot detect duplication across layers. Without a clear subject, the tree's tests are unreadable.
 
 **One tree reifies exactly one test file.** If a capability exposes multiple behavioural units (e.g. a module with `generate` AND `isValid`, each testable independently), write **one tree per unit**, not one tree grouping them under a shared header. Grouping destroys the one-tree-one-file invariant and forces the TDD skill to fabricate ambiguous test structure.
 
