@@ -1,7 +1,7 @@
 ## Bookmark
 
 ```
-Bookmark (src: src/bookmark.js; unit: src/bookmark.domain.test.js)
+Bookmark (src: src/bookmark.js; domain: src/bookmark.domain.test.js)
   parseUrl
     when called with an https URL
       then the canonical form is returned
