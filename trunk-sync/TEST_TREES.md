@@ -501,11 +501,12 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
     when the git command is in the read-only allowlist
       then it is allowed through
   every session start
-    when other agents are clocked in on the project
-      then their progress — branch, task, last completed step, and remaining steps — is surfaced to the starting agent so it discovers work already in flight
-      and the starting agent is told to resume unfinished WIP not owned by a still-clocked-in agent
-    when no other agents are clocked in
-      then nothing is surfaced
+    then the starting agent is handed its own session id and the command to record its progress
+    when other sessions have work in progress on the project
+      then their progress — branch, task, last completed step, and remaining steps — is surfaced so the starting agent discovers work already in flight
+      and the starting agent is told to resume unfinished WIP, coordinating only if another agent is still actively working it
+    when an agent records progress and the hook later fires
+      then the progress-bearing timecard is committed and pushed, propagating the handover to other machines
   when a merge conflict arises during sync
     then exit 2 surfaces self-contained conflict-resolution instructions
     when the agent edits the conflicted file and the hook fires again
