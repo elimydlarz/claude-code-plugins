@@ -56,7 +56,8 @@ Run the failing higher-layer test and read its failure — it names what is miss
 
 Questions in order:
 
-- **Does the path cross a whole-app capability the journey traverses but no System test yet pins?** Write a System test for that one capability — the whole app wired with real driven adapters. (Only when you started from a Journey test; skip when the outermost test already was the System test.)
+- **Does the path cross a whole-app capability the journey traverses but no System test yet pins?** Write a System test for that one capability — the whole app wired with real driven adapters against real infrastructure. Selective: write one when the capability earns real-infra confidence, not for every capability.
+- **Does the path's capability need its assembled behaviour exercised broadly and cheaply?** Write a Component test — the whole app for that one capability with real adapters, externals doubled at the edge (in-memory database, stubbed outbound HTTP), in-process. This carries the exhaustive single-capability breadth.
 - **Does the path cross a driving-adapter boundary** (HTTP/CLI/queue/cron)? If the translation is non-trivial — routing, deserialization, auth extraction, error-code shaping — write a driving-adapter test with the use-case mocked.
 - **Does the path orchestrate** (call a domain factory, invoke one or more ports, branch on results)? Write a use-case test. In-memory driven adapters satisfy the ports; domain factories are real.
 - **Does the path compute a pure rule** over data with no collaborators? Write a domain test.
