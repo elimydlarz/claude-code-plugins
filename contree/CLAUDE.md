@@ -26,7 +26,7 @@ Mechanisms:
 
 ## Mental Model
 
-The mental model lives in [MENTAL_MODEL.md](./MENTAL_MODEL.md) — Core Domain Identity, World-to-Code Mapping, Ubiquitous Language, Bounded Contexts, Invariants, Decision Rationale, and Temporal View. It is where the layered-testing model (Journey → System → Adapter → Use-case → Domain), the outside-in flow, and the ground-level implementation gate are defined.
+The mental model lives in [MENTAL_MODEL.md](./MENTAL_MODEL.md) — Core Domain Identity, World-to-Code Mapping, Ubiquitous Language, Bounded Contexts, Invariants, Decision Rationale, and Temporal View. It is where the layered-testing model (Journey → System → Component → Adapter → Use-case → Domain), the outside-in flow, and the ground-level implementation gate are defined.
 
 Flow: `setup` prepares the project for test-tree-driven development → `change` sets expected behaviour → `sync` identifies gaps and cruft → `tdd` closes gaps → `second-opinion` gets an independent review of the completed work from a different model. Or use `workflow` for the full arc without pausing. The stop hook guards the contract throughout. The self-care hook nudges the user to take eye breaks via the 20-20-20 rule. Rules apply always.
 
