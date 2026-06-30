@@ -5,7 +5,7 @@ import { homedir, hostname } from "node:os";
 import { readConfig } from "../commands/config.js";
 import type { HookInput, RepoState, HookPlan, SyncPlan, ClockInPlan, Timecard, RuntimeContext } from "./hook-types.js";
 import { HOOK_EXPLAINER } from "./hook-types.js";
-import { extractTaskFromTranscript, buildCommitPlanWithTask, classifyTimecards, formatClockInMessage } from "./hook-plan.js";
+import { extractTaskFromTranscript, buildCommitPlanWithTask, classifyTimecards, formatClockInMessage, formatSessionStartSummary } from "./hook-plan.js";
 
 /**
  * Gather the current git repo state needed for planning.
