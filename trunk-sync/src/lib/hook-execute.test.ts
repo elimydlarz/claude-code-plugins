@@ -1094,7 +1094,7 @@ describe("runSessionStart", () => {
     writeCard({ sessionId: "other-id", task: "build X", lastStep: "did A", remainingSteps: "do B" });
     const msg = runSessionStart(dir, "my-session-id")!;
     assert.match(msg, /TRUNK-SYNC HANDOVER/);
-    assert.match(msg, /other-id/.source.slice(0, 8) === "other-id" ? /other-id/ : /other/);
+    assert.match(msg, /other-id/);
     assert.match(msg, /last: did A/);
     assert.match(msg, /next: do B/);
   });
