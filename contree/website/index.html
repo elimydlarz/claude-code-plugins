@@ -474,7 +474,11 @@
       </div>
       <div class="layer l-system">
         <div class="lname">System <small>test/system</small></div>
-        <div class="ldesc">A single capability, wired as the whole app with real driven adapters. Speaks the user's vocabulary.</div>
+        <div class="ldesc">A single capability, wired as the whole app against real infrastructure — the same surface a Component test covers, validated for real. Selective, not exhaustive.</div>
+      </div>
+      <div class="layer l-component">
+        <div class="lname">Component <small>test/component</small></div>
+        <div class="ldesc">That same single capability with real adapters, but externals doubled at the edge — an in-memory database, stubbed outbound HTTP. In-process and cheap, so it carries the exhaustive behaviour coverage.</div>
       </div>
       <div class="layer l-adapter">
         <div class="lname">Adapter <small>*.adapter.test</small></div>
