@@ -138,9 +138,11 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
   run cat "$SKILL"
   [[ "$output" == *"category"* ]]
   [[ "$output" == *"src"* ]]
-  [[ "$output" == *"unit"* ]]
-  [[ "$output" == *"integration"* ]]
-  [[ "$output" == *"functional"* ]]
+  [[ "$output" == *"domain"* ]]
+  [[ "$output" == *"use-case"* ]]
+  [[ "$output" == *"adapter"* ]]
+  [[ "$output" == *"component"* ]]
+  [[ "$output" == *"system"* ]]
   [[ "$output" == *"none"* ]]
 }
 
