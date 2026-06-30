@@ -18,7 +18,7 @@
 ## Ubiquitous Language
 
 - Trunk — `origin/main`, the shared integration branch.
-- Hook layer — fires on Edit/Write/Bash; stages, commits, pulls, pushes.
+- Hook layer — fires on Edit/Write/Bash (stage, commit, pull, push) and on SessionStart (surface handovers).
 - CLI layer — `trunk-sync install | seance | config`.
 - Seance — reconstruct and resume the agent session behind a line of code; modes default / `--inspect` / `--list`.
 - Session ID — links a commit to a Claude/Codex conversation.
