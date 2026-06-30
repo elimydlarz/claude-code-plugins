@@ -351,7 +351,7 @@ export function formatSessionStartSummary(sessions: Timecard[], now: Date): stri
     return line;
   });
   return [
-    `TRUNK-SYNC HANDOVER: ${clockedIn.length} other session${clockedIn.length > 1 ? "s have" : " has"} work in progress:`,
+    `TRUNK-SYNC HANDOVER: ${sessions.length} other session${sessions.length > 1 ? "s have" : " has"} work in progress:`,
     ...lines,
     "Resume any unfinished WIP above; if another agent is still actively working it, coordinate rather than duplicate.",
   ].join("\n");
