@@ -179,12 +179,13 @@ Tactical cheatsheet for the RED/GREEN cycle. See `skills/change/SKILL.md` for th
 ### Outside-in order
 
 1. **Journey** — one failing test for the user arc, at max realism. The outside-in entry point and the only test required up front. Everything below appears only because this test cannot be satisfied without it.
-2. **System** — one failing test per capability the journey traverses, the whole app wired with real driven adapters. Interior to the journey.
-3. **Driving adapter** — one failing test for protocol mapping. Mock the use-case. (Only when the translation is non-trivial.)
-4. **Use-case** — one failing test for orchestration. In-memory driven adapters. (Only when orchestration exists and the System test alone can't drive it cheaply enough.)
-5. **Domain** — one failing test for the pure rule. No collaborators. (Only when there's a pure rule worth isolating.)
-6. **Port contract** — write the shared suite (`*.contract.ts`). Both in-memory and real adapters must pass it. (Only when a port exists.)
-7. **Driven adapter** — implement the real adapter. Shared suite runs green; add adapter-specific tests. (Reality of the driven adapter is also exercised through the System test — driven-adapter tests cover adapter-local behaviour beyond the port contract.)
+2. **System** — one failing test per capability the journey traverses, the whole app wired with real driven adapters against real infrastructure. Interior to the journey, and **selective** — spent on the highest-impact capabilities.
+3. **Component** — exhaustive single-capability coverage with real adapters and externals doubled at the edge (in-memory database, stubbed outbound HTTP). In-process; always written; carries the breadth System leaves to it.
+4. **Driving adapter** — one failing test for protocol mapping. Mock the use-case. (Only when the translation is non-trivial.)
+5. **Use-case** — one failing test for orchestration. In-memory driven adapters. (Only when orchestration exists and the System test alone can't drive it cheaply enough.)
+6. **Domain** — one failing test for the pure rule. No collaborators. (Only when there's a pure rule worth isolating.)
+7. **Port contract** — write the shared suite (`*.contract.ts`). Both in-memory and real adapters must pass it. (Only when a port exists.)
+8. **Driven adapter** — implement the real adapter. Shared suite runs green; add adapter-specific tests. (Reality of the driven adapter is also exercised through the System test — driven-adapter tests cover adapter-local behaviour beyond the port contract.)
 
 Every failing test sits at a named layer. If you can't name the layer, you're not decomposed enough. Equally: if you can't name the implementation pressure from the failing journey/functional test that forces this inner test to exist, don't write it yet.
 
