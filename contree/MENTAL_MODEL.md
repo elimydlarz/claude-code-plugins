@@ -36,7 +36,7 @@
 - Ground-level failure — a failing test at a behaviour's own native layer; the precondition for writing implementation.
 - Coverage-by-proxy — a unit reachable only through higher-layer tests with no tree at its native layer; treated as uncovered.
 - Drift — divergence between trees and implementation in either direction.
-- Coverage categories — `src`, `unit`, `integration`, `functional`, `journey`.
+- Coverage categories — one per layer: `src`, `domain`, `use-case`, `adapter`, `component`, `system`, `journey`.
 
 ## Bounded Contexts
 
