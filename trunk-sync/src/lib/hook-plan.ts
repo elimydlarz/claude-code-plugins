@@ -351,8 +351,8 @@ export function formatSessionStartSummary(clockedIn: Timecard[], now: Date): str
     return line;
   });
   return [
-    `TRUNK-SYNC HANDOVER: ${clockedIn.length} other agent${clockedIn.length > 1 ? "s have" : " has"} work in progress:`,
+    `TRUNK-SYNC HANDOVER: ${clockedIn.length} other session${clockedIn.length > 1 ? "s have" : " has"} work in progress:`,
     ...lines,
-    "Resume any unfinished WIP above that is not owned by a still-clocked-in agent; coordinate on shared resources.",
+    "Resume any unfinished WIP above; if another agent is still actively working it, coordinate rather than duplicate.",
   ].join("\n");
 }
