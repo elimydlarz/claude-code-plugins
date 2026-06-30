@@ -720,7 +720,7 @@ describe("formatSessionStartSummary", () => {
       card({ sessionId: "aaaa0000-0000-0000-0000-000000000000", hostname: "mac-1" }),
       card({ sessionId: "bbbb0000-0000-0000-0000-000000000000", hostname: "mac-2" }),
     ], now)!;
-    assert.match(msg, /2 other agents have work in progress/);
+    assert.match(msg, /2 other sessions have work in progress/);
     assert.match(msg, /aaaa0000 on mac-1/);
     assert.match(msg, /bbbb0000 on mac-2/);
   });
