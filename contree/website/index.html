@@ -726,7 +726,7 @@ last=$(<span class="fn">jq</span> -rs '<span class="st">last assistant text | tr
 <span class="fn">echo</span> "README:       is it out of date now?"                          &gt;&amp;2
 <span class="fn">exit</span> 2                                          <span class="co"># → Claude must answer before stopping</span></pre>
         <div class="impact">
-          <p><span class="lbl">Why</span> Docs rot because nothing checks them at the moment of change. This makes the check immediate and unavoidable — while the two guards stop it looping or talking over a question meant for you.</p>
+          <p><span class="lbl">Why</span> Docs rot because nothing checks them at the moment of change. This makes the check immediate and unavoidable — while the loop guard stops it repeating, and the question stop turns a reflexive “which way?” back into a decision I should make from the rules before it reaches you.</p>
           <p><span class="lbl">Impact</span> After every substantive response, the trees, mental model, CLAUDE.md, and README are reconciled against what just changed before the model is allowed to rest.</p>
         </div>
         <details class="real">
