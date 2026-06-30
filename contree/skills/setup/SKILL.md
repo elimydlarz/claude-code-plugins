@@ -789,11 +789,11 @@ The `documentation` formatter prints nested `describe`/`context`/`it` blocks as 
 ```ruby
 # spec/spec_helper.rb
 RSpec.configure do |config|
-  config.define_derived_metadata(file_path: %r{/spec/functional/}) do |metadata|
-    metadata[:functional] = true
+  config.define_derived_metadata(file_path: %r{/spec/system/}) do |metadata|
+    metadata[:system] = true
   end
-  config.define_derived_metadata(file_path: %r{/spec/unit/}) do |metadata|
-    metadata[:unit] = true
+  config.define_derived_metadata(file_path: %r{/spec/domain/}) do |metadata|
+    metadata[:domain] = true
   end
   # Persistence file for --only-failures:
   config.example_status_persistence_file_path = "spec/examples.txt"
