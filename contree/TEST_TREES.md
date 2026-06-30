@@ -9,7 +9,7 @@ test-trees-as-requirements (unit: test/test-trees-as-requirements.bats)
     and trees are flat subsections — not grouped by kind or layer
     and every tree reifies exactly one test file
     and every test file reifies exactly one tree
-    and every tree names its coverage in parenthesised labelled pairs on the tree-name line, covering the categories src, unit, adapter, component, functional, journey
+    and every tree names its coverage in parenthesised labelled pairs on the tree-name line, covering the categories src, domain, use-case, adapter, component, system, journey
     and gaps are declared explicitly — "none" for expected-but-uncovered categories, omission for not-applicable ones
     and the EARS rule is embedded in skills that use it
   when a behaviour change is needed
