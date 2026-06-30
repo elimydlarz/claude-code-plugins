@@ -107,7 +107,7 @@ Two functional layers, each its own command/config:
 
 - **System** — `test/system/`, `*.system.test.*` — whole app for a single capability
 - **Journey** — `test/journey/`, `*.journey.test.*` — the multi-capability user arc, the outside-in entry point
-- Both wire **real driven adapters** at the highest tolerable realism — never in-memory at these layers. Speed for combinatorial breadth comes from the Use-case layer, not from diluting these into in-memory tests.
+- Both wire **real driven adapters** at the highest tolerable realism — never in-memory at these layers. Speed for combinatorial breadth comes from the cheap Use-case and Component layers, not from diluting these into in-memory tests.
 - Tree-style output; runnable independently from the inner layers and from each other
 - Higher timeouts — they assemble the whole app; the Journey is the slowest
 - Where real infrastructure is heavy, gate the heaviest runs behind a separate command (pre-release, not per-push) — but keep them real; do not substitute in-memory wiring to make them cheap
