@@ -1138,7 +1138,7 @@ testing {
 }
 
 tasks.named("check") {
-    dependsOn(testing.suites.named("functionalTest"))
+    dependsOn(testing.suites.named("systemTest"))
 }
 ```
 
