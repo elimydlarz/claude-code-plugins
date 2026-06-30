@@ -39,7 +39,7 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `package.json` — dev dependencies (bats-support, bats-assert) and test scripts
 - `hooks/hooks.json` — wires SessionStart (rules), Stop (drift check), UserPromptSubmit (self-care), and PostToolUse (mental-model validator)
 - `hooks/session-start.sh` — SessionStart hook: prints the skill Directions block and the inline rules list to stdout
-- `hooks/stop-drift-check.sh` — Stop hook: injects drift-check prompt unless Claude's last response ends with a question, in which case it yields the turn to the user
+- `hooks/stop-drift-check.sh` — Stop hook: injects the drift-check prompt, or a question stop when Claude's last response ends with a question (directing it to resolve the question from the rules/mental model/test trees rather than ask)
 - `hooks/self-care-20-20-20.sh` — UserPromptSubmit hook: reminds user of the 20-20-20 rule after 20 min of keyboard time
 - `hooks/post-update-check.sh` — PostToolUse hook: when MENTAL_MODEL.md is edited, runs `validate-mental-model.sh` and surfaces findings to Claude via additionalContext JSON
 - `hooks/validate-mental-model.sh` — advisory validator: checks MENTAL_MODEL.md for the seven named sections, section caps, rogue headings, and file presence
