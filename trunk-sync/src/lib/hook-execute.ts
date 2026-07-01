@@ -426,7 +426,7 @@ export function executePlan(
 
 function amendWithTranscriptSnapshot(input: HookInput, state: RepoState): void {
   try {
-    const config = readConfig();
+    const config = readConfig(state.repoRoot);
     if (config.get("commit-transcripts") === "false") return;
     if (!input.transcript_path || !input.session_id) return;
 
