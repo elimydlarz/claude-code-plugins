@@ -292,6 +292,8 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       then a single pull-and-push retry is attempted
     if pull produces a merge conflict
       then exit 2 is returned with conflict feedback
+    if the target branch does not exist on the remote yet
+      then the pull is skipped and the push creates it — no conflict is reported
     when on a non-target worktree branch
       then the target branch is merged in
     when push succeeds
