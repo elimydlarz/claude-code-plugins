@@ -6,17 +6,17 @@ SKILL="$PROJECT_ROOT/skills/diff-for-humans/SKILL.md"
 
 @test "diff-for-humans skill determines the change to depict from any natural-language indication the user gave" {
   run cat "$SKILL"
-  [[ "$output" == *"natural-language"* || "$output" == *"natural language"* ]]
-  [[ "$output" == *"indicat"* ]]
+  assert_output --regexp 'natural-language|natural language'
+  assert_output --partial "indicat"
 }
 
 @test "diff-for-humans skill absent a clear indication depicts the last non-trivial, naturally grouped changes, not a single commit and not only the working tree" {
   run cat "$SKILL"
-  [[ "$output" == *"naturally grouped"* || "$output" == *"naturally-grouped"* ]]
-  [[ "$output" == *"non-trivial"* ]]
-  [[ "$output" == *"trunk-sync"* ]]
-  [[ "$output" == *"commit"* ]]
-  [[ "$output" == *"working tree"* ]]
+  assert_output --regexp 'naturally grouped|naturally-grouped'
+  assert_output --partial "non-trivial"
+  assert_output --partial "trunk-sync"
+  assert_output --partial "commit"
+  assert_output --partial "working tree"
 }
 
 @test "diff-for-humans skill gathers a change that includes new files not yet tracked by git" {
