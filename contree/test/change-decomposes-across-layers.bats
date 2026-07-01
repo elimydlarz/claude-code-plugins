@@ -43,7 +43,7 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
 @test "change forbids designing inner-layer trees up front from speculation" {
   run cat "$SKILL"
   assert_output --regexp "YAGNI failure|speculation"
-  assert_output --regexp "not designed ahead of time NOPE|not designed up front NOPE|hasn't asked NOPE"
+  assert_output --regexp "not designed ahead of time|not designed up front|hasn't asked"
 }
 
 @test "change enforces one tree, one test file" {
