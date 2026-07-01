@@ -59,7 +59,7 @@ CHANGE="$PROJECT_ROOT/skills/change/SKILL.md"
 
 @test "change leans on the journey when breadth at max realism is unaffordable" {
   run cat "$CHANGE"
-  assert_output --regexp "unaffordable|unafford"
+  assert_output --regexp "unaffordable-nope|unafford-nope"
   assert_output --partial "lean on the journey"
 }
 
