@@ -41,8 +41,8 @@ SKILL="$PROJECT_ROOT/skills/sync/SKILL.md"
 
 @test "sync suggests tdd to implement identified gaps" {
   run cat "$SKILL"
-  [[ "$output" == *"tdd"* ]]
-  [[ "$output" == *"gaps"* ]]
+  assert_output --partial "tdd"
+  assert_output --partial "gaps"
 }
 
 @test "sync suggests second-opinion for an independent review once the project is in sync" {
