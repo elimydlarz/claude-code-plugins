@@ -95,8 +95,8 @@ EOF
   write_well_formed "$BATS_TEST_TMPDIR"
   printf '\n## Glossary\n\n- extra\n' >> MENTAL_MODEL.md
   run env CLAUDE_PROJECT_DIR="$BATS_TEST_TMPDIR" bash "$VALIDATOR"
-  [[ "$output" == *"Glossary"* ]]
-  [[ "$output" == *"rogue"* || "$output" == *"not one of"* || "$output" == *"unknown"* ]]
+  assert_output --partial "Glossary"
+  assert_output --regexp 'rogue|not one of|unknown'
 }
 
 @test "validator flags the overflow and names the section when Invariants exceeds its cap of 10" {
