@@ -17,7 +17,7 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
 
 @test "setup configures the six test layers as separate commands" {
   run cat "$SKILL"
-  assert_output --partial "Domain"
+  assert_output --partial "DomainXYZ_MUTATION_TEST"
   assert_output --partial "Use-case"
   assert_output --partial "Component"
   assert_output --partial "Adapter"
