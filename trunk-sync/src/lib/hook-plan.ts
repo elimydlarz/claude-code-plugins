@@ -282,39 +282,41 @@ export function classifyTimecards(
 }
 
 /**
- * Format the message an agent sees when it clocks in.
- * Shows who else is working, and on the agent's first clock-in of the session
- * nudges it to run the tests — failing tests are checkpoints of unfinished WIP
- * left by an earlier agent, resumable when not owned by a still-clocked-in agent.
+ * Format the mid-work roster an agent sees while it works: who else is active
+ * (recent heartbeat) so it can coordinate on shared resources. On the agent's
+ * first clock-in of the session it also nudges running the tests — failing tests
+ * are the authoritative signal of unfinished WIP; the roster is advisory context.
  * Returns null when there is nothing to say.
  */
 export function formatClockInMessage(
-  clockedIn: Timecard[],
+  active: Timecard[],
   now: Date,
   isFirstClockIn: boolean,
 ): string | null {
   const sections: string[] = [];
 
-  if (clockedIn.length > 0) {
-    const lines = clockedIn.map((tc) => {
-      const age = now.getTime() - new Date(tc.lastActiveAt).getTime();
-      const agoStr = formatAge(age);
+  if (active.length > 0) {
+    const lines = active.map((tc) => {
+      const agoStr = formatAge(now.getTime() - new Date(tc.lastActiveAt).getTime());
       const taskStr = tc.task ? ` — "${tc.task}"` : "";
-      return `- ${tc.sessionId.slice(0, 8)} on ${tc.hostname} (branch: ${tc.branch}, ${agoStr} ago)${taskStr}`;
+      let line = `- ${tc.sessionId.slice(0, 8)} on ${tc.hostname} (branch: ${tc.branch}, ${agoStr} ago)${taskStr}`;
+      if (tc.lastStep) line += `\n    last: ${tc.lastStep}`;
+      if (tc.remainingSteps) line += `\n    next: ${tc.remainingSteps}`;
+      return line;
     });
     sections.push(
-      `TRUNK-SYNC CLOCK-IN: ${clockedIn.length} other agent${clockedIn.length > 1 ? "s" : ""} clocked in. Continue your work as planned — no action required.`,
+      `TRUNK-SYNC ACTIVE: ${active.length} other agent${active.length > 1 ? "s" : ""} active. Continue your work as planned — no action required.`,
       ...lines,
     );
   }
 
   if (isFirstClockIn) {
     sections.push(
-      "TRUNK-SYNC WIP: Run the test suite before starting. Failing tests are checkpoints marking where an earlier agent left off — any failing test that is not part of a still-clocked-in agent's work is unfinished WIP for you to resume.",
+      "TRUNK-SYNC WIP: Run the test suite before starting. Failing tests are the authoritative signal of unfinished work — any failing test not owned by a currently-active agent is WIP for you to resume. The active roster above is advisory context for who already holds work.",
     );
   }
 
-  if (clockedIn.length > 0) {
+  if (active.length > 0) {
     sections.push(
       "If you share resources (ports, test databases, build locks), coordinate accordingly. Otherwise, ignore this message.",
     );
