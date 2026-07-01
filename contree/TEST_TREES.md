@@ -103,6 +103,22 @@ outside-in-tdd (src: skills/tdd/SKILL.md; system: test/outside-in-tdd.bats; jour
     and suggest the user runs sync
   if no tree covers the behaviour
     then suggest the user runs change first
+  when starting to implement a tree
+    then the covering tree is identified and stated explicitly before any test is written
+    and an incomplete-seeming tree is noted but implementation proceeds with what's there
+  when writing a Domain test
+    then the pure rule is tested with no collaborators
+    and the test calls functions directly, asserting on returned data
+  when writing an Adapter test for a driving adapter, and the protocol translation is non-trivial
+    then a driving-adapter test is written with the use-case mocked
+    and the test asserts on protocol-to-input translation — routing, deserialization, auth extraction, error-code shaping
+  when all tests are green after an inner cycle
+    then only the code just changed is refactored, not more broadly
+    and duplication is treated as a hint to watch, not a command to immediately extract
+  when a test fails unexpectedly during the cycle
+    then an unrelated failure is fixed first before continuing
+    and a related failure is fixed as part of continuing the cycle
+    and a missing or wrong test is corrected before continuing
 ```
 
 ## pre-task-hook
