@@ -214,7 +214,6 @@ export function buildClockInPlan(input, state, runtime) {
         timecardPath: `.trunk-sync/timeclock/${input.session_id}.json`,
         timecard: {
             sessionId: input.session_id,
-            pid: runtime.pid,
             hostname: runtime.hostname,
             clockedInAt: now,
             lastActiveAt: now,
@@ -225,54 +224,61 @@ export function buildClockInPlan(input, state, runtime) {
         },
     };
 }
+/** Recent heartbeat ⇒ the agent is active (coordinate, don't duplicate). */
+export const DISPLAY_WINDOW_MS = 60 * 60 * 1000; // 60 minutes
+/** Heartbeat older than this ⇒ the card is abandoned and swept (the transcript is the record). */
+export const REAP_TTL_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
 /**
- * Classify timecards: who's still clocked in vs who should be clocked out.
- * Own session is excluded. Local agents with dead PIDs are clocked out.
- * Remote agents with old timestamps are clocked out.
+ * Classify timecards purely by heartbeat age — one uniform rule for every card,
+ * no PID and no local/remote split (a stored PID is the ephemeral hook process,
+ * never the agent). Own session excluded.
+ *  - within the display window        → active (recently alive)
+ *  - past the window, within the TTL   → stale (possibly disrupted; surfaced to resume)
+ *  - past the TTL                      → reapable (even with unfinished steps; the transcript remains)
  */
-export function classifyTimecards(ownSessionId, timecards, now, localHostname, isLocalPidAlive, staleMinutes = 30) {
-    const staleThreshold = staleMinutes * 60 * 1000;
-    const clockedIn = [];
-    const clockedOut = [];
+export function classifyTimecards(ownSessionId, timecards, now) {
+    const active = [];
+    const stale = [];
+    const reapable = [];
     for (const tc of timecards) {
         if (tc.sessionId === ownSessionId)
             continue;
         const age = now.getTime() - new Date(tc.lastActiveAt).getTime();
-        const isLocal = tc.hostname === localHostname;
-        if (isLocal && !isLocalPidAlive(tc.pid)) {
-            clockedOut.push(tc.sessionId);
-        }
-        else if (age > staleThreshold) {
-            clockedOut.push(tc.sessionId);
-        }
-        else {
-            clockedIn.push(tc);
-        }
+        if (age <= DISPLAY_WINDOW_MS)
+            active.push(tc);
+        else if (age <= REAP_TTL_MS)
+            stale.push(tc);
+        else
+            reapable.push(tc);
     }
-    return { clockedIn, clockedOut };
+    return { active, stale, reapable };
 }
 /**
- * Format the message an agent sees when it clocks in.
- * Shows who else is working, and on the agent's first clock-in of the session
- * nudges it to run the tests — failing tests are checkpoints of unfinished WIP
- * left by an earlier agent, resumable when not owned by a still-clocked-in agent.
+ * Format the mid-work roster an agent sees while it works: who else is active
+ * (recent heartbeat) so it can coordinate on shared resources. On the agent's
+ * first clock-in of the session it also nudges running the tests — failing tests
+ * are the authoritative signal of unfinished WIP; the roster is advisory context.
  * Returns null when there is nothing to say.
  */
-export function formatClockInMessage(clockedIn, now, isFirstClockIn) {
+export function formatClockInMessage(active, now, isFirstClockIn) {
     const sections = [];
-    if (clockedIn.length > 0) {
-        const lines = clockedIn.map((tc) => {
-            const age = now.getTime() - new Date(tc.lastActiveAt).getTime();
-            const agoStr = formatAge(age);
+    if (active.length > 0) {
+        const lines = active.map((tc) => {
+            const agoStr = formatAge(now.getTime() - new Date(tc.lastActiveAt).getTime());
             const taskStr = tc.task ? ` — "${tc.task}"` : "";
-            return `- ${tc.sessionId.slice(0, 8)} on ${tc.hostname} (branch: ${tc.branch}, ${agoStr} ago)${taskStr}`;
+            let line = `- ${tc.sessionId.slice(0, 8)} on ${tc.hostname} (branch: ${tc.branch}, ${agoStr} ago)${taskStr}`;
+            if (tc.lastStep)
+                line += `\n    last: ${tc.lastStep}`;
+            if (tc.remainingSteps)
+                line += `\n    next: ${tc.remainingSteps}`;
+            return line;
         });
-        sections.push(`TRUNK-SYNC CLOCK-IN: ${clockedIn.length} other agent${clockedIn.length > 1 ? "s" : ""} clocked in. Continue your work as planned — no action required.`, ...lines);
+        sections.push(`TRUNK-SYNC ACTIVE: ${active.length} other agent${active.length > 1 ? "s" : ""} active. Continue your work as planned — no action required.`, ...lines);
     }
     if (isFirstClockIn) {
-        sections.push("TRUNK-SYNC WIP: Run the test suite before starting. Failing tests are checkpoints marking where an earlier agent left off — any failing test that is not part of a still-clocked-in agent's work is unfinished WIP for you to resume.");
+        sections.push("TRUNK-SYNC WIP: Run the test suite before starting. Failing tests are the authoritative signal of unfinished work — any failing test not owned by a currently-active agent is WIP for you to resume. The active roster above is advisory context for who already holds work.");
     }
-    if (clockedIn.length > 0) {
+    if (active.length > 0) {
         sections.push("If you share resources (ports, test databases, build locks), coordinate accordingly. Otherwise, ignore this message.");
     }
     if (sections.length === 0)
@@ -290,16 +296,18 @@ function formatAge(ms) {
     return `${hours}h`;
 }
 /**
- * Format the handover roster shown at session start: every other clocked-in agent
- * with its branch, task, and agent-authored last step + remaining steps, so a starting
- * agent discovers work already in flight. Returns null when no other agents are clocked in.
+ * Format the handover roster shown at session start: every other non-reaped session,
+ * active and stale alike (including those with no recorded next step), so a starting
+ * agent discovers work already in flight. Failing tests are the authoritative WIP
+ * signal; these cards are advisory context pointing at the committed transcript.
+ * Returns null when there is nothing to surface.
  */
-export function formatSessionStartSummary(sessions, now) {
-    if (sessions.length === 0)
+export function formatSessionStartSummary(active, stale, now) {
+    if (active.length === 0 && stale.length === 0)
         return null;
-    const lines = sessions.map((tc) => {
+    const render = (tc, label) => {
         const age = formatAge(now.getTime() - new Date(tc.lastActiveAt).getTime());
-        let line = `- ${tc.sessionId.slice(0, 8)} on ${tc.hostname} (branch: ${tc.branch}, ${age} ago)`;
+        let line = `- ${tc.sessionId.slice(0, 8)} on ${tc.hostname} (branch: ${tc.branch}, ${age} ago) — ${label}`;
         if (tc.task)
             line += `\n    task: ${tc.task}`;
         if (tc.lastStep)
@@ -307,10 +315,15 @@ export function formatSessionStartSummary(sessions, now) {
         if (tc.remainingSteps)
             line += `\n    next: ${tc.remainingSteps}`;
         return line;
-    });
+    };
+    const lines = [
+        ...active.map((tc) => render(tc, "active: coordinate, do not duplicate")),
+        ...stale.map((tc) => render(tc, "stale, possibly disrupted: verify against the test suite before resuming — it may already be done")),
+    ];
+    const count = active.length + stale.length;
     return [
-        `TRUNK-SYNC HANDOVER: ${sessions.length} other session${sessions.length > 1 ? "s have" : " has"} work in progress:`,
+        `TRUNK-SYNC HANDOVER: ${count} other session${count > 1 ? "s have" : " has"} work in progress. Failing tests on the trunk are the authoritative signal of what is unfinished; the cards below are advisory context.`,
         ...lines,
-        "Resume any unfinished WIP above; if another agent is still actively working it, coordinate rather than duplicate.",
+        "Each session's full record is in its committed transcript (.transcripts/); resume it with seance. If a card's owner is still active, coordinate rather than duplicate.",
     ].join("\n");
 }

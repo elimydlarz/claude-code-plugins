@@ -113,7 +113,7 @@ export function gatherRepoState(input) {
 }
 // --- Clocking in/out ---
 export function getRuntimeContext() {
-    return { pid: process.pid, hostname: hostname() };
+    return { hostname: hostname() };
 }
 /** Clock in: write or update this agent's timecard on the timeclock. */
 export function clockIn(repoRoot, plan, task) {
@@ -156,18 +156,9 @@ export function readTimecards(repoRoot) {
     }
     return timecards;
 }
-export function isProcessAlive(pid) {
-    try {
-        process.kill(pid, 0);
-        return true;
-    }
-    catch {
-        return false;
-    }
-}
 /**
  * Build the session-start message: hand the starting agent its own session id and the
- * record-progress instruction, then append the handover roster of other clocked-in agents.
+ * record-progress instruction, then append the handover roster of active + stale sessions.
  * Returns null only when no session id is available.
  */
 export function runSessionStart(repoRoot, ownSessionId) {
@@ -175,17 +166,50 @@ export function runSessionStart(repoRoot, ownSessionId) {
         return null;
     const intro = `TRUNK-SYNC SESSION: your session id is ${ownSessionId}. Record your progress as you work and before you pause:\n` +
         `  trunk-sync progress ${ownSessionId} --last "<step you just finished>" --next "<steps still to do>"`;
-    // Handover discovery surfaces every OTHER session's progress — including a prior session
-    // of yours that ended (dead pid). Liveness is presence, not handover: an ended session is
-    // exactly the work you want to resume, so it is not filtered out here.
-    const others = readTimecards(repoRoot).filter((tc) => tc.sessionId !== ownSessionId);
-    const roster = formatSessionStartSummary(others, new Date());
+    const now = new Date();
+    const { active, stale } = classifyTimecards(ownSessionId, readTimecards(repoRoot), now);
+    const roster = formatSessionStartSummary(active, stale, now);
     return roster ? `${intro}\n\n${roster}` : intro;
 }
-/** Clock out stale agents by removing their timecards. */
-export function clockOutStale(repoRoot, staleIds) {
+/**
+ * Heartbeat-only Stop hook: if this session has a timecard, bump its heartbeat and sync it
+ * so remote readers stay fresh through a long no-edit turn. Never forces the agent (no exit 2).
+ * No-ops when a recent tool-use sync already refreshed the heartbeat, and creates no card for
+ * a session that never edited.
+ */
+export function runStop(state, sessionId) {
+    if (!sessionId)
+        return;
+    const cardPath = join(state.repoRoot, ".trunk-sync", "timeclock", `${sessionId}.json`);
+    let card;
+    try {
+        card = JSON.parse(readFileSync(cardPath, "utf-8"));
+    }
+    catch {
+        return; // no card — a session that never edited has no handover to keep alive
+    }
+    const age = Date.now() - new Date(card.lastActiveAt).getTime();
+    if (age < HEARTBEAT_STALE_MS)
+        return; // a recent tool-use sync already refreshed the heartbeat
+    card.lastActiveAt = new Date().toISOString();
+    try {
+        writeFileSync(cardPath, JSON.stringify(card, null, 2) + "\n");
+        execSync(`git -C "${state.repoRoot}" add -- "${cardPath}"`, { stdio: "ignore" });
+        execSync(`git -C "${state.repoRoot}" commit -m "auto: heartbeat ${sessionId.slice(0, 8)}"`, {
+            stdio: "ignore",
+        });
+    }
+    catch {
+        return; // nothing to commit or write failed — best-effort
+    }
+    if (state.hasRemote) {
+        executeSync({ targetBranch: state.targetBranch, currentBranch: state.currentBranch });
+    }
+}
+/** Reap the given (reapable) cards by removing their timecard files; returns removed paths. */
+export function reapCards(repoRoot, ids) {
     const removed = [];
-    for (const id of staleIds) {
+    for (const id of ids) {
         const filePath = join(repoRoot, ".trunk-sync", "timeclock", `${id}.json`);
         try {
             unlinkSync(filePath);
@@ -214,6 +238,8 @@ function tmpdir() {
     return process.env.TMPDIR || "/tmp";
 }
 const THROTTLE_MS = 5 * 60 * 1000; // 5 minutes
+/** How stale a heartbeat must be before the Stop hook refreshes and re-syncs it. */
+const HEARTBEAT_STALE_MS = 30 * 60 * 1000; // 30 minutes — half the active display window
 /**
  * Extract the agent's current task from the transcript (same logic as commit enrichment).
  * Returns null if transcript is unavailable or unparseable.
@@ -240,10 +266,10 @@ function executeClockIn(plan, input, state) {
         clockIn(state.repoRoot, plan, task);
         const allTimecards = readTimecards(state.repoRoot);
         const now = new Date();
-        const { clockedIn, clockedOut } = classifyTimecards(plan.timecard.sessionId, allTimecards, now, plan.timecard.hostname, isProcessAlive);
-        // Clock out stale agents
-        if (clockedOut.length > 0) {
-            clockOutStale(state.repoRoot, clockedOut);
+        const { active, reapable } = classifyTimecards(plan.timecard.sessionId, allTimecards, now);
+        // Reap abandoned cards (heartbeat past the TTL)
+        if (reapable.length > 0) {
+            reapCards(state.repoRoot, reapable.map((tc) => tc.sessionId));
         }
         // Stage timeclock directory (timecard + any removals)
         const timeclockDir = join(state.repoRoot, ".trunk-sync", "timeclock");
@@ -259,9 +285,9 @@ function executeClockIn(plan, input, state) {
         const nowMs = now.getTime();
         const isFirstClockIn = lastWarning === null;
         const throttleElapsed = isFirstClockIn || (nowMs - lastWarning) >= THROTTLE_MS;
-        if (isFirstClockIn || (clockedIn.length > 0 && throttleElapsed)) {
+        if (isFirstClockIn || (active.length > 0 && throttleElapsed)) {
             writeThrottleTimestamp(plan.timecard.sessionId, nowMs);
-            return formatClockInMessage(clockedIn, now, isFirstClockIn);
+            return formatClockInMessage(active, now, isFirstClockIn);
         }
         return null;
     }
