@@ -37,13 +37,17 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
 @test "setup configures mutation testing with layer-suffix exclusions" {
   run cat "$SKILL"
   assert_output --partial "mutation testing"
-  assert_output --partial "Domain"
-  assert_output --partial "Use-case"
+  assert_output --partial "explicitly excluding test files"
+  assert_output --partial "!src/**/*.domain.test.*"
+  assert_output --partial "!src/**/*.use-case.test.*"
+  assert_output --partial "!src/**/*.adapter.test.*"
 }
 
 @test "setup generates trees from existing code into TEST_TREES.md" {
   run cat "$SKILL"
-  [[ "$output" == *"TEST_TREES.md"* ]]
+  assert_output --partial "TEST_TREES.md"
+  assert_output --partial "source code"
+  assert_output --partial "behaviours the system implements today"
 }
 
 @test "setup updates CLAUDE.md to point at TEST_TREES.md when the pointer is missing" {
