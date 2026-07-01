@@ -35,70 +35,70 @@ run_hook_in() {
 
 @test "session start directs the agent to use existing mental-model concepts, vocabulary, and decisions" {
   run_hook_in "$BATS_TEST_TMPDIR"
-  [[ "$output" == *"concepts, vocabulary, and decisions"* ]]
-  [[ "$output" == *"inventing parallel"* ]]
+  assert_output --partial "concepts, vocabulary, and decisions"
+  assert_output --partial "inventing parallel"
 }
 
 @test "session start directs the agent to preserve invariants and surface conflict rather than route around" {
   run_hook_in "$BATS_TEST_TMPDIR"
-  [[ "$output" == *"invariants"* ]]
-  [[ "$output" == *"surface"* ]]
-  [[ "$output" == *"routing around"* ]]
+  assert_output --partial "invariants"
+  assert_output --partial "surface"
+  assert_output --partial "routing around"
 }
 
 @test "session start directs the agent to flag the mental model as wrong, incomplete, or misleading rather than silently reshaping it" {
   run_hook_in "$BATS_TEST_TMPDIR"
-  [[ "$output" == *"wrong, incomplete, or misleading"* ]]
-  [[ "$output" == *"silently reshaping"* ]]
+  assert_output --partial "wrong, incomplete, or misleading"
+  assert_output --partial "silently reshaping"
 }
 
 @test "session start directs the agent to treat test trees as the authoritative behaviour contract" {
   run_hook_in "$BATS_TEST_TMPDIR"
-  [[ "$output" == *"test trees"* ]]
-  [[ "$output" == *"authoritative"* ]]
-  [[ "$output" == *"behaviour contract"* ]]
+  assert_output --partial "test trees"
+  assert_output --partial "authoritative"
+  assert_output --partial "behaviour contract"
 }
 
 @test "session start directs the agent to describe each level's observable behaviour at its interface, not the implementation inside it" {
   run_hook_in "$BATS_TEST_TMPDIR"
-  [[ "$output" == *"Behaviour, not internals"* ]]
-  [[ "$output" == *"observable at the seam"* ]]
+  assert_output --partial "Behaviour, not internals"
+  assert_output --partial "observable at the seam"
 }
 
 @test "session start directs the agent that every layer owns complete coverage of its own behaviour" {
   run_hook_in "$BATS_TEST_TMPDIR"
-  [[ "$output" == *"Layer completeness"* ]]
-  [[ "$output" == *"every layer owns complete coverage of its own behaviour"* ]]
-  [[ "$output" == *"overlap across layers is intentional"* ]]
-  [[ "$output" == *"never excuses a missing lower-layer test"* ]]
+  assert_output --partial "Layer completeness"
+  assert_output --partial "every layer owns complete coverage of its own behaviour"
+  assert_output --partial "Overlap across layers is intentional"
+  assert_output --partial "never excuses a missing lower-layer test"
 }
 
 @test "session start directs the agent that journey and functional coverage is never coverage of the layers beneath" {
   run_hook_in "$BATS_TEST_TMPDIR"
-  [[ "$output" == *"ground layer"* ]]
-  [[ "$output" == *"Journey and functional coverage is never coverage of the layers beneath"* ]]
+  assert_output --partial "ground layer"
+  assert_output --partial "Journey and functional coverage is never coverage of the layers beneath"
 }
 
 @test "session start directs the agent to descend to the lowest level and fold back up" {
   run_hook_in "$BATS_TEST_TMPDIR"
-  [[ "$output" == *"Descend to the lowest level, then fold back up"* ]]
-  [[ "$output" == *"lowest layer the behaviour reaches"* ]]
-  [[ "$output" == *"never stop descending because"* ]]
-  [[ "$output" == *"fold back up"* ]]
+  assert_output --partial "Descend to the lowest level, then fold back up"
+  assert_output --partial "lowest layer the behaviour reaches"
+  assert_output --partial "never stop descending because"
+  assert_output --partial "fold back up"
 }
 
 @test "session start directs the agent to decide obvious questions itself rather than asking the user" {
   run_hook_in "$BATS_TEST_TMPDIR"
-  [[ "$output" == *"Decide, don't ask"* ]]
-  [[ "$output" == *"Run the ladder before asking"* ]]
-  [[ "$output" == *"only escalate"* ]]
+  assert_output --partial "Decide, don't ask"
+  assert_output --partial "Run the ladder before asking"
+  assert_output --partial "only escalate"
 }
 
 @test "session start directs the agent not to manufacture flags, applying the same ladder before surfacing anything" {
   run_hook_in "$BATS_TEST_TMPDIR"
-  [[ "$output" == *"Don't manufacture flags"* ]]
-  [[ "$output" == *"same ladder"* ]]
-  [[ "$output" == *"stay silent"* ]]
+  assert_output --partial "Don't manufacture flags"
+  assert_output --partial "same ladder"
+  assert_output --partial "stay silent"
 }
 
 # --- Skill directions ---
