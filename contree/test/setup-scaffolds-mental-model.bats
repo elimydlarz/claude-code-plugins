@@ -11,13 +11,13 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
 
 @test "setup names the seven mental-model sections" {
   run cat "$SKILL"
-  [[ "$output" == *"Core Domain Identity"* ]]
-  [[ "$output" == *"World-to-Code Mapping"* ]]
-  [[ "$output" == *"Ubiquitous Language"* ]]
-  [[ "$output" == *"Bounded Contexts"* ]]
-  [[ "$output" == *"Invariants"* ]]
-  [[ "$output" == *"Decision Rationale"* ]]
-  [[ "$output" == *"Temporal View"* ]]
+  assert_output --partial "Core Domain Identity"
+  assert_output --partial "World-to-Code Mapping"
+  assert_output --partial "Ubiquitous Language"
+  assert_output --partial "Bounded Contexts"
+  assert_output --partial "Invariants"
+  assert_output --partial "Decision Rationale"
+  assert_output --partial "Temporal View"
 }
 
 @test "setup puts a one-line placeholder under each mental-model section" {
