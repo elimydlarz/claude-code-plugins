@@ -515,18 +515,20 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
     when the git command is in the read-only allowlist
       then it is allowed through
   every session start
-    then the starting agent is handed its own session id and the command to clock in
-    when other sessions have disrupted cards
-      then that disrupted work is surfaced as the handover to resume
+    then the starting agent is handed its own session id and the command to record progress
+    when other sessions have stale cards
+      then that possibly-disrupted work is surfaced to verify against the tests and resume
     when other sessions have active cards
-      then that active work is surfaced to coordinate around — labelled certain for a local live PID, possibly-disrupted for a remote heartbeat
-    when only done cards remain
-      then nothing is surfaced beyond the agent's own clock-in instruction
+      then that recently-alive work is surfaced to coordinate around
+    when only reapable cards remain
+      then nothing is surfaced beyond the agent's own record-progress instruction
   every end of task
-    then the agent's timecard heartbeat is bumped, marking it live
-    and the agent is forced to record its progress, or clock out if the task is complete
-    when stop_hook_active is set
-      then the force is skipped to prevent loops
+    then the agent's timecard heartbeat is bumped and synced, marking it recently alive for remote readers
+    and the agent is never forced to act — the stop hook always exits 0
+  when an agent is disrupted mid-task and a new session starts
+    then the disrupted agent's stale card is surfaced as a handover, corroborated against the failing tests before resuming
+    when the resumer finishes and the original card ages past the reap ttl
+      then it is swept on the next agent's commit, its committed transcript remaining as the record
   when an agent records progress and the hook later fires
     then the progress-bearing timecard is committed and pushed, propagating the handover to other machines
   when a merge conflict arises during sync
