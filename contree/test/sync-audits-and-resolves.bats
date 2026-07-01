@@ -35,8 +35,8 @@ SKILL="$PROJECT_ROOT/skills/sync/SKILL.md"
 
 @test "sync discusses dead paths with the user" {
   run cat "$SKILL"
-  [[ "$output" == *"Dead paths"* ]]
-  [[ "$output" == *"Present to the user"* || "$output" == *"Ask"* ]]
+  assert_output --partial "Dead paths"
+  [[ "$output" == *"Present to the user"* || "$output" == *"Ask"* ]] || return 1
 }
 
 @test "sync suggests tdd to implement identified gaps" {
