@@ -1,6 +1,6 @@
 ## Core Domain Identity
 
-- trunk-sync keeps multiple agents in continuous integration on `origin/main` via a post-edit git hook, plus a CLI for install / seance / config.
+- trunk-sync keeps multiple agents in continuous integration on a shared branch via a post-edit git hook, plus a CLI for install / seance / config.
 - Two independent layers share one repo: a Claude Code hook (auto commit/pull/push) and a TypeScript CLI.
 - Conflicts are surfaced as hook feedback for the agent to resolve in file content; the hook completes the merge on the next fire — agents never run git themselves.
 - Every commit is provenance-stamped so any line can be traced back to the conversation that wrote it (seance).
