@@ -366,13 +366,13 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       then nothing is printed
 
   runStop
-    when the stop hook fires and stop_hook_active is set
-      then it exits 0 without forcing, preventing the force → record → stop loop
-    when the stop hook fires at the end of a task
-      then the session's timecard heartbeat (lastActiveAt) is bumped, marking the agent live
-      and the agent is prompted via exit 2 to record progress — `trunk-sync progress <id> --last … --next …` — or to clock out with `trunk-sync clockout <id>` if the task is complete
+    when the stop hook fires and the session has a timecard
+      then its heartbeat (lastActiveAt) is bumped and the update is synced, so remote readers see it fresh through a long no-edit turn
+      and it always exits 0 — progress is never forced, so there is no exit-2 nudge and no stop_hook_active loop to guard
+    when the heartbeat was already refreshed by a recent tool-use sync
+      then no commit is made — a fresh heartbeat is not duplicated
     if the session has no timecard yet
-      then one is created first (passive clock-in fallback), then its heartbeat is bumped
+      then it exits 0 without creating one — a session that never edited has no handover to keep alive
     if no session id is provided
       then it exits 0 without action
 
