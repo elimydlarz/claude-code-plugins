@@ -1076,7 +1076,7 @@ describe("runSessionStart", () => {
     const timeclockDir = join(dir, ".trunk-sync", "timeclock");
     mkdirSync(timeclockDir, { recursive: true });
     const full: Timecard = {
-      pid: 1, hostname: "remote-host", clockedInAt: new Date().toISOString(),
+      hostname: "remote-host", clockedInAt: new Date().toISOString(),
       lastActiveAt: new Date().toISOString(), branch: "main", task: null,
       lastStep: null, remainingSteps: null, ...card,
     };
