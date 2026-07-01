@@ -44,19 +44,16 @@ export function gatherRepoState(input: HookInput): RepoState | null {
   }
 
   let hasRemote = false;
-  let targetBranch = "";
   try {
-    const ref = execSync("git symbolic-ref --quiet refs/remotes/origin/HEAD", { encoding: "utf-8" }).trim();
+    execSync("git remote get-url origin", { stdio: "ignore" });
     hasRemote = true;
-    targetBranch = ref.replace("refs/remotes/origin/", "");
   } catch {
-    try {
-      execSync("git remote get-url origin", { stdio: "ignore" });
-      hasRemote = true;
-      targetBranch = "main";
-    } catch {
-      // no remote
-    }
+    // no remote
+  }
+
+  let targetBranch = "";
+  if (hasRemote) {
+    targetBranch = readConfig(repoRoot).get("target-branch") ?? DEFAULT_TARGET_BRANCH;
   }
 
   let currentBranch = "";
