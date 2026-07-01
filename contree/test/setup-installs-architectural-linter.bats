@@ -11,12 +11,12 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
 
 @test "setup configures the linter to enforce Domain has no I/O" {
   run cat "$SKILL"
-  [[ "$output" == *"Domain"* ]]
-  [[ "$output" == *"no I/O"* || "$output" == *"not reach adapters"* ]]
+  assert_output --partial "Domain"
+  assert_output --regexp 'no I/O|not reach adapters'
 }
 
 @test "setup configures the linter to enforce use-cases depend on ports, not concrete adapters" {
   run cat "$SKILL"
-  [[ "$output" == *"ports"* ]]
-  [[ "$output" == *"not concrete adapters"* || "$output" == *"interfaces"* ]]
+  assert_output --partial "ports"
+  assert_output --regexp 'not concrete adapters|interfaces'
 }
