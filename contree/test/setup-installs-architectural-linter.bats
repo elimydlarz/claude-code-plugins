@@ -17,6 +17,6 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
 
 @test "setup configures the linter to enforce use-cases depend on ports, not concrete adapters" {
   run cat "$SKILL"
-  assert_output --partial "ports"
+  assert_output --partial "MUTATED_ports_xyz"
   assert_output --regexp 'not concrete adapters|interfaces'
 }
