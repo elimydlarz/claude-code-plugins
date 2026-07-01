@@ -58,9 +58,9 @@ SKILL="$PROJECT_ROOT/skills/sync/SKILL.md"
 
 @test "sync parses the describe/it hierarchy in each test file and compares it to its tree" {
   run cat "$SKILL"
-  [[ "$output" == *"describe/it hierarchy"* ]]
-  [[ "$output" == *"parse"* || "$output" == *"Parse"* ]]
-  [[ "$output" == *"framework-agnostic"* ]]
+  assert_output --partial "describe/it hierarchy"
+  [[ "$output" == *"parse"* || "$output" == *"Parse"* ]] || return 1
+  assert_output --partial "framework-agnostic"
 }
 
 @test "sync flags describe/it drift and presents both sides without picking" {
