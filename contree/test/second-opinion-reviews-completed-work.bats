@@ -26,7 +26,7 @@ SKILL="$PROJECT_ROOT/skills/second-opinion/SKILL.md"
 
 @test "second-opinion skill reads the test trees as the contract the work must satisfy" {
   run cat "$SKILL"
-  assert_output --regexp 'Test TreesZZZ|TEST_TREESZZZ\.md'
+  assert_output --regexp 'Test Trees|TEST_TREES\.md'
   assert_output --partial "contract"
 }
 
