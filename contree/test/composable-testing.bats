@@ -36,6 +36,12 @@ CHANGE="$PROJECT_ROOT/skills/change/SKILL.md"
   assert_output --partial "*.journey.test.*"
 }
 
+@test "setup wires Journey tests with real adapters across the multi-capability arc at max realism" {
+  run cat "$SETUP"
+  assert_output --partial "multi-capability arc at max realism"
+  assert_output --partial "real everything"
+}
+
 @test "setup places Component tests under test/component/ (*.component.test.*)" {
   run cat "$SETUP"
   assert_output --partial "test/component/"
