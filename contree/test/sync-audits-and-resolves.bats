@@ -65,8 +65,8 @@ SKILL="$PROJECT_ROOT/skills/sync/SKILL.md"
 
 @test "sync flags describe/it drift and presents both sides without picking" {
   run cat "$SKILL"
-  [[ "$output" == *"Describe/it drift"* ]]
-  [[ "$output" == *"Do not pick"* ]]
+  assert_output --partial "Describe/it drift"
+  assert_output --partial "Do not pick"
 }
 
 @test "sync verifies each tree's labelled paths against the filesystem per category" {
