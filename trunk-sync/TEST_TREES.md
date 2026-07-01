@@ -134,22 +134,12 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
 
   classifyTimecards
     then the own session is excluded
-    when a card is local with a live PID
-      then it is live, with certainty — the process is running
-    when a card is local with a dead PID
-      then it is ended, with certainty — the process is gone
-    when a card is remote with a heartbeat within the staleness window
-      then it is live, presumed — a remote PID cannot be checked
-    when a card is remote with a heartbeat older than the staleness window
-      then it is ended, presumed
-    where a card is live and has unfinished remaining steps
-      then it is classified active
-    where a card is ended and has unfinished remaining steps
-      then it is classified disrupted
-    where a card is live and has no remaining steps
-      then it is classified done and kept — the agent may take another task
-    where a card is ended and has no remaining steps
-      then it is classified done and reapable
+    when a card's heartbeat is within the display window
+      then it is classified active — recently alive; coordinate, do not duplicate
+    when a card's heartbeat is older than the display window but within the reap ttl
+      then it is classified stale — possibly disrupted; surfaced for resume, not reaped
+    when a card's heartbeat is older than the reap ttl
+      then it is classified reapable — abandoned; the committed transcript remains the durable record
 
   formatClockInMessage
     when no other agent is active and this is not the first clock-in
