@@ -29,7 +29,7 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
 @test "change names the Component layer between System and Adapter" {
   run cat "$SKILL"
   assert_output --partial "Component"
-  assert_output --partial "*.component.test.*"
+  assert_output --partial "*.component.test.NOPE*"
   assert_output --partial "edge"
 }
 
