@@ -123,10 +123,10 @@ Under the hood: `git blame` → commit → session ID + agent → transcript rew
 
 By default, each auto-commit includes a snapshot of the session transcript, so seance can find it directly in the commit via `git diff-tree` regardless of which machine wrote the code — across machines, CI, and cleaned-up sessions. This is on by default because seance and cross-session handover are most useful when the record is always there.
 
-**Security note:** Transcripts contain your full conversation with Claude, committed to git in the clear. On repos where you don't want that visibility, opt out:
+**Security note:** Transcripts contain your full conversation with Claude, committed to git in the clear. On repos where you don't want that visibility, opt out — repo-wide, for every machine and agent working on it:
 
 ```bash
-trunk-sync config commit-transcripts false
+trunk-sync config commit-transcripts=false
 ```
 
 With the opt-out set, seance falls back to transcripts on the local filesystem — which works for code written on the same machine, but not for code from other machines, CI, or cleaned-up sessions.
