@@ -36,10 +36,10 @@ load test_helper
 
 @test "EARS rule is embedded in the change skill" {
   run cat "$PROJECT_ROOT/skills/change/SKILL.md"
-  [[ "$output" == *"EARS"* ]]
-  [[ "$output" == *"when"* ]]
-  [[ "$output" == *"while"* ]]
-  [[ "$output" == *"where"* ]]
+  assert_output --partial "EARS"
+  assert_output --partial "when"
+  assert_output --partial "while"
+  assert_output --partial "where"
 }
 
 @test "EARS rule is embedded in the tdd skill" {
