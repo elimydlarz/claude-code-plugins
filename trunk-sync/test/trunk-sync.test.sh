@@ -962,7 +962,8 @@ assert_equals "" "$SNAPSHOT_FILES" "snapshot with no transcript_path: no .transc
 
 # 30b. Opt-out: commit-transcripts=false → no snapshot
 setup_repos
-echo "commit-transcripts=false" > "$HOME/.trunk-sync"
+mkdir -p "$WT_A/.trunk-sync"
+echo "commit-transcripts=false" > "$WT_A/.trunk-sync/config"
 echo "opt out" > "$WT_A/seed.txt"
 TRANSCRIPT="$TMPDIR_BASE/transcript-optout.jsonl"
 create_transcript "$TRANSCRIPT" "Opt-out task"
