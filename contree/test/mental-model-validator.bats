@@ -141,6 +141,47 @@ EOF
 - placeholder
 EOF
   run env CLAUDE_PROJECT_DIR="$BATS_TEST_TMPDIR" bash "$VALIDATOR"
-  [[ "$output" == *"Invariants"* ]]
-  [[ "$output" == *"cap"* || "$output" == *"overflow"* || "$output" == *"exceed"* ]]
+  assert_output --partial "Invariants"
+  assert_output --regexp 'cap|overflow|exceed'
+}
+
+@test "validator flags the overflow and names the section when Core Domain Identity exceeds its cap of 5" {
+  cd "$BATS_TEST_TMPDIR"
+  cat > MENTAL_MODEL.md <<'EOF'
+## Core Domain Identity
+
+- one
+- two
+- three
+- four
+- five
+- six
+
+## World-to-Code Mapping
+
+- placeholder
+
+## Ubiquitous Language
+
+- placeholder
+
+## Bounded Contexts
+
+- placeholder
+
+## Invariants
+
+- placeholder
+
+## Decision Rationale
+
+- placeholder
+
+## Temporal View
+
+- placeholder
+EOF
+  run env CLAUDE_PROJECT_DIR="$BATS_TEST_TMPDIR" bash "$VALIDATOR"
+  assert_output --partial "Core Domain Identity"
+  assert_output --regexp 'cap|overflow|exceed'
 }
