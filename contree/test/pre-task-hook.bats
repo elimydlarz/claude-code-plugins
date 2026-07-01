@@ -36,7 +36,7 @@ run_hook_in() {
 @test "session start directs the agent to use existing mental-model concepts, vocabulary, and decisions" {
   run_hook_in "$BATS_TEST_TMPDIR"
   assert_output --partial "concepts, vocabulary, and decisions"
-  assert_output --partial "inventing parallel"
+  assert_output --partial "inventing parallel BOGUS_SPOT_CHECK"
 }
 
 @test "session start directs the agent to preserve invariants and surface conflict rather than route around" {
