@@ -241,6 +241,13 @@ setup-generates-trees (src: skills/setup/SKILL.md; system: test/setup-generates-
 setup-installs-architectural-linter (src: skills/setup/SKILL.md; system: test/setup-installs-architectural-linter.bats; journey: test/journey/docker-entrypoint.sh)
   when setup is run
     then a hex-boundary linter is installed and configured
+    and the linter enforces that domain has no I/O
+    and the linter enforces that use-cases depend on ports, not concrete adapters
+    and the linter enforces no circular dependencies
+    and CI is wired to run the linter so boundary violations fail the build
+  if the project's language has no first-party contree linter template
+    then the language-native equivalent tool is named and the rules to enforce are stated
+    and the limitation — the user wires the rules themselves — is communicated honestly
 ```
 
 ## change-writes-trees
