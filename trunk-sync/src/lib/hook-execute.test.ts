@@ -1325,9 +1325,7 @@ describe("executePlan with clock-in", () => {
     const timeclockDir = join(dir, ".trunk-sync", "timeclock");
     mkdirSync(timeclockDir, { recursive: true });
     writeFileSync(join(timeclockDir, "other-session.json"), JSON.stringify({
-      sessionId: "other-session",
-      pid: process.pid, // use own PID so it appears alive
-      hostname: "test-host",
+      sessionId: "other-session",      hostname: "test-host",
       clockedInAt: new Date().toISOString(),
       lastActiveAt: new Date().toISOString(),
       branch: "feature",
