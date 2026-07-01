@@ -7,6 +7,9 @@ import type { HookInput, RepoState, HookPlan, SyncPlan, ClockInPlan, Timecard, R
 import { HOOK_EXPLAINER } from "./hook-types.js";
 import { extractTaskFromTranscript, buildCommitPlanWithTask, classifyTimecards, formatClockInMessage, formatSessionStartSummary } from "./hook-plan.js";
 
+/** Absent a `target-branch` override in `.trunk-sync/config`, agents sync to a dedicated branch — not the repo's actual default branch — so auto-commits never land directly on it. */
+const DEFAULT_TARGET_BRANCH = "agents";
+
 /**
  * Gather the current git repo state needed for planning.
  * Runs git commands — this is the I/O boundary.
