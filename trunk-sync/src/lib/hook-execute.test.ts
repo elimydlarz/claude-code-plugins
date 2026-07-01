@@ -742,8 +742,7 @@ describe("executeSync", () => {
 describe("amendWithTranscriptSnapshot", () => {
   let dir: string;
   let origDir: string;
-  let origHome: string | undefined;
-  let tmpHome: string;
+  let scratch: string;
 
   beforeEach(() => {
     dir = realpathSync(mkdtempSync(join(tmpdir(), "snapshot-")));
@@ -753,26 +752,25 @@ describe("amendWithTranscriptSnapshot", () => {
     origDir = process.cwd();
     process.chdir(dir);
 
-    origHome = process.env.HOME;
-    tmpHome = realpathSync(mkdtempSync(join(tmpdir(), "home-")));
-    process.env.HOME = tmpHome;
+    scratch = realpathSync(mkdtempSync(join(tmpdir(), "scratch-")));
   });
 
   afterEach(() => {
     process.chdir(origDir);
-    if (origHome !== undefined) {
-      process.env.HOME = origHome;
-    }
     rmSync(dir, { recursive: true, force: true });
-    rmSync(tmpHome, { recursive: true, force: true });
+    rmSync(scratch, { recursive: true, force: true });
   });
 
+  function writeRepoConfig(content: string): void {
+    mkdirSync(join(dir, ".trunk-sync"), { recursive: true });
+    writeFileSync(join(dir, ".trunk-sync", "config"), content);
+  }
+
   it("snapshots transcript when commit-transcripts=true", () => {
-    // Write config
-    writeFileSync(join(tmpHome, ".trunk-sync"), "commit-transcripts=true\n");
+    writeRepoConfig("commit-transcripts=true\n");
 
     // Create transcript file
-    const transcriptPath = join(tmpHome, "session.jsonl");
+    const transcriptPath = join(scratch, "session.jsonl");
     writeFileSync(transcriptPath, jsonl({ type: "user", message: { role: "user", content: "task" } }));
 
     const filePath = join(dir, "snap.txt");
