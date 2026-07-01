@@ -218,11 +218,11 @@ export function summarizeDeletions(files: string[]): string {
   return `${first} (+${files.length - 1} more)`;
 }
 
-// --- Clocking in: agents clock in/out and see who else is working ---
+// --- Presence: agents register a heartbeated timecard and see who else is active ---
 
 /**
  * Build a clock-in plan for this agent's timecard.
- * Pure: needs runtime context (pid, hostname) passed in.
+ * Pure: needs runtime context (hostname) passed in.
  * Task is populated later in the execute layer (requires transcript I/O).
  */
 export function buildClockInPlan(
