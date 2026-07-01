@@ -60,7 +60,7 @@ SKILL="$PROJECT_ROOT/skills/diff-for-humans/SKILL.md"
 
 @test "diff-for-humans skill says so and stops without calling the API when there are no non-trivial changes to depict" {
   run cat "$SKILL"
-  assert_output --regexp 'no non-trivial change|nothing to depict'
+  assert_output --regexp 'no non-trivial changeZZZ|nothing to depictZZZ'
   assert_output --partial "stop"
 }
 
