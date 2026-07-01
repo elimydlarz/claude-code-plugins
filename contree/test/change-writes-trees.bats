@@ -137,3 +137,16 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   assert_output --regexp "single concept|shared concept|same concept"
   assert_output --partial "generic"
 }
+
+@test "change names every tree's first line <Layer>: <Subject> so the layer prefix lets readers and sync detect duplication across layers" {
+  run cat "$SKILL"
+  assert_output --partial "<Layer>: <Subject>"
+  assert_output --partial "Without the layer prefix"
+  assert_output --partial "detect duplication across layers"
+}
+
+@test "change nests a when-trigger that can only occur as a consequence of a prior then-outcome as a child, not a sibling" {
+  run cat "$SKILL"
+  assert_output --partial "Causal nesting"
+  assert_output --partial "not a sibling — it is a child"
+}
