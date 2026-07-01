@@ -33,3 +33,15 @@ SKILL="$PROJECT_ROOT/skills/workflow/SKILL.md"
   assert_output --partial "SECOND OPINION"
   assert_output --partial "second-opinion"
 }
+
+@test "workflow skill runs mutation testing at the end of the tdd phase" {
+  run cat "$SKILL"
+  assert_output --partial "### 3. TDD"
+  assert_output --partial "Run mutation testing at the end"
+}
+
+@test "workflow skill routes second-opinion findings back through change, sync, or tdd" {
+  run cat "$SKILL"
+  assert_output --partial "### 4. SECOND OPINION"
+  assert_output --partial "route them back through"
+}
