@@ -266,8 +266,8 @@ function extractTask(input: HookInput): string | null {
 }
 
 /**
- * Clock in, clock out stale agents, check who else is working.
- * Returns a message if other agents are clocked in and throttle allows.
+ * Clock in, reap abandoned cards (heartbeat past the TTL), and check who else is active.
+ * Returns a message if other agents are active and throttle allows.
  */
 function executeClockIn(
   plan: ClockInPlan,
