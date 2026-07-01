@@ -138,26 +138,26 @@ run_hook_with_last_text() {
 
 @test "readme nudge prompts detection of readme staleness" {
   run_hook '{}'
-  [[ "$output" == *"readme"* || "$output" == *"README"* ]]
-  [[ "$output" == *"out of date"* || "$output" == *"stale"* ]]
+  assert_output --regexp 'readme|README'
+  assert_output --regexp 'out of date|stale'
 }
 
 @test "readme nudge anchors staleness against what the project is, install, configure, and use" {
   run_hook '{}'
-  [[ "$output" == *"what the project is"* ]]
-  [[ "$output" == *"install"* ]]
-  [[ "$output" == *"configure"* ]]
-  [[ "$output" == *"use"* ]]
+  assert_output --partial "what the project is"
+  assert_output --partial "install"
+  assert_output --partial "configure"
+  assert_output --partial "use"
 }
 
 @test "readme nudge directs creation of README.md describing what the project is, install, configure, and use when the file is missing" {
   rm -f "$BATS_TEST_TMPDIR/README.md"
   run_hook '{}'
-  [[ "$output" == *"README.md is missing"* ]]
-  [[ "$output" == *"what the project is"* ]]
-  [[ "$output" == *"install"* ]]
-  [[ "$output" == *"configure"* ]]
-  [[ "$output" == *"use"* ]]
+  assert_output --partial "README.md is missing"
+  assert_output --partial "what the project is"
+  assert_output --partial "install"
+  assert_output --partial "configure"
+  assert_output --partial "use"
 }
 
 # --- Question stop ---
