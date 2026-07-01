@@ -12,18 +12,20 @@ The mental model lives in [MENTAL_MODEL.md](./MENTAL_MODEL.md) — Core Domain I
 .claude-plugin/plugin.json    — plugin manifest (name, version)
 .claude-plugin/marketplace.json — marketplace definition (name: elimydlarz, lists plugins)
 dist/                         — compiled JS (tracked in git — marketplace installs from repo)
-hooks/hooks.json              — hook registration (PostToolUse Edit|Write|Bash → trunk-sync.sh; SessionStart → trunk-sync-session-start.sh)
+hooks/hooks.json              — hook registration (PostToolUse Edit|Write|Bash → trunk-sync.sh; SessionStart → trunk-sync-session-start.sh; Stop → trunk-sync-stop.sh)
 scripts/trunk-sync.sh         — 4-line bash wrapper: exec node dist/lib/hook-entry.js
 scripts/trunk-sync-session-start.sh — SessionStart wrapper: exec node dist/lib/session-start-entry.js
+scripts/trunk-sync-stop.sh    — Stop wrapper: exec node dist/lib/stop-entry.js
 scripts/sync-plugin-version.js — npm version hook: syncs plugin.json version from package.json
 
-src/lib/hook-types.ts         — types (HookInput, RepoState, HookPlan, Timecard incl. lastStep/remainingSteps)
-src/lib/hook-plan.ts          — pure decision logic (no I/O, no git); incl. formatSessionStartSummary
+src/lib/hook-types.ts         — types (HookInput, RepoState, HookPlan, Timecard: heartbeat lastActiveAt + lastStep/remainingSteps, no pid)
+src/lib/hook-plan.ts          — pure decision logic (no I/O, no git); incl. classifyTimecards (heartbeat-age), formatSessionStartSummary
 src/lib/hook-plan.test.ts     — unit tests for pure logic (fast, no repos)
-src/lib/hook-execute.ts       — gathers git state, executes the plan; incl. runSessionStart
+src/lib/hook-execute.ts       — gathers git state, executes the plan; incl. runSessionStart, runStop (heartbeat), reapCards
 src/lib/hook-execute.test.ts  — integration tests (temp repos)
 src/lib/hook-entry.ts         — PostToolUse entry point: reads stdin, wires layers, exits
 src/lib/session-start-entry.ts — SessionStart entry point: prints own-id + handover roster to stdout
+src/lib/stop-entry.ts         — Stop entry point: heartbeat-only (bumps lastActiveAt + syncs; never forces)
 
 src/cli.ts                    — CLI entry point, argv dispatch
 src/commands/install.ts       — trunk-sync install
