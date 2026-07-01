@@ -11,7 +11,7 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
 
 @test "change scopes consumer vocabulary to Journey, System, and Adapter layers" {
   run cat "$SKILL"
-  assert_output --partial "consumer"
+  assert_output --partial "consumerXYZ123"
   assert_output --partial "vocabulary"
   assert_output --partial "Journey, System, and Adapter"
 }
