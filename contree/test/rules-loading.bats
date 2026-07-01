@@ -7,8 +7,8 @@ SCRIPT="$PROJECT_ROOT/hooks/session-start.sh"
 
 @test "session-start.sh emits a Rules section with the coding rules" {
   run cat "$SCRIPT"
-  [[ "$output" == *"# Rules"* ]]
-  [[ "$output" == *"KISS"* ]]
+  assert_output --partial "# Rules"
+  assert_output --partial "KISS"
 }
 
 @test "session-start.sh is wired to the SessionStart hook event" {
