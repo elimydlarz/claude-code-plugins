@@ -24,7 +24,7 @@ CHANGE="$PROJECT_ROOT/skills/change/SKILL.md"
 @test "setup places System tests under test/system/ (*.system.test.*)" {
   run cat "$SETUP"
   assert_output --partial "test/system/"
-  assert_output --partial "*.system.test.THIS-WONT-MATCH*"
+  assert_output --partial "*.system.test.*"
 }
 
 @test "setup places Journey tests under test/journey/ (*.journey.test.*)" {
