@@ -62,7 +62,7 @@
 
 ## Temporal View
 
-- Per edit: stage → commit (provenance + timecard) → pull `origin/main` → push; on conflict, exit 2 → agent edits → next fire completes the merge.
+- Per edit: stage → commit (provenance + timecard) → pull the target branch (`origin/agents` by default) → push; on conflict, exit 2 → agent edits → next fire completes the merge.
 - First edit of a session: nudge the agent to run the tests — failing tests are the authoritative signal of unfinished WIP, resumable when not owned by an active agent; the cards are advisory context.
 - Throttled (≤ once / 5 min): surface other active agents so the agent can reason about shared resources.
 - At session start: the SessionStart hook hands the agent its session id and surfaces other sessions' handovers — active to coordinate around, stale (possibly disrupted) to verify-and-resume — so work continues across sessions.
