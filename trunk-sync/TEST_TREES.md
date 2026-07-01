@@ -156,7 +156,7 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       then the formatting matches the elapsed wall time
     when this is the first clock-in
       then the message tells the agent to run the test suite before starting
-      and it explains failing tests are checkpoints of unfinished WIP to resume
+      and it explains failing tests are the authoritative signal of unfinished WIP to resume, with active cards as advisory context for who already holds work
       and it scopes resumable WIP to work not held by an active agent
     when this is the first clock-in and other agents are active
       then both the active roster and the run-tests nudge are included
