@@ -139,7 +139,7 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
     when a card's heartbeat is older than the display window but within the reap ttl
       then it is classified stale — possibly disrupted; surfaced for resume, not reaped
     when a card's heartbeat is older than the reap ttl
-      then it is classified reapable — abandoned; the committed transcript remains the durable record
+      then it is classified reapable even with unfinished remaining steps — abandoned; the committed transcript remains the durable record
 
   formatClockInMessage
     when no other agent is active and this is not the first clock-in
