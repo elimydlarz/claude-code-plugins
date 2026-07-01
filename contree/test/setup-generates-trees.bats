@@ -59,11 +59,7 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
 
 @test "setup for a new project generates trees from user-described plans without implementing tests" {
   run cat "$SKILL"
-  # plans-based generation half: setup's own wording only reaches "new project"
-  # as a trigger condition — it does not itself describe a plans-gathering
-  # mechanism (that lives in the change skill it hands off to).
   assert_output --partial "new project"
-  # not-implementing-tests half: strongly and explicitly stated.
   assert_output --partial "No test files"
   assert_output --partial "Do NOT create any test files"
 }
