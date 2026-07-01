@@ -108,14 +108,14 @@ run_hook_with_last_text() {
 @test "mental-model nudge directs creation of MENTAL_MODEL.md with the seven sections in order when the file is missing" {
   rm -f "$BATS_TEST_TMPDIR/MENTAL_MODEL.md"
   run_hook '{}'
-  [[ "$output" == *"MENTAL_MODEL.md is missing"* ]]
-  [[ "$output" == *"Core Domain Identity"* ]]
-  [[ "$output" == *"World-to-Code Mapping"* ]]
-  [[ "$output" == *"Ubiquitous Language"* ]]
-  [[ "$output" == *"Bounded Contexts"* ]]
-  [[ "$output" == *"Invariants"* ]]
-  [[ "$output" == *"Decision Rationale"* ]]
-  [[ "$output" == *"Temporal View"* ]]
+  assert_output --partial "MENTAL_MODEL.md is missing"
+  assert_output --partial "Core Domain Identity"
+  assert_output --partial "World-to-Code Mapping"
+  assert_output --partial "Ubiquitous Language"
+  assert_output --partial "Bounded Contexts"
+  assert_output --partial "Invariants"
+  assert_output --partial "Decision Rationale"
+  assert_output --partial "Temporal View"
 }
 
 # --- Test-trees nudge ---
