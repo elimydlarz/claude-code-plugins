@@ -926,7 +926,8 @@ assert_contains "$SNAPSHOT_FILES" ".transcripts" "default: .transcripts/ created
 
 # 29. Enabled: snapshot in same commit as code change
 setup_repos
-echo "commit-transcripts=true" > "$HOME/.trunk-sync"
+mkdir -p "$WT_A/.trunk-sync"
+echo "commit-transcripts=true" > "$WT_A/.trunk-sync/config"
 TRANSCRIPT="$TMPDIR_BASE/transcript-snap.jsonl"
 create_transcript "$TRANSCRIPT" "Snapshot task"
 echo "with snapshot" > "$WT_A/seed.txt"
