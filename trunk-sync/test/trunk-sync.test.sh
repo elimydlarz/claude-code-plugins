@@ -974,6 +974,10 @@ run_session_start() { # cwd session_id
   printf '{"session_id":"%s","cwd":"%s","hook_event_name":"SessionStart","transcript_path":""}' "$2" "$1" \
     | node "$DIST_DIR/lib/session-start-entry.js"
 }
+run_stop() { # cwd session_id
+  ( cd "$1" && printf '{"session_id":"%s","hook_event_name":"Stop","stop_hook_active":false,"transcript_path":""}' "$2" \
+    | node "$DIST_DIR/lib/stop-entry.js" )
+}
 
 # 31. Agent A clocks in (hook), then records progress via the real CLI.
 setup_repos
