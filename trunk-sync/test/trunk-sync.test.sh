@@ -973,7 +973,6 @@ assert_exit 0 "opt-out: commit succeeds"
 LAST_SHA=$(git -C "$WT_A" rev-parse HEAD)
 SNAPSHOT_FILES=$(git -C "$WT_A" diff-tree --no-commit-id --name-only -r "$LAST_SHA" -- .transcripts/)
 assert_equals "" "$SNAPSHOT_FILES" "opt-out: no .transcripts/ created when commit-transcripts=false"
-rm -f "$HOME/.trunk-sync"
 
 # ── Handover: agent-authored progress in timecards ───────────────────────────
 
