@@ -89,8 +89,8 @@ SKILL="$PROJECT_ROOT/skills/sync/SKILL.md"
 
 @test "sync flags coverage-by-proxy when a unit is reachable only through higher-layer tests with no native tree" {
   run cat "$SKILL"
-  [[ "$output" == *"Coverage-by-proxy"* ]]
-  [[ "$output" == *"reachable only through higher-layer"* ]]
+  assert_output --partial "Coverage-by-proxy"
+  assert_output --partial "reachable only through higher-layer"
 }
 
 @test "sync proposes a native-layer tree plus its own failing tests to resolve coverage-by-proxy, never removal of the higher-layer test" {
