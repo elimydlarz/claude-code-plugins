@@ -37,13 +37,14 @@ SKILL="$PROJECT_ROOT/skills/diff-for-humans/SKILL.md"
   assert_output --partial "audience"
 }
 
-@test "diff-for-humans skill foregrounds the technical substance of the change — contracts, databases, behaviour, test trees" {
+@test "diff-for-humans skill foregrounds the technical substance of the change — contracts, databases, behaviour, test trees — as concrete technical elements rather than only an abstract metaphor" {
   run cat "$SKILL"
   assert_output --partial "technical"
   assert_output --partial "contract"
   assert_output --partial "database"
   assert_output --partial "behaviour"
   assert_output --partial "test tree"
+  assert_output --partial "abstract metaphor"
 }
 
 @test "diff-for-humans skill saves the returned image as a .png file" {
