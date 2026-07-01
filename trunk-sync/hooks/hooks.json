@@ -42,6 +42,17 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/trunk-sync-stop.sh",
+            "statusMessage": "Recording trunk-sync heartbeat"
+          }
+        ]
+      }
     ]
   }
 }
