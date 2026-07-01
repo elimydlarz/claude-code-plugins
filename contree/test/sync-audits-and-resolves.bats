@@ -6,8 +6,8 @@ SKILL="$PROJECT_ROOT/skills/sync/SKILL.md"
 
 @test "sync checks every when/then path for implementation and tests" {
   run cat "$SKILL"
-  [[ "$output" == *"every"* ]]
-  [[ "$output" == *"when/then"* ]]
+  assert_output --partial "every"
+  assert_output --partial "when/then"
 }
 
 @test "sync identifies drift between trees and implementation" {
