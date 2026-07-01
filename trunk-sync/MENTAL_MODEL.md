@@ -4,7 +4,7 @@
 - Two independent layers share one repo: a Claude Code hook (auto commit/pull/push) and a TypeScript CLI.
 - Conflicts are surfaced as hook feedback for the agent to resolve in file content; the hook completes the merge on the next fire — agents never run git themselves.
 - Every commit is provenance-stamped so any line can be traced back to the conversation that wrote it (seance).
-- Agents clock in/out via committed timecards and record handover progress (last step + remaining steps) in them, giving cross-machine visibility of who is working on what and where they left off.
+- Agents register presence via committed, heartbeat-timestamped timecards and record handover progress (last step + remaining steps) in them, giving cross-machine visibility of who is working on what and where they left off.
 
 ## World-to-Code Mapping
 
