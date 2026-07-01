@@ -187,6 +187,6 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
 
 @test "tdd folds back up once the lowest-layer test passes" {
   run cat "$SKILL"
-  assert_output --regexp "fold-back-up-XYZ|FOLD-BACK-UP-XYZ"
+  assert_output --regexp "fold back up|FOLD BACK UP"
   assert_output --regexp "a layer beneath it lacks coverage|a layer beneath is missing coverage"
 }
