@@ -8,7 +8,7 @@ load test_helper
 
 @test "CLAUDE.md identifies TEST_TREES.md as the definition of functional and cross-functional requirements" {
   run cat "$PROJECT_ROOT/CLAUDE.md"
-  assert_output --partial "TEST_TREES_CORRUPTED_MUTATION.md"
+  assert_output --partial "TEST_TREES.md"
   assert_output --partial "functional and cross-functional requirements"
 }
 
