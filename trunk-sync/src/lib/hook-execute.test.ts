@@ -174,7 +174,7 @@ describe("gatherRepoState", () => {
     assert.equal(state.hasRemote, false);
   });
 
-  it("detects remote and reads targetBranch from origin/HEAD", () => {
+  it("defaults targetBranch to agents when no override is configured", () => {
     const { clone } = setupRepoWithRemote("gather-remote");
     const origDir = process.cwd();
     process.chdir(clone);
@@ -182,7 +182,20 @@ describe("gatherRepoState", () => {
     process.chdir(origDir);
     assert.ok(state);
     assert.equal(state.hasRemote, true);
-    assert.equal(state.targetBranch, "main");
+    assert.equal(state.targetBranch, "agents");
+    rmSync(clone, { recursive: true, force: true });
+  });
+
+  it("reads targetBranch from .trunk-sync/config when target-branch is set", () => {
+    const { clone } = setupRepoWithRemote("gather-remote-override");
+    mkdirSync(join(clone, ".trunk-sync"), { recursive: true });
+    writeFileSync(join(clone, ".trunk-sync", "config"), "target-branch=develop\n");
+    const origDir = process.cwd();
+    process.chdir(clone);
+    const state = gatherRepoState(makeInput());
+    process.chdir(origDir);
+    assert.ok(state);
+    assert.equal(state.targetBranch, "develop");
     rmSync(clone, { recursive: true, force: true });
   });
 
