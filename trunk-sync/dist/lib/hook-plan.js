@@ -200,10 +200,10 @@ export function summarizeDeletions(files) {
         return first;
     return `${first} (+${files.length - 1} more)`;
 }
-// --- Clocking in: agents clock in/out and see who else is working ---
+// --- Presence: agents register a heartbeated timecard and see who else is active ---
 /**
  * Build a clock-in plan for this agent's timecard.
- * Pure: needs runtime context (pid, hostname) passed in.
+ * Pure: needs runtime context (hostname) passed in.
  * Task is populated later in the execute layer (requires transcript I/O).
  */
 export function buildClockInPlan(input, state, runtime) {
@@ -225,7 +225,7 @@ export function buildClockInPlan(input, state, runtime) {
     };
 }
 /** Recent heartbeat ⇒ the agent is active (coordinate, don't duplicate). */
-export const DISPLAY_WINDOW_MS = 60 * 60 * 1000; // 60 minutes
+export const ACTIVE_WINDOW_MS = 60 * 60 * 1000; // 60 minutes
 /** Heartbeat older than this ⇒ the card is abandoned and swept (the transcript is the record). */
 export const REAP_TTL_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
 /**
@@ -244,7 +244,7 @@ export function classifyTimecards(ownSessionId, timecards, now) {
         if (tc.sessionId === ownSessionId)
             continue;
         const age = now.getTime() - new Date(tc.lastActiveAt).getTime();
-        if (age <= DISPLAY_WINDOW_MS)
+        if (age <= ACTIVE_WINDOW_MS)
             active.push(tc);
         else if (age <= REAP_TTL_MS)
             stale.push(tc);
