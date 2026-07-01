@@ -1019,6 +1019,9 @@ run_stop "$WT_A" "agentaaa" >/dev/null 2>&1 || true
 assert_contains "$(git -C "$WT_A" log -1 --format=%s)" "heartbeat" "stop: stale heartbeat is committed"
 [[ "$(jq -r '.lastActiveAt' "$CARD")" != "$STALE_TS" ]] && HB_BUMPED=yes || HB_BUMPED=no
 assert_equals "yes" "$HB_BUMPED" "stop: stale heartbeat value is refreshed"
+REMOTE_HB=$(git -C "$REMOTE" show "main:.trunk-sync/timeclock/agentaaa.json" 2>/dev/null | jq -r '.lastActiveAt' 2>/dev/null || echo "")
+[[ -n "$REMOTE_HB" && "$REMOTE_HB" != "$STALE_TS" ]] && HB_PUSHED=yes || HB_PUSHED=no
+assert_equals "yes" "$HB_PUSHED" "stop: the refreshed heartbeat is synced to the remote"
 COUNT_AFTER_BUMP=$(git -C "$WT_A" rev-list --count HEAD)
 run_stop "$WT_A" "agentaaa" >/dev/null 2>&1 || true
 assert_equals "$COUNT_AFTER_BUMP" "$(git -C "$WT_A" rev-list --count HEAD)" "stop: a fresh heartbeat makes no commit"
