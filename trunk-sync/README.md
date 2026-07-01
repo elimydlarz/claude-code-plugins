@@ -68,15 +68,16 @@ trunk-sync progress <session-id> --last "implemented the parser" --next "wire th
 That last step and remaining steps are written into the agent's timecard and committed/pushed like any other. When the next session starts — yours after a fresh start, or another agent's, on any machine — its SessionStart surfaces the handover:
 
 ```
-TRUNK-SYNC HANDOVER: 1 other session has work in progress:
-- 43605dd6 on dev-macbook (branch: main, 2m ago)
+TRUNK-SYNC HANDOVER: 1 other session has work in progress. Failing tests on the trunk are the
+authoritative signal of what is unfinished; the cards below are advisory context.
+- 43605dd6 on dev-macbook (branch: main, 3h ago) — stale, possibly disrupted: verify against the test suite before resuming — it may already be done
     task: Add agent-authored progress to trunk-sync
     last: implemented the parser
     next: wire the CLI and write tests
-Resume any unfinished WIP above; if another agent is still actively working it, coordinate rather than duplicate.
+Each session's full record is in its committed transcript (.transcripts/); resume it with seance.
 ```
 
-So you can stop a session that's low on context and pick the work up in a fresh one without re-explaining where you were. The handover lives in the timecard and is surfaced to the next session that starts; it is cleaned up by the normal timeclock as ended sessions are reaped, so it's best suited to switching soon rather than resuming days later.
+So you can stop a session that's low on context — or one that crashes mid-task — and pick the work up in a fresh one without re-explaining where you were. Because liveness is a heartbeat rather than a live process, a disrupted session's work is surfaced as a resumable handover instead of being lost; abandoned cards are reaped only after 14 days, and the committed transcript remains the durable record regardless.
 
 ## Seance — summon the author of any line of code
 
