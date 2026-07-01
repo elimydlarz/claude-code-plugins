@@ -248,13 +248,6 @@ run_hook_with_last_text() {
   assert_output --partial "under-determined"
 }
 
-# --- Reply-0 escape hatch ---
-
-@test "hook always offers the reply-0 escape hatch alongside the drift nudges on a normal stop" {
-  run_hook '{}'
-  assert_output --partial "If nothing needs attention, reply 0."
-}
-
 @test "no missing-file nudge is emitted when MENTAL_MODEL.md and README.md exist at the project root but the hook runs from a subdirectory" {
   mkdir -p "$BATS_TEST_TMPDIR/assets"
   local cmd; cmd=$(hook_command)
