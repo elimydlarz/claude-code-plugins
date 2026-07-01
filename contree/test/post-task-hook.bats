@@ -64,14 +64,14 @@ run_hook_with_last_text() {
 
 @test "mental-model nudge asks whether the task revealed knowledge not already in documentation, tests, and code" {
   run_hook '{}'
-  [[ "$output" == *"knowledge"* ]]
-  [[ "$output" == *"documentation, tests, and code"* ]]
+  assert_output --partial "knowledge"
+  assert_output --partial "documentation, tests, and code"
 }
 
 @test "mental-model nudge defaults to no change" {
   run_hook '{}'
-  [[ "$output" == *"Default"* ]]
-  [[ "$output" == *"no change"* ]]
+  assert_output --partial "Default"
+  assert_output --partial "no change"
 }
 
 # --- Mental-model nudge: when a change is warranted ---
