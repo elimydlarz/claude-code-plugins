@@ -7,7 +7,7 @@ SCRIPT="$PROJECT_ROOT/hooks/session-start.sh"
 
 @test "session-start.sh emits a Rules section with the coding rules" {
   run cat "$SCRIPT"
-  assert_output --partial "# MUTATED_Rules"
+  assert_output --partial "# Rules"
   assert_output --partial "KISS"
 }
 
