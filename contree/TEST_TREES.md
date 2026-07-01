@@ -506,6 +506,42 @@ second-opinion-reviews-completed-work (src: skills/second-opinion/SKILL.md; syst
     then the failure is surfaced as an error and no review is fabricated
 ```
 
+## validate-skill-frontmatter
+
+```
+validate-skill-frontmatter (src: scripts/validate-skill-frontmatter.sh; system: test/validate-skill-frontmatter.bats)
+  when every skills/*/SKILL.md has non-empty frontmatter name and description
+    then the validator exits 0
+  when the skills directory has no SKILL.md files
+    then the validator exits 0
+  if a SKILL.md's frontmatter name is missing
+    then the validator exits non-zero and names the offending file
+  if a SKILL.md's frontmatter description is empty
+    then the validator exits non-zero and names the offending file
+  if a SKILL.md has no frontmatter at all
+    then the validator exits non-zero
+  if a SKILL.md's frontmatter has no closing marker
+    then the validator exits non-zero
+  if the skills directory does not exist
+    then the validator exits non-zero
+  if no argument is given
+    then the validator exits non-zero
+```
+
+## website-explains-contree
+
+```
+website-explains-contree (src: website/index.html; system: test/website-explains-contree.bats)
+  when a visitor loads the contree website
+    then the page bridges from test-first practice to test trees as living requirements
+    and the page explains the layered testing architecture from Journey down to Domain
+    and the page walks the skill workflow — setup, change, sync, tdd, second-opinion
+    and the page explains the Claude Code hook mechanics — the stdout, stderr-exit-2, and additionalContext injection channels, and the Stop-hook control flow
+    and the page requires no build step
+```
+
+Note: `.github/workflows/pages.yml`, the deploy mechanism that publishes this page, lives outside `contree/` as monorepo-level shared infrastructure (one workflow staging every plugin's `website/` into its own subdirectory) and is documented in the repo-root `CLAUDE.md` rather than tree'd here — contree's own trees and tests are scoped to files under `contree/`, matching every other tree's `$PROJECT_ROOT`-relative paths.
+
 ## Cross-Functional Requirements
 
 - Supported languages: JS/TS (Node, Bun, React, React Native), Elixir (Phoenix, Jido), Go. Setup refuses other languages and names the supported set.
