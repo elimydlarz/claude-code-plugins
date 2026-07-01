@@ -23,8 +23,8 @@ SKILL="$PROJECT_ROOT/skills/sync/SKILL.md"
 
 @test "sync flags tree-without-implementation as a gap to implement" {
   run cat "$SKILL"
-  [[ "$output" == *"Implementation missing for a tree path"* || "$output" == *"tree exists, no code"* ]]
-  [[ "$output" == *"gap"* ]]
+  [[ "$output" == *"Implementation missing for a tree path"* || "$output" == *"tree exists, no code"* ]] || return 1
+  assert_output --partial "gap"
 }
 
 @test "sync discusses stale trees with the user before removal" {
