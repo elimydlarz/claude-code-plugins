@@ -328,19 +328,11 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
     if a timecard file is malformed
       then it is skipped without aborting
 
-  isProcessAlive
-    when called with the current process pid
-      then true is returned
-    when called with a non-existent pid
-      then false is returned
-
-  clockOutStale
-    when a card is classified done and reapable
-      then it is removed and its path returned
-    when a card has unfinished remaining steps
-      then it is never removed — a handover (active or disrupted) is preserved for resumption
-    when a card is classified done and kept
-      then it is left in place — the agent is still live and may take another task
+  reapAgedCards
+    when a card's heartbeat is older than the reap ttl
+      then it is removed and its path returned, regardless of remaining steps — the committed transcript is the durable record
+    when a card's heartbeat is within the reap ttl
+      then it is kept in place, whether active or stale — an advisory handover survives for resumption
     when a timecard file is already gone
       then it is handled gracefully
 
