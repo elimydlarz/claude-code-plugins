@@ -33,6 +33,29 @@ claude -w    # each invocation gets its own worktree
 
 If two agents edit the same file, trunk-sync surfaces the conflict as feedback. The agent resolves it by editing the file — then the hook completes the merge and pushes. No human intervention.
 
+By default, agents sync to a dedicated `agents` branch, not directly to your repo's actual default branch — see [Configuration](#configuration).
+
+## Configuration
+
+Config lives at `.trunk-sync/config` in the repo — committed and synced like timecards and transcripts, so every machine and agent working on the repo sees the same settings. It's not a personal dotfile: set a key once and it applies everywhere the repo is worked on.
+
+```bash
+trunk-sync config                        # show all config
+trunk-sync config <key>                  # get a value
+trunk-sync config <key>=<value>          # set a value
+trunk-sync config --unset <key>          # remove a key
+```
+
+Setting or unsetting a key commits the change immediately, and pushes it (best-effort) if a remote is configured — this is a manual command, not something that rides along with the next edit. Run outside a git repo, it runs `git init` first, so there's always a repo to store config in.
+
+### Keys
+
+- **`target-branch`** (default `agents`) — the branch trunk-sync syncs to. Agents commit and push here by default instead of your repo's actual default branch, so every edit's auto-commit doesn't land directly on `main` (or whatever it's called) — merging agent work in stays a deliberate step. Point it anywhere:
+  ```bash
+  trunk-sync config target-branch=main     # sync directly to main instead
+  ```
+- **`commit-transcripts`** (default `true`) — snapshot the session transcript into every commit. See [Transcript commits](#transcript-commits) below.
+
 ## Clocking In — agents that know about each other
 
 Agents are automatically aware of each other. On every commit, the hook writes a timecard recording the agent's branch and current task (extracted from the conversation). Timecards are committed and pushed alongside code, so agents on different machines see each other too.
