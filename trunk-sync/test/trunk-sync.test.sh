@@ -1033,6 +1033,16 @@ SS_STALE=$(run_session_start "$WT_A" "agentccc")
 assert_contains "$SS_STALE" "possibly disrupted" "session-start: a stale card is surfaced labelled possibly-disrupted"
 assert_contains "$SS_STALE" "ship it" "session-start: the disrupted card's remaining steps are still surfaced"
 
+# 37. An abandoned card (heartbeat past the 14-day TTL) is swept on the next agent's commit.
+OLD_TS=$(node -e 'console.log(new Date(Date.now()-20*24*60*60*1000).toISOString())')
+GHOST="$WT_A/.trunk-sync/timeclock/ghostagent.json"
+printf '{"sessionId":"ghostagent","hostname":"old-host","clockedInAt":"%s","lastActiveAt":"%s","branch":"main","task":null,"lastStep":null,"remainingSteps":"never finished"}' "$OLD_TS" "$OLD_TS" > "$GHOST"
+( cd "$WT_A" && git add -A && git commit -q -m "add abandoned card" )
+echo "trigger reap" > "$WT_A/seed.txt"
+run_hook "$(make_input "$WT_A/seed.txt" "agentaaa" "Edit" "")"
+[[ -f "$GHOST" ]] && REAPED=no || REAPED=yes
+assert_equals "yes" "$REAPED" "reap: an abandoned card past the TTL is swept on the next commit"
+
 # ── Summary ──────────────────────────────────────────────────────────────────
 
 echo ""
