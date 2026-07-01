@@ -460,19 +460,31 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
 ### Use-case: config (src: src/commands/config.ts; unit: src/commands/config.test.ts; integration: none; functional: none)
 
   config command
+    if run outside a git repo
+      then `git init` is run first, establishing a repo to store config in
     when no config file exists
       then `config` prints empty
     when a key is set
-      then it is persisted to `~/.trunk-sync`
+      then it is persisted to `.trunk-sync/config` in the repo
+      and the change is staged and committed
+      while a remote is configured
+        then the commit is pushed
+      if the push fails
+        then the command still succeeds — the commit stands locally for the next sync to pick up
       and a subsequent `config` call shows the value
     when `config <key>` is called
       then the single value is printed
     when `config <key>` is called for a key that has a built-in default and is unset
-      then the default is printed (e.g. `commit-transcripts` defaults to `true`, so session records are committed and pushed unless opted out)
+      then the default is printed (e.g. `commit-transcripts` defaults to `true`, so session records are committed and pushed unless opted out; `target-branch` defaults to `agents`)
     if `config <key>` is called for an unknown key
       then it exits 1 with `Unknown key`
     when `config unset <key>` is called
-      then the key is removed
+      then the key is removed from `.trunk-sync/config`
+      and the change is staged and committed
+      while a remote is configured
+        then the commit is pushed
+      if the push fails
+        then the command still succeeds — the commit stands locally for the next sync to pick up
     if `config unset <key>` is called for a key that does not exist
       then it exits 1
     when the config file contains comments and blank lines
