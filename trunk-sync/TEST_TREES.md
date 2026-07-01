@@ -368,7 +368,7 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
   runStop
     when the stop hook fires and the session has a timecard
       then its heartbeat (lastActiveAt) is bumped and the update is synced, so remote readers see it fresh through a long no-edit turn
-      and it always exits 0 — progress is never forced, so there is no exit-2 nudge and no stop_hook_active loop to guard
+      and it always exits 0 — progress is never forced
     when the heartbeat was already refreshed by a recent tool-use sync
       then no commit is made — a fresh heartbeat is not duplicated
     if the session has no timecard yet
