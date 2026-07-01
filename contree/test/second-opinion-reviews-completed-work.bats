@@ -26,33 +26,33 @@ SKILL="$PROJECT_ROOT/skills/second-opinion/SKILL.md"
 
 @test "second-opinion skill reads the test trees as the contract the work must satisfy" {
   run cat "$SKILL"
-  [[ "$output" == *"Test Trees"* || "$output" == *"TEST_TREES.md"* ]]
-  [[ "$output" == *"contract"* ]]
+  assert_output --regexp 'Test Trees|TEST_TREES\.md'
+  assert_output --partial "contract"
 }
 
 @test "second-opinion skill sends the change and the test trees to Z.AI's GLM 5.2 chat completions API authenticated with ZAI_API_KEY" {
   run cat "$SKILL"
-  [[ "$output" == *"glm-5.2"* ]]
-  [[ "$output" == *"api.z.ai"* ]]
-  [[ "$output" == *"chat/completions"* ]]
-  [[ "$output" == *"ZAI_API_KEY"* ]]
+  assert_output --partial "glm-5.2"
+  assert_output --partial "api.z.ai"
+  assert_output --partial "chat/completions"
+  assert_output --partial "ZAI_API_KEY"
 }
 
 @test "second-opinion skill surfaces GLM 5.2's review attributed to GLM 5.2" {
   run cat "$SKILL"
-  [[ "$output" == *"surface"* || "$output" == *"Surface"* ]]
-  [[ "$output" == *"attribut"* ]]
+  assert_output --regexp 'surface|Surface'
+  assert_output --partial "attribut"
 }
 
 @test "second-opinion skill says so and stops without calling the API when there are no non-trivial changes to review" {
   run cat "$SKILL"
-  [[ "$output" == *"no non-trivial change"* || "$output" == *"nothing to review"* ]]
-  [[ "$output" == *"stop"* ]]
+  assert_output --regexp 'no non-trivial change|nothing to review'
+  assert_output --partial "stop"
 }
 
 @test "second-opinion skill surfaces a failed review request as an error and fabricates no review" {
   run cat "$SKILL"
-  [[ "$output" == *"fails"* ]]
-  [[ "$output" == *"error"* ]]
-  [[ "$output" == *"fabricate"* ]]
+  assert_output --partial "fails"
+  assert_output --partial "error"
+  assert_output --partial "fabricate"
 }
