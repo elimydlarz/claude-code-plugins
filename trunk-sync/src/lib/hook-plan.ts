@@ -336,23 +336,39 @@ function formatAge(ms: number): string {
 }
 
 /**
- * Format the handover roster shown at session start: every other clocked-in agent
- * with its branch, task, and agent-authored last step + remaining steps, so a starting
- * agent discovers work already in flight. Returns null when no other agents are clocked in.
+ * Format the handover roster shown at session start: every other non-reaped session,
+ * active and stale alike (including those with no recorded next step), so a starting
+ * agent discovers work already in flight. Failing tests are the authoritative WIP
+ * signal; these cards are advisory context pointing at the committed transcript.
+ * Returns null when there is nothing to surface.
  */
-export function formatSessionStartSummary(sessions: Timecard[], now: Date): string | null {
-  if (sessions.length === 0) return null;
-  const lines = sessions.map((tc) => {
+export function formatSessionStartSummary(
+  active: Timecard[],
+  stale: Timecard[],
+  now: Date,
+): string | null {
+  if (active.length === 0 && stale.length === 0) return null;
+
+  const render = (tc: Timecard, label: string): string => {
     const age = formatAge(now.getTime() - new Date(tc.lastActiveAt).getTime());
-    let line = `- ${tc.sessionId.slice(0, 8)} on ${tc.hostname} (branch: ${tc.branch}, ${age} ago)`;
+    let line = `- ${tc.sessionId.slice(0, 8)} on ${tc.hostname} (branch: ${tc.branch}, ${age} ago) — ${label}`;
     if (tc.task) line += `\n    task: ${tc.task}`;
     if (tc.lastStep) line += `\n    last: ${tc.lastStep}`;
     if (tc.remainingSteps) line += `\n    next: ${tc.remainingSteps}`;
     return line;
-  });
+  };
+
+  const lines = [
+    ...active.map((tc) => render(tc, "active: coordinate, do not duplicate")),
+    ...stale.map((tc) =>
+      render(tc, "stale, possibly disrupted: verify against the test suite before resuming — it may already be done"),
+    ),
+  ];
+
+  const count = active.length + stale.length;
   return [
-    `TRUNK-SYNC HANDOVER: ${sessions.length} other session${sessions.length > 1 ? "s have" : " has"} work in progress:`,
+    `TRUNK-SYNC HANDOVER: ${count} other session${count > 1 ? "s have" : " has"} work in progress. Failing tests on the trunk are the authoritative signal of what is unfinished; the cards below are advisory context.`,
     ...lines,
-    "Resume any unfinished WIP above; if another agent is still actively working it, coordinate rather than duplicate.",
+    "Each session's full record is in its committed transcript (.transcripts/); resume it with seance. If a card's owner is still active, coordinate rather than duplicate.",
   ].join("\n");
 }
