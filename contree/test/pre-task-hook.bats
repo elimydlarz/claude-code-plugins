@@ -69,7 +69,7 @@ run_hook_in() {
   run_hook_in "$BATS_TEST_TMPDIR"
   assert_output --partial "Layer completeness"
   assert_output --partial "every layer owns complete coverage of its own behaviour"
-  assert_output --partial "Overlap across layers is intentional BOGUS_SPOT_CHECK"
+  assert_output --partial "Overlap across layers is intentional"
   assert_output --partial "never excuses a missing lower-layer test"
 }
 
