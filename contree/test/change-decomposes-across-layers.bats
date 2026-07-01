@@ -81,3 +81,33 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   run cat "$SKILL"
   [[ "$output" == *"both adapters"* || "$output" == *"both must pass"* ]]
 }
+
+@test "change writes a System tree for pure libraries only when a cross-function invariant is observable, otherwise omits and documents it" {
+  run cat "$SKILL"
+  assert_output --partial "Pure libraries (no vertical slice)"
+  assert_output --partial "no driving adapter, no use-case, and no driven port"
+  assert_output --partial "ShortCode"
+  assert_output --partial "If no cross-function invariant exists, omit System altogether and document the omission"
+}
+
+@test "change writes a Domain, Use-case, Driving-adapter, or Driven-adapter tree only for units with substantive behaviour beyond their contract" {
+  run cat "$SKILL"
+  assert_output --partial "Trivial value objects don't earn a tree"
+  assert_output --partial "A use-case that just delegates to a single port doesn't earn a tree"
+  assert_output --partial "Thin adapters don't earn a tree"
+  assert_output --partial "adapter-specific behaviour beyond the port contract"
+}
+
+@test "change captures app-level invariants that span slices as a cross-cutting System tree named for the policy" {
+  run cat "$SKILL"
+  assert_output --partial "Cross-cutting System trees"
+  assert_output --partial "auth enforcement, rate limiting, error envelope"
+  assert_output --partial "write a System tree named for the policy"
+}
+
+@test "change wires the real driven adapter for System tests, never the in-memory twin, even when a Use-case in-memory twin exists" {
+  run cat "$SKILL"
+  assert_output --partial "System tests do NOT lean on the in-memory adapter"
+  assert_output --partial "wire real driven adapters and exercise real infrastructure"
+  assert_output --partial "dilute System tests into slow Use-case tests"
+}
