@@ -85,7 +85,7 @@ touch_nudge_seconds_ago() {
   [ "$(echo "$output" | jq -r '.hookSpecificOutput.hookEventName')" = "UserPromptSubmit" ] || return 1
   local ctx; ctx=$(echo "$output" | jq -r '.hookSpecificOutput.additionalContext')
   [[ "$ctx" == *"20-20-20"* ]] || return 1
-  [[ "$ctx" == *"20 MUTATED_feet"* ]] || return 1
+  [[ "$ctx" == *"20 feet"* ]] || return 1
   [[ "$ctx" == *"20 seconds"* ]] || return 1
 }
 
