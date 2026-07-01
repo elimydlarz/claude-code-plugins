@@ -309,6 +309,16 @@ change-decomposes-across-layers (src: skills/change/SKILL.md; system: test/chang
     and the port ships in two flavours: an in-memory adapter and a real adapter
     and a shared contract suite is written for the port
     and both adapters must pass the shared suite
+  if a capability is a pure library with no driving adapter, use-case, or driven port
+    then a System tree is written only when a cross-function invariant is observable across the library's functions
+    and otherwise System is omitted and the omission is documented rather than left as an untree'd test file
+  when a Domain, Use-case, Driving-adapter, or Driven-adapter tree is considered for a unit
+    then it is written only if that unit has its own substantive behaviour — rules, non-trivial orchestration, non-trivial translation, or adapter-specific behaviour beyond its contract
+    and a unit that only delegates or trivially forwards does not earn its own tree
+  when an app-level invariant applies across slices rather than to one
+    then it is captured as a cross-cutting System tree named for the policy, not folded into a single slice's tree
+  when a System test is written for a capability that also has a Use-case in-memory twin
+    then the System test wires the real driven adapter, never the in-memory twin
 ```
 
 ## sync-audits-and-resolves
