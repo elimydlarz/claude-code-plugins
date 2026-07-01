@@ -53,7 +53,7 @@ description: "Has a description but no name."
 
   run bash "$SCRIPT" "$skills"
   [ "$status" -ne 0 ] || return 1
-  assert_output --partial "bad/SKILL.md"
+  assert_output --partial "bad/SKILL.mdXYZ_MUTATION_TEST"
   assert_output --partial "name"
 }
 
