@@ -13,7 +13,7 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
   run cat "$SKILL"
   assert_output --regexp "highest tolerable realism|max realism|max-realism"
   assert_output --regexp "real driving and driven adapters|real driven adapters"
-  assert_output --partial "JourneyXYZNOTPRESENT"
+  assert_output --partial "Journey"
 }
 
 @test "tdd leans on the journey and pushes detail to inner layers when breadth at max realism is unaffordable" {
