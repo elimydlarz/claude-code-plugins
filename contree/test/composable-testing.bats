@@ -50,8 +50,16 @@ CHANGE="$PROJECT_ROOT/skills/change/SKILL.md"
 
 @test "setup wires Component tests with real adapters and externals doubled at the edge" {
   run cat "$SETUP"
+  assert_output --partial "real driving and driven adapters"
+  assert_output --partial "one capability"
   assert_output --partial "in-memory database"
   assert_output --partial "stubbed outbound HTTP"
+}
+
+@test "setup places exhaustive single-capability breadth at Component and Use-case layers" {
+  run cat "$SETUP"
+  assert_output --partial "exhaustive single-capability"
+  assert_output --partial "Use-case and Component"
 }
 
 @test "change pairs each outbound port with an in-memory adapter used by Use-case tests" {
