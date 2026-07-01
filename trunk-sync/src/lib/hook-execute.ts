@@ -451,14 +451,20 @@ export function executeSync(sync: SyncPlan): { exitCode: number; stderr?: string
   const { targetBranch, currentBranch } = sync;
 
   // Pull from origin
+  let targetBranchExistsUpstream = true;
   try {
     execSync(`git pull origin "${targetBranch}" --no-rebase 2>&1`, { encoding: "utf-8" });
   } catch (e: unknown) {
-    return conflictExit(getStdout(e), targetBranch);
+    const output = getStdout(e);
+    if (!/couldn't find remote ref/.test(output)) {
+      return conflictExit(output, targetBranch);
+    }
+    // Target branch doesn't exist on the remote yet — nothing to pull; the push below creates it.
+    targetBranchExistsUpstream = false;
   }
 
   // Merge local target branch into worktree branch
-  if (currentBranch && currentBranch !== targetBranch) {
+  if (targetBranchExistsUpstream && currentBranch && currentBranch !== targetBranch) {
     try {
       execSync(`git merge "${targetBranch}" --no-edit 2>&1`, { encoding: "utf-8" });
     } catch (e: unknown) {
