@@ -6,7 +6,7 @@ SKILL="$PROJECT_ROOT/skills/workflow/SKILL.md"
 
 @test "workflow skill directs change, sync, and tdd to run in sequence" {
   run cat "$SKILL"
-  assert_output --partial "CHANGE"
+  assert_output --partial "CHANGEXYZ_MUTATION_TEST"
   assert_output --partial "SYNC"
   assert_output --partial "TDD"
 }
