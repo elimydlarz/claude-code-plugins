@@ -289,7 +289,6 @@ function executeClockIn(
       now,
     );
 
-    // Reap abandoned cards (heartbeat past the TTL)
     if (reapable.length > 0) {
       reapCards(state.repoRoot, reapable.map((tc) => tc.sessionId));
     }
