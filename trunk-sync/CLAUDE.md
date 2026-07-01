@@ -30,7 +30,7 @@ src/lib/stop-entry.ts         — Stop entry point: heartbeat-only (bumps lastAc
 src/cli.ts                    — CLI entry point, argv dispatch
 src/commands/install.ts       — trunk-sync install
 src/commands/seance.ts        — trunk-sync seance (default/--inspect/--list modes)
-src/commands/config.ts        — trunk-sync config (read/write ~/.trunk-sync; commit-transcripts defaults on)
+src/commands/config.ts        — trunk-sync config (read/write .trunk-sync/config in the repo, committed+synced; target-branch defaults "agents", commit-transcripts defaults on)
 src/commands/progress.ts      — trunk-sync progress (agent records lastStep/remainingSteps into its timecard)
 src/commands/progress.test.ts — progress command tests (node:test)
 src/commands/config.test.ts   — config command tests (node:test)
