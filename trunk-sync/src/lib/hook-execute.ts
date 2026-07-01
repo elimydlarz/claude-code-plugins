@@ -279,17 +279,15 @@ function executeClockIn(
     clockIn(state.repoRoot, plan, task);
     const allTimecards = readTimecards(state.repoRoot);
     const now = new Date();
-    const { clockedIn, clockedOut } = classifyTimecards(
+    const { active, reapable } = classifyTimecards(
       plan.timecard.sessionId,
       allTimecards,
       now,
-      plan.timecard.hostname,
-      isProcessAlive,
     );
 
-    // Clock out stale agents
-    if (clockedOut.length > 0) {
-      clockOutStale(state.repoRoot, clockedOut);
+    // Reap abandoned cards (heartbeat past the TTL)
+    if (reapable.length > 0) {
+      reapCards(state.repoRoot, reapable.map((tc) => tc.sessionId));
     }
 
     // Stage timeclock directory (timecard + any removals)
