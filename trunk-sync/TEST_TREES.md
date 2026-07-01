@@ -253,10 +253,9 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       and the current branch name is reported
       and a detached HEAD reports an empty currentBranch
       and the absence of a remote is reported
-      and a configured remote reads targetBranch from origin/HEAD
-    if origin/HEAD is not a symbolic ref
-      then targetBranch falls back to "main"
-      and no git error is written to stderr
+      and a configured remote with no `target-branch` override defaults targetBranch to "agents"
+    while `target-branch` is set in `.trunk-sync/config`
+      then targetBranch reads the configured value instead of the "agents" default
     when no file_path is provided
       then deleted tracked files are detected
       and modified tracked files are detected
