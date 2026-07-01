@@ -1,9 +1,11 @@
-import { readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
-import { homedir } from "node:os";
+import { execSync } from "node:child_process";
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { getGitRoot } from "../lib/git.js";
 
 const DEFAULTS: Record<string, string> = {
   "commit-transcripts": "true",
+  "target-branch": "agents",
 };
 
 const USAGE = `Usage: trunk-sync config                   Show all config
@@ -11,17 +13,17 @@ const USAGE = `Usage: trunk-sync config                   Show all config
        trunk-sync config <key>=<value>       Set a value
        trunk-sync config --unset <key>       Remove a key
 
-Config file: ~/.trunk-sync (key=value format)`;
+Config file: .trunk-sync/config in the repo (key=value format), committed and synced like timecards and transcripts.`;
 
-function configPath(): string {
-  return join(homedir(), ".trunk-sync");
+function configPath(repoRoot: string): string {
+  return join(repoRoot, ".trunk-sync", "config");
 }
 
-export function readConfig(): Map<string, string> {
+export function readConfig(repoRoot: string): Map<string, string> {
   const map = new Map<string, string>();
   let content: string;
   try {
-    content = readFileSync(configPath(), "utf-8");
+    content = readFileSync(configPath(repoRoot), "utf-8");
   } catch {
     return map;
   }
@@ -35,12 +37,50 @@ export function readConfig(): Map<string, string> {
   return map;
 }
 
-function writeConfig(map: Map<string, string>): void {
+function writeConfig(repoRoot: string, map: Map<string, string>): void {
   const lines: string[] = [];
   for (const [key, value] of map) {
     lines.push(`${key}=${value}`);
   }
-  writeFileSync(configPath(), lines.join("\n") + "\n");
+  const path = configPath(repoRoot);
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, lines.join("\n") + "\n");
+}
+
+function escapeForShell(s: string): string {
+  return s.replace(/"/g, '\\"');
+}
+
+/**
+ * A manual command, not something riding along on the next hook fire — so it
+ * stages, commits, and best-effort pushes the change itself. Push failure
+ * doesn't fail the command; the commit stands locally for the next sync.
+ */
+function commitAndSyncConfig(repoRoot: string, message: string): void {
+  execSync(`git add -- ".trunk-sync/config"`, { cwd: repoRoot, stdio: "ignore" });
+  try {
+    execSync(`git commit -m "${escapeForShell(message)}"`, { cwd: repoRoot, stdio: "ignore" });
+  } catch {
+    return; // nothing changed
+  }
+  try {
+    execSync("git remote get-url origin", { cwd: repoRoot, stdio: "ignore" });
+  } catch {
+    return; // no remote to push to
+  }
+  const targetBranch = readConfig(repoRoot).get("target-branch") ?? DEFAULTS["target-branch"];
+  try {
+    execSync(`git push origin "HEAD:${targetBranch}"`, { cwd: repoRoot, stdio: "ignore" });
+  } catch {
+    // best-effort — the commit stands locally for the next sync to pick up
+  }
+}
+
+function resolveRepoRoot(): string {
+  const existing = getGitRoot();
+  if (existing) return existing;
+  execSync("git init", { stdio: "ignore" });
+  return getGitRoot()!;
 }
 
 export function configCommand(args: string[]): void {
@@ -49,6 +89,8 @@ export function configCommand(args: string[]): void {
     return;
   }
 
+  const repoRoot = resolveRepoRoot();
+
   const unsetIndex = args.indexOf("--unset");
   if (unsetIndex !== -1) {
     const key = args[unsetIndex + 1];
@@ -56,22 +98,23 @@ export function configCommand(args: string[]): void {
       console.error("Usage: trunk-sync config --unset <key>");
       process.exit(1);
     }
-    const map = readConfig();
+    const map = readConfig(repoRoot);
     if (!map.has(key)) {
       console.error(`Key not found: ${key}`);
       process.exit(1);
     }
     map.delete(key);
-    writeConfig(map);
+    writeConfig(repoRoot, map);
+    commitAndSyncConfig(repoRoot, `auto: unset ${key}`);
     console.log(`Unset ${key}`);
     return;
   }
 
   const positional = args.filter((a) => !a.startsWith("--"));
   if (positional.length === 0) {
-    const map = readConfig();
+    const map = readConfig(repoRoot);
     if (map.size === 0) {
-      console.log("No config set. Config file: ~/.trunk-sync");
+      console.log("No config set. Config file: .trunk-sync/config");
       return;
     }
     for (const [key, value] of map) {
@@ -84,7 +127,7 @@ export function configCommand(args: string[]): void {
   const eq = arg.indexOf("=");
   if (eq === -1) {
     // Single key — read its value
-    const map = readConfig();
+    const map = readConfig(repoRoot);
     const value = map.get(arg) ?? DEFAULTS[arg];
     if (value === undefined) {
       console.error(`Unknown key: ${arg}`);
@@ -95,8 +138,9 @@ export function configCommand(args: string[]): void {
   }
   const key = arg.slice(0, eq);
   const value = arg.slice(eq + 1);
-  const map = readConfig();
+  const map = readConfig(repoRoot);
   map.set(key, value);
-  writeConfig(map);
+  writeConfig(repoRoot, map);
+  commitAndSyncConfig(repoRoot, `auto: config ${key}=${value}`);
   console.log(`Set ${key}=${value}`);
 }
