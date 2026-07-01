@@ -194,14 +194,14 @@ run_hook_with_last_text() {
 
 @test "hook exits 2 and emits the drift prompt when last assistant message does not end with a question mark" {
   run_hook_with_last_text "Did the tests pass? Yes! Finished."
-  [ "$status" -eq 2 ]
-  [[ "$output" == *"README"* ]]
+  [ "$status" -eq 2 ] || return 1
+  assert_output --partial "README"
 }
 
 @test "hook detects the question after trailing whitespace and injects the question-stop prompt" {
   run_hook_with_last_text $'Want me to do that?\n\n'
-  [ "$status" -eq 2 ]
-  [[ "$output" == *"under-determined"* ]]
+  [ "$status" -eq 2 ] || return 1
+  assert_output --partial "under-determined"
 }
 
 @test "hook emits the prompt when earlier text ended with ? but the most recent assistant text is a statement" {
