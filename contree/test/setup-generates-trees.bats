@@ -6,8 +6,8 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
 
 @test "setup detects and merges into existing test config rather than overwriting" {
   run cat "$SKILL"
-  [[ "$output" == *"existing"* ]]
-  [[ "$output" == *"merge"* || "$output" == *"do not overwrite"* || "$output" == *"augment"* ]]
+  assert_output --partial "existing"
+  [[ "$output" == *"merge"* || "$output" == *"do not overwrite"* || "$output" == *"augment"* ]] || return 1
 }
 
 @test "setup configures tree reporters for local dev and CI" {
@@ -17,26 +17,26 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
 
 @test "setup configures the six test layers as separate commands" {
   run cat "$SKILL"
-  [[ "$output" == *"Domain"* ]]
-  [[ "$output" == *"Use-case"* ]]
-  [[ "$output" == *"Component"* ]]
-  [[ "$output" == *"Adapter"* ]]
-  [[ "$output" == *"System"* ]]
-  [[ "$output" == *"Journey"* ]]
+  assert_output --partial "Domain"
+  assert_output --partial "Use-case"
+  assert_output --partial "Component"
+  assert_output --partial "Adapter"
+  assert_output --partial "System"
+  assert_output --partial "Journey"
 }
 
 @test "setup notes Component tests run in-process needing no external services" {
   run cat "$SKILL"
-  [[ "$output" == *"Component"* ]]
-  [[ "$output" == *"in-process"* ]]
-  [[ "$output" == *"no external services"* || "$output" == *"needs no external"* ]]
+  assert_output --partial "Component"
+  assert_output --partial "in-process"
+  [[ "$output" == *"no external services"* || "$output" == *"needs no external"* ]] || return 1
 }
 
 @test "setup configures mutation testing with layer-suffix exclusions" {
   run cat "$SKILL"
-  [[ "$output" == *"mutation testing"* ]]
-  [[ "$output" == *"Domain"* ]]
-  [[ "$output" == *"Use-case"* ]]
+  assert_output --partial "mutation testing"
+  assert_output --partial "Domain"
+  assert_output --partial "Use-case"
 }
 
 @test "setup generates trees from existing code into TEST_TREES.md" {
@@ -46,9 +46,9 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
 
 @test "setup updates CLAUDE.md to point at TEST_TREES.md when the pointer is missing" {
   run cat "$SKILL"
-  [[ "$output" == *"pointer"* ]]
-  [[ "$output" == *"TEST_TREES.md"* ]]
-  [[ "$output" == *"CLAUDE.md"* ]]
+  assert_output --partial "pointer"
+  assert_output --partial "TEST_TREES.md"
+  assert_output --partial "CLAUDE.md"
 }
 
 @test "setup for a new project generates trees from user-described plans without implementing tests" {
