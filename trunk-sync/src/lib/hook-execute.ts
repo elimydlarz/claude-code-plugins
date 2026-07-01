@@ -115,7 +115,7 @@ export function gatherRepoState(input: HookInput): RepoState | null {
   };
 }
 
-// --- Clocking in/out ---
+// --- Presence: clock-in (heartbeat) and reaping ---
 
 export function getRuntimeContext(): RuntimeContext {
   return { hostname: hostname() };
