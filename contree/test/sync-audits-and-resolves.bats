@@ -71,8 +71,8 @@ SKILL="$PROJECT_ROOT/skills/sync/SKILL.md"
 
 @test "sync verifies each tree's labelled paths against the filesystem per category" {
   run cat "$SKILL"
-  [[ "$output" == *"labelled"* || "$output" == *"per category"* ]]
-  [[ "$output" == *"filesystem"* ]]
+  [[ "$output" == *"labelled"* || "$output" == *"per category"* ]] || return 1
+  assert_output --partial "filesystem"
 }
 
 @test "sync flags tree-named paths that do not exist on disk as drift" {
