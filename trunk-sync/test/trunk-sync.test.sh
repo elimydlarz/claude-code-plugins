@@ -950,7 +950,8 @@ assert_contains "$SNAPSHOT_FILES" "snap1234" "snapshot: filename contains sessio
 
 # 30. Enabled but no transcript_path: graceful no-op
 setup_repos
-echo "commit-transcripts=true" > "$HOME/.trunk-sync"
+mkdir -p "$WT_A/.trunk-sync"
+echo "commit-transcripts=true" > "$WT_A/.trunk-sync/config"
 echo "no transcript path" > "$WT_A/seed.txt"
 cd "$WT_A"
 run_hook "$(make_input "$WT_A/seed.txt" "notp1234" "Edit" "")"
