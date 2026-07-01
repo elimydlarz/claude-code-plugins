@@ -18,7 +18,10 @@ CHANGE="$PROJECT_ROOT/skills/change/SKILL.md"
 
 @test "setup colocates Adapter tests with the adapter (*.adapter.test.*)" {
   run cat "$SETUP"
-  [[ "$output" == *"*.adapter.test.*"* ]]
+  assert_output --partial "*.adapter.test.*"
+  assert_output --partial "colocated"
+  assert_output --partial "driving"
+  assert_output --partial "driven"
 }
 
 @test "setup places System tests under test/system/ (*.system.test.*)" {
