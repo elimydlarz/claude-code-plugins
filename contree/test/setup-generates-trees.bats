@@ -59,15 +59,43 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
 
 @test "setup for a new project generates trees from user-described plans without implementing tests" {
   run cat "$SKILL"
-  [[ "$output" == *"hand off"* || "$output" == *"change"* ]]
+  # plans-based generation half: setup's own wording only reaches "new project"
+  # as a trigger condition — it does not itself describe a plans-gathering
+  # mechanism (that lives in the change skill it hands off to).
+  assert_output --partial "new project"
+  # not-implementing-tests half: strongly and explicitly stated.
+  assert_output --partial "No test files"
+  assert_output --partial "Do NOT create any test files"
 }
 
 @test "setup uses Docker when Adapter or System tests need external services" {
   run cat "$SKILL"
-  [[ "$output" == *"Docker"* ]]
+  assert_output --partial "Docker"
+  assert_output --partial "external"
+}
+
+@test "setup tears down Docker test artefacts afterwards" {
+  run cat "$SKILL"
+  assert_output --partial "Docker"
+  assert_output --partial "tear down"
+  assert_output --partial "cleanup"
 }
 
 @test "setup passes secrets via environment variables" {
   run cat "$SKILL"
   [[ "$output" == *"environment variable"* || "$output" == *"env"* ]]
+}
+
+@test "setup configures changed-test runners with known gotchas addressed" {
+  run cat "$SKILL"
+  assert_output --partial "gotchas"
+  assert_output --partial "--onlyChanged"
+  assert_output --partial "git status"
+  assert_output --partial "NOT changed test files"
+}
+
+@test "setup communicates flat-output limitations honestly" {
+  run cat "$SKILL"
+  assert_output --partial "flat output"
+  assert_output --partial "be honest"
 }
