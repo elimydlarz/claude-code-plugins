@@ -29,8 +29,8 @@ SKILL="$PROJECT_ROOT/skills/sync/SKILL.md"
 
 @test "sync discusses stale trees with the user before removal" {
   run cat "$SKILL"
-  [[ "$output" == *"Stale trees"* ]]
-  [[ "$output" == *"Ask"* || "$output" == *"Present to the user"* ]]
+  assert_output --partial "Stale trees"
+  [[ "$output" == *"Ask"* || "$output" == *"Present to the user"* ]] || return 1
 }
 
 @test "sync discusses dead paths with the user" {
