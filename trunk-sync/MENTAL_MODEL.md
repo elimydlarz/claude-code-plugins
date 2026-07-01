@@ -17,7 +17,7 @@
 
 ## Ubiquitous Language
 
-- Trunk — `origin/main`, the shared integration branch.
+- Trunk — `origin/agents` by default, the shared integration branch kept separate from the repo's actual default branch; overridable via the `target-branch` key in `.trunk-sync/config`.
 - Hook layer — fires on Edit/Write/Bash (stage, commit, pull, push) and on SessionStart (surface handovers).
 - CLI layer — `trunk-sync install | seance | config`.
 - Seance — reconstruct and resume the agent session behind a line of code; modes default / `--inspect` / `--list`.
