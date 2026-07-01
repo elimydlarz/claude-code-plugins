@@ -5,6 +5,8 @@ import { homedir, hostname } from "node:os";
 import { readConfig } from "../commands/config.js";
 import { HOOK_EXPLAINER } from "./hook-types.js";
 import { extractTaskFromTranscript, buildCommitPlanWithTask, classifyTimecards, formatClockInMessage, formatSessionStartSummary } from "./hook-plan.js";
+/** Absent a `target-branch` override in `.trunk-sync/config`, agents sync to a dedicated branch — not the repo's actual default branch — so auto-commits never land directly on it. */
+const DEFAULT_TARGET_BRANCH = "agents";
 /**
  * Gather the current git repo state needed for planning.
  * Runs git commands — this is the I/O boundary.
@@ -40,21 +42,16 @@ export function gatherRepoState(input) {
         }
     }
     let hasRemote = false;
-    let targetBranch = "";
     try {
-        const ref = execSync("git symbolic-ref --quiet refs/remotes/origin/HEAD", { encoding: "utf-8" }).trim();
+        execSync("git remote get-url origin", { stdio: "ignore" });
         hasRemote = true;
-        targetBranch = ref.replace("refs/remotes/origin/", "");
     }
     catch {
-        try {
-            execSync("git remote get-url origin", { stdio: "ignore" });
-            hasRemote = true;
-            targetBranch = "main";
-        }
-        catch {
-            // no remote
-        }
+        // no remote
+    }
+    let targetBranch = "";
+    if (hasRemote) {
+        targetBranch = readConfig(repoRoot).get("target-branch") ?? DEFAULT_TARGET_BRANCH;
     }
     let currentBranch = "";
     const headContent = readFileSync(join(gitDir, "HEAD"), "utf-8").trim();
@@ -400,7 +397,7 @@ export function executePlan(plan, input, state) {
 }
 function amendWithTranscriptSnapshot(input, state) {
     try {
-        const config = readConfig();
+        const config = readConfig(state.repoRoot);
         if (config.get("commit-transcripts") === "false")
             return;
         if (!input.transcript_path || !input.session_id)
@@ -424,14 +421,20 @@ function amendWithTranscriptSnapshot(input, state) {
 export function executeSync(sync) {
     const { targetBranch, currentBranch } = sync;
     // Pull from origin
+    let targetBranchExistsUpstream = true;
     try {
         execSync(`git pull origin "${targetBranch}" --no-rebase 2>&1`, { encoding: "utf-8" });
     }
     catch (e) {
-        return conflictExit(getStdout(e), targetBranch);
+        const output = getStdout(e);
+        if (!/couldn't find remote ref/.test(output)) {
+            return conflictExit(output, targetBranch);
+        }
+        // Target branch doesn't exist on the remote yet — nothing to pull; the push below creates it.
+        targetBranchExistsUpstream = false;
     }
     // Merge local target branch into worktree branch
-    if (currentBranch && currentBranch !== targetBranch) {
+    if (targetBranchExistsUpstream && currentBranch && currentBranch !== targetBranch) {
         try {
             execSync(`git merge "${targetBranch}" --no-edit 2>&1`, { encoding: "utf-8" });
         }
