@@ -54,7 +54,8 @@
 - The hook handles git so agents stay focused on content and never corrupt the shared branch with ad-hoc git.
 - The functional-core / imperative-shell split keeps decision logic pure and fast to unit-test.
 - Seance finds Codex rollouts by scanning `~/.codex/sessions/<date>/`; placing a rewritten rollout at the canonical path is sufficient — no DB insertion, do not add it.
-- Timecards are committed (not local-only) so presence is visible across machines. Liveness is the heartbeat's age, not a PID — the hook runs as an ephemeral process, so a stored PID is never the agent's; remote liveness can only ever be presumed from the heartbeat, so the card is advisory and failing tests are the authoritative WIP signal.
+- Timecards and config are committed (not local-only) so presence and settings are visible across every machine and agent working on the repo — same reasoning for both. Liveness is the heartbeat's age, not a PID — the hook runs as an ephemeral process, so a stored PID is never the agent's; remote liveness can only ever be presumed from the heartbeat, so the card is advisory and failing tests are the authoritative WIP signal.
+- Agents default to a dedicated `agents` branch, not the repo's actual default branch, so per-edit auto-commits never land directly on it — merging agent work into the real default branch stays a deliberate, separate step.
 - Handover progress is agent-authored via `trunk-sync progress` — transcript prose can't reliably yield last/next — and lives in the timecard, reaped only past a 14-day TTL; transcripts commit by default so seance and handover always have the durable record.
 - `dist/` is tracked because marketplace installs have no build step.
 - The two distribution channels (npm + marketplace) are bumped together to avoid version skew.
