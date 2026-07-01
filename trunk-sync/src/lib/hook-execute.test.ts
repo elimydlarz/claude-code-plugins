@@ -1120,6 +1120,71 @@ describe("runSessionStart", () => {
   });
 });
 
+describe("runStop", () => {
+  let dir: string;
+  let origDir: string;
+
+  beforeEach(() => {
+    dir = realpathSync(mkdtempSync(join(tmpdir(), "ts-stop-")));
+    initRepo(dir);
+    writeFileSync(join(dir, "seed.txt"), "seed\n");
+    execSync("git add . && git commit -m seed", { cwd: dir, stdio: "ignore" });
+    origDir = process.cwd();
+    process.chdir(dir);
+  });
+
+  afterEach(() => {
+    process.chdir(origDir);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  function writeCard(sessionId: string, lastActiveAt: string): string {
+    const timeclockDir = join(dir, ".trunk-sync", "timeclock");
+    mkdirSync(timeclockDir, { recursive: true });
+    const cardPath = join(timeclockDir, `${sessionId}.json`);
+    writeFileSync(cardPath, JSON.stringify({
+      sessionId, hostname: "h", clockedInAt: lastActiveAt, lastActiveAt,
+      branch: "main", task: null, lastStep: null, remainingSteps: null,
+    }));
+    execSync("git add . && git commit -m 'add card'", { cwd: dir, stdio: "ignore" });
+    return cardPath;
+  }
+
+  it("bumps and commits the heartbeat when the card's heartbeat is stale", () => {
+    const staleTime = new Date(Date.now() - 45 * 60 * 1000).toISOString();
+    const cardPath = writeCard("my-session", staleTime);
+
+    runStop(makeState(dir), "my-session");
+
+    const card = JSON.parse(readFileSync(cardPath, "utf-8")) as Timecard;
+    assert.ok(
+      new Date(card.lastActiveAt).getTime() > new Date(staleTime).getTime(),
+      "heartbeat should be bumped",
+    );
+    const subject = execSync("git log -1 --format=%s", { cwd: dir, encoding: "utf-8" }).trim();
+    assert.match(subject, /heartbeat/);
+  });
+
+  it("makes no commit when the heartbeat was already refreshed by a recent tool-use sync", () => {
+    writeCard("my-session", new Date().toISOString());
+    const before = execSync("git rev-list --count HEAD", { cwd: dir, encoding: "utf-8" }).trim();
+
+    runStop(makeState(dir), "my-session");
+
+    const after = execSync("git rev-list --count HEAD", { cwd: dir, encoding: "utf-8" }).trim();
+    assert.equal(before, after);
+  });
+
+  it("creates no card and exits cleanly when the session has no timecard", () => {
+    runStop(makeState(dir), "ghost-session");
+    assert.ok(!existsSync(join(dir, ".trunk-sync", "timeclock", "ghost-session.json")));
+  });
+
+  it("does nothing when no session id is provided", () => {
+    assert.doesNotThrow(() => runStop(makeState(dir), null));
+  });
+});
+
 describe("reapCards", () => {
   let dir: string;
 
