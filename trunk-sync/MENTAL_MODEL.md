@@ -11,7 +11,7 @@
 - Pure decision logic → `hook-plan.ts`; git/fs execution → `hook-execute.ts`; PostToolUse wiring → `hook-entry.ts`; SessionStart wiring → `session-start-entry.ts`; bash wrappers → `scripts/trunk-sync*.sh`.
 - CLI commands → `src/commands/{install,seance,config}.ts`; shared git utilities → `src/lib/git.ts`.
 - A line of code → `git blame` → commit-body provenance → truncated transcript → worktree at that commit → resumed agent session (seance).
-- "Who is clocked in" + handover → `.trunk-sync/timeclock/<session-id>.json` (branch, task, lastStep, remainingSteps), committed and pushed; progress set by `trunk-sync progress`, surfaced at SessionStart.
+- "Who is active" + handover → `.trunk-sync/timeclock/<session-id>.json` (heartbeat `lastActiveAt`, branch, task, lastStep, remainingSteps), committed and pushed; progress set by `trunk-sync progress`, surfaced at SessionStart.
 - Trunk → always `origin/main`; worktree → optional isolation for multi-agent (`claude -w`).
 - Distribution → `dist/` tracked in git (marketplace installs) + an npm tarball selected by the `files` field.
 
