@@ -1120,25 +1120,15 @@ describe("runSessionStart", () => {
   });
 });
 
-describe("isProcessAlive", () => {
-  it("returns true for own process", () => {
-    assert.ok(isProcessAlive(process.pid));
-  });
-
-  it("returns false for non-existent process", () => {
-    assert.ok(!isProcessAlive(999999999));
-  });
-});
-
-describe("clockOutStale", () => {
+describe("reapCards", () => {
   let dir: string;
 
   beforeEach(() => {
     dir = realpathSync(mkdtempSync(join(tmpdir(), "ts-prune-")));
     const timeclockDir = join(dir, ".trunk-sync", "timeclock");
     mkdirSync(timeclockDir, { recursive: true });
-    writeFileSync(join(timeclockDir, "stale-1.json"), "{}");
-    writeFileSync(join(timeclockDir, "stale-2.json"), "{}");
+    writeFileSync(join(timeclockDir, "reap-1.json"), "{}");
+    writeFileSync(join(timeclockDir, "reap-2.json"), "{}");
     writeFileSync(join(timeclockDir, "keep.json"), "{}");
   });
 
@@ -1146,16 +1136,16 @@ describe("clockOutStale", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  it("removes stale timecards and returns paths", () => {
-    const removed = clockOutStale(dir, ["stale-1", "stale-2"]);
+  it("removes each given card file and returns its path", () => {
+    const removed = reapCards(dir, ["reap-1", "reap-2"]);
     assert.equal(removed.length, 2);
-    assert.ok(!existsSync(join(dir, ".trunk-sync", "timeclock", "stale-1.json")));
-    assert.ok(!existsSync(join(dir, ".trunk-sync", "timeclock", "stale-2.json")));
+    assert.ok(!existsSync(join(dir, ".trunk-sync", "timeclock", "reap-1.json")));
+    assert.ok(!existsSync(join(dir, ".trunk-sync", "timeclock", "reap-2.json")));
     assert.ok(existsSync(join(dir, ".trunk-sync", "timeclock", "keep.json")));
   });
 
-  it("handles already-removed files", () => {
-    const removed = clockOutStale(dir, ["nonexistent"]);
+  it("handles already-removed files gracefully", () => {
+    const removed = reapCards(dir, ["nonexistent"]);
     assert.equal(removed.length, 0);
   });
 });
