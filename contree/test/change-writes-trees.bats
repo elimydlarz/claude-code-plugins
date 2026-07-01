@@ -37,14 +37,14 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
 
 @test "change enforces that every tree's describe/it hierarchy mirrors the tree verbatim" {
   run cat "$SKILL"
-  [[ "$output" == *"describe/it"* ]]
-  [[ "$output" == *"verbatim"* ]]
+  assert_output --partial "describe/it"
+  assert_output --partial "verbatim"
 }
 
 @test "change chooses EARS patterns matching each requirement's nature" {
   run cat "$SKILL"
-  [[ "$output" == *"EARS"* ]]
-  [[ "$output" == *"nature"* || "$output" == *"match"* ]]
+  assert_output --partial "EARS"
+  assert_output --regexp "nature|match"
 }
 
 @test "change rejects tautological then clauses" {
