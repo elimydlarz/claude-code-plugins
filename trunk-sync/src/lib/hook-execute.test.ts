@@ -685,6 +685,26 @@ describe("executeSync", () => {
     assert.match(result.stderr, /TRUNK-SYNC CONFLICT/);
   });
 
+  it("creates the target branch on first sync when it doesn't exist on the remote yet", () => {
+    const { remote, clone } = setupRepoWithRemote("fresh-branch");
+    track(remote);
+    track(clone);
+
+    process.chdir(clone);
+    writeFileSync(join(clone, "new.txt"), "new\n");
+    execSync("git add new.txt && git commit -m 'add new'", { cwd: clone, stdio: "ignore" });
+
+    // currentBranch "main" (local default), targetBranch "agents" (never pushed before) —
+    // the realistic first-sync shape under the new default target branch.
+    const sync: SyncPlan = { targetBranch: "agents", currentBranch: "main" };
+    const result = executeSync(sync);
+
+    assert.equal(result.exitCode, 0);
+
+    const remoteLog = execSync("git log --oneline agents", { cwd: remote, encoding: "utf-8" });
+    assert.match(remoteLog, /add new/);
+  });
+
   it("merges target branch on non-target worktree branch", () => {
     const { remote, clone } = setupRepoWithRemote("wt-merge");
     track(remote);
@@ -805,9 +825,9 @@ describe("amendWithTranscriptSnapshot", () => {
   });
 
   it("skips snapshot when commit-transcripts=false", () => {
-    writeFileSync(join(tmpHome, ".trunk-sync"), "commit-transcripts=false\n");
+    writeRepoConfig("commit-transcripts=false\n");
 
-    const transcriptPath = join(tmpHome, "session.jsonl");
+    const transcriptPath = join(scratch, "session.jsonl");
     writeFileSync(transcriptPath, jsonl({ type: "user", message: { role: "user", content: "task" } }));
 
     const filePath = join(dir, "no-snap.txt");
@@ -838,7 +858,7 @@ describe("amendWithTranscriptSnapshot", () => {
 
   it("snapshots by default when commit-transcripts is unset", () => {
     // No config file → defaults to ON (session records committed for seance)
-    const transcriptPath = join(tmpHome, "session.jsonl");
+    const transcriptPath = join(scratch, "session.jsonl");
     writeFileSync(transcriptPath, jsonl({ type: "user", message: { role: "user", content: "task" } }));
 
     const filePath = join(dir, "default-snap.txt");
@@ -868,7 +888,7 @@ describe("amendWithTranscriptSnapshot", () => {
   });
 
   it("skips snapshot when no transcript_path", () => {
-    writeFileSync(join(tmpHome, ".trunk-sync"), "commit-transcripts=true\n");
+    writeRepoConfig("commit-transcripts=true\n");
 
     const filePath = join(dir, "no-path.txt");
     writeFileSync(filePath, "content\n");
@@ -893,7 +913,7 @@ describe("amendWithTranscriptSnapshot", () => {
   });
 
   it("continues on snapshot failure", () => {
-    writeFileSync(join(tmpHome, ".trunk-sync"), "commit-transcripts=true\n");
+    writeRepoConfig("commit-transcripts=true\n");
 
     const filePath = join(dir, "fail-snap.txt");
     writeFileSync(filePath, "content\n");
