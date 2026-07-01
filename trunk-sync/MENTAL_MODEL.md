@@ -24,8 +24,8 @@
 - Session ID — links a commit to a Claude/Codex conversation.
 - Provenance fields — `Session:`, `Agent:`, `TranscriptPath:` in the commit body.
 - Timecard — `.trunk-sync/timeclock/<id>.json`; who is clocked in, on what, and their handover (last step + remaining steps).
-- Handover — the last step + remaining steps an agent records in its timecard via `trunk-sync progress`, surfaced to the next session at SessionStart; ephemeral, reaped with the timecard.
-- Clock in / clock out — agents register/deregister work; dead PIDs (local) and stale (30 min, remote) timecards auto-clock-out.
+- Handover — the last step + remaining steps an agent records in its timecard via `trunk-sync progress`, surfaced to the next session at SessionStart; advisory context, reaped only past the 14-day TTL (the committed transcript is the durable record).
+- Liveness — the age of a card's heartbeat (`lastActiveAt`): active within the hour, stale (possibly disrupted) beyond it, reapable past a 14-day TTL. No PID and no clock-out command — the first edit creates the card, `trunk-sync progress` records the handover.
 - Worktree — optional isolated working tree for multi-agent runs.
 - Conflict feedback — exit 2 with a stderr message; the agent fixes file content only.
 - Install scope — project by default, `--scope user` for all repos, `--client codex` for the Codex marketplace path.
