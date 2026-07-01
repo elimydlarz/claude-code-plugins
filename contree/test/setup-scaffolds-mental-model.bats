@@ -27,15 +27,15 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
 
 @test "setup does not modify an existing MENTAL_MODEL.md" {
   run cat "$SKILL"
-  [[ "$output" == *"already exists"* ]]
-  [[ "$output" == *"must not be modified"* || "$output" == *"leave it alone"* ]]
+  assert_output --partial "already exists"
+  assert_output --regexp 'must not be modified|leave it alone'
 }
 
 @test "setup adds a pointer line to CLAUDE.md identifying MENTAL_MODEL.md when missing" {
   run cat "$SKILL"
-  [[ "$output" == *"pointer line"* ]]
-  [[ "$output" == *"CLAUDE.md"* ]]
-  [[ "$output" == *"MENTAL_MODEL.md"* ]]
+  assert_output --partial "pointer line"
+  assert_output --partial "CLAUDE.md"
+  assert_output --partial "MENTAL_MODEL.md"
 }
 
 @test "setup does not duplicate an existing CLAUDE.md pointer to MENTAL_MODEL.md" {
