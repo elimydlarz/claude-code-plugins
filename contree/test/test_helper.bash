@@ -3,6 +3,12 @@ load '../node_modules/bats-assert/load'
 
 PROJECT_ROOT="$(cd "$BATS_TEST_DIRNAME/.." && pwd)"
 
+# A bare `[[ ]]`/`[ ]` assertion that isn't the LAST statement in a @test body
+# can fail without failing the test: bash suppresses errexit for a whole
+# function once that function's own exit status is used as a condition (which
+# is how bats invokes every test). Use assert_output/refute_output (loaded
+# above) for checks against `$output`; for anything else, append `|| return 1`.
+
 # Scope: bats covers scripted logic in `hooks/` and bats-only utilities in
 # `scripts/`, plus a System-layer check that each `SKILL.md`'s prose actually
 # contains the instructions its tree promises (grep, not execution — mirrors
