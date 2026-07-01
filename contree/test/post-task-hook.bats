@@ -228,8 +228,8 @@ run_hook_with_last_text() {
   local cmd; cmd=$(hook_command)
   run env CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" CMD="$cmd" INPUT_FILE="$input_file" CLAUDE_PROJECT_DIR="$BATS_TEST_TMPDIR" \
     bash -c 'bash -c "$CMD" < "$INPUT_FILE" 2>&1'
-  [ "$status" -eq 2 ]
-  [ -n "$output" ]
+  [ "$status" -eq 2 ] || return 1
+  [ -n "$output" ] || return 1
 }
 
 @test "hook selects the last assistant text and injects the question-stop prompt when it ends with a question" {
