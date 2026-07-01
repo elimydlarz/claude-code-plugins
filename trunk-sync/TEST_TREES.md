@@ -486,9 +486,13 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
   progress command
     then `--help` prints usage
     when called with a session id, a last step, and remaining steps
-      then the matching timecard's lastStep and remainingSteps are set
+      then the matching timecard's lastStep and remainingSteps are both set
       and its heartbeat (lastActiveAt) is refreshed
-      and clockedInAt, task, pid, and branch are preserved
+      and clockedInAt, task, and branch are preserved
+    when called with `--last` only
+      then lastStep is set and remainingSteps is left untouched — a partial update never destroys the handover
+    when called with `--next ""`
+      then remainingSteps is cleared, marking the work done
     when no timecard yet exists for the session id
       then a timecard is created carrying the recorded progress
     if the session id is missing
