@@ -466,8 +466,10 @@ dual-harness-compatibility (src: .claude-plugin/plugin.json, .codex-plugin/plugi
     and one hooks/hooks.json is shared by both harnesses
   when a hook fires
     then hooks.json invokes its script via $CLAUDE_PLUGIN_ROOT — the env var both harnesses set
-  when an Edit, Write, MultiEdit, or apply_patch tool call completes
+  when an Edit, Write, or MultiEdit tool call completes
     then the PostToolUse matcher fires
+  when Codex is the harness
+    then Codex itself aliases apply_patch to match this matcher — Codex-side behaviour, not contree-configured or testable from this repo
 ```
 
 ## diff-images-the-change
