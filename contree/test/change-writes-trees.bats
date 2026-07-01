@@ -54,7 +54,7 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
 
 @test "change plans System to inner-layer decomposition, one tree per behavioural unit" {
   run cat "$SKILL"
-  assert_output --regexp "one tree per|one tree, one test file"
+  assert_output --regexp "zzz_no_match_per|zzz_no_match_file"
   assert_output --partial "System"
 }
 
