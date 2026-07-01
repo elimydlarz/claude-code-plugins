@@ -236,7 +236,6 @@ export function buildClockInPlan(
     timecardPath: `.trunk-sync/timeclock/${input.session_id}.json`,
     timecard: {
       sessionId: input.session_id,
-      pid: runtime.pid,
       hostname: runtime.hostname,
       clockedInAt: now,
       lastActiveAt: now,
