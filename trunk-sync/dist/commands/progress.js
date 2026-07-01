@@ -58,7 +58,7 @@ export function progressCommand(args) {
         timecard.lastStep = lastStep;
     if (remainingSteps !== null)
         timecard.remainingSteps = remainingSteps;
-    timecard.lastActiveAt = new Date().toISOString(); // bump the heartbeat
+    timecard.lastActiveAt = new Date().toISOString();
     mkdirSync(dir, { recursive: true });
     writeFileSync(filePath, JSON.stringify(timecard, null, 2) + "\n");
     console.log(`Recorded progress for ${sessionId}.`);

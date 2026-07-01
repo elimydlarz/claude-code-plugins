@@ -194,7 +194,7 @@ export function runStop(state, sessionId) {
     card.lastActiveAt = new Date().toISOString();
     try {
         writeFileSync(cardPath, JSON.stringify(card, null, 2) + "\n");
-        execSync(`git -C "${state.repoRoot}" add -- "${cardPath}"`, { stdio: "ignore" });
+        execSync(`git -C "${state.repoRoot}" add -- ".trunk-sync/timeclock/${sessionId}.json"`, { stdio: "ignore" });
         execSync(`git -C "${state.repoRoot}" commit -m "auto: heartbeat ${sessionId.slice(0, 8)}"`, {
             stdio: "ignore",
         });
@@ -203,7 +203,12 @@ export function runStop(state, sessionId) {
         return; // nothing to commit or write failed — best-effort
     }
     if (state.hasRemote) {
-        executeSync({ targetBranch: state.targetBranch, currentBranch: state.currentBranch });
+        try {
+            executeSync({ targetBranch: state.targetBranch, currentBranch: state.currentBranch });
+        }
+        catch {
+            // best-effort: the next tool-use sync retries; the Stop hook always exits 0
+        }
     }
 }
 /** Reap the given (reapable) cards by removing their timecard files; returns removed paths. */
@@ -267,7 +272,6 @@ function executeClockIn(plan, input, state) {
         const allTimecards = readTimecards(state.repoRoot);
         const now = new Date();
         const { active, reapable } = classifyTimecards(plan.timecard.sessionId, allTimecards, now);
-        // Reap abandoned cards (heartbeat past the TTL)
         if (reapable.length > 0) {
             reapCards(state.repoRoot, reapable.map((tc) => tc.sessionId));
         }
