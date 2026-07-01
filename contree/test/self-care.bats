@@ -31,15 +31,15 @@ touch_nudge_seconds_ago() {
 
 @test "records a heartbeat when the hook fires" {
   run_hook
-  [ "$status" -eq 0 ]
-  [ "$(ls "$heartbeat_dir" | wc -l | tr -d ' ')" -eq 1 ]
+  [ "$status" -eq 0 ] || return 1
+  [ "$(ls "$heartbeat_dir" | wc -l | tr -d ' ')" -eq 1 ] || return 1
 }
 
 @test "exits silently when the heartbeat record fails" {
   heartbeat_dir="/dev/null/cannot-create-here"
   run_hook
-  [ "$status" -eq 0 ]
-  [ -z "$output" ]
+  [ "$status" -eq 0 ] || return 1
+  [ -z "$output" ] || return 1
 }
 
 @test "prunes heartbeats older than one hour when recording" {
@@ -49,8 +49,8 @@ touch_nudge_seconds_ago() {
 
   run_hook
 
-  [ "$status" -eq 0 ]
-  [ ! -f "$heartbeat_dir/$old_ts" ]
+  [ "$status" -eq 0 ] || return 1
+  [ ! -f "$heartbeat_dir/$old_ts" ] || return 1
 }
 
 @test "keeps heartbeats newer than one hour when recording" {
@@ -60,14 +60,14 @@ touch_nudge_seconds_ago() {
 
   run_hook
 
-  [ "$status" -eq 0 ]
-  [ -f "$heartbeat_dir/$recent_ts" ]
+  [ "$status" -eq 0 ] || return 1
+  [ -f "$heartbeat_dir/$recent_ts" ] || return 1
 }
 
 @test "does not nudge when no prior heartbeats exist" {
   run_hook
-  [ "$status" -eq 0 ]
-  [ -z "$output" ]
+  [ "$status" -eq 0 ] || return 1
+  [ -z "$output" ] || return 1
 }
 
 @test "nudges when heartbeats span at least 20 minutes with no gap longer than 5 minutes" {
