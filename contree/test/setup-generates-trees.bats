@@ -12,7 +12,9 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
 
 @test "setup configures tree reporters for local dev and CI" {
   run cat "$SKILL"
-  [[ "$output" == *"tree reporters"* || "$output" == *"tree-shaped"* ]]
+  assert_output --regexp "(tree reporters|tree-shaped)"
+  assert_output --partial "local dev"
+  assert_output --partial "JUnit"
 }
 
 @test "setup configures the six test layers as separate commands" {
