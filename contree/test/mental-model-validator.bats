@@ -7,16 +7,16 @@ VALIDATOR="$PROJECT_ROOT/hooks/validate-mental-model.sh"
 @test "validator flags that the file is missing when MENTAL_MODEL.md does not exist" {
   cd "$BATS_TEST_TMPDIR"
   run env CLAUDE_PROJECT_DIR="$BATS_TEST_TMPDIR" bash "$VALIDATOR"
-  [[ "$output" == *"MENTAL_MODEL.md"* ]]
-  [[ "$output" == *"missing"* || "$output" == *"not exist"* || "$output" == *"does not"* ]]
+  assert_output --partial "MENTAL_MODEL.md"
+  assert_output --regexp 'missing|not exist|does not'
 }
 
 @test "validator exits 0 even when issues are present (advisory, not blocking)" {
   cd "$BATS_TEST_TMPDIR"
   printf '## Glossary\n\n- one\n' > MENTAL_MODEL.md
   run env CLAUDE_PROJECT_DIR="$BATS_TEST_TMPDIR" bash "$VALIDATOR"
-  [ "$status" -eq 0 ]
-  [ -n "$output" ]
+  [ "$status" -eq 0 ] || return 1
+  [ -n "$output" ] || return 1
 }
 
 write_well_formed() {
