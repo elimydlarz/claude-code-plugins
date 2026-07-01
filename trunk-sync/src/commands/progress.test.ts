@@ -40,15 +40,19 @@ describe("progress command", () => {
     assert.match(r.stdout, /progress/);
   });
 
-  it("sets lastStep and remainingSteps on the matching timecard, preserving other fields", () => {
-    const id = "sess-1";
+  function seedCard(id: string, overrides: Partial<Timecard> = {}): void {
     mkdirSync(join(repo, ".trunk-sync", "timeclock"), { recursive: true });
     const original: Timecard = {
-      sessionId: id, pid: 4242, hostname: "host-a", clockedInAt: "2026-01-01T00:00:00.000Z",
+      sessionId: id, hostname: "host-a", clockedInAt: "2026-01-01T00:00:00.000Z",
       lastActiveAt: "2026-01-01T00:00:00.000Z", branch: "feat", task: "build the thing",
-      lastStep: null, remainingSteps: null,
+      lastStep: null, remainingSteps: null, ...overrides,
     };
     writeFileSync(timecardPath(repo, id), JSON.stringify(original, null, 2) + "\n");
+  }
+
+  it("sets both lastStep and remainingSteps, refreshes the heartbeat, and preserves other fields", () => {
+    const id = "sess-1";
+    seedCard(id);
 
     const r = runProgress(`${id} --last "wrote the parser" --next "wire the CLI, add tests"`, repo);
     assert.equal(r.exitCode, 0);
@@ -58,8 +62,41 @@ describe("progress command", () => {
     assert.equal(card.remainingSteps, "wire the CLI, add tests");
     assert.equal(card.clockedInAt, "2026-01-01T00:00:00.000Z");
     assert.equal(card.task, "build the thing");
-    assert.equal(card.pid, 4242);
     assert.equal(card.branch, "feat");
+    assert.notEqual(card.lastActiveAt, "2026-01-01T00:00:00.000Z"); // heartbeat refreshed
+  });
+
+  it("updates only lastStep with --last, leaving the remaining-steps handover untouched", () => {
+    const id = "sess-partial-last";
+    seedCard(id, { lastStep: "old last", remainingSteps: "the handover to preserve" });
+
+    const r = runProgress(`${id} --last "new last"`, repo);
+    assert.equal(r.exitCode, 0);
+    const card = readCard(repo, id);
+    assert.equal(card.lastStep, "new last");
+    assert.equal(card.remainingSteps, "the handover to preserve");
+  });
+
+  it("updates only remainingSteps with --next, leaving lastStep untouched", () => {
+    const id = "sess-partial-next";
+    seedCard(id, { lastStep: "the last step to preserve", remainingSteps: "old next" });
+
+    const r = runProgress(`${id} --next "new next"`, repo);
+    assert.equal(r.exitCode, 0);
+    const card = readCard(repo, id);
+    assert.equal(card.remainingSteps, "new next");
+    assert.equal(card.lastStep, "the last step to preserve");
+  });
+
+  it('clears remainingSteps with --next "" to mark the work done', () => {
+    const id = "sess-done";
+    seedCard(id, { lastStep: "finished everything", remainingSteps: "the last thing" });
+
+    const r = runProgress(`${id} --next ""`, repo);
+    assert.equal(r.exitCode, 0);
+    const card = readCard(repo, id);
+    assert.equal(card.remainingSteps, "");
+    assert.equal(card.lastStep, "finished everything");
   });
 
   it("creates a timecard carrying the progress when none exists yet", () => {
