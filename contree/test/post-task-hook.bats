@@ -122,8 +122,8 @@ run_hook_with_last_text() {
 
 @test "test-trees nudge prompts detection of drift between trees and implementation" {
   run_hook '{}'
-  [[ "$output" == *"test trees"* || "$output" == *"TEST TREES"* ]]
-  [[ "$output" == *"drift"* ]]
+  assert_output --regexp 'test trees|TEST TREES'
+  assert_output --partial "drift"
 }
 
 # --- CLAUDE.md nudge ---
