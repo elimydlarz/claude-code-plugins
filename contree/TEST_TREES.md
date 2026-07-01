@@ -325,6 +325,9 @@ change-decomposes-across-layers (src: skills/change/SKILL.md; system: test/chang
 
 ```
 sync-audits-and-resolves (src: skills/sync/SKILL.md; system: test/sync-audits-and-resolves.bats; journey: test/journey/docker-entrypoint.sh)
+  then drift is never resolved unilaterally — every case is presented to the user for a decision before any edit
+  if the project's test trees do not exist or are empty
+    then sync stops and suggests running setup first
   when sync is run
     then every when/then path is checked for implementation and tests
     and each test file's describe/it hierarchy is parsed and compared to its tree
