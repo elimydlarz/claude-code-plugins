@@ -1023,6 +1023,13 @@ COUNT_AFTER_BUMP=$(git -C "$WT_A" rev-list --count HEAD)
 run_stop "$WT_A" "agentaaa" >/dev/null 2>&1 || true
 assert_equals "$COUNT_AFTER_BUMP" "$(git -C "$WT_A" rev-list --count HEAD)" "stop: a fresh heartbeat makes no commit"
 
+# 36. A disrupted card (stale heartbeat, unfinished steps) is surfaced at SessionStart as a handover.
+STALE_HB=$(node -e 'console.log(new Date(Date.now()-2*60*60*1000).toISOString())')  # 2h ago
+jq --arg t "$STALE_HB" '.lastActiveAt=$t' "$CARD" > "$CARD.tmp" && mv "$CARD.tmp" "$CARD"
+SS_STALE=$(run_session_start "$WT_A" "agentccc")
+assert_contains "$SS_STALE" "possibly disrupted" "session-start: a stale card is surfaced labelled possibly-disrupted"
+assert_contains "$SS_STALE" "ship it" "session-start: the disrupted card's remaining steps are still surfaced"
+
 # ── Summary ──────────────────────────────────────────────────────────────────
 
 echo ""
