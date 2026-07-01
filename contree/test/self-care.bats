@@ -144,6 +144,6 @@ touch_nudge_seconds_ago() {
 
   run_hook
 
-  [ "$status" -eq 0 ]
-  [ -z "$output" ]
+  [ "$status" -eq 0 ] || return 1
+  [ -z "$output" ] || return 1
 }
