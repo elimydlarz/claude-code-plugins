@@ -247,39 +247,38 @@ export function buildClockInPlan(
   };
 }
 
+/** Recent heartbeat ⇒ the agent is active (coordinate, don't duplicate). */
+export const DISPLAY_WINDOW_MS = 60 * 60 * 1000; // 60 minutes
+/** Heartbeat older than this ⇒ the card is abandoned and swept (the transcript is the record). */
+export const REAP_TTL_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
+
 /**
- * Classify timecards: who's still clocked in vs who should be clocked out.
- * Own session is excluded. Local agents with dead PIDs are clocked out.
- * Remote agents with old timestamps are clocked out.
+ * Classify timecards purely by heartbeat age — one uniform rule for every card,
+ * no PID and no local/remote split (a stored PID is the ephemeral hook process,
+ * never the agent). Own session excluded.
+ *  - within the display window        → active (recently alive)
+ *  - past the window, within the TTL   → stale (possibly disrupted; surfaced to resume)
+ *  - past the TTL                      → reapable (even with unfinished steps; the transcript remains)
  */
 export function classifyTimecards(
   ownSessionId: string | null,
   timecards: Timecard[],
   now: Date,
-  localHostname: string,
-  isLocalPidAlive: (pid: number) => boolean,
-  staleMinutes: number = 30,
-): { clockedIn: Timecard[]; clockedOut: string[] } {
-  const staleThreshold = staleMinutes * 60 * 1000;
-  const clockedIn: Timecard[] = [];
-  const clockedOut: string[] = [];
+): { active: Timecard[]; stale: Timecard[]; reapable: Timecard[] } {
+  const active: Timecard[] = [];
+  const stale: Timecard[] = [];
+  const reapable: Timecard[] = [];
 
   for (const tc of timecards) {
     if (tc.sessionId === ownSessionId) continue;
 
     const age = now.getTime() - new Date(tc.lastActiveAt).getTime();
-    const isLocal = tc.hostname === localHostname;
-
-    if (isLocal && !isLocalPidAlive(tc.pid)) {
-      clockedOut.push(tc.sessionId);
-    } else if (age > staleThreshold) {
-      clockedOut.push(tc.sessionId);
-    } else {
-      clockedIn.push(tc);
-    }
+    if (age <= DISPLAY_WINDOW_MS) active.push(tc);
+    else if (age <= REAP_TTL_MS) stale.push(tc);
+    else reapable.push(tc);
   }
 
-  return { clockedIn, clockedOut };
+  return { active, stale, reapable };
 }
 
 /**
