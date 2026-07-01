@@ -41,8 +41,8 @@ run_hook_for_file() {
 
 @test "hooks.json wires post-update-check.sh as a PostToolUse hook" {
   run jq -r '.hooks.PostToolUse[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json"
-  [ "$status" -eq 0 ]
-  [[ "$output" == *"post-update-check.sh"* ]]
+  [ "$status" -eq 0 ] || return 1
+  assert_output --partial "post-update-check.sh"
 }
 
 @test "post-update hook does not run validator for adjacent files like MENTAL_MODEL_DRAFT.md" {
