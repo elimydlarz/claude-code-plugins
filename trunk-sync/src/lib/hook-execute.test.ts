@@ -1034,7 +1034,7 @@ describe("readTimecards", () => {
   it("reads multiple timecards", () => {
     const timeclockDir = join(dir, ".trunk-sync", "timeclock");
     mkdirSync(timeclockDir, { recursive: true });
-    writeFileSync(join(timeclockDir, "a.json"), JSON.stringify({ sessionId: "a", pid: 1, hostname: "h", clockedInAt: "", lastActiveAt: "", branch: "main", task: null }));
+    writeFileSync(join(timeclockDir, "a.json"), JSON.stringify({ sessionId: "a", hostname: "h", clockedInAt: "", lastActiveAt: "", branch: "main", task: null }));
     writeFileSync(join(timeclockDir, "b.json"), JSON.stringify({ sessionId: "b", pid: 2, hostname: "h", clockedInAt: "", lastActiveAt: "", branch: "main", task: null }));
     const timecards = readTimecards(dir);
     assert.equal(timecards.length, 2);
@@ -1043,7 +1043,7 @@ describe("readTimecards", () => {
   it("skips malformed files", () => {
     const timeclockDir = join(dir, ".trunk-sync", "timeclock");
     mkdirSync(timeclockDir, { recursive: true });
-    writeFileSync(join(timeclockDir, "good.json"), JSON.stringify({ sessionId: "good", pid: 1, hostname: "h", clockedInAt: "", lastActiveAt: "", branch: "main", task: null }));
+    writeFileSync(join(timeclockDir, "good.json"), JSON.stringify({ sessionId: "good", hostname: "h", clockedInAt: "", lastActiveAt: "", branch: "main", task: null }));
     writeFileSync(join(timeclockDir, "bad.json"), "not json");
     const timecards = readTimecards(dir);
     assert.equal(timecards.length, 1);
