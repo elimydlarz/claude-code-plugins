@@ -93,14 +93,14 @@ run_hook_with_last_text() {
 
 @test "mental-model nudge requires statements of what is true, not what to avoid" {
   run_hook '{}'
-  [[ "$output" == *"what is true"* ]]
-  [[ "$output" == *"avoid"* ]]
+  assert_output --partial "what is true"
+  assert_output --partial "avoid"
 }
 
 @test "mental-model nudge requires displacement or merge when a section is at its cap" {
   run_hook '{}'
-  [[ "$output" == *"cap"* ]]
-  [[ "$output" == *"displace"* || "$output" == *"merg"* ]]
+  assert_output --partial "cap"
+  assert_output --regexp 'displace|merg'
 }
 
 # --- Mental-model nudge: missing-file branch ---
