@@ -62,7 +62,7 @@ export function progressCommand(args: string[]): void {
   // destroys the other field's handover. `--next ""` clears remaining (marks done).
   if (lastStep !== null) timecard.lastStep = lastStep;
   if (remainingSteps !== null) timecard.remainingSteps = remainingSteps;
-  timecard.lastActiveAt = new Date().toISOString(); // bump the heartbeat
+  timecard.lastActiveAt = new Date().toISOString();
 
   mkdirSync(dir, { recursive: true });
   writeFileSync(filePath, JSON.stringify(timecard, null, 2) + "\n");
