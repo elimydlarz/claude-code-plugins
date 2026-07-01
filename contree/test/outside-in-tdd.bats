@@ -11,53 +11,53 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
 
 @test "tdd starts each capability from a failing Journey test at the highest tolerable realism" {
   run cat "$SKILL"
-  [[ "$output" == *"highest tolerable realism"* || "$output" == *"max realism"* || "$output" == *"max-realism"* ]]
-  [[ "$output" == *"real driving and driven adapters"* || "$output" == *"real driven adapters"* ]]
-  [[ "$output" == *"Journey"* ]]
+  assert_output --regexp "highest tolerable realism|max realism|max-realism"
+  assert_output --regexp "real driving and driven adapters|real driven adapters"
+  assert_output --partial "Journey"
 }
 
 @test "tdd leans on the journey and pushes detail to inner layers when breadth at max realism is unaffordable" {
   run cat "$SKILL"
-  [[ "$output" == *"unaffordable"* ]]
-  [[ "$output" == *"lean on the journey"* ]]
+  assert_output --partial "unaffordable"
+  assert_output --partial "lean on the journey"
 }
 
 @test "tdd keeps the journey curated and runnable under 5 minutes, trimmed to highest-impact and most-recent" {
   run cat "$SKILL"
-  [[ "$output" == *"curated"* ]]
-  [[ "$output" == *"under 5 minutes"* ]]
-  [[ "$output" == *"highest-impact"* ]]
-  [[ "$output" == *"most-recent"* ]]
+  assert_output --partial "curated"
+  assert_output --partial "under 5 minutes"
+  assert_output --partial "highest-impact"
+  assert_output --partial "most-recent"
 }
 
 @test "tdd gates implementation on a ground-level failing test under the journey/functional failure" {
   run cat "$SKILL"
-  [[ "$output" == *"ground layer"* ]]
-  [[ "$output" == *"journey/functional failure"* ]]
+  assert_output --partial "ground layer"
+  assert_output --partial "journey/functional failure"
 }
 
 @test "tdd adds inner-layer tests only when failing functional-test pressure demands them" {
   run cat "$SKILL"
-  [[ "$output" == *"pressure"* ]]
-  [[ "$output" == *"inner"* ]]
+  assert_output --partial "pressure"
+  assert_output --partial "inner"
 }
 
 @test "tdd writes tests at the tree's layer (Journey / System / Component / Adapter / Use-case / Domain)" {
   run cat "$SKILL"
-  [[ "$output" == *"Domain"* ]]
-  [[ "$output" == *"Use-case"* ]]
-  [[ "$output" == *"Component"* ]]
-  [[ "$output" == *"Adapter"* ]]
-  [[ "$output" == *"System"* ]]
-  [[ "$output" == *"Journey"* ]]
+  assert_output --partial "Domain"
+  assert_output --partial "Use-case"
+  assert_output --partial "Component"
+  assert_output --partial "Adapter"
+  assert_output --partial "System"
+  assert_output --partial "Journey"
 }
 
 @test "tdd describes the Component layer — real adapters, externals doubled at the edge, in-process" {
   run cat "$SKILL"
-  [[ "$output" == *"Component"* ]]
-  [[ "$output" == *"in-memory database"* ]]
-  [[ "$output" == *"stubbed outbound HTTP"* ]]
-  [[ "$output" == *"in-process"* ]]
+  assert_output --partial "Component"
+  assert_output --partial "in-memory database"
+  assert_output --partial "stubbed outbound HTTP"
+  assert_output --partial "in-process"
 }
 
 @test "tdd threads Component between System and the inner layers in the descent" {
@@ -67,14 +67,14 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
 
 @test "tdd reframes System as the same surface a Component test covers, validated against real infrastructure, selective" {
   run cat "$SKILL"
-  [[ "$output" == *"same single-capability surface a Component test covers"* ]]
-  [[ "$output" == *"selective, not exhaustive"* ]]
+  assert_output --partial "same single-capability surface a Component test covers"
+  assert_output --partial "selective, not exhaustive"
 }
 
 @test "tdd mirrors the tree in describe/it hierarchy" {
   run cat "$PROJECT_ROOT/skills/tdd/SKILL.md" "$PROJECT_ROOT/skills/change/SKILL.md"
-  [[ "$output" == *"describe"* ]]
-  [[ "$output" == *"mirror"* || "$output" == *"mirrors"* ]]
+  assert_output --partial "describe"
+  assert_output --regexp "mirror|mirrors"
 }
 
 @test "tdd does not silently modify existing trees" {
@@ -84,14 +84,14 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
 
 @test "tdd wires in-memory adapters for use-case tests" {
   run cat "$SKILL"
-  [[ "$output" == *"in-memory adapter"* ]]
-  [[ "$output" == *"Use-case"* ]]
+  assert_output --partial "in-memory adapter"
+  assert_output --partial "Use-case"
 }
 
 @test "tdd imports the shared port contract suite for driven adapter tests" {
   run cat "$SKILL"
-  [[ "$output" == *"shared"* ]]
-  [[ "$output" == *"contract"* ]]
+  assert_output --partial "shared"
+  assert_output --partial "contract"
 }
 
 @test "tdd exercises real infrastructure when testing a real driven adapter" {
@@ -101,8 +101,8 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
 
 @test "tdd adds newly discovered cases without removing existing paths" {
   run cat "$SKILL"
-  [[ "$output" == *"add new cases as you discover them"* || "$output" == *"add newly discovered cases"* ]]
-  [[ "$output" == *"Never modify or remove an existing path"* || "$output" == *"not modify or remove"* ]]
+  assert_output --regexp "add new cases as you discover them|add newly discovered cases"
+  assert_output --regexp "Never modify or remove an existing path|not modify or remove"
 }
 
 @test "tdd breaks the implementation intentionally when a red test passes" {
@@ -112,8 +112,8 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
 
 @test "tdd runs mutation testing at the end, not during the cycle" {
   run cat "$SKILL"
-  [[ "$output" == *"mutation"* ]]
-  [[ "$output" == *"end of"* || "$output" == *"Never during the cycle"* || "$output" == *"never during the cycle"* ]]
+  assert_output --partial "mutation"
+  assert_output --regexp "end of|Never during the cycle|never during the cycle"
 }
 
 @test "tdd suggests sync after all trees for a slice pass" {
@@ -123,61 +123,61 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
 
 @test "tdd suggests change first when no tree covers the behaviour" {
   run cat "$SKILL"
-  [[ "$output" == *"suggest"* ]]
-  [[ "$output" == *"change"* ]]
-  [[ "$output" == *"no tree"* ]]
+  assert_output --partial "suggest"
+  assert_output --partial "change"
+  assert_output --partial "no tree"
 }
 
 @test "tdd updates the tree's parenthesised paths when creating a file at a path the tree does not yet name" {
   run cat "$SKILL"
-  [[ "$output" == *"parenthesised path"* || "$output" == *"parenthesised paths"* || "$output" == *"tree's named paths"* ]]
-  [[ "$output" == *"before moving to the next test"* || "$output" == *"before the next test"* ]]
+  assert_output --regexp "parenthesised path|parenthesised paths|tree's named paths"
+  assert_output --regexp "before moving to the next test|before the next test"
 }
 
 @test "tdd places new files under the correct coverage category and closes 'none' gaps" {
   run cat "$SKILL"
-  [[ "$output" == *"category"* ]]
-  [[ "$output" == *"src"* ]]
-  [[ "$output" == *"domain"* ]]
-  [[ "$output" == *"use-case"* ]]
-  [[ "$output" == *"adapter"* ]]
-  [[ "$output" == *"component"* ]]
-  [[ "$output" == *"system"* ]]
-  [[ "$output" == *"none"* ]]
+  assert_output --partial "category"
+  assert_output --partial "src"
+  assert_output --partial "domain"
+  assert_output --partial "use-case"
+  assert_output --partial "adapter"
+  assert_output --partial "component"
+  assert_output --partial "system"
+  assert_output --partial "none"
 }
 
 @test "tdd updates the tree's parenthesised paths when moving or renaming a file the tree names" {
   run cat "$SKILL"
-  [[ "$output" == *"move"* || "$output" == *"rename"* || "$output" == *"moved or renamed"* ]]
-  [[ "$output" == *"parenthesised path"* || "$output" == *"tree's named paths"* ]]
+  assert_output --regexp "move|rename|moved or renamed"
+  assert_output --regexp "parenthesised path|tree's named paths"
 }
 
 @test "tdd corrects errors it notices in tree leaf text before writing the test" {
   run cat "$SKILL"
-  [[ "$output" == *"leaf"* ]]
-  [[ "$output" == *"typo"* || "$output" == *"inaccuracy"* || "$output" == *"error"* ]]
-  [[ "$output" == *"corrected"* || "$output" == *"fix"* || "$output" == *"reconcile"* ]]
+  assert_output --partial "leaf"
+  assert_output --regexp "typo|inaccuracy|error"
+  assert_output --regexp "corrected|fix|reconcile"
 }
 
 @test "tdd directs that a unit pulled into being by a higher-layer test gets its own tree and failing tests at its native ground layer before the code lands" {
   run cat "$SKILL"
-  [[ "$output" == *"own tree"* ]]
-  [[ "$output" == *"own failing test"* ]]
-  [[ "$output" == *"native ground layer"* ]]
-  [[ "$output" == *"before any implementation lands"* ]]
+  assert_output --partial "own tree"
+  assert_output --partial "own failing test"
+  assert_output --partial "native ground layer"
+  assert_output --partial "before any implementation lands"
 }
 
 @test "tdd directs that overlap between layers is intentional and the higher-layer test never excuses the unit's own coverage" {
   run cat "$SKILL"
-  [[ "$output" == *"Overlap between layers is the intended shape"* || "$output" == *"overlap across layers is intentional"* ]]
-  [[ "$output" == *"never a reason to skip"* ]]
+  assert_output --regexp "Overlap between layers is the intended shape|overlap across layers is intentional"
+  assert_output --partial "never a reason to skip"
 }
 
 @test "tdd descends from each failing higher-layer test to the lowest layer the behaviour reaches" {
   run cat "$SKILL"
-  [[ "$output" == *"read its failure"* ]]
-  [[ "$output" == *"lowest layer"* ]]
-  [[ "$output" == *"never stop descending because"* || "$output" == *"Never stop descending because"* ]]
+  assert_output --partial "read its failure"
+  assert_output --partial "lowest layer"
+  assert_output --regexp "never stop descending because|Never stop descending because"
 }
 
 @test "tdd writes the full ladder of tests down to the lowest level" {
@@ -187,6 +187,6 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
 
 @test "tdd folds back up once the lowest-layer test passes" {
   run cat "$SKILL"
-  [[ "$output" == *"fold back up"* || "$output" == *"FOLD BACK UP"* ]]
-  [[ "$output" == *"a layer beneath it lacks coverage"* || "$output" == *"a layer beneath is missing coverage"* ]]
+  assert_output --regexp "fold back up|FOLD BACK UP"
+  assert_output --regexp "a layer beneath it lacks coverage|a layer beneath is missing coverage"
 }
