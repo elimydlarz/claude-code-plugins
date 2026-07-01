@@ -354,14 +354,14 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
 
   runSessionStart
     when the session-start hook fires
-      then the starting agent's own session id and the instruction to clock in with `trunk-sync clockin <id>` are printed to stdout for injection into context
-      and every other session's timecard is read and classified, the starting session excluded
-      when disrupted or active cards are present
-        then their state-labelled summary is appended — disrupted to resume, active to coordinate around
-      when only done cards (or none) remain
-        then only the own-id and clock-in instruction are printed
+      then the starting agent's own session id and the instruction to record progress with `trunk-sync progress <id> --last … --next …` are printed to stdout for injection into context
+      and every other session's timecard is read and classified by heartbeat age, the starting session excluded
+      when active or stale cards are present
+        then their labelled summary is appended — active to coordinate around, stale to verify against the tests and resume
+      when only reapable cards (or none) remain
+        then only the own-id and record-progress instruction are printed
     if the timeclock directory does not exist
-      then the own-id and clock-in instruction are still printed and the hook exits 0
+      then the own-id and record-progress instruction are still printed and the hook exits 0
     if no session id is provided
       then nothing is printed
 
