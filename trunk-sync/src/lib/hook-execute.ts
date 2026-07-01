@@ -305,9 +305,9 @@ function executeClockIn(
     const isFirstClockIn = lastWarning === null;
     const throttleElapsed = isFirstClockIn || (nowMs - lastWarning) >= THROTTLE_MS;
 
-    if (isFirstClockIn || (clockedIn.length > 0 && throttleElapsed)) {
+    if (isFirstClockIn || (active.length > 0 && throttleElapsed)) {
       writeThrottleTimestamp(plan.timecard.sessionId, nowMs);
-      return formatClockInMessage(clockedIn, now, isFirstClockIn);
+      return formatClockInMessage(active, now, isFirstClockIn);
     }
 
     return null;
