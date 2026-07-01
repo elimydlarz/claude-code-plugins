@@ -40,22 +40,22 @@ Agents are automatically aware of each other. On every commit, the hook writes a
 When another agent is working in the same repo:
 
 ```
-TRUNK-SYNC CLOCK-IN: 1 other agent clocked in.
+TRUNK-SYNC ACTIVE: 1 other agent active. Continue your work as planned — no action required.
 - abc12345 on dev-macbook (branch: main, 30s ago) — "Fix the login bug"
-Consider potential resource conflicts: ports, build locks, test databases.
+If you share resources (ports, test databases, build locks), coordinate accordingly. Otherwise, ignore this message.
 ```
 
-Agents with dead processes are automatically clocked out. Remote agents that go silent are clocked out after 30 minutes. The message is throttled to avoid noise.
+An agent counts as active while its heartbeat is fresh — bumped on every edit, and at each turn's end by a Stop hook. After an hour of silence its card reads as stale (possibly disrupted); abandoned cards are reaped only after 14 days. There are no process IDs to check and no clock-out command — liveness is purely the age of the last heartbeat. The message is throttled to avoid noise.
 
-On its **first** clock-in of a session, an agent is also nudged to run the test suite:
+On its **first** edit of a session, an agent is also nudged to run the test suite:
 
 ```
-TRUNK-SYNC WIP: Run the test suite before starting. Failing tests are checkpoints marking
-where an earlier agent left off — any failing test that is not part of a still-clocked-in
-agent's work is unfinished WIP for you to resume.
+TRUNK-SYNC WIP: Run the test suite before starting. Failing tests are the authoritative signal of
+unfinished work — any failing test not owned by a currently-active agent is WIP for you to resume.
+The active roster above is advisory context for who already holds work.
 ```
 
-Failing tests are the checkpoint of a previous agent's progress. Cross-referencing them against who is still clocked in tells a fresh agent which unfinished work is orphaned and safe to pick up.
+Failing tests — not the timecard — are the authoritative signal of unfinished work. Cross-referencing them against who is still active tells a fresh agent which unfinished work is orphaned and safe to pick up; the cards are advisory context.
 
 ## Handover — continue across sessions and context limits
 
