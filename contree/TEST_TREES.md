@@ -281,6 +281,11 @@ change-writes-trees (src: skills/change/SKILL.md; system: test/change-writes-tre
   when trees are complete
     then they are presented to the user for alignment
     and the user is suggested to run sync
+  when a tree is named
+    then its first line is exactly `<Layer>: <Subject>`
+    and the layer prefix lets readers and sync detect duplication across trees that share a subject at different layers
+  when a when-trigger can only occur as a consequence of a prior then-outcome
+    then it is nested as a child of that outcome, not written as a sibling
 ```
 
 ## change-decomposes-across-layers
