@@ -247,6 +247,9 @@ function tmpdir(): string {
 
 const THROTTLE_MS = 5 * 60 * 1000; // 5 minutes
 
+/** How stale a heartbeat must be before the Stop hook refreshes and re-syncs it. */
+const HEARTBEAT_STALE_MS = 30 * 60 * 1000; // 30 minutes — half the active display window
+
 /**
  * Extract the agent's current task from the transcript (same logic as commit enrichment).
  * Returns null if transcript is unavailable or unparseable.
