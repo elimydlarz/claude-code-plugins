@@ -248,7 +248,7 @@ export function buildClockInPlan(
 }
 
 /** Recent heartbeat ⇒ the agent is active (coordinate, don't duplicate). */
-export const DISPLAY_WINDOW_MS = 60 * 60 * 1000; // 60 minutes
+export const ACTIVE_WINDOW_MS = 60 * 60 * 1000; // 60 minutes
 /** Heartbeat older than this ⇒ the card is abandoned and swept (the transcript is the record). */
 export const REAP_TTL_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
 
