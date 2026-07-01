@@ -253,6 +253,6 @@ run_hook_with_last_text() {
   local cmd; cmd=$(hook_command)
   run env CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" CMD="$cmd" INPUT='{}' CLAUDE_PROJECT_DIR="$BATS_TEST_TMPDIR" SUBDIR="$BATS_TEST_TMPDIR/assets" \
     bash -c 'cd "$SUBDIR" && printf "%s" "$INPUT" | bash -c "$CMD" 2>&1'
-  refute_output --partial "README"
+  refute_output --partial "MENTAL_MODEL.md is missing"
   refute_output --partial "README.md is missing"
 }
