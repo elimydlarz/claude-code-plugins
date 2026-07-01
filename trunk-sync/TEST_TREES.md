@@ -491,6 +491,8 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       and clockedInAt, task, and branch are preserved
     when called with `--last` only
       then lastStep is set and remainingSteps is left untouched — a partial update never destroys the handover
+    when called with `--next` only
+      then remainingSteps is set and lastStep is left untouched
     when called with `--next ""`
       then remainingSteps is cleared, marking the work done
     when no timecard yet exists for the session id
