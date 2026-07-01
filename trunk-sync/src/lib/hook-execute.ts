@@ -161,18 +161,9 @@ export function readTimecards(repoRoot: string): Timecard[] {
   return timecards;
 }
 
-export function isProcessAlive(pid: number): boolean {
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 /**
  * Build the session-start message: hand the starting agent its own session id and the
- * record-progress instruction, then append the handover roster of other clocked-in agents.
+ * record-progress instruction, then append the handover roster of active + stale sessions.
  * Returns null only when no session id is available.
  */
 export function runSessionStart(repoRoot: string, ownSessionId: string | null): string | null {
@@ -180,18 +171,51 @@ export function runSessionStart(repoRoot: string, ownSessionId: string | null): 
   const intro =
     `TRUNK-SYNC SESSION: your session id is ${ownSessionId}. Record your progress as you work and before you pause:\n` +
     `  trunk-sync progress ${ownSessionId} --last "<step you just finished>" --next "<steps still to do>"`;
-  // Handover discovery surfaces every OTHER session's progress — including a prior session
-  // of yours that ended (dead pid). Liveness is presence, not handover: an ended session is
-  // exactly the work you want to resume, so it is not filtered out here.
-  const others = readTimecards(repoRoot).filter((tc) => tc.sessionId !== ownSessionId);
-  const roster = formatSessionStartSummary(others, new Date());
+  const now = new Date();
+  const { active, stale } = classifyTimecards(ownSessionId, readTimecards(repoRoot), now);
+  const roster = formatSessionStartSummary(active, stale, now);
   return roster ? `${intro}\n\n${roster}` : intro;
 }
 
-/** Clock out stale agents by removing their timecards. */
-export function clockOutStale(repoRoot: string, staleIds: string[]): string[] {
+/**
+ * Heartbeat-only Stop hook: if this session has a timecard, bump its heartbeat and sync it
+ * so remote readers stay fresh through a long no-edit turn. Never forces the agent (no exit 2).
+ * No-ops when a recent tool-use sync already refreshed the heartbeat, and creates no card for
+ * a session that never edited.
+ */
+export function runStop(state: RepoState, sessionId: string | null): void {
+  if (!sessionId) return;
+  const cardPath = join(state.repoRoot, ".trunk-sync", "timeclock", `${sessionId}.json`);
+  let card: Timecard;
+  try {
+    card = JSON.parse(readFileSync(cardPath, "utf-8")) as Timecard;
+  } catch {
+    return; // no card — a session that never edited has no handover to keep alive
+  }
+
+  const age = Date.now() - new Date(card.lastActiveAt).getTime();
+  if (age < HEARTBEAT_STALE_MS) return; // a recent tool-use sync already refreshed the heartbeat
+
+  card.lastActiveAt = new Date().toISOString();
+  try {
+    writeFileSync(cardPath, JSON.stringify(card, null, 2) + "\n");
+    execSync(`git -C "${state.repoRoot}" add -- "${cardPath}"`, { stdio: "ignore" });
+    execSync(`git -C "${state.repoRoot}" commit -m "auto: heartbeat ${sessionId.slice(0, 8)}"`, {
+      stdio: "ignore",
+    });
+  } catch {
+    return; // nothing to commit or write failed — best-effort
+  }
+
+  if (state.hasRemote) {
+    executeSync({ targetBranch: state.targetBranch, currentBranch: state.currentBranch });
+  }
+}
+
+/** Reap the given (reapable) cards by removing their timecard files; returns removed paths. */
+export function reapCards(repoRoot: string, ids: string[]): string[] {
   const removed: string[] = [];
-  for (const id of staleIds) {
+  for (const id of ids) {
     const filePath = join(repoRoot, ".trunk-sync", "timeclock", `${id}.json`);
     try {
       unlinkSync(filePath);
