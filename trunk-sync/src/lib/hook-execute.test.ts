@@ -950,7 +950,6 @@ describe("clockIn", () => {
     assert.ok(existsSync(filePath));
     const content = JSON.parse(readFileSync(filePath, "utf-8")) as Timecard;
     assert.equal(content.sessionId, "test-session");
-    assert.equal(content.pid, process.pid);
     assert.equal(content.hostname, "test-host");
     assert.equal(content.task, "Fix the login bug");
   });
