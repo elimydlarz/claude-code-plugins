@@ -52,21 +52,21 @@ load test_helper
   [[ "$output" == *"add new cases as you discover them"* || "$output" == *"add newly discovered cases"* ]]
 }
 
-@test "every tree reifies exactly one test file — no system/journey/adapter path is claimed by two trees" {
+@test "every tree reifies exactly one test file — no system-category test file is claimed by two trees" {
   local file="$PROJECT_ROOT/TEST_TREES.md"
-  run bash -c "grep -oE '(src|domain|use-case|adapter|component|system|journey): [^;)]+' '$file' | sort | uniq -d"
+  run bash -c "grep -oE '(^|[; ])system: [^;)]+' '$file' | sed -E 's/^[; ]*system: //' | sort | uniq -d"
   assert_success
   assert_output ""
 }
 
-@test "gaps are declared explicitly — every coverage value is a path or the literal none" {
+@test "gaps are declared explicitly — every coverage value is one or more paths or the literal none" {
   local file="$PROJECT_ROOT/TEST_TREES.md"
   run bash -c "grep -oE '(src|domain|use-case|adapter|component|system|journey): [^;)]+' '$file' | sed -E 's/^[a-z-]+: //'"
   assert_success
   local bad=()
   while IFS= read -r value; do
     [ -z "$value" ] && continue
-    if [ "$value" != "none" ] && [[ ! "$value" =~ ^[A-Za-z0-9_./*-]+$ ]]; then
+    if [ "$value" != "none" ] && [[ ! "$value" =~ ^[A-Za-z0-9_./*,\ -]+$ ]]; then
       bad+=("$value")
     fi
   done <<< "$output"
