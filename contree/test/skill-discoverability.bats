@@ -4,7 +4,7 @@ load test_helper
 
 @test "change skill's frontmatter TRIGGERs on behaviour-change phrasings" {
   run sed -n '/^---$/,/^---$/p' "$PROJECT_ROOT/skills/change/SKILL.md"
-  assert_output --partial "TRIGGERXYZ_MUTATION_TEST"
+  assert_output --partial "TRIGGER"
   assert_output --partial "behaviour change"
   assert_output --partial "before any code is discussed or written"
 }
