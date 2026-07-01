@@ -341,14 +341,14 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       then a timecard is committed alongside the code change
     when the agent clocks in for the first time in a session
       then exit 2 is returned with a message telling the agent to run the tests and resume any unfinished WIP
-    when other agents are clocked in
-      then exit 2 is returned with a throttled clock-in message
+    when other agents are active
+      then exit 2 is returned with a throttled roster of who is active
     when the throttle file is fresh
-      then the clock-in message is suppressed
-    when another agent's card is classified done and reapable
-      then it is reaped as part of the same commit
-    when another agent's card is disrupted (unfinished, but ended)
-      then it is preserved, not reaped — it is a handover for someone to resume
+      then the roster message is suppressed
+    when another agent's card is older than the reap ttl
+      then it is reaped as part of the same commit, regardless of remaining steps
+    when another agent's card is within the reap ttl
+      then it is preserved, not reaped — active or stale, the handover survives for someone to resume
     if `.trunk-sync` is unwritable
       then the hook still exits 0 (clock-in is best-effort)
 
