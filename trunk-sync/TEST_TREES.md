@@ -328,11 +328,9 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
     if a timecard file is malformed
       then it is skipped without aborting
 
-  reapAgedCards
-    when a card's heartbeat is older than the reap ttl
-      then it is removed and its path returned, regardless of remaining steps — the committed transcript is the durable record
-    when a card's heartbeat is within the reap ttl
-      then it is kept in place, whether active or stale — an advisory handover survives for resumption
+  reapCards
+    when given the session ids classified reapable
+      then each card file is removed and its path is returned
     when a timecard file is already gone
       then it is handled gracefully
 
