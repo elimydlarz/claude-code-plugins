@@ -77,8 +77,8 @@ SKILL="$PROJECT_ROOT/skills/sync/SKILL.md"
 
 @test "sync flags tree-named paths that do not exist on disk as drift" {
   run cat "$SKILL"
-  [[ "$output" == *"does not exist"* || "$output" == *"not exist on disk"* ]]
-  [[ "$output" == *"drift"* ]]
+  [[ "$output" == *"does not exist"* || "$output" == *"not exist on disk"* ]] || return 1
+  assert_output --partial "drift"
 }
 
 @test "sync surfaces every 'none' value as an explicit declared gap" {
