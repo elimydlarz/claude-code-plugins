@@ -27,8 +27,8 @@ run_hook_for_file() {
   mkdir -p "$project"
   printf '## Glossary\n\n- one\n' > "$project/MENTAL_MODEL.md"
   run_hook_for_file "$project" "$project/MENTAL_MODEL.md"
-  [[ "$output" == *"additionalContext"* ]]
-  [[ "$output" == *"PostToolUse"* ]]
+  assert_output --partial "additionalContext"
+  assert_output --partial "PostToolUse"
 }
 
 @test "post-update hook does not run validator when a file other than MENTAL_MODEL.md is edited" {
