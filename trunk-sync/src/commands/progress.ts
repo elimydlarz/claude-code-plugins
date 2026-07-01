@@ -48,7 +48,6 @@ export function progressCommand(args: string[]): void {
     const now = new Date().toISOString();
     timecard = {
       sessionId,
-      pid: process.pid,
       hostname: hostname(),
       clockedInAt: now,
       lastActiveAt: now,
@@ -59,7 +58,11 @@ export function progressCommand(args: string[]): void {
     };
   }
 
-  timecard = { ...timecard, lastStep, remainingSteps };
+  // Update only the fields whose flags were supplied — a partial update never
+  // destroys the other field's handover. `--next ""` clears remaining (marks done).
+  if (lastStep !== null) timecard.lastStep = lastStep;
+  if (remainingSteps !== null) timecard.remainingSteps = remainingSteps;
+  timecard.lastActiveAt = new Date().toISOString(); // bump the heartbeat
 
   mkdirSync(dir, { recursive: true });
   writeFileSync(filePath, JSON.stringify(timecard, null, 2) + "\n");
