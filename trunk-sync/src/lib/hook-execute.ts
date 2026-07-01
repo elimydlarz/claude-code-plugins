@@ -199,7 +199,7 @@ export function runStop(state: RepoState, sessionId: string | null): void {
   card.lastActiveAt = new Date().toISOString();
   try {
     writeFileSync(cardPath, JSON.stringify(card, null, 2) + "\n");
-    execSync(`git -C "${state.repoRoot}" add -- "${cardPath}"`, { stdio: "ignore" });
+    execSync(`git -C "${state.repoRoot}" add -- ".trunk-sync/timeclock/${sessionId}.json"`, { stdio: "ignore" });
     execSync(`git -C "${state.repoRoot}" commit -m "auto: heartbeat ${sessionId.slice(0, 8)}"`, {
       stdio: "ignore",
     });
@@ -208,7 +208,11 @@ export function runStop(state: RepoState, sessionId: string | null): void {
   }
 
   if (state.hasRemote) {
-    executeSync({ targetBranch: state.targetBranch, currentBranch: state.currentBranch });
+    try {
+      executeSync({ targetBranch: state.targetBranch, currentBranch: state.currentBranch });
+    } catch {
+      // best-effort: the next tool-use sync retries; the Stop hook always exits 0
+    }
   }
 }
 
