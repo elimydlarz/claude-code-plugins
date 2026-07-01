@@ -1011,6 +1011,18 @@ run_hook "$(make_input "$WT_A/seed.txt" "agentaaa" "Edit" "")"
 assert_equals "all tests green" "$(jq -r '.lastStep' "$CARD")" "preservation: clock-in keeps lastStep"
 assert_equals "ship it" "$(jq -r '.remainingSteps' "$CARD")" "preservation: clock-in keeps remainingSteps"
 
+# 35. The Stop hook bumps and commits a stale heartbeat, then no-ops while it is fresh.
+STALE_TS=$(node -e 'console.log(new Date(Date.now()-45*60*1000).toISOString())')
+jq --arg t "$STALE_TS" '.lastActiveAt=$t' "$CARD" > "$CARD.tmp" && mv "$CARD.tmp" "$CARD"
+( cd "$WT_A" && git add -A && git commit -q -m "stale the card" )
+run_stop "$WT_A" "agentaaa" >/dev/null 2>&1 || true
+assert_contains "$(git -C "$WT_A" log -1 --format=%s)" "heartbeat" "stop: stale heartbeat is committed"
+[[ "$(jq -r '.lastActiveAt' "$CARD")" != "$STALE_TS" ]] && HB_BUMPED=yes || HB_BUMPED=no
+assert_equals "yes" "$HB_BUMPED" "stop: stale heartbeat value is refreshed"
+COUNT_AFTER_BUMP=$(git -C "$WT_A" rev-list --count HEAD)
+run_stop "$WT_A" "agentaaa" >/dev/null 2>&1 || true
+assert_equals "$COUNT_AFTER_BUMP" "$(git -C "$WT_A" rev-list --count HEAD)" "stop: a fresh heartbeat makes no commit"
+
 # ── Summary ──────────────────────────────────────────────────────────────────
 
 echo ""
