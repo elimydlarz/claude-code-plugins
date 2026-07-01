@@ -484,7 +484,7 @@ describe("planHook clock-in plan", () => {
     const plan = planHook(input, state, runtime);
     if (plan.action !== "commit-and-sync") return;
     assert.notEqual(plan.clockIn, null);
-    assert.equal(plan.clockIn!.timecard.pid, 12345);
+    assert.equal(plan.clockIn!.timecard.hostname, "my-macbook");
   });
 
   it("clockIn is null without runtime context", () => {
