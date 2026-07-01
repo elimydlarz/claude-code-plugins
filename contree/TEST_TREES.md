@@ -353,6 +353,17 @@ sync-audits-and-resolves (src: skills/sync/SKILL.md; system: test/sync-audits-an
     then the user is suggested to run tdd to implement them
   when the project is in sync
     then the user is suggested to run second-opinion for an independent review of the completed work
+  when a Domain, Use-case, or Port-contract tree is checked
+    then every observable branch in the unit's code corresponds to a tree path, and every tree path corresponds to a branch
+  when a test exists for a tree path but does not pass
+    then the implementation is assumed wrong by default unless evidence says otherwise
+    and fixing it is treated as part of sync, not deferred to the user
+    and sync is not complete while any test is red
+  when a slice has inner trees but no System tree above them
+    then a System tree is written for the slice, or the pure-library exception is confirmed and the omission documented
+    and a System tree is never invented silently
+  when all gaps are implemented and all tests pass
+    then mutation testing is run against Domain and Use-case as final validation, if configured
 ```
 
 ## workflow-runs-end-to-end
