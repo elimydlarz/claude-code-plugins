@@ -118,7 +118,7 @@ export function gatherRepoState(input: HookInput): RepoState | null {
 // --- Clocking in/out ---
 
 export function getRuntimeContext(): RuntimeContext {
-  return { pid: process.pid, hostname: hostname() };
+  return { hostname: hostname() };
 }
 
 /** Clock in: write or update this agent's timecard on the timeclock. */
