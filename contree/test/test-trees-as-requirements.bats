@@ -8,20 +8,20 @@ load test_helper
 
 @test "CLAUDE.md identifies TEST_TREES.md as the definition of functional and cross-functional requirements" {
   run cat "$PROJECT_ROOT/CLAUDE.md"
-  [[ "$output" == *"TEST_TREES.md"* ]]
-  [[ "$output" == *"functional and cross-functional requirements"* ]]
+  assert_output --partial "TEST_TREES.md"
+  assert_output --partial "functional and cross-functional requirements"
 }
 
 @test "TEST_TREES.md defines functional requirements using EARS syntax" {
   run cat "$PROJECT_ROOT/TEST_TREES.md"
-  [[ "$output" == *"when"* ]]
-  [[ "$output" == *"then"* ]]
+  assert_output --partial "when"
+  assert_output --partial "then"
 }
 
 @test "each behavioural unit has its own tree as a flat H2 subsection" {
   run grep -cE "^## [a-z-]+" "$PROJECT_ROOT/TEST_TREES.md"
-  [ "$status" -eq 0 ]
-  [ "$output" -ge 10 ]
+  [ "$status" -eq 0 ] || return 1
+  [ "$output" -ge 10 ] || return 1
 }
 
 @test "trees are flat subsections — no grouping H1s inside TEST_TREES.md" {
