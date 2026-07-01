@@ -1377,27 +1377,13 @@ describe("executePlan with clock-in", () => {
     unlinkSync(throttlePath);
   });
 
-  it("clocks out agents with dead PIDs", () => {
-    const timeclockDir = join(dir, ".trunk-sync", "timeclock");
-    mkdirSync(timeclockDir, { recursive: true });
-    writeFileSync(join(timeclockDir, "dead-session.json"), JSON.stringify({
-      sessionId: "dead-session",
-      pid: 999999999, // dead PID
-      hostname: hostname(), // local hostname
-      clockedInAt: new Date().toISOString(),
-      lastActiveAt: new Date().toISOString(),
-      branch: "main",
-      task: null,
-    }));
-    execSync("git add . && git commit -m 'add dead agent'", { cwd: dir, stdio: "ignore" });
-
+  function commitAndSyncPlan(): { plan: HookPlan; input: HookInput; state: RepoState } {
     const filePath = join(dir, "code.txt");
     writeFileSync(filePath, "code\n");
     const clockInPlan: ClockInPlan = {
       timecardPath: ".trunk-sync/timeclock/my-session.json",
       timecard: {
         sessionId: "my-session",
-        pid: process.pid,
         hostname: hostname(),
         clockedInAt: new Date().toISOString(),
         lastActiveAt: new Date().toISOString(),
@@ -1409,23 +1395,46 @@ describe("executePlan with clock-in", () => {
     };
     const plan: HookPlan = {
       action: "commit-and-sync",
-      commit: {
-        filesToStage: [filePath],
-        filesToRemove: [],
-        subject: "auto: write code.txt",
-        body: null,
-      },
+      commit: { filesToStage: [filePath], filesToRemove: [], subject: "auto: write code.txt", body: null },
       sync: null,
       clockIn: clockInPlan,
     };
-    const input = makeInput({ tool_input: { file_path: filePath } });
-    const state = makeState(dir);
+    return { plan, input: makeInput({ tool_input: { file_path: filePath } }), state: makeState(dir) };
+  }
+
+  it("reaps another agent's card once its heartbeat is past the reap ttl", () => {
+    const timeclockDir = join(dir, ".trunk-sync", "timeclock");
+    mkdirSync(timeclockDir, { recursive: true });
+    const twentyDaysAgo = new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString();
+    writeFileSync(join(timeclockDir, "abandoned.json"), JSON.stringify({
+      sessionId: "abandoned", hostname: "other-host",
+      clockedInAt: twentyDaysAgo, lastActiveAt: twentyDaysAgo,
+      branch: "main", task: null, lastStep: null, remainingSteps: "left unfinished work",
+    }));
+    execSync("git add . && git commit -m 'add abandoned agent'", { cwd: dir, stdio: "ignore" });
+
+    const { plan, input, state } = commitAndSyncPlan();
     executePlan(plan, input, state);
 
-    // Dead agent's timecard should be removed
-    assert.ok(!existsSync(join(timeclockDir, "dead-session.json")));
-    // Own timecard should exist
+    assert.ok(!existsSync(join(timeclockDir, "abandoned.json")), "card past the TTL should be reaped even with remaining steps");
     assert.ok(existsSync(join(timeclockDir, "my-session.json")));
+  });
+
+  it("preserves another agent's card whose heartbeat is within the reap ttl", () => {
+    const timeclockDir = join(dir, ".trunk-sync", "timeclock");
+    mkdirSync(timeclockDir, { recursive: true });
+    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+    writeFileSync(join(timeclockDir, "stale-but-kept.json"), JSON.stringify({
+      sessionId: "stale-but-kept", hostname: "other-host",
+      clockedInAt: twoDaysAgo, lastActiveAt: twoDaysAgo,
+      branch: "main", task: null, lastStep: null, remainingSteps: "resume me",
+    }));
+    execSync("git add . && git commit -m 'add stale agent'", { cwd: dir, stdio: "ignore" });
+
+    const { plan, input, state } = commitAndSyncPlan();
+    executePlan(plan, input, state);
+
+    assert.ok(existsSync(join(timeclockDir, "stale-but-kept.json")), "card within the TTL is preserved as a handover");
   });
 
   it("hook still exits 0 when clock-in fails (.trunk-sync unwritable)", () => {
