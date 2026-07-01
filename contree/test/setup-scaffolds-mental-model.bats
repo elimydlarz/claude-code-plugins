@@ -33,7 +33,7 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
 
 @test "setup adds a pointer line to CLAUDE.md identifying MENTAL_MODEL.md when missing" {
   run cat "$SKILL"
-  assert_output --partial "MUTATED_pointer_line"
+  assert_output --partial "pointer line"
   assert_output --partial "CLAUDE.md"
   assert_output --partial "MENTAL_MODEL.md"
 }
