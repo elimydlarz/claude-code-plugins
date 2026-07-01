@@ -7,8 +7,8 @@ CHANGE="$PROJECT_ROOT/skills/change/SKILL.md"
 
 @test "setup colocates Domain tests with source (*.domain.test.*)" {
   run cat "$SETUP"
-  [[ "$output" == *"*.domain.test.*"* ]]
-  [[ "$output" == *"colocated"* ]]
+  assert_output --partial "*.domain.test.*"
+  assert_output --partial "colocated"
 }
 
 @test "setup colocates Use-case tests with the use-case (*.use-case.test.*)" {
@@ -23,50 +23,50 @@ CHANGE="$PROJECT_ROOT/skills/change/SKILL.md"
 
 @test "setup places System tests under test/system/ (*.system.test.*)" {
   run cat "$SETUP"
-  [[ "$output" == *"test/system/"* ]]
-  [[ "$output" == *"*.system.test.*"* ]]
+  assert_output --partial "test/system/"
+  assert_output --partial "*.system.test.*"
 }
 
 @test "setup places Journey tests under test/journey/ (*.journey.test.*)" {
   run cat "$SETUP"
-  [[ "$output" == *"test/journey/"* ]]
-  [[ "$output" == *"*.journey.test.*"* ]]
+  assert_output --partial "test/journey/"
+  assert_output --partial "*.journey.test.*"
 }
 
 @test "setup places Component tests under test/component/ (*.component.test.*)" {
   run cat "$SETUP"
-  [[ "$output" == *"test/component/"* ]]
-  [[ "$output" == *"*.component.test.*"* ]]
+  assert_output --partial "test/component/"
+  assert_output --partial "*.component.test.*"
 }
 
 @test "setup wires Component tests with real adapters and externals doubled at the edge" {
   run cat "$SETUP"
-  [[ "$output" == *"in-memory database"* ]]
-  [[ "$output" == *"stubbed outbound HTTP"* ]]
+  assert_output --partial "in-memory database"
+  assert_output --partial "stubbed outbound HTTP"
 }
 
 @test "change pairs each outbound port with an in-memory adapter used by Use-case tests" {
   run cat "$CHANGE"
-  [[ "$output" == *"in-memory adapter"* ]]
-  [[ "$output" == *"Use-case tests"* ]]
+  assert_output --partial "in-memory adapter"
+  assert_output --partial "Use-case tests"
 }
 
 @test "change wires System tests with real driven adapters at the highest tolerable realism by default" {
   run cat "$CHANGE"
-  [[ "$output" == *"real driven adapters"* ]]
-  [[ "$output" == *"highest tolerable realism"* || "$output" == *"max realism"* || "$output" == *"max-realism"* ]]
+  assert_output --partial "real driven adapters"
+  assert_output --regexp "highest tolerable realism|max realism|max-realism"
 }
 
 @test "change leans on the journey when breadth at max realism is unaffordable" {
   run cat "$CHANGE"
-  [[ "$output" == *"unaffordable"* || "$output" == *"unafford"* ]]
-  [[ "$output" == *"lean on the journey"* ]]
+  assert_output --regexp "unaffordable|unafford"
+  assert_output --partial "lean on the journey"
 }
 
 @test "change pairs each outbound port with a shared contract suite" {
   run cat "$CHANGE"
-  [[ "$output" == *"shared"* ]]
-  [[ "$output" == *"contract"* ]]
+  assert_output --partial "shared"
+  assert_output --partial "contract"
 }
 
 @test "setup produces tree-shaped output at every layer" {
@@ -76,7 +76,7 @@ CHANGE="$PROJECT_ROOT/skills/change/SKILL.md"
 
 @test "setup validates quality with mutation testing at Domain and Use-case layers" {
   run cat "$SETUP"
-  [[ "$output" == *"mutation testing"* ]]
-  [[ "$output" == *"Domain"* ]]
-  [[ "$output" == *"Use-case"* ]]
+  assert_output --partial "mutation testing"
+  assert_output --partial "Domain"
+  assert_output --partial "Use-case"
 }
