@@ -190,3 +190,46 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
   assert_output --regexp "fold back up|FOLD BACK UP"
   assert_output --regexp "a layer beneath it lacks coverage|a layer beneath is missing coverage"
 }
+
+@test "tdd states the covering tree explicitly and proceeds with an incomplete-seeming tree" {
+  run cat "$SKILL"
+  assert_output --partial "Identify which tree"
+  assert_output --partial "State it explicitly"
+  assert_output --partial "tree seems incomplete"
+  assert_output --partial "proceed with what's there"
+}
+
+@test "tdd writes Domain tests as a pure rule with no collaborators, calling functions directly and asserting on returned data" {
+  run cat "$SKILL"
+  assert_output --partial "pure rule"
+  assert_output --partial "Collaborators: none."
+  assert_output --partial "Call functions directly, assert on returned data."
+}
+
+@test "tdd writes a driving-adapter test with the use-case mocked when protocol translation is non-trivial" {
+  run cat "$SKILL"
+  assert_output --partial "translation is non-trivial"
+  assert_output --partial "use-case mocked"
+  assert_output --partial "protocol-to-input translation"
+  assert_output --partial "routing, deserialization"
+  assert_output --partial "auth extraction"
+  assert_output --partial "error-code shaping"
+}
+
+@test "tdd refactors only the code just changed, treating duplication as a hint not a command" {
+  run cat "$SKILL"
+  assert_output --partial "refactor the code you just changed"
+  assert_output --partial "no broader"
+  assert_output --partial "Duplication is a hint, not a command"
+  assert_output --partial "don't extract abstractions until patterns have proven themselves"
+}
+
+@test "tdd handles failing tests by fixing unrelated failures first, related failures as part of continuing, and correcting missing or wrong tests" {
+  run cat "$SKILL"
+  assert_output --partial "Unrelated failure"
+  assert_output --partial "fix it first, then continue"
+  assert_output --partial "Related failure"
+  assert_output --partial "fix and continue the cycle"
+  assert_output --partial "Missing/wrong test"
+  assert_output --partial "fix the test, then continue"
+}
