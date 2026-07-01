@@ -28,7 +28,7 @@ EOF
   write_skill "$skills/beta" "$(well_formed_body)"
 
   run bash "$SCRIPT" "$skills"
-  [ "$status" -eq 99 ] || return 1
+  [ "$status" -eq 0 ] || return 1
   [ -z "$output" ] || return 1
 }
 
