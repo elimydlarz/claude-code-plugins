@@ -28,8 +28,8 @@ EOF
   write_skill "$skills/beta" "$(well_formed_body)"
 
   run bash "$SCRIPT" "$skills"
-  [ "$status" -eq 0 ]
-  [ -z "$output" ]
+  [ "$status" -eq 0 ] || return 1
+  [ -z "$output" ] || return 1
 }
 
 @test "exits 0 when skills dir has no SKILL.md" {
@@ -37,8 +37,8 @@ EOF
   mkdir -p "$skills"
 
   run bash "$SCRIPT" "$skills"
-  [ "$status" -eq 0 ]
-  [ -z "$output" ]
+  [ "$status" -eq 0 ] || return 1
+  [ -z "$output" ] || return 1
 }
 
 @test "exits non-zero and names the offender when name is missing" {
@@ -52,9 +52,9 @@ description: "Has a description but no name."
 '
 
   run bash "$SCRIPT" "$skills"
-  [ "$status" -ne 0 ]
-  [[ "$output" == *"bad/SKILL.md"* ]]
-  [[ "$output" == *"name"* ]]
+  [ "$status" -ne 0 ] || return 1
+  assert_output --partial "bad/SKILL.md"
+  assert_output --partial "name"
 }
 
 @test "exits non-zero and names the offender when description is empty" {
@@ -68,9 +68,9 @@ description: ""
 '
 
   run bash "$SCRIPT" "$skills"
-  [ "$status" -ne 0 ]
-  [[ "$output" == *"bad/SKILL.md"* ]]
-  [[ "$output" == *"description"* ]]
+  [ "$status" -ne 0 ] || return 1
+  assert_output --partial "bad/SKILL.md"
+  assert_output --partial "description"
 }
 
 @test "exits non-zero when frontmatter is missing entirely" {
@@ -80,9 +80,9 @@ just body.
 '
 
   run bash "$SCRIPT" "$skills"
-  [ "$status" -ne 0 ]
-  [[ "$output" == *"bad/SKILL.md"* ]]
-  [[ "$output" == *"frontmatter"* ]]
+  [ "$status" -ne 0 ] || return 1
+  assert_output --partial "bad/SKILL.md"
+  assert_output --partial "frontmatter"
 }
 
 @test "exits non-zero when frontmatter has no closing marker" {
@@ -95,15 +95,15 @@ description: "Never closed"
 '
 
   run bash "$SCRIPT" "$skills"
-  [ "$status" -ne 0 ]
-  [[ "$output" == *"bad/SKILL.md"* ]]
-  [[ "$output" == *"frontmatter"* ]]
+  [ "$status" -ne 0 ] || return 1
+  assert_output --partial "bad/SKILL.md"
+  assert_output --partial "frontmatter"
 }
 
 @test "exits non-zero when the skills dir does not exist" {
   run bash "$SCRIPT" "$BATS_TEST_TMPDIR/does-not-exist"
-  [ "$status" -ne 0 ]
-  [[ "$output" == *"does not exist"* ]]
+  [ "$status" -ne 0 ] || return 1
+  assert_output --partial "does not exist"
 }
 
 @test "exits non-zero when no argument is given" {
@@ -113,6 +113,6 @@ description: "Never closed"
 
 @test "passes for the real contree skills dir" {
   run bash "$SCRIPT" "$PROJECT_ROOT/skills"
-  [ "$status" -eq 0 ]
-  [ -z "$output" ]
+  [ "$status" -eq 0 ] || return 1
+  [ -z "$output" ] || return 1
 }
