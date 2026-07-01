@@ -79,7 +79,12 @@ pnpm run dev -- <cmd> # run from source via tsx
 
 ### Manual testing
 
-Scripts for testing the hook live against origin with real worktrees:
+Scripts for testing the hook live against origin with real worktrees. This workflow assumes the hook targets `main` — set that once per repo (already done for this monorepo) so the assertions below hold instead of the `agents` default:
+
+```bash
+trunk-sync config target-branch=main
+```
+
 
 ```bash
 # 1. Setup — commits a file on local main without pushing
