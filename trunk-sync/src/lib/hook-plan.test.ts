@@ -446,7 +446,7 @@ describe("summarizeDeletions", () => {
 
 // ── buildClockInPlan ─────────────────────────────────────────────────
 
-const runtime: RuntimeContext = { pid: 12345, hostname: "my-macbook" };
+const runtime: RuntimeContext = { hostname: "my-macbook" };
 
 describe("buildClockInPlan", () => {
   it("returns clock-in plan with timecard path", () => {
@@ -456,7 +456,6 @@ describe("buildClockInPlan", () => {
     assert.notEqual(plan, null);
     assert.equal(plan!.timecardPath, ".trunk-sync/timeclock/abcdef12-3456-7890-abcd-ef1234567890.json");
     assert.equal(plan!.timecard.sessionId, "abcdef12-3456-7890-abcd-ef1234567890");
-    assert.equal(plan!.timecard.pid, 12345);
     assert.equal(plan!.timecard.hostname, "my-macbook");
     assert.equal(plan!.timecard.branch, "main");
     assert.equal(plan!.timecard.task, null);
