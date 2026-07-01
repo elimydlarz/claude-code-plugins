@@ -130,8 +130,8 @@ run_hook_with_last_text() {
 
 @test "claude-md nudge prompts detection of drift between CLAUDE.md content and reality" {
   run_hook '{}'
-  [[ "$output" == *"CLAUDE.md"* ]]
-  [[ "$output" == *"drift"* ]]
+  assert_output --partial "CLAUDE.md"
+  assert_output --partial "drift"
 }
 
 # --- README nudge ---
