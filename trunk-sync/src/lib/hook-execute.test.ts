@@ -969,9 +969,7 @@ describe("clockIn", () => {
     const timeclockDir = join(dir, ".trunk-sync", "timeclock");
     mkdirSync(timeclockDir, { recursive: true });
     writeFileSync(join(timeclockDir, "test-session.json"), JSON.stringify({
-      sessionId: "test-session",
-      pid: process.pid,
-      hostname: "test-host",
+      sessionId: "test-session",      hostname: "test-host",
       clockedInAt: "2026-03-27T10:00:00.000Z",
       lastActiveAt: "2026-03-27T10:00:00.000Z",
       branch: "main",
@@ -1001,9 +999,7 @@ describe("clockIn", () => {
     mkdirSync(timeclockDir, { recursive: true });
     // Agent recorded progress on a prior call (via `trunk-sync progress`)
     writeFileSync(join(timeclockDir, "test-session.json"), JSON.stringify({
-      sessionId: "test-session",
-      pid: process.pid,
-      hostname: "test-host",
+      sessionId: "test-session",      hostname: "test-host",
       clockedInAt: "2026-03-27T10:00:00.000Z",
       lastActiveAt: "2026-03-27T10:00:00.000Z",
       branch: "main",
@@ -1377,9 +1373,7 @@ describe("executePlan with clock-in", () => {
     const timeclockDir = join(dir, ".trunk-sync", "timeclock");
     mkdirSync(timeclockDir, { recursive: true });
     writeFileSync(join(timeclockDir, "other-session.json"), JSON.stringify({
-      sessionId: "other-session",
-      pid: process.pid,
-      hostname: "test-host",
+      sessionId: "other-session",      hostname: "test-host",
       clockedInAt: new Date().toISOString(),
       lastActiveAt: new Date().toISOString(),
       branch: "feature",
