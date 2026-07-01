@@ -164,27 +164,27 @@ run_hook_with_last_text() {
 
 @test "hook injects the question-stop prompt and exits 2 when last assistant message ends with a question mark" {
   run_hook_with_last_text "Want me to do that?"
-  [ "$status" -eq 2 ]
-  [ -n "$output" ]
+  [ "$status" -eq 2 ] || return 1
+  [ -n "$output" ] || return 1
 }
 
 @test "question-stop prompt replaces the drift nudges" {
   run_hook_with_last_text "Which way?"
-  [[ "$output" != *"README"* ]]
-  [[ "$output" != *"Default is no change"* ]]
+  refute_output --partial "README"
+  refute_output --partial "Default is no change"
 }
 
 @test "question-stop prompt directs checking the rules, mental model, and test trees for the answer" {
   run_hook_with_last_text "Which way?"
-  [[ "$output" == *"Rules"* ]]
-  [[ "$output" == *"mental model"* ]]
-  [[ "$output" == *"test trees"* ]]
+  assert_output --partial "Rules"
+  assert_output --partial "mental model"
+  assert_output --partial "test trees"
 }
 
 @test "question-stop prompt directs deciding and acting rather than asking when they determine the answer" {
   run_hook_with_last_text "Which way?"
-  [[ "$output" == *"decide"* ]]
-  [[ "$output" == *"not ask"* ]]
+  assert_output --partial "decide"
+  assert_output --partial "not ask"
 }
 
 @test "question-stop prompt directs asking the user only when genuinely under-determined" {
