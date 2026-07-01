@@ -83,8 +83,8 @@ SKILL="$PROJECT_ROOT/skills/sync/SKILL.md"
 
 @test "sync surfaces every 'none' value as an explicit declared gap" {
   run cat "$SKILL"
-  [[ "$output" == *"none"* ]]
-  [[ "$output" == *"Declared gap"* || "$output" == *"declared gap"* || "$output" == *"explicit gap"* ]]
+  assert_output --partial "none"
+  [[ "$output" == *"Declared gap"* || "$output" == *"declared gap"* || "$output" == *"explicit gap"* ]] || return 1
 }
 
 @test "sync flags coverage-by-proxy when a unit is reachable only through higher-layer tests with no native tree" {
