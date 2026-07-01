@@ -273,7 +273,7 @@ export function classifyTimecards(
     if (tc.sessionId === ownSessionId) continue;
 
     const age = now.getTime() - new Date(tc.lastActiveAt).getTime();
-    if (age <= DISPLAY_WINDOW_MS) active.push(tc);
+    if (age <= ACTIVE_WINDOW_MS) active.push(tc);
     else if (age <= REAP_TTL_MS) stale.push(tc);
     else reapable.push(tc);
   }
