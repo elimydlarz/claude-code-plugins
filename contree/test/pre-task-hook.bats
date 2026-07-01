@@ -110,32 +110,32 @@ run_hook_in() {
 
 @test "session start directs the agent to use the change skill for behaviour changes before any code is discussed or written" {
   run_hook_in "$BATS_TEST_TMPDIR"
-  [[ "$output" == *"change"* ]]
-  [[ "$output" == *"behaviour change"* ]]
-  [[ "$output" == *"before any code is discussed or written"* ]]
+  assert_output --partial "change"
+  assert_output --partial "behaviour change"
+  assert_output --partial "before any code is discussed or written"
 }
 
 @test "session start directs the agent to use the tdd skill when implementing behaviour, writing code, or writing tests" {
   run_hook_in "$BATS_TEST_TMPDIR"
-  [[ "$output" == *"tdd"* ]]
-  [[ "$output" == *"implementing behaviour, writing code, or writing tests"* ]]
+  assert_output --partial "tdd"
+  assert_output --partial "implementing behaviour, writing code, or writing tests"
 }
 
 @test "session start directs the agent to use the sync skill for drift, gaps, staleness, or completeness" {
   run_hook_in "$BATS_TEST_TMPDIR"
-  [[ "$output" == *"sync"* ]]
-  [[ "$output" == *"drift, gaps, staleness, or completeness"* ]]
+  assert_output --partial "sync"
+  assert_output --partial "drift, gaps, staleness, or completeness"
 }
 
 @test "session start directs the agent to use the setup skill when no framework is configured or TEST_TREES.md is absent" {
   run_hook_in "$BATS_TEST_TMPDIR"
-  [[ "$output" == *"setup"* ]]
-  [[ "$output" == *"no test framework"* ]]
-  [[ "$output" == *"TEST_TREES.md"* ]]
+  assert_output --partial "setup"
+  assert_output --partial "no test framework"
+  assert_output --partial "TEST_TREES.md"
 }
 
 @test "session start directs the agent to use the workflow skill for the full arc from idea to verified working software" {
   run_hook_in "$BATS_TEST_TMPDIR"
-  [[ "$output" == *"workflow"* ]]
-  [[ "$output" == *"full arc from idea to verified working software"* ]]
+  assert_output --partial "workflow"
+  assert_output --partial "full arc from idea to verified working software"
 }
