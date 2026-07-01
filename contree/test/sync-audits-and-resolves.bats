@@ -18,7 +18,7 @@ SKILL="$PROJECT_ROOT/skills/sync/SKILL.md"
 @test "sync discusses implementation-without-tree with the user before resolving" {
   run cat "$SKILL"
   assert_output --partial "Implementation exists without a tree"
-  [[ "$output" == *"zzz-not-present-zzz"* || "$output" == *"also-not-present"* ]] || return 1
+  [[ "$output" == *"Ask"* || "$output" == *"Do not choose"* ]] || return 1
 }
 
 @test "sync flags tree-without-implementation as a gap to implement" {
