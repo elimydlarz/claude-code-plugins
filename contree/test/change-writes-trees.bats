@@ -11,23 +11,23 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
 
 @test "change scopes consumer vocabulary to Journey, System, and Adapter layers" {
   run cat "$SKILL"
-  [[ "$output" == *"consumer"* ]]
-  [[ "$output" == *"vocabulary"* ]]
-  [[ "$output" == *"Journey, System, and Adapter"* ]]
+  assert_output --partial "consumer"
+  assert_output --partial "vocabulary"
+  assert_output --partial "Journey, System, and Adapter"
 }
 
 @test "change scopes principles-not-cases to Journey, System, and Adapter layers" {
   run cat "$SKILL"
-  [[ "$output" == *"principles, not cases"* ]]
-  [[ "$output" == *"Journey, System, and Adapter"* ]]
+  assert_output --partial "principles, not cases"
+  assert_output --partial "Journey, System, and Adapter"
 }
 
 @test "change writes Domain, Use-case, and Port-contract trees with top-level nodes naming exported functions, methods, or port operations" {
   run cat "$SKILL"
-  [[ "$output" == *"Domain"* ]]
-  [[ "$output" == *"Use-case"* ]]
-  [[ "$output" == *"Port-contract"* || "$output" == *"port contract"* ]]
-  [[ "$output" == *"exported functions"* || "$output" == *"functions/methods"* ]]
+  assert_output --partial "Domain"
+  assert_output --partial "Use-case"
+  assert_output --regexp "Port-contract|port contract"
+  assert_output --regexp "exported functions|functions/methods"
 }
 
 @test "change writes Domain, Use-case, and Port-contract tree paths as observable branches" {
