@@ -380,6 +380,10 @@ workflow-runs-end-to-end (src: skills/workflow/SKILL.md; system: test/workflow-r
     then all test trees have passing tests
   when the work is synced and implemented
     then second-opinion reviews the completed work with an independent model
+  when tdd closes all gaps
+    then mutation testing runs at the end of the tdd phase
+  when second-opinion finds drift or gaps
+    then they are routed back through change, sync, or tdd
 ```
 
 ## skill-discoverability
