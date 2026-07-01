@@ -95,7 +95,7 @@ SKILL="$PROJECT_ROOT/skills/sync/SKILL.md"
 
 @test "sync proposes a native-layer tree plus its own failing tests to resolve coverage-by-proxy, never removal of the higher-layer test" {
   run cat "$SKILL"
-  [[ "$output" == *"new tree at the unit's native layer"* ]]
-  [[ "$output" == *"own failing tests"* ]]
-  [[ "$output" == *"never removal of the higher-layer test"* ]]
+  assert_output --partial "new tree at the unit's native layer"
+  assert_output --partial "own failing tests"
+  assert_output --partial "never removal of the higher-layer test"
 }
