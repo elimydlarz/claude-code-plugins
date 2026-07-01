@@ -70,7 +70,6 @@ export interface ClockInPlan {
 
 /** Runtime context not available in RepoState (I/O-derived) */
 export interface RuntimeContext {
-  pid: number;
   hostname: string;
 }
 
