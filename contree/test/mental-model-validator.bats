@@ -86,8 +86,8 @@ EOF
 - placeholder
 EOF
   run env CLAUDE_PROJECT_DIR="$BATS_TEST_TMPDIR" bash "$VALIDATOR"
-  [[ "$output" == *"Invariants"* ]]
-  [[ "$output" == *"missing"* || "$output" == *"absent"* ]]
+  assert_output --partial "Invariants"
+  assert_output --regexp 'missing|absent'
 }
 
 @test "validator flags the rogue heading when an H2 is not one of the seven named sections" {
