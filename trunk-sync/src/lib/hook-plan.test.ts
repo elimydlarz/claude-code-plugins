@@ -512,9 +512,8 @@ describe("classifyTimecards", () => {
   function makeTimecard(overrides: Partial<Timecard> = {}): Timecard {
     return {
       sessionId: "other-session-id",
-      pid: 99999,
       hostname: "my-macbook",
-      clockedInAt: "2026-03-27T10:00:00.000Z",
+      clockedInAt: "2026-03-27T09:00:00.000Z",
       lastActiveAt: "2026-03-27T10:04:00.000Z",
       branch: "main",
       task: null,
@@ -524,57 +523,44 @@ describe("classifyTimecards", () => {
     };
   }
 
-  it("excludes own session from both lists", () => {
-    const timecards = [makeTimecard({ sessionId: "my-session" })];
-    const result = classifyTimecards("my-session", timecards, now, "my-macbook", () => true);
-    assert.equal(result.clockedIn.length, 0);
-    assert.equal(result.clockedOut.length, 0);
+  it("excludes the own session from every bucket", () => {
+    const result = classifyTimecards("my-session", [makeTimecard({ sessionId: "my-session" })], now);
+    assert.equal(result.active.length, 0);
+    assert.equal(result.stale.length, 0);
+    assert.equal(result.reapable.length, 0);
   });
 
-  it("clocks out local agent with dead PID", () => {
-    const timecards = [makeTimecard({ hostname: "my-macbook", pid: 99999 })];
-    const result = classifyTimecards("my-session", timecards, now, "my-macbook", () => false);
-    assert.equal(result.clockedOut.length, 1);
-    assert.equal(result.clockedIn.length, 0);
+  it("classifies a card whose heartbeat is within the display window as active", () => {
+    const result = classifyTimecards(
+      "my-session",
+      [makeTimecard({ lastActiveAt: "2026-03-27T09:30:00.000Z" })], // 35 min ago
+      now,
+    );
+    assert.equal(result.active.length, 1);
+    assert.equal(result.stale.length, 0);
+    assert.equal(result.reapable.length, 0);
   });
 
-  it("keeps local agent with live PID clocked in", () => {
-    const timecards = [makeTimecard({ hostname: "my-macbook", pid: 99999 })];
-    const result = classifyTimecards("my-session", timecards, now, "my-macbook", () => true);
-    assert.equal(result.clockedIn.length, 1);
-    assert.equal(result.clockedOut.length, 0);
+  it("classifies a card past the display window but within the reap ttl as stale", () => {
+    const result = classifyTimecards(
+      "my-session",
+      [makeTimecard({ lastActiveAt: "2026-03-27T08:00:00.000Z" })], // 2h5m ago
+      now,
+    );
+    assert.equal(result.stale.length, 1);
+    assert.equal(result.active.length, 0);
+    assert.equal(result.reapable.length, 0);
   });
 
-  it("clocks out remote agent with old timestamp", () => {
-    const timecards = [makeTimecard({
-      hostname: "other-machine",
-      lastActiveAt: "2026-03-27T09:30:00.000Z", // 35 min ago
-    })];
-    const result = classifyTimecards("my-session", timecards, now, "my-macbook", () => true);
-    assert.equal(result.clockedOut.length, 1);
-    assert.equal(result.clockedIn.length, 0);
-  });
-
-  it("keeps remote agent with recent timestamp clocked in", () => {
-    const timecards = [makeTimecard({
-      hostname: "other-machine",
-      lastActiveAt: "2026-03-27T10:03:00.000Z", // 2 min ago
-    })];
-    const result = classifyTimecards("my-session", timecards, now, "my-macbook", () => true);
-    assert.equal(result.clockedIn.length, 1);
-    assert.equal(result.clockedOut.length, 0);
-  });
-
-  it("handles mix of clocked-in and clocked-out agents", () => {
-    const timecards = [
-      makeTimecard({ sessionId: "active-1", hostname: "other", lastActiveAt: "2026-03-27T10:04:00.000Z" }),
-      makeTimecard({ sessionId: "stale-1", hostname: "other", lastActiveAt: "2026-03-27T09:30:00.000Z" }),
-      makeTimecard({ sessionId: "stale-local", hostname: "my-macbook", pid: 11111 }),
-    ];
-    const result = classifyTimecards("my-session", timecards, now, "my-macbook", (pid) => pid !== 11111);
-    assert.equal(result.clockedIn.length, 1);
-    assert.equal(result.clockedIn[0].sessionId, "active-1");
-    assert.equal(result.clockedOut.length, 2);
+  it("classifies a card past the reap ttl as reapable, even with unfinished remaining steps", () => {
+    const result = classifyTimecards(
+      "my-session",
+      [makeTimecard({ lastActiveAt: "2026-03-10T10:00:00.000Z", remainingSteps: "still has work left" })], // 17 days ago
+      now,
+    );
+    assert.equal(result.reapable.length, 1);
+    assert.equal(result.active.length, 0);
+    assert.equal(result.stale.length, 0);
   });
 });
 
@@ -583,21 +569,24 @@ describe("classifyTimecards", () => {
 describe("formatClockInMessage", () => {
   const now = new Date("2026-03-27T10:05:00.000Z");
 
-  it("returns null when no other agents are clocked in and this is not the first clock-in", () => {
+  function card(overrides: Partial<Timecard> = {}): Timecard {
+    return {
+      sessionId: "abcdef12-3456-7890-abcd-ef1234567890",
+      hostname: "my-macbook",
+      clockedInAt: "2026-03-27T10:00:00.000Z",
+      lastActiveAt: "2026-03-27T10:04:30.000Z",
+      branch: "main", task: null, lastStep: null, remainingSteps: null,
+      ...overrides,
+    };
+  }
+
+  it("returns null when no other agents are active and this is not the first clock-in", () => {
     assert.equal(formatClockInMessage([], now, false), null);
   });
 
-  it("formats single agent without task", () => {
-    const timecards: Timecard[] = [{
-      sessionId: "abcdef12-3456-7890-abcd-ef1234567890",
-      pid: 123, hostname: "my-macbook",
-      clockedInAt: "2026-03-27T10:00:00.000Z",
-      lastActiveAt: "2026-03-27T10:04:30.000Z",
-      branch: "main", task: null,
-      lastStep: null, remainingSteps: null,
-    }];
-    const msg = formatClockInMessage(timecards, now, false)!;
-    assert.match(msg, /1 other agent clocked in/);
+  it("formats a single active agent without a task", () => {
+    const msg = formatClockInMessage([card()], now, false)!;
+    assert.match(msg, /1 other agent active/);
     assert.match(msg, /abcdef12 on my-macbook/);
     assert.match(msg, /branch: main/);
     assert.match(msg, /30s ago/);
@@ -605,72 +594,49 @@ describe("formatClockInMessage", () => {
     assert.match(msg, /share resources/);
   });
 
-  it("includes task description when present", () => {
-    const timecards: Timecard[] = [{
-      sessionId: "abcdef12-3456-7890-abcd-ef1234567890",
-      pid: 123, hostname: "my-macbook",
-      clockedInAt: "2026-03-27T10:00:00.000Z",
-      lastActiveAt: "2026-03-27T10:04:30.000Z",
-      branch: "main", task: "Fix the login bug",
-      lastStep: null, remainingSteps: null,
-    }];
-    const msg = formatClockInMessage(timecards, now, false)!;
+  it("includes the task description when present", () => {
+    const msg = formatClockInMessage([card({ task: "Fix the login bug" })], now, false)!;
     assert.match(msg, /"Fix the login bug"/);
   });
 
-  it("formats multiple agents", () => {
-    const timecards: Timecard[] = [
-      {
-        sessionId: "aaaa0000-0000-0000-0000-000000000000",
-        pid: 1, hostname: "mac-1", clockedInAt: "2026-03-27T10:00:00.000Z",
-        lastActiveAt: "2026-03-27T10:04:00.000Z", branch: "main", task: "Add tests",
-        lastStep: null, remainingSteps: null,
-      },
-      {
-        sessionId: "bbbb0000-0000-0000-0000-000000000000",
-        pid: 2, hostname: "mac-2", clockedInAt: "2026-03-27T10:00:00.000Z",
-        lastActiveAt: "2026-03-27T10:02:00.000Z", branch: "feature", task: null,
-        lastStep: null, remainingSteps: null,
-      },
-    ];
-    const msg = formatClockInMessage(timecards, now, false)!;
-    assert.match(msg, /2 other agents clocked in/);
+  it("includes the last and remaining steps on an active agent's line when recorded", () => {
+    const msg = formatClockInMessage(
+      [card({ lastStep: "wired the CLI", remainingSteps: "add the test" })],
+      now,
+      false,
+    )!;
+    assert.match(msg, /last: wired the CLI/);
+    assert.match(msg, /next: add the test/);
+  });
+
+  it("lists all active agents when multiple are present", () => {
+    const msg = formatClockInMessage([
+      card({ sessionId: "aaaa0000-0000-0000-0000-000000000000", hostname: "mac-1", lastActiveAt: "2026-03-27T10:04:00.000Z", task: "Add tests" }),
+      card({ sessionId: "bbbb0000-0000-0000-0000-000000000000", hostname: "mac-2", branch: "feature", lastActiveAt: "2026-03-27T10:02:00.000Z" }),
+    ], now, false)!;
+    assert.match(msg, /2 other agents active/);
     assert.match(msg, /aaaa0000 on mac-1/);
     assert.match(msg, /bbbb0000 on mac-2/);
     assert.match(msg, /"Add tests"/);
   });
 
-  it("formats minutes correctly", () => {
-    const timecards: Timecard[] = [{
-      sessionId: "abcdef12-0000-0000-0000-000000000000",
-      pid: 1, hostname: "h", clockedInAt: "2026-03-27T10:00:00.000Z",
-      lastActiveAt: "2026-03-27T10:02:00.000Z", branch: "main", task: null,
-      lastStep: null, remainingSteps: null,
-    }];
-    const msg = formatClockInMessage(timecards, now, false)!;
+  it("rounds the elapsed minutes to match wall time", () => {
+    const msg = formatClockInMessage([card({ lastActiveAt: "2026-03-27T10:02:00.000Z" })], now, false)!;
     assert.match(msg, /3m ago/);
   });
 
-  it("nudges the agent to run the tests and resume WIP on the first clock-in", () => {
+  it("nudges running the tests and frames failing tests as authoritative WIP on the first clock-in", () => {
     const msg = formatClockInMessage([], now, true)!;
     assert.match(msg, /TRUNK-SYNC WIP/);
     assert.match(msg, /Run the test suite/);
-    assert.match(msg, /checkpoints/);
+    assert.match(msg, /authoritative/);
     assert.match(msg, /resume/);
-    assert.match(msg, /still-clocked-in agent's work/);
+    assert.match(msg, /currently-active agent/);
   });
 
-  it("includes both the clocked-in roster and the run-tests nudge on the first clock-in with others present", () => {
-    const timecards: Timecard[] = [{
-      sessionId: "abcdef12-3456-7890-abcd-ef1234567890",
-      pid: 123, hostname: "my-macbook",
-      clockedInAt: "2026-03-27T10:00:00.000Z",
-      lastActiveAt: "2026-03-27T10:04:30.000Z",
-      branch: "main", task: "Refactoring auth",
-      lastStep: null, remainingSteps: null,
-    }];
-    const msg = formatClockInMessage(timecards, now, true)!;
-    assert.match(msg, /1 other agent clocked in/);
+  it("includes both the active roster and the run-tests nudge on the first clock-in with others present", () => {
+    const msg = formatClockInMessage([card({ task: "Refactoring auth" })], now, true)!;
+    assert.match(msg, /1 other agent active/);
     assert.match(msg, /"Refactoring auth"/);
     assert.match(msg, /TRUNK-SYNC WIP/);
     assert.match(msg, /Run the test suite/);
@@ -683,7 +649,7 @@ describe("formatSessionStartSummary", () => {
   function card(overrides: Partial<Timecard> = {}): Timecard {
     return {
       sessionId: "aaaa0000-0000-0000-0000-000000000000",
-      pid: 1, hostname: "mac-1",
+      hostname: "mac-1",
       clockedInAt: "2026-03-27T10:00:00.000Z",
       lastActiveAt: "2026-03-27T10:04:00.000Z",
       branch: "main", task: null, lastStep: null, remainingSteps: null,
@@ -691,37 +657,38 @@ describe("formatSessionStartSummary", () => {
     };
   }
 
-  it("returns null when no other timecards are clocked in", () => {
-    assert.equal(formatSessionStartSummary([], now), null);
+  it("returns null when neither an active nor a stale card is present", () => {
+    assert.equal(formatSessionStartSummary([], [], now), null);
   });
 
-  it("lists branch, task, last step, and remaining steps for an agent with progress", () => {
+  it("lists an active card with branch, task, last step, and remaining steps, labelled to coordinate", () => {
     const msg = formatSessionStartSummary([card({
       task: "Add handover", lastStep: "wired the CLI", remainingSteps: "add the functional test",
-    })], now)!;
+    })], [], now)!;
     assert.match(msg, /aaaa0000 on mac-1/);
     assert.match(msg, /branch: main/);
+    assert.match(msg, /active: coordinate/);
     assert.match(msg, /task: Add handover/);
     assert.match(msg, /last: wired the CLI/);
     assert.match(msg, /next: add the functional test/);
-    assert.match(msg, /Resume any unfinished WIP/);
   });
 
-  it("shows the task without progress fields when none is recorded", () => {
-    const msg = formatSessionStartSummary([card({ task: "Some task" })], now)!;
+  it("lists a stale card labelled possibly-disrupted with a verify-against-tests warning", () => {
+    const msg = formatSessionStartSummary(
+      [],
+      [card({ task: "Half-done refactor", remainingSteps: "finish it" })],
+      now,
+    )!;
+    assert.match(msg, /stale, possibly disrupted/);
+    assert.match(msg, /verify against the test suite/);
+    assert.match(msg, /may already be done/);
+  });
+
+  it("still lists a card that has no recorded remaining steps, pointing at its transcript", () => {
+    const msg = formatSessionStartSummary([card({ task: "Some task" })], [], now)!;
     assert.match(msg, /task: Some task/);
-    assert.doesNotMatch(msg, /last:/);
     assert.doesNotMatch(msg, /next:/);
-  });
-
-  it("lists multiple agents", () => {
-    const msg = formatSessionStartSummary([
-      card({ sessionId: "aaaa0000-0000-0000-0000-000000000000", hostname: "mac-1" }),
-      card({ sessionId: "bbbb0000-0000-0000-0000-000000000000", hostname: "mac-2" }),
-    ], now)!;
-    assert.match(msg, /2 other sessions have work in progress/);
-    assert.match(msg, /aaaa0000 on mac-1/);
-    assert.match(msg, /bbbb0000 on mac-2/);
+    assert.match(msg, /\.transcripts\//);
   });
 });
 
