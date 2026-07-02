@@ -167,6 +167,36 @@ describe("config command", () => {
     assert.ok(log.split("\n").length >= 2);
   });
 
+  it("pushes an unset when a remote is configured", () => {
+    mkdirSync(join(dir, ".trunk-sync"), { recursive: true });
+    writeFileSync(configFilePath(dir), "commit-transcripts=true\n");
+    execSync("git add .trunk-sync/config && git commit -m seed", { cwd: dir, stdio: "ignore" });
+
+    const remote = realpathSync(mkdtempSync(join(tmpdir(), "config-remote-")));
+    execSync("git init --bare", { cwd: remote, stdio: "ignore" });
+    execSync(`git remote add origin "${remote}"`, { cwd: dir });
+
+    runConfig("--unset commit-transcripts", dir);
+
+    const check = realpathSync(mkdtempSync(join(tmpdir(), "config-check-")));
+    execSync(`git clone "${remote}" .`, { cwd: check, stdio: "ignore" });
+    const log = execSync("git log --oneline origin/agents -- .trunk-sync/config", { cwd: check, encoding: "utf-8" });
+    assert.match(log, /unset commit-transcripts/);
+    rmSync(remote, { recursive: true, force: true });
+    rmSync(check, { recursive: true, force: true });
+  });
+
+  it("still succeeds when the push fails on an unset", () => {
+    mkdirSync(join(dir, ".trunk-sync"), { recursive: true });
+    writeFileSync(configFilePath(dir), "commit-transcripts=true\n");
+    execSync("git add .trunk-sync/config && git commit -m seed", { cwd: dir, stdio: "ignore" });
+    execSync(`git remote add origin "/nonexistent/path"`, { cwd: dir });
+
+    const { stdout, exitCode } = runConfig("--unset commit-transcripts", dir);
+    assert.equal(exitCode, 0);
+    assert.match(stdout, /Unset commit-transcripts/);
+  });
+
   it("unset nonexistent key errors", () => {
     const { stderr, exitCode } = runConfig("--unset nonexistent", dir);
     assert.equal(exitCode, 1);
