@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { getGitRoot } from "../lib/git.js";
@@ -44,31 +44,28 @@ function writeConfig(repoRoot, map) {
     mkdirSync(dirname(path), { recursive: true });
     writeFileSync(path, lines.join("\n") + "\n");
 }
-function escapeForShell(s) {
-    return s.replace(/"/g, '\\"');
-}
 /**
  * A manual command, not something riding along on the next hook fire — so it
  * stages, commits, and best-effort pushes the change itself. Push failure
  * doesn't fail the command; the commit stands locally for the next sync.
  */
 function commitAndSyncConfig(repoRoot, message) {
-    execSync(`git add -- ".trunk-sync/config"`, { cwd: repoRoot, stdio: "ignore" });
+    execFileSync("git", ["add", "--", ".trunk-sync/config"], { cwd: repoRoot, stdio: "ignore" });
     try {
-        execSync(`git commit -m "${escapeForShell(message)}"`, { cwd: repoRoot, stdio: "ignore" });
+        execFileSync("git", ["commit", "-m", message], { cwd: repoRoot, stdio: "ignore" });
     }
     catch {
         return; // nothing changed
     }
     try {
-        execSync("git remote get-url origin", { cwd: repoRoot, stdio: "ignore" });
+        execFileSync("git", ["remote", "get-url", "origin"], { cwd: repoRoot, stdio: "ignore" });
     }
     catch {
         return; // no remote to push to
     }
     const targetBranch = readConfig(repoRoot).get("target-branch") ?? DEFAULTS["target-branch"];
     try {
-        execSync(`git push origin "HEAD:${targetBranch}"`, { cwd: repoRoot, stdio: "ignore" });
+        execFileSync("git", ["push", "origin", `HEAD:${targetBranch}`], { cwd: repoRoot, stdio: "ignore" });
     }
     catch {
         // best-effort — the commit stands locally for the next sync to pick up
@@ -78,7 +75,7 @@ function resolveRepoRoot() {
     const existing = getGitRoot();
     if (existing)
         return existing;
-    execSync("git init", { stdio: "ignore" });
+    execFileSync("git", ["init"], { stdio: "ignore" });
     return getGitRoot();
 }
 export function configCommand(args) {
