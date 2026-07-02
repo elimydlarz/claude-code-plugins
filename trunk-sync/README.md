@@ -50,8 +50,8 @@ trunk-sync config --unset <key>          # remove a key
 
 ```
 $ trunk-sync config
-target-branch=agents
 commit-transcripts=true
+target-branch=agents
 ```
 
 Setting or unsetting a key commits the change immediately, and pushes it (best-effort) if a remote is configured — this is a manual command, not something that rides along with the next edit. Run outside a git repo, it runs `git init` first, so there's always a repo to store config in.
