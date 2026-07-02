@@ -112,12 +112,11 @@ export function configCommand(args: string[]): void {
 
   const positional = args.filter((a) => !a.startsWith("--"));
   if (positional.length === 0) {
-    const map = readConfig(repoRoot);
-    if (map.size === 0) {
-      console.log("No config set. Config file: .trunk-sync/config");
-      return;
+    const merged = new Map<string, string>(Object.entries(DEFAULTS));
+    for (const [key, value] of readConfig(repoRoot)) {
+      merged.set(key, value);
     }
-    for (const [key, value] of map) {
+    for (const [key, value] of merged) {
       console.log(`${key}=${value}`);
     }
     return;
