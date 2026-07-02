@@ -120,6 +120,24 @@ describe("config command", () => {
     assert.ok(log.trim().length > 0);
   });
 
+  it("stores a value containing shell metacharacters verbatim without executing it", () => {
+    const marker = join(dir, "INJECTED");
+    const { stdout, exitCode } = runConfigArgs([`target-branch=$(touch ${marker})`], dir);
+    assert.equal(exitCode, 0);
+    assert.match(stdout, /Set target-branch=\$\(touch/);
+    assert.ok(!existsSync(marker), "injected command must not run");
+    const content = readFileSync(configFilePath(dir), "utf-8");
+    assert.match(content, /target-branch=\$\(touch/);
+    const value = runConfigArgs(["target-branch"], dir).stdout;
+    assert.ok(value.startsWith("$(touch "), `value round-trips verbatim, got: ${value}`);
+  });
+
+  it("commits a shell-metacharacter value with an intact commit message", () => {
+    runConfigArgs(["target-branch=$(id)"], dir);
+    const subject = execSync("git log -1 --format=%s -- .trunk-sync/config", { cwd: dir, encoding: "utf-8" }).trim();
+    assert.equal(subject, "auto: config target-branch=$(id)");
+  });
+
   it("show config after setting values", () => {
     mkdirSync(join(dir, ".trunk-sync"), { recursive: true });
     writeFileSync(configFilePath(dir), "commit-transcripts=true\nother=value\n");
