@@ -463,7 +463,8 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
     if run outside a git repo
       then `git init` is run first, establishing a repo to store config in
     when `config` is called with no key
-      then every key is printed with its effective value, whether that value comes from `.trunk-sync/config` or a built-in default
+      then every key is printed
+      and each key's value is its effective value — from `.trunk-sync/config` if set, otherwise its built-in default
     when a key is set
       then it is persisted to `.trunk-sync/config` in the repo
       and the change is staged and committed
