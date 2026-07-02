@@ -57,9 +57,10 @@ describe("config command", () => {
     }
   });
 
-  it("show empty config when no file exists", () => {
+  it("shows built-in defaults for every known key when no file exists", () => {
     const { stdout } = runConfig("", dir);
-    assert.match(stdout, /No config set/);
+    assert.match(stdout, /target-branch=agents/);
+    assert.match(stdout, /commit-transcripts=true/);
   });
 
   it("set a value", () => {
