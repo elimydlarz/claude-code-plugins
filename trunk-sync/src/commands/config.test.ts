@@ -107,6 +107,15 @@ describe("config command", () => {
     assert.match(stdout, /other=value/);
   });
 
+  it("shows the explicit value for a key set in the config file, default for the rest", () => {
+    mkdirSync(join(dir, ".trunk-sync"), { recursive: true });
+    writeFileSync(configFilePath(dir), "target-branch=main\n");
+    const { stdout } = runConfig("", dir);
+    assert.match(stdout, /target-branch=main/);
+    assert.doesNotMatch(stdout, /target-branch=agents/);
+    assert.match(stdout, /commit-transcripts=true/);
+  });
+
   it("get a single value", () => {
     mkdirSync(join(dir, ".trunk-sync"), { recursive: true });
     writeFileSync(configFilePath(dir), "commit-transcripts=true\nother=value\n");
