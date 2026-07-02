@@ -69,6 +69,12 @@ describe("config command", () => {
     assert.match(content, /commit-transcripts=true/);
   });
 
+  it("a subsequent config call shows the value that was set", () => {
+    runConfig("target-branch=main", dir);
+    const { stdout } = runConfig("", dir);
+    assert.match(stdout, /target-branch=main/);
+  });
+
   it("commits the config change", () => {
     runConfig("commit-transcripts=true", dir);
     const log = execSync("git log --oneline -- .trunk-sync/config", { cwd: dir, encoding: "utf-8" });
