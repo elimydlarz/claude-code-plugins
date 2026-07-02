@@ -29,6 +29,21 @@ function runConfig(args: string, cwd: string): { stdout: string; stderr: string;
   }
 }
 
+function runConfigArgs(args: string[], cwd: string): { stdout: string; stderr: string; exitCode: number } {
+  const cliPath = join(process.cwd(), "dist", "cli.js");
+  try {
+    const stdout = execFileSync("node", [cliPath, "config", ...args], { encoding: "utf-8", cwd }).trim();
+    return { stdout, stderr: "", exitCode: 0 };
+  } catch (e: unknown) {
+    const err = e as { stderr?: string; stdout?: string; status?: number };
+    return {
+      stdout: (err.stdout || "").trim(),
+      stderr: (err.stderr || "").trim(),
+      exitCode: err.status ?? 1,
+    };
+  }
+}
+
 function configFilePath(repoRoot: string): string {
   return join(repoRoot, ".trunk-sync", "config");
 }
