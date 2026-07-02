@@ -515,7 +515,7 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
 
 ### System: hook-sync (functional: test/trunk-sync.test.sh; journey: test/functional/docker-entrypoint.sh)
 
-  every Edit/Write/Bash tool use
+  every Edit/Write/Bash/apply_patch/local_shell tool use
     then the changed file is staged and committed
     when a remote is configured
       then HEAD is pushed to the remote's default branch after the commit
