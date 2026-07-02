@@ -46,6 +46,14 @@ trunk-sync config <key>=<value>          # set a value
 trunk-sync config --unset <key>          # remove a key
 ```
 
+`trunk-sync config` with no arguments always prints every key below — explicit value if you've set it, built-in default otherwise — so it's the fastest way to see what's configurable without leaving the terminal:
+
+```
+$ trunk-sync config
+target-branch=agents
+commit-transcripts=true
+```
+
 Setting or unsetting a key commits the change immediately, and pushes it (best-effort) if a remote is configured — this is a manual command, not something that rides along with the next edit. Run outside a git repo, it runs `git init` first, so there's always a repo to store config in.
 
 ### Keys
