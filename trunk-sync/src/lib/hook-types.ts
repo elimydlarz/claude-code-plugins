@@ -30,6 +30,8 @@ export interface RepoState {
   deletedFiles: string[];
   /** tracked files with modifications (content or permissions) in the working tree */
   modifiedFiles: string[];
+  /** untracked new files (not gitignored) in the working tree — e.g. created by Bash or Codex apply_patch */
+  untrackedFiles: string[];
 }
 
 export interface SyncPlan {
