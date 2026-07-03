@@ -72,87 +72,94 @@ describe("config command", () => {
     }
   });
 
-  it("shows built-in defaults for every known key when no file exists", () => {
-    const { stdout } = runConfig("", dir);
-    assert.match(stdout, /target-branch=agents/);
-    assert.match(stdout, /commit-transcripts=true/);
+  describe("`config` is called with no key", () => {
+    it("show config after setting values", () => {
+      mkdirSync(join(dir, ".trunk-sync"), { recursive: true });
+      writeFileSync(configFilePath(dir), "commit-transcripts=true\nother=value\n");
+      const { stdout } = runConfig("", dir);
+      assert.match(stdout, /commit-transcripts=true/);
+      assert.match(stdout, /other=value/);
+    });
+
+    describe("a key is set in `.trunk-sync/config`", () => {
+      it("shows the explicit value for a key set in the config file, default for the rest", () => {
+        mkdirSync(join(dir, ".trunk-sync"), { recursive: true });
+        writeFileSync(configFilePath(dir), "target-branch=main\n");
+        const { stdout } = runConfig("", dir);
+        assert.match(stdout, /target-branch=main/);
+        assert.doesNotMatch(stdout, /target-branch=agents/);
+        assert.match(stdout, /commit-transcripts=true/);
+      });
+    });
+
+    describe("a key is not set in `.trunk-sync/config`", () => {
+      it("shows built-in defaults for every known key when no file exists", () => {
+        const { stdout } = runConfig("", dir);
+        assert.match(stdout, /target-branch=agents/);
+        assert.match(stdout, /commit-transcripts=true/);
+      });
+    });
   });
 
-  it("set a value", () => {
-    runConfig("commit-transcripts=true", dir);
-    const content = readFileSync(configFilePath(dir), "utf-8");
-    assert.match(content, /commit-transcripts=true/);
-  });
+  describe("a key is set", () => {
+    it("is persisted, staged, committed, and visible on a subsequent call", () => {
+      runConfig("commit-transcripts=true", dir);
 
-  it("a subsequent config call shows the value that was set", () => {
-    runConfig("target-branch=main", dir);
-    const { stdout } = runConfig("", dir);
-    assert.match(stdout, /target-branch=main/);
-  });
+      const content = readFileSync(configFilePath(dir), "utf-8");
+      assert.match(content, /commit-transcripts=true/);
 
-  it("commits the config change", () => {
-    runConfig("commit-transcripts=true", dir);
-    const log = execSync("git log --oneline -- .trunk-sync/config", { cwd: dir, encoding: "utf-8" });
-    assert.ok(log.trim().length > 0);
-  });
+      const log = execSync("git log --oneline -- .trunk-sync/config", { cwd: dir, encoding: "utf-8" });
+      assert.ok(log.trim().length > 0);
 
-  it("pushes the commit when a remote is configured", () => {
-    const remote = realpathSync(mkdtempSync(join(tmpdir(), "config-remote-")));
-    execSync("git init --bare", { cwd: remote, stdio: "ignore" });
-    execSync(`git remote add origin "${remote}"`, { cwd: dir });
+      const { stdout } = runConfig("", dir);
+      assert.match(stdout, /commit-transcripts=true/);
+    });
 
-    runConfig("commit-transcripts=false", dir);
+    describe("while a remote is configured", () => {
+      it("pushes the commit when a remote is configured", () => {
+        const remote = realpathSync(mkdtempSync(join(tmpdir(), "config-remote-")));
+        execSync("git init --bare", { cwd: remote, stdio: "ignore" });
+        execSync(`git remote add origin "${remote}"`, { cwd: dir });
 
-    const check = realpathSync(mkdtempSync(join(tmpdir(), "config-check-")));
-    execSync(`git clone "${remote}" .`, { cwd: check, stdio: "ignore" });
-    const branches = execSync("git branch -r", { cwd: check, encoding: "utf-8" });
-    assert.match(branches, /origin\/agents/); // pushed to the "agents" default target branch
-    rmSync(remote, { recursive: true, force: true });
-    rmSync(check, { recursive: true, force: true });
-  });
+        runConfig("commit-transcripts=false", dir);
 
-  it("still succeeds when the push fails", () => {
-    execSync(`git remote add origin "/nonexistent/path"`, { cwd: dir });
-    const { stdout, exitCode } = runConfig("commit-transcripts=true", dir);
-    assert.equal(exitCode, 0);
-    assert.match(stdout, /Set commit-transcripts=true/);
-    const log = execSync("git log --oneline -- .trunk-sync/config", { cwd: dir, encoding: "utf-8" });
-    assert.ok(log.trim().length > 0);
-  });
+        const check = realpathSync(mkdtempSync(join(tmpdir(), "config-check-")));
+        execSync(`git clone "${remote}" .`, { cwd: check, stdio: "ignore" });
+        const branches = execSync("git branch -r", { cwd: check, encoding: "utf-8" });
+        assert.match(branches, /origin\/agents/); // pushed to the "agents" default target branch
+        rmSync(remote, { recursive: true, force: true });
+        rmSync(check, { recursive: true, force: true });
+      });
+    });
 
-  it("stores a value containing shell metacharacters verbatim without executing it", () => {
-    const marker = join(dir, "INJECTED");
-    const { stdout, exitCode } = runConfigArgs([`target-branch=$(touch ${marker})`], dir);
-    assert.equal(exitCode, 0);
-    assert.match(stdout, /Set target-branch=\$\(touch/);
-    assert.ok(!existsSync(marker), "injected command must not run");
-    const content = readFileSync(configFilePath(dir), "utf-8");
-    assert.match(content, /target-branch=\$\(touch/);
-    const value = runConfigArgs(["target-branch"], dir).stdout;
-    assert.ok(value.startsWith("$(touch "), `value round-trips verbatim, got: ${value}`);
-  });
+    describe("if the push fails", () => {
+      it("still succeeds when the push fails", () => {
+        execSync(`git remote add origin "/nonexistent/path"`, { cwd: dir });
+        const { stdout, exitCode } = runConfig("commit-transcripts=true", dir);
+        assert.equal(exitCode, 0);
+        assert.match(stdout, /Set commit-transcripts=true/);
+        const log = execSync("git log --oneline -- .trunk-sync/config", { cwd: dir, encoding: "utf-8" });
+        assert.ok(log.trim().length > 0);
+      });
+    });
 
-  it("commits a shell-metacharacter value with an intact commit message", () => {
-    runConfigArgs(["target-branch=$(id)"], dir);
-    const subject = execSync("git log -1 --format=%s -- .trunk-sync/config", { cwd: dir, encoding: "utf-8" }).trim();
-    assert.equal(subject, "auto: config target-branch=$(id)");
-  });
+    describe("if the value contains shell metacharacters (`$()`, backticks, quotes, spaces)", () => {
+      it("is persisted and committed verbatim, never interpreted by a shell", () => {
+        const marker = join(dir, "INJECTED");
+        const { stdout, exitCode } = runConfigArgs([`target-branch=$(touch ${marker})`], dir);
+        assert.equal(exitCode, 0);
+        assert.match(stdout, /Set target-branch=\$\(touch/);
+        assert.ok(!existsSync(marker), "injected command must not run");
+        const content = readFileSync(configFilePath(dir), "utf-8");
+        assert.match(content, /target-branch=\$\(touch/);
+        const value = runConfigArgs(["target-branch"], dir).stdout;
+        assert.ok(value.startsWith("$(touch "), `value round-trips verbatim, got: ${value}`);
 
-  it("show config after setting values", () => {
-    mkdirSync(join(dir, ".trunk-sync"), { recursive: true });
-    writeFileSync(configFilePath(dir), "commit-transcripts=true\nother=value\n");
-    const { stdout } = runConfig("", dir);
-    assert.match(stdout, /commit-transcripts=true/);
-    assert.match(stdout, /other=value/);
-  });
-
-  it("shows the explicit value for a key set in the config file, default for the rest", () => {
-    mkdirSync(join(dir, ".trunk-sync"), { recursive: true });
-    writeFileSync(configFilePath(dir), "target-branch=main\n");
-    const { stdout } = runConfig("", dir);
-    assert.match(stdout, /target-branch=main/);
-    assert.doesNotMatch(stdout, /target-branch=agents/);
-    assert.match(stdout, /commit-transcripts=true/);
+        runConfigArgs(["target-branch=$(id)"], dir);
+        const subject = execSync("git log -1 --format=%s -- .trunk-sync/config", { cwd: dir, encoding: "utf-8" }).trim();
+        assert.equal(subject, "auto: config target-branch=$(id)");
+      });
+    });
   });
 
   it("get a single value", () => {
@@ -163,16 +170,14 @@ describe("config command", () => {
     assert.equal(stdout, "true");
   });
 
-  it("get key with default when not set", () => {
-    const { stdout, exitCode } = runConfig("commit-transcripts", dir);
-    assert.equal(exitCode, 0);
-    assert.equal(stdout, "true");
-  });
+  it("prints the default for a key that has one and is unset", () => {
+    const commitTranscripts = runConfig("commit-transcripts", dir);
+    assert.equal(commitTranscripts.exitCode, 0);
+    assert.equal(commitTranscripts.stdout, "true");
 
-  it("target-branch defaults to agents when not set", () => {
-    const { stdout, exitCode } = runConfig("target-branch", dir);
-    assert.equal(exitCode, 0);
-    assert.equal(stdout, "agents");
+    const targetBranch = runConfig("target-branch", dir);
+    assert.equal(targetBranch.exitCode, 0);
+    assert.equal(targetBranch.stdout, "agents");
   });
 
   it("get unknown key errors", () => {
@@ -181,53 +186,55 @@ describe("config command", () => {
     assert.match(stderr, /Unknown key/);
   });
 
-  it("unset a value", () => {
-    mkdirSync(join(dir, ".trunk-sync"), { recursive: true });
-    writeFileSync(configFilePath(dir), "commit-transcripts=true\nother=value\n");
-    execSync("git add .trunk-sync/config && git commit -m seed", { cwd: dir, stdio: "ignore" });
-    runConfig("--unset commit-transcripts", dir);
-    const content = readFileSync(configFilePath(dir), "utf-8");
-    assert.ok(!content.includes("commit-transcripts"));
-    assert.match(content, /other=value/);
-  });
+  describe("`config unset <key>` is called", () => {
+    it("removes the key, staged and committed", () => {
+      mkdirSync(join(dir, ".trunk-sync"), { recursive: true });
+      writeFileSync(configFilePath(dir), "commit-transcripts=true\nother=value\n");
+      execSync("git add .trunk-sync/config && git commit -m seed", { cwd: dir, stdio: "ignore" });
 
-  it("commits an unset", () => {
-    mkdirSync(join(dir, ".trunk-sync"), { recursive: true });
-    writeFileSync(configFilePath(dir), "commit-transcripts=true\n");
-    execSync("git add .trunk-sync/config && git commit -m seed", { cwd: dir, stdio: "ignore" });
-    runConfig("--unset commit-transcripts", dir);
-    const log = execSync("git log --oneline -- .trunk-sync/config", { cwd: dir, encoding: "utf-8" });
-    assert.ok(log.split("\n").length >= 2);
-  });
+      runConfig("--unset commit-transcripts", dir);
 
-  it("pushes an unset when a remote is configured", () => {
-    mkdirSync(join(dir, ".trunk-sync"), { recursive: true });
-    writeFileSync(configFilePath(dir), "commit-transcripts=true\n");
-    execSync("git add .trunk-sync/config && git commit -m seed", { cwd: dir, stdio: "ignore" });
+      const content = readFileSync(configFilePath(dir), "utf-8");
+      assert.ok(!content.includes("commit-transcripts"));
+      assert.match(content, /other=value/);
 
-    const remote = realpathSync(mkdtempSync(join(tmpdir(), "config-remote-")));
-    execSync("git init --bare", { cwd: remote, stdio: "ignore" });
-    execSync(`git remote add origin "${remote}"`, { cwd: dir });
+      const log = execSync("git log --oneline -- .trunk-sync/config", { cwd: dir, encoding: "utf-8" });
+      assert.ok(log.split("\n").length >= 2);
+    });
 
-    runConfig("--unset commit-transcripts", dir);
+    describe("while a remote is configured", () => {
+      it("pushes an unset when a remote is configured", () => {
+        mkdirSync(join(dir, ".trunk-sync"), { recursive: true });
+        writeFileSync(configFilePath(dir), "commit-transcripts=true\n");
+        execSync("git add .trunk-sync/config && git commit -m seed", { cwd: dir, stdio: "ignore" });
 
-    const check = realpathSync(mkdtempSync(join(tmpdir(), "config-check-")));
-    execSync(`git clone "${remote}" .`, { cwd: check, stdio: "ignore" });
-    const log = execSync("git log --oneline origin/agents -- .trunk-sync/config", { cwd: check, encoding: "utf-8" });
-    assert.match(log, /unset commit-transcripts/);
-    rmSync(remote, { recursive: true, force: true });
-    rmSync(check, { recursive: true, force: true });
-  });
+        const remote = realpathSync(mkdtempSync(join(tmpdir(), "config-remote-")));
+        execSync("git init --bare", { cwd: remote, stdio: "ignore" });
+        execSync(`git remote add origin "${remote}"`, { cwd: dir });
 
-  it("still succeeds when the push fails on an unset", () => {
-    mkdirSync(join(dir, ".trunk-sync"), { recursive: true });
-    writeFileSync(configFilePath(dir), "commit-transcripts=true\n");
-    execSync("git add .trunk-sync/config && git commit -m seed", { cwd: dir, stdio: "ignore" });
-    execSync(`git remote add origin "/nonexistent/path"`, { cwd: dir });
+        runConfig("--unset commit-transcripts", dir);
 
-    const { stdout, exitCode } = runConfig("--unset commit-transcripts", dir);
-    assert.equal(exitCode, 0);
-    assert.match(stdout, /Unset commit-transcripts/);
+        const check = realpathSync(mkdtempSync(join(tmpdir(), "config-check-")));
+        execSync(`git clone "${remote}" .`, { cwd: check, stdio: "ignore" });
+        const log = execSync("git log --oneline origin/agents -- .trunk-sync/config", { cwd: check, encoding: "utf-8" });
+        assert.match(log, /unset commit-transcripts/);
+        rmSync(remote, { recursive: true, force: true });
+        rmSync(check, { recursive: true, force: true });
+      });
+    });
+
+    describe("if the push fails", () => {
+      it("still succeeds when the push fails on an unset", () => {
+        mkdirSync(join(dir, ".trunk-sync"), { recursive: true });
+        writeFileSync(configFilePath(dir), "commit-transcripts=true\n");
+        execSync("git add .trunk-sync/config && git commit -m seed", { cwd: dir, stdio: "ignore" });
+        execSync(`git remote add origin "/nonexistent/path"`, { cwd: dir });
+
+        const { stdout, exitCode } = runConfig("--unset commit-transcripts", dir);
+        assert.equal(exitCode, 0);
+        assert.match(stdout, /Unset commit-transcripts/);
+      });
+    });
   });
 
   it("unset nonexistent key errors", () => {
