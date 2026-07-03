@@ -113,6 +113,7 @@ export function gatherRepoState(input: HookInput): RepoState | null {
     hasStagedChanges,
     deletedFiles,
     modifiedFiles,
+    untrackedFiles,
   };
 }
 
