@@ -76,6 +76,7 @@ export function gatherRepoState(input: HookInput): RepoState | null {
 
   let deletedFiles: string[] = [];
   let modifiedFiles: string[] = [];
+  let untrackedFiles: string[] = [];
   if (!filePath) {
     try {
       const deleted = execSync(`git -C "${repoRoot}" ls-files --deleted`, {
