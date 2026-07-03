@@ -938,6 +938,20 @@ assert_exit 0 "codex apply_patch no-op: hook exits 0"
 AFTER=$(commit_count "$WT_A")
 assert_equals "$AFTER" "$BEFORE" "codex apply_patch no-op: no commit when nothing changed"
 
+# Codex P6. apply_patch that ADDS a new file (no file_path) — hook stages, commits, and pushes it
+setup_repos
+echo "content Codex added via Add File" > "$WT_A/added-by-codex.txt"   # apply_patch created a brand-new file
+BEFORE=$(commit_count "$WT_A")
+cd "$WT_A"
+run_hook "$(make_apply_patch_input "codex06a-eeee-eeee-eeee-eeeeeeeeeeee" "*** Begin Patch\n*** Add File: added-by-codex.txt\n+content Codex added via Add File\n*** End Patch\n")"
+assert_exit 0 "codex apply_patch add: hook exits 0"
+AFTER=$(commit_count "$WT_A")
+assert_equals "$AFTER" "$((BEFORE + 1))" "codex apply_patch add: one new commit"
+HEAD_FILES=$(git -C "$WT_A" diff-tree --no-commit-id --name-only -r HEAD)
+assert_contains "$HEAD_FILES" "added-by-codex.txt" "codex apply_patch add: new file is in the commit"
+REMOTE_FILES=$(git -C "$REMOTE" ls-tree --name-only -r main)
+assert_contains "$REMOTE_FILES" "added-by-codex.txt" "codex apply_patch add: new file reached the remote"
+
 # --- Transcript snapshots ---
 
 # 28. Default: .transcripts/ IS created (commit-transcripts defaults on for seance)
