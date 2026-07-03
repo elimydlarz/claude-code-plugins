@@ -98,6 +98,15 @@ export function gatherRepoState(input: HookInput): RepoState | null {
     } catch {
       // ignore
     }
+    try {
+      const untracked = execSync(
+        `git -C "${repoRoot}" ls-files --others --exclude-standard`,
+        { encoding: "utf-8" },
+      ).trim();
+      if (untracked) untrackedFiles = untracked.split("\n");
+    } catch {
+      // ignore
+    }
   }
 
   return {
