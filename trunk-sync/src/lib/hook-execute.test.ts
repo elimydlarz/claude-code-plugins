@@ -49,6 +49,7 @@ function makeState(dir: string, overrides: Partial<RepoState> = {}): RepoState {
     hasStagedChanges: false,
     deletedFiles: [],
     modifiedFiles: [],
+    untrackedFiles: [],
     ...overrides,
   };
 }
