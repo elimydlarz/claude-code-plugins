@@ -125,7 +125,7 @@ export function buildCommitPlanWithTask(
   const filePath = input.tool_input.file_path ?? null;
   const relPath = filePath
     ? state.relPath!
-    : summarizeDeletions([...state.modifiedFiles, ...state.deletedFiles]);
+    : summarizeDeletions([...state.modifiedFiles, ...state.untrackedFiles, ...state.deletedFiles]);
   const sessionPrefix = buildSessionPrefix(input.session_id);
   const subject = `${sessionPrefix}${task}`;
 
