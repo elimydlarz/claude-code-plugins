@@ -41,6 +41,7 @@ function makeState(overrides: Partial<RepoState> = {}): RepoState {
     hasStagedChanges: false,
     deletedFiles: [],
     modifiedFiles: [],
+    untrackedFiles: [],
     ...overrides,
   };
 }
