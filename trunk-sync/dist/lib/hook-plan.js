@@ -18,8 +18,11 @@ export function planHook(input, state, runtime) {
     const filePath = input.tool_input.file_path ?? null;
     const sync = buildSyncPlan(state);
     const clockIn = runtime ? buildClockInPlan(input, state, runtime) : null;
-    // No file_path and no deleted/modified files → nothing to do
-    if (!filePath && state.deletedFiles.length === 0 && state.modifiedFiles.length === 0) {
+    // No file_path and no deleted/modified/untracked files → nothing to do
+    if (!filePath &&
+        state.deletedFiles.length === 0 &&
+        state.modifiedFiles.length === 0 &&
+        state.untrackedFiles.length === 0) {
         return { action: "skip" };
     }
     // File path provided but outside the repo → skip
@@ -57,7 +60,10 @@ function buildSyncPlan(state) {
 }
 function buildCommitPlan(input, state) {
     const filePath = input.tool_input.file_path ?? null;
-    const filesToStage = filePath ? [filePath] : [...state.modifiedFiles];
+    // Without a file_path, stage every non-deleted change git surfaces: modified
+    // tracked files and untracked new files alike (both go through `git add`).
+    const changed = [...state.modifiedFiles, ...state.untrackedFiles];
+    const filesToStage = filePath ? [filePath] : changed;
     const filesToRemove = filePath ? [] : state.deletedFiles;
     let action;
     let relPath;
@@ -65,17 +71,17 @@ function buildCommitPlan(input, state) {
         action = (input.tool_name ?? "update").toLowerCase();
         relPath = state.relPath;
     }
-    else if (state.modifiedFiles.length > 0 && state.deletedFiles.length === 0) {
+    else if (changed.length > 0 && state.deletedFiles.length === 0) {
         action = "update";
-        relPath = summarizeDeletions(state.modifiedFiles);
+        relPath = summarizeDeletions(changed);
     }
-    else if (state.deletedFiles.length > 0 && state.modifiedFiles.length === 0) {
+    else if (state.deletedFiles.length > 0 && changed.length === 0) {
         action = "delete";
         relPath = summarizeDeletions(state.deletedFiles);
     }
     else {
         action = "update";
-        relPath = summarizeDeletions([...state.modifiedFiles, ...state.deletedFiles]);
+        relPath = summarizeDeletions([...changed, ...state.deletedFiles]);
     }
     const sessionPrefix = buildSessionPrefix(input.session_id);
     const subject = `${sessionPrefix}${action} ${relPath}`;
@@ -92,7 +98,7 @@ export function buildCommitPlanWithTask(input, state, task) {
     const filePath = input.tool_input.file_path ?? null;
     const relPath = filePath
         ? state.relPath
-        : summarizeDeletions([...state.modifiedFiles, ...state.deletedFiles]);
+        : summarizeDeletions([...state.modifiedFiles, ...state.untrackedFiles, ...state.deletedFiles]);
     const sessionPrefix = buildSessionPrefix(input.session_id);
     const subject = `${sessionPrefix}${task}`;
     // When task is present, include File: line in body

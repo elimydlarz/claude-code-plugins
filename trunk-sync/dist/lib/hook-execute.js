@@ -68,6 +68,7 @@ export function gatherRepoState(input) {
     }
     let deletedFiles = [];
     let modifiedFiles = [];
+    let untrackedFiles = [];
     if (!filePath) {
         try {
             const deleted = execSync(`git -C "${repoRoot}" ls-files --deleted`, {
@@ -92,6 +93,14 @@ export function gatherRepoState(input) {
         catch {
             // ignore
         }
+        try {
+            const untracked = execSync(`git -C "${repoRoot}" ls-files --others --exclude-standard`, { encoding: "utf-8" }).trim();
+            if (untracked)
+                untrackedFiles = untracked.split("\n");
+        }
+        catch {
+            // ignore
+        }
     }
     return {
         repoRoot,
@@ -106,6 +115,7 @@ export function gatherRepoState(input) {
         hasStagedChanges,
         deletedFiles,
         modifiedFiles,
+        untrackedFiles,
     };
 }
 // --- Presence: clock-in (heartbeat) and reaping ---
