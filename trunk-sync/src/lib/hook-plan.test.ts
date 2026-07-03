@@ -79,9 +79,9 @@ describe("parseHookInput", () => {
 // ── planHook: skip conditions ────────────────────────────────────────
 
 describe("planHook skip conditions", () => {
-  it("skips when no file_path and no deletions and no modifications", () => {
+  it("skips when no file_path and no deleted, modified, or untracked files", () => {
     const input = makeInput({ tool_input: {} });
-    const state = makeState({ deletedFiles: [], modifiedFiles: [] });
+    const state = makeState({ deletedFiles: [], modifiedFiles: [], untrackedFiles: [] });
     const plan = planHook(input, state);
     assert.equal(plan.action, "skip");
   });
