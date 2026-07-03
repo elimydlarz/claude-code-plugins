@@ -262,8 +262,10 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       then deleted tracked files are detected
       and modified tracked files are detected
       and permission-only changes are detected
+      and untracked new files are detected (files created by Bash/apply_patch)
+      and gitignored untracked files are excluded
     when a file_path is provided
-      then modified-files detection is skipped (file_path mode is exclusive)
+      then working-tree detection (modified and untracked) is skipped (file_path mode is exclusive)
 
   findWorktreeForBranch
     when the branch has an active worktree
