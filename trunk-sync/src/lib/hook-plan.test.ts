@@ -104,37 +104,39 @@ describe("planHook skip conditions", () => {
 // ── planHook: merge state ────────────────────────────────────────────
 
 describe("planHook merge state", () => {
-  it("produces commit-merge with session prefix", () => {
-    const input = makeInput();
-    const state = makeState({ inMerge: true });
-    const plan = planHook(input, state);
-    assert.equal(plan.action, "commit-merge");
-    if (plan.action !== "commit-merge") return;
-    assert.equal(plan.message, "auto(abcdef12): resolve merge conflict in src/main.ts");
-  });
+  describe("while a merge is in progress", () => {
+    it("produces commit-merge with session prefix", () => {
+      const input = makeInput();
+      const state = makeState({ inMerge: true });
+      const plan = planHook(input, state);
+      assert.equal(plan.action, "commit-merge");
+      if (plan.action !== "commit-merge") return;
+      assert.equal(plan.message, "auto(abcdef12): resolve merge conflict in src/main.ts");
+    });
 
-  it("produces commit-merge without session prefix", () => {
-    const input = makeInput({ session_id: null });
-    const state = makeState({ inMerge: true });
-    const plan = planHook(input, state);
-    if (plan.action !== "commit-merge") return;
-    assert.equal(plan.message, "auto: resolve merge conflict in src/main.ts");
-  });
+    it("produces commit-merge without session prefix", () => {
+      const input = makeInput({ session_id: null });
+      const state = makeState({ inMerge: true });
+      const plan = planHook(input, state);
+      if (plan.action !== "commit-merge") return;
+      assert.equal(plan.message, "auto: resolve merge conflict in src/main.ts");
+    });
 
-  it("includes sync plan when remote exists", () => {
-    const input = makeInput();
-    const state = makeState({ inMerge: true, hasRemote: true });
-    const plan = planHook(input, state);
-    if (plan.action !== "commit-merge") return;
-    assert.deepEqual(plan.sync, { targetBranch: "main", currentBranch: "main" });
-  });
+    it("includes sync plan when remote exists", () => {
+      const input = makeInput();
+      const state = makeState({ inMerge: true, hasRemote: true });
+      const plan = planHook(input, state);
+      if (plan.action !== "commit-merge") return;
+      assert.deepEqual(plan.sync, { targetBranch: "main", currentBranch: "main" });
+    });
 
-  it("sync is null when no remote", () => {
-    const input = makeInput();
-    const state = makeState({ inMerge: true, hasRemote: false });
-    const plan = planHook(input, state);
-    if (plan.action !== "commit-merge") return;
-    assert.equal(plan.sync, null);
+    it("sync is null when no remote", () => {
+      const input = makeInput();
+      const state = makeState({ inMerge: true, hasRemote: false });
+      const plan = planHook(input, state);
+      if (plan.action !== "commit-merge") return;
+      assert.equal(plan.sync, null);
+    });
   });
 });
 
