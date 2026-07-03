@@ -81,7 +81,10 @@ function buildSyncPlan(state: RepoState): SyncPlan | null {
 function buildCommitPlan(input: HookInput, state: RepoState): CommitPlan {
   const filePath = input.tool_input.file_path ?? null;
 
-  const filesToStage = filePath ? [filePath] : [...state.modifiedFiles];
+  // Without a file_path, stage every non-deleted change git surfaces: modified
+  // tracked files and untracked new files alike (both go through `git add`).
+  const changed = [...state.modifiedFiles, ...state.untrackedFiles];
+  const filesToStage = filePath ? [filePath] : changed;
   const filesToRemove = filePath ? [] : state.deletedFiles;
 
   let action: string;
@@ -90,15 +93,15 @@ function buildCommitPlan(input: HookInput, state: RepoState): CommitPlan {
   if (filePath) {
     action = (input.tool_name ?? "update").toLowerCase();
     relPath = state.relPath!;
-  } else if (state.modifiedFiles.length > 0 && state.deletedFiles.length === 0) {
+  } else if (changed.length > 0 && state.deletedFiles.length === 0) {
     action = "update";
-    relPath = summarizeDeletions(state.modifiedFiles);
-  } else if (state.deletedFiles.length > 0 && state.modifiedFiles.length === 0) {
+    relPath = summarizeDeletions(changed);
+  } else if (state.deletedFiles.length > 0 && changed.length === 0) {
     action = "delete";
     relPath = summarizeDeletions(state.deletedFiles);
   } else {
     action = "update";
-    relPath = summarizeDeletions([...state.modifiedFiles, ...state.deletedFiles]);
+    relPath = summarizeDeletions([...changed, ...state.deletedFiles]);
   }
 
   const sessionPrefix = buildSessionPrefix(input.session_id);
