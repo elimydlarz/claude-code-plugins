@@ -17,7 +17,7 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       then it throws
 
   planHook skip conditions
-    when there is no file_path, no deletions, and no modifications
+    when there is no file_path and no deleted, modified, or untracked files
       then the plan is skip
     when the file is outside the repo
       then the plan is skip
