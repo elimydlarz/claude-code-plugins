@@ -31,8 +31,13 @@ export function planHook(input: HookInput, state: RepoState, runtime?: RuntimeCo
   const sync = buildSyncPlan(state);
   const clockIn = runtime ? buildClockInPlan(input, state, runtime) : null;
 
-  // No file_path and no deleted/modified files → nothing to do
-  if (!filePath && state.deletedFiles.length === 0 && state.modifiedFiles.length === 0) {
+  // No file_path and no deleted/modified/untracked files → nothing to do
+  if (
+    !filePath &&
+    state.deletedFiles.length === 0 &&
+    state.modifiedFiles.length === 0 &&
+    state.untrackedFiles.length === 0
+  ) {
     return { action: "skip" };
   }
 
