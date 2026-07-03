@@ -282,6 +282,7 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       and exit 0 results when nothing is staged
       and a deletion is staged
       and modified files (e.g. permission changes) are staged and committed
+      and an untracked new file (no file_path) is staged and committed
       and the commit subject is enriched from the transcript when available
       and the default subject is used if the transcript is unreadable
     when action is commit-merge
