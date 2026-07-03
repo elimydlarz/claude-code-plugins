@@ -44,6 +44,8 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       then the deleted path is staged
     when a modified tracked file is processed without a file_path
       then the modification is staged (covers chmod and other Bash-caused changes)
+    when an untracked new file is present without a file_path
+      then the new file is staged (covers files created by Bash and Codex apply_patch — build output, generators, scaffolding)
     when both deletions and modifications are present
       then both are staged in the same commit
     when no remote is configured
