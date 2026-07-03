@@ -1,12 +1,7 @@
-# Test Trees
+## hook-plan
 
-These trees are the behaviour contract for trunk-sync. Each tree reifies one test file; each path corresponds to one `describe`/`it` in that file.
-
-Migration note: trunk-sync was previously specified as a flat `## Requirements` list in `CLAUDE.md`. That section has been retired in favour of these trees. Build and dev invariants that aren't behavioural (`dist-tracked`, `version-sync`, `doc-alignment`) still live in `CLAUDE.md` as conventions.
-
-## Test Trees
-
-### Domain: hook-plan (src: src/lib/hook-plan.ts; unit: src/lib/hook-plan.test.ts; integration: none; functional: test/trunk-sync.test.sh)
+```
+Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts; system: test/trunk-sync.test.sh)
 
   parseHookInput
     when called with complete input
@@ -172,8 +167,12 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       then it is listed labelled stale — possibly disrupted; verify against the test suite before resuming, since it may already be done
     when a card has no recorded remaining steps
       then it is still listed, pointing at its committed transcript for context rather than omitted
+```
 
-### Domain: git (src: src/lib/git.ts; unit: src/lib/git.test.ts; integration: none; functional: none)
+## git
+
+```
+Domain: git (src: src/lib/git.ts; domain: src/lib/git.test.ts; system: none)
 
   parseFileRef
     when called with `path:line`
@@ -242,8 +241,12 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       then the filename is returned
     when the commit contains no `.transcripts/` file
       then null is returned
+```
 
-### Use-case: hook-execute (src: src/lib/hook-execute.ts; unit: none; integration: src/lib/hook-execute.test.ts; functional: test/trunk-sync.test.sh)
+## hook-execute
+
+```
+Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-execute.test.ts; system: test/trunk-sync.test.sh)
 
   gatherRepoState
     when called outside a git repo
@@ -376,8 +379,12 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       then it exits 0 without creating one — a session that never edited has no handover to keep alive
     if no session id is provided
       then it exits 0 without action
+```
 
-### Use-case: install (src: src/commands/install.ts; unit: src/commands/install.test.ts; integration: none; functional: none)
+## install
+
+```
+Use-case: install (src: src/commands/install.ts; use-case: src/commands/install.test.ts; system: none)
 
   install command
     then `--help` prints usage
@@ -399,8 +406,12 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       and unrelated existing plugins in the marketplace are preserved
     if `--client` is neither `claude` nor `codex`
       then it is rejected
+```
 
-### Use-case: seance (src: src/commands/seance.ts; unit: none; integration: src/commands/seance.test.ts; functional: none)
+## seance
+
+```
+Use-case: seance (src: src/commands/seance.ts; use-case: src/commands/seance.test.ts; system: none)
 
   seance --inspect
     when the blamed commit is a trunk-sync commit
@@ -449,8 +460,12 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       when codex exits
         then the rewound rollout file is deleted
         and the worktree is removed
+```
 
-### Domain: rewindCodexRollout (src: src/commands/seance-codex.ts; unit: src/commands/seance-codex.test.ts; integration: none; functional: none)
+## rewind-codex-rollout
+
+```
+Domain: rewindCodexRollout (src: src/commands/seance-codex.ts; domain: src/commands/seance-codex.test.ts; system: none)
 
   rewindCodexRollout
     when called with rollout lines, a commit timestamp, and a worktree path
@@ -460,8 +475,12 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       and a target rollout path under `~/.codex/sessions/<Y>/<M>/<D>/rollout-<ts>-<newuuid>.jsonl` is returned
     if no line's timestamp is at or before the commit timestamp
       then null is returned
+```
 
-### Use-case: config (src: src/commands/config.ts; unit: src/commands/config.test.ts; integration: none; functional: none)
+## config
+
+```
+Use-case: config (src: src/commands/config.ts; use-case: src/commands/config.test.ts; system: none)
 
   config command
     if run outside a git repo
@@ -499,8 +518,12 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       then it exits 1
     when the config file contains comments and blank lines
       then they are preserved on read
+```
 
-### Use-case: progress (src: src/commands/progress.ts; unit: src/commands/progress.test.ts; integration: none; functional: test/trunk-sync.test.sh)
+## progress
+
+```
+Use-case: progress (src: src/commands/progress.ts; use-case: src/commands/progress.test.ts; system: test/trunk-sync.test.sh)
 
   progress command
     then `--help` prints usage
@@ -518,8 +541,12 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
       then a timecard is created carrying the recorded progress
     if the session id is missing
       then it exits 1 with a usage message
+```
 
-### System: hook-sync (functional: test/trunk-sync.test.sh; journey: test/functional/docker-entrypoint.sh)
+## hook-sync
+
+```
+System: hook-sync (system: test/trunk-sync.test.sh; journey: test/functional/docker-entrypoint.sh)
 
   every Edit/Write/Bash/apply_patch/local_shell tool use
     then the changed file is staged and committed
@@ -561,3 +588,4 @@ Migration note: trunk-sync was previously specified as a flat `## Requirements` 
   while `commit-transcripts=true`
     when the hook commits a code change with a transcript path
       then the transcript is snapshotted into `.transcripts/` and the commit is amended to include it
+```
