@@ -199,6 +199,33 @@ describe("planHook normal commit", () => {
     assert.match(plan.commit.subject, /update script\.sh/);
   });
 
+  it("stages an untracked new file when no file_path (e.g. Bash- or apply_patch-created)", () => {
+    const input = makeInput({ tool_input: {} });
+    const state = makeState({
+      modifiedFiles: [],
+      untrackedFiles: ["newfile.txt"],
+      relPath: null,
+    });
+    const plan = planHook(input, state);
+    assert.equal(plan.action, "commit-and-sync");
+    if (plan.action !== "commit-and-sync") return;
+    assert.deepEqual(plan.commit.filesToStage, ["newfile.txt"]);
+    assert.deepEqual(plan.commit.filesToRemove, []);
+    assert.match(plan.commit.subject, /update newfile\.txt/);
+  });
+
+  it("stages both an untracked new file and a modified tracked file together", () => {
+    const input = makeInput({ tool_input: {} });
+    const state = makeState({
+      modifiedFiles: ["changed.sh"],
+      untrackedFiles: ["brand-new.txt"],
+      relPath: null,
+    });
+    const plan = planHook(input, state);
+    if (plan.action !== "commit-and-sync") return;
+    assert.deepEqual(plan.commit.filesToStage, ["changed.sh", "brand-new.txt"]);
+  });
+
   it("handles both deletions and modifications together", () => {
     const input = makeInput({ tool_input: {} });
     const state = makeState({
