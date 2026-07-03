@@ -231,8 +231,32 @@ describe("gatherRepoState", () => {
     assert.deepEqual(state.modifiedFiles, ["file.txt"]);
   });
 
-  it("does not detect modified files when file_path is provided", () => {
+  it("detects untracked new files when no file_path", () => {
+    writeFileSync(join(dir, "brand-new.txt"), "new\n");
+    const origDir = process.cwd();
+    process.chdir(dir);
+    const state = gatherRepoState(makeInput());
+    process.chdir(origDir);
+    assert.ok(state);
+    assert.deepEqual(state.untrackedFiles, ["brand-new.txt"]);
+  });
+
+  it("excludes gitignored untracked files", () => {
+    writeFileSync(join(dir, ".gitignore"), "*.log\n");
+    execSync("git add .gitignore && git commit -m gitignore", { cwd: dir, stdio: "ignore" });
+    writeFileSync(join(dir, "debug.log"), "ignored\n");
+    writeFileSync(join(dir, "keep.txt"), "kept\n");
+    const origDir = process.cwd();
+    process.chdir(dir);
+    const state = gatherRepoState(makeInput());
+    process.chdir(origDir);
+    assert.ok(state);
+    assert.deepEqual(state.untrackedFiles, ["keep.txt"]);
+  });
+
+  it("does not detect modified or untracked files when file_path is provided", () => {
     writeFileSync(join(dir, "file.txt"), "modified\n");
+    writeFileSync(join(dir, "brand-new.txt"), "new\n");
     const origDir = process.cwd();
     process.chdir(dir);
     const state = gatherRepoState(
@@ -241,6 +265,7 @@ describe("gatherRepoState", () => {
     process.chdir(origDir);
     assert.ok(state);
     assert.deepEqual(state.modifiedFiles, []);
+    assert.deepEqual(state.untrackedFiles, []);
   });
 });
 
