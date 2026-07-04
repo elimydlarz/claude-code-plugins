@@ -510,6 +510,7 @@ Domain: rewindCodexRollout (src: src/commands/seance-codex.ts; domain: src/comma
 Use-case: config (src: src/commands/config.ts; use-case: src/commands/config.test.ts; system: none)
 
   config command
+    then `--help` or `-h` prints usage
     if run outside a git repo
       then `git init` is run first, establishing a repo to store config in
     when `config` is called with no key
