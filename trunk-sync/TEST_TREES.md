@@ -169,6 +169,8 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
       then it is listed labelled stale — possibly disrupted; verify against the test suite before resuming, since it may already be done
     when a card has no recorded remaining steps
       then it is still listed, pointing at its committed transcript for context rather than omitted
+    when a card's heartbeat age is an hour or more
+      then its age is rendered in hours
 ```
 
 ## git
