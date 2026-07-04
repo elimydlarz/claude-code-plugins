@@ -341,6 +341,8 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
       then no snapshot is created
     if no transcript_path is provided
       then no snapshot is created
+    if no session id is provided
+      then no snapshot is created
 
   clockIn
     when a session id and runtime context are present
