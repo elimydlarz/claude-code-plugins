@@ -14,7 +14,7 @@ import { join } from "node:path";
 import { tmpdir, hostname } from "node:os";
 import { execSync } from "node:child_process";
 import type { HookInput, RepoState, HookPlan, SyncPlan, ClockInPlan, Timecard } from "./hook-types.js";
-import { gatherRepoState, findWorktreeForBranch, executePlan, executeSync, clockIn, readTimecards, reapCards, runSessionStart, runStop } from "./hook-execute.js";
+import { gatherRepoState, getRuntimeContext, findWorktreeForBranch, executePlan, executeSync, clockIn, readTimecards, reapCards, runSessionStart, runStop } from "./hook-execute.js";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
