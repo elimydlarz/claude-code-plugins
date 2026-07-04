@@ -785,6 +785,18 @@ assert_exit 0 "git-block: git log --oneline is allowed"
 run_git_block "$(make_bash_input "git show HEAD")"
 assert_exit 0 "git-block: git show is allowed"
 
+# 28f3. git -C <path> diff is allowed (path-scoped read-only variant)
+run_git_block "$(make_bash_input "git -C /some/other/repo diff --stat")"
+assert_exit 0 "git-block: git -C <path> diff is allowed"
+
+# 28f4. git -C <path> log is allowed
+run_git_block "$(make_bash_input "git -C /some/other/repo log --oneline")"
+assert_exit 0 "git-block: git -C <path> log is allowed"
+
+# 28f5. git -C <path> show is allowed
+run_git_block "$(make_bash_input "git -C /some/other/repo show HEAD")"
+assert_exit 0 "git-block: git -C <path> show is allowed"
+
 # 28g. git push is blocked
 run_git_block "$(make_bash_input "git push origin main")"
 assert_exit 2 "git-block: git push is blocked"
