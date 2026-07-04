@@ -427,10 +427,14 @@ Use-case: install (src: src/commands/install.ts; use-case: src/commands/install.
       then it is rejected
     when run with a valid scope
       then the scope is passed to `claude plugin marketplace add` and `claude plugin install`
+    if the plugin install step fails
+      then it exits 1 with a failure message
     when run with `--client codex`
       then an `elimydlarz` entry is upserted into `$HOME/.agents/plugins/marketplace.json`
       and the operation is idempotent across repeated runs
       and unrelated existing plugins in the marketplace are preserved
+      if jq is not on PATH
+        then it fails with an install hint
     if `--client` is neither `claude` nor `codex`
       then it is rejected
 ```
