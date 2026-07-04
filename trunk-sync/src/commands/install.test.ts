@@ -218,6 +218,14 @@ describe("install command", () => {
     assert.ok(marketplace.plugins.find((p: { name: string }) => p.name === "trunk-sync"));
   });
 
+  it("--client codex fails when jq is missing", () => {
+    // fakeBinDir has no jq (and system PATH is excluded), so the codex path
+    // must abort before touching the marketplace file.
+    const { stderr, exitCode } = runInstall("--client codex", { PATH: fakeBinDir }, gitDir);
+    assert.equal(exitCode, 1);
+    assert.match(stderr, /jq/);
+  });
+
   it("rejects invalid --client value", () => {
     const { stderr, exitCode } = runInstall("--client gemini");
     assert.equal(exitCode, 1);
