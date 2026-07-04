@@ -83,4 +83,56 @@ describe("rewindCodexRollout", () => {
     });
     assert.equal(result, null);
   });
+
+  it("skips a rollout line that is not valid JSON", () => {
+    const result = rewindCodexRollout({
+      rolloutLines: [
+        meta("2026-05-03T10:00:00.000Z"),
+        "not json{",
+        event("2026-05-03T10:01:00.000Z"),
+      ],
+      commitTimestamp: "2026-05-03T10:05:00+00:00",
+      worktreePath: "/work/tree",
+      newId: NEW_ID,
+      homeDir: "/home/u",
+    });
+    assert.ok(result);
+    assert.equal(result.lines.length, 2);
+    assert.ok(!result.lines.includes("not json{"));
+    assert.equal(JSON.parse(result.lines[0]).type, "session_meta");
+    assert.equal(JSON.parse(result.lines[1]).type, "event_msg");
+  });
+
+  it("skips a rollout line that has no timestamp", () => {
+    const noTimestamp = JSON.stringify({ type: "event_msg", payload: { kind: "x" } });
+    const result = rewindCodexRollout({
+      rolloutLines: [meta("2026-05-03T10:00:00.000Z"), noTimestamp],
+      commitTimestamp: "2026-05-03T10:05:00+00:00",
+      worktreePath: "/work/tree",
+      newId: NEW_ID,
+      homeDir: "/home/u",
+    });
+    assert.ok(result);
+    assert.equal(result.lines.length, 1);
+    assert.equal(JSON.parse(result.lines[0]).type, "session_meta");
+  });
+
+  it("passes a session_meta line with no payload through with id and cwd unchanged", () => {
+    const metaNoPayload = JSON.stringify({
+      type: "session_meta",
+      timestamp: "2026-05-03T10:00:00.000Z",
+    });
+    const result = rewindCodexRollout({
+      rolloutLines: [metaNoPayload],
+      commitTimestamp: "2026-05-03T10:05:00+00:00",
+      worktreePath: "/work/tree",
+      newId: NEW_ID,
+      homeDir: "/home/u",
+    });
+    assert.ok(result);
+    assert.equal(result.lines.length, 1);
+    const parsed = JSON.parse(result.lines[0]);
+    assert.equal("payload" in parsed, false);
+    assert.equal(parsed.type, "session_meta");
+  });
 });
