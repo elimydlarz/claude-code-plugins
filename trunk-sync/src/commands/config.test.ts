@@ -273,6 +273,12 @@ describe("config command", () => {
     assert.match(stderr, /Key not found/);
   });
 
+  it("exits 1 with a usage message when --unset is given no key", () => {
+    const { stderr, exitCode } = runConfig("--unset", dir);
+    assert.equal(exitCode, 1);
+    assert.match(stderr, /Usage: trunk-sync config --unset/);
+  });
+
   it("handles comments and blank lines in config file", () => {
     mkdirSync(join(dir, ".trunk-sync"), { recursive: true });
     writeFileSync(configFilePath(dir), "# comment\n\ncommit-transcripts=true\n");
