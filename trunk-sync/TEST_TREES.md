@@ -440,6 +440,12 @@ Use-case: install (src: src/commands/install.ts; use-case: src/commands/install.
 ```
 Use-case: seance (src: src/commands/seance.ts; use-case: src/commands/seance.test.ts; system: none)
 
+  seance usage
+    when `--help` or `-h` is passed
+      then usage is printed without launching a CLI
+    when no file:line argument is given
+      then usage is printed
+
   seance --inspect
     when the blamed commit is a trunk-sync commit
       then the SHA, subject, and session id are printed without launching a CLI
