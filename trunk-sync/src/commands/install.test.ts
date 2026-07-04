@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, writeFileSync, readFileSync, rmSync, chmodSync, realpathSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { execSync } from "node:child_process";
+import { execSync, spawnSync } from "node:child_process";
 
 const nodeBin = execSync("which node", { encoding: "utf-8" }).trim();
 const nodeDir = join(nodeBin, "..");
