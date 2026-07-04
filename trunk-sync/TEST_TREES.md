@@ -481,6 +481,8 @@ Use-case: seance (src: src/commands/seance.ts; use-case: src/commands/seance.tes
       then it is removed and recreated cleanly
     when a `.transcripts/` snapshot is committed in the code commit
       then the snapshot is preferred over the derived transcript path
+    when there is no snapshot but the commit body records a TranscriptPath
+      then the transcript at that path is used
     when the blamed line has shifted in the current file
       then the prompt uses the original line number from the blamed commit
       and the actual line content is read from the current file
