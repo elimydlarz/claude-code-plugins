@@ -228,6 +228,14 @@ Domain: git (src: src/lib/git.ts; domain: src/lib/git.test.ts; system: none)
     when a later commit inserts a line above
       then the original line number reflects the older commit's numbering
 
+  getCommitSubject
+    when called with a commit sha
+      then the commit's subject line is returned
+
+  getCommitDate
+    when called with a commit sha
+      then the commit's human-readable date is returned
+
   getCommitTimestamp
     when called on a commit
       then the commit's ISO timestamp is returned
