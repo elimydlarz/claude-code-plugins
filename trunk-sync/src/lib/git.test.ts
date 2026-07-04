@@ -219,6 +219,55 @@ describe("blame and getCommitBody", () => {
   });
 });
 
+describe("getCommitSubject", () => {
+  let dir: string;
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), "git-subject-test-"));
+    execSync("git init", { cwd: dir });
+    execSync('git config user.email "test@test.com"', { cwd: dir });
+    execSync('git config user.name "Test"', { cwd: dir });
+  });
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("returns the commit's subject line", () => {
+    const file = join(dir, "file.txt");
+    writeFileSync(file, "hello\n");
+    execSync("git add file.txt && git commit -m 'my subject line'", { cwd: dir });
+    const sha = execSync("git rev-parse HEAD", { cwd: dir, encoding: "utf-8" }).trim();
+
+    assert.equal(getCommitSubject(sha, dir), "my subject line");
+  });
+});
+
+describe("getCommitDate", () => {
+  let dir: string;
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), "git-date-test-"));
+    execSync("git init", { cwd: dir });
+    execSync('git config user.email "test@test.com"', { cwd: dir });
+    execSync('git config user.name "Test"', { cwd: dir });
+  });
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("returns the commit's human-readable date", () => {
+    const file = join(dir, "file.txt");
+    writeFileSync(file, "hello\n");
+    execSync("git add file.txt && git commit -m 'init'", { cwd: dir });
+    const sha = execSync("git rev-parse HEAD", { cwd: dir, encoding: "utf-8" }).trim();
+
+    const date = getCommitDate(sha, dir);
+    assert.match(date, /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [+-]\d{4}$/);
+  });
+});
+
 describe("getCommitTimestamp", () => {
   let dir: string;
 
