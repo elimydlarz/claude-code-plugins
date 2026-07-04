@@ -722,6 +722,18 @@ describe("formatSessionStartSummary", () => {
     assert.doesNotMatch(msg, /next:/);
     assert.match(msg, /\.transcripts\//);
   });
+
+  it("renders a card's age in hours once its heartbeat is an hour or more old", () => {
+    // now is 10:05:00Z; a heartbeat at 08:05:00Z is exactly 2 hours old.
+    const msg = formatSessionStartSummary(
+      [],
+      [card({ lastActiveAt: "2026-03-27T08:05:00.000Z" })],
+      now,
+    )!;
+    assert.match(msg, /\b2h ago\b/);
+    // and the age is not rendered in minutes
+    assert.doesNotMatch(msg, /\bm ago\b/);
+  });
 });
 
 // ── Helper ───────────────────────────────────────────────────────────
