@@ -43,6 +43,8 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
       then the new file is staged (covers files created by Bash and Codex apply_patch — build output, generators, scaffolding)
     when both deletions and modifications are present
       then both are staged in the same commit
+    when both an untracked new file and a modified tracked file are present
+      then both are staged in the same commit
     when no remote is configured
       then sync is null
     when the current branch is a worktree branch (not the target)
