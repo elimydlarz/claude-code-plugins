@@ -159,6 +159,20 @@ describe("config command", () => {
       });
     });
 
+    describe("if the key already holds that value", () => {
+      it("creates no new commit and still reports success", () => {
+        runConfig("commit-transcripts=false", dir);
+        const countBefore = execSync("git rev-list --count HEAD", { cwd: dir, encoding: "utf-8" }).trim();
+
+        const { stdout, exitCode } = runConfig("commit-transcripts=false", dir);
+        assert.equal(exitCode, 0);
+        assert.match(stdout, /Set commit-transcripts=false/);
+
+        const countAfter = execSync("git rev-list --count HEAD", { cwd: dir, encoding: "utf-8" }).trim();
+        assert.equal(countAfter, countBefore, "re-setting the same value must not create a new commit");
+      });
+    });
+
     describe("if the value contains shell metacharacters (`$()`, backticks, quotes, spaces)", () => {
       it("is persisted and committed verbatim, never interpreted by a shell", () => {
         const marker = join(dir, "INJECTED");
