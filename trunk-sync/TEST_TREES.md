@@ -527,6 +527,8 @@ Use-case: config (src: src/commands/config.ts; use-case: src/commands/config.tes
       if the push fails
         then the command still succeeds — the commit stands locally for the next sync to pick up
       and a subsequent `config` call shows the value
+      if the key already holds that value
+        then no new commit is created and the command still reports success
       if the value contains shell metacharacters (`$()`, backticks, quotes, spaces)
         then it is persisted and committed verbatim, never interpreted by a shell (no injected command runs, the commit message is intact)
     when `config <key>` is called
