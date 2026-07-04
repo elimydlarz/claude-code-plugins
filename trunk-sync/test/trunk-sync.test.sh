@@ -865,6 +865,10 @@ assert_exit 0 "local_shell git-block: array git diff allowed"
 run_local_shell_block "$(make_local_shell_input_array '["git","log","--oneline"]')"
 assert_exit 0 "local_shell git-block: array git log allowed"
 
+# Codex 3b: array-form git -C <path> diff is allowed (path-scoped read-only variant)
+run_local_shell_block "$(make_local_shell_input_array '["git","-C","/some/other/repo","diff","--stat"]')"
+assert_exit 0 "local_shell git-block: array git -C <path> diff allowed"
+
 # Codex 4: string-form git commit is blocked
 run_local_shell_block "$(make_local_shell_input_string "git commit -m foo")"
 assert_exit 2 "local_shell git-block: string git commit blocked"
