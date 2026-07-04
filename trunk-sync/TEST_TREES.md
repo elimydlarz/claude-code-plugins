@@ -450,7 +450,7 @@ Use-case: seance (src: src/commands/seance.ts; use-case: src/commands/seance.tes
     when the blamed commit is a trunk-sync commit
       then the SHA, subject, and session id are printed without launching a CLI
     when the blamed line has shifted from its original position
-      then the original line number from the blamed commit is reported
+      then the current line and the blamed commit's original line number are both reported
 
   seance preconditions
     if the blamed line has uncommitted changes
