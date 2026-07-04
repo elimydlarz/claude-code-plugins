@@ -286,6 +286,9 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
     when a file_path is provided
       then working-tree detection (modified and untracked) is skipped (file_path mode is exclusive)
 
+  getRuntimeContext
+    then the host machine's hostname is reported
+
   findWorktreeForBranch
     when the branch has an active worktree
       then its path is returned
