@@ -122,8 +122,15 @@ describe("install command", () => {
 
     runInstall("--scope user", { PATH: fakeBinDir }, gitDir);
 
-    const logged = readFileSync(logFile, "utf-8");
-    assert.match(logged, /--scope user/);
+    // One line per fake-claude invocation. Assert the scope reached BOTH the
+    // marketplace-add and the plugin-install commands — not just one of them.
+    const lines = readFileSync(logFile, "utf-8").split("\n").filter(Boolean);
+    const addLine = lines.find((l) => /marketplace add/.test(l));
+    const installLine = lines.find((l) => /plugin install/.test(l));
+    assert.ok(addLine, "claude plugin marketplace add was invoked");
+    assert.match(addLine, /--scope user/);
+    assert.ok(installLine, "claude plugin install was invoked");
+    assert.match(installLine, /--scope user/);
   });
 
   it("--client codex writes a marketplace entry into HOME/.agents/plugins/marketplace.json", () => {
