@@ -60,6 +60,22 @@ describe("config command", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
+  it("prints usage on --help or -h without initializing a repo or writing config", () => {
+    const noRepoDir = realpathSync(mkdtempSync(join(tmpdir(), "config-help-")));
+    try {
+      for (const flag of ["--help", "-h"]) {
+        const { stdout, exitCode } = runConfig(flag, noRepoDir);
+        assert.equal(exitCode, 0);
+        assert.match(stdout, /Usage: trunk-sync config/);
+      }
+      // Help returns before resolveRepoRoot, so no git init or config write happens.
+      assert.ok(!existsSync(join(noRepoDir, ".git")), "help must not run git init");
+      assert.ok(!existsSync(configFilePath(noRepoDir)), "help must not write a config file");
+    } finally {
+      rmSync(noRepoDir, { recursive: true, force: true });
+    }
+  });
+
   it("runs git init when run outside a git repo", () => {
     const noRepoDir = realpathSync(mkdtempSync(join(tmpdir(), "config-no-repo-")));
     try {
