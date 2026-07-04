@@ -133,6 +133,20 @@ describe("install command", () => {
     assert.match(installLine, /--scope user/);
   });
 
+  it("exits 1 with a failure message when plugin install fails", () => {
+    makeFakeBin(fakeBinDir, "jq");
+    // Fake claude that succeeds on marketplace add/update but fails on install.
+    makeFakeBin(
+      fakeBinDir,
+      "claude",
+      `#!/bin/sh\nif [ "$1" = "plugin" ] && [ "$2" = "install" ]; then\n  exit 1\nfi\nexit 0`,
+    );
+
+    const { stderr, exitCode } = runInstall("", { PATH: fakeBinDir }, gitDir);
+    assert.equal(exitCode, 1);
+    assert.match(stderr, /Plugin installation failed/);
+  });
+
   it("--client codex writes a marketplace entry into HOME/.agents/plugins/marketplace.json", () => {
     const fakeHome = realpathSync(mkdtempSync(join(tmpdir(), "codex-home-")));
     cleanupDirs.push(fakeHome);
