@@ -87,10 +87,10 @@ describe("install command", () => {
     makeFakeBin(fakeBinDir, "jq");
     makeFakeBin(fakeBinDir, "claude");
 
-    const { stdout } = runInstall("", { PATH: fakeBinDir }, noGitDir);
-    // Warning goes to stderr (console.warn) which isn't captured on success exit;
-    // just verify the install still succeeds
+    const { stdout, stderr } = runInstall("", { PATH: fakeBinDir }, noGitDir);
+    // Warning goes to stderr via console.warn; install still succeeds.
     assert.match(stdout, /installed successfully/);
+    assert.match(stderr, /not inside a git repository/);
   });
 
   it("suppresses git warning for user scope", () => {
