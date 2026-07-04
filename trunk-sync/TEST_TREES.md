@@ -524,6 +524,12 @@ Domain: rewindCodexRollout (src: src/commands/seance-codex.ts; domain: src/comma
       and a target rollout path under `~/.codex/sessions/<Y>/<M>/<D>/rollout-<ts>-<newuuid>.jsonl` is returned
     if no line's timestamp is at or before the commit timestamp
       then null is returned
+    if a rollout line is not valid JSON
+      then it is skipped
+    if a rollout line has no timestamp
+      then it is skipped
+    if a `session_meta` line has no payload
+      then it is passed through with id and cwd unchanged
 ```
 
 ## config
