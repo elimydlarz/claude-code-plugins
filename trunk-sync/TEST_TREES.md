@@ -174,6 +174,12 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
 ```
 Domain: git (src: src/lib/git.ts; domain: src/lib/git.test.ts; system: none)
 
+  getGitRoot
+    when inside a git repository
+      then the repository root path is returned
+    if not inside a git repository
+      then null is returned
+
   parseFileRef
     when called with `path:line`
       then file and line are returned
