@@ -458,6 +458,16 @@ Use-case: seance (src: src/commands/seance.ts; use-case: src/commands/seance.tes
     if the blamed commit was not made by trunk-sync
       then it exits 1 with a message identifying the commit
 
+  seance launch failures
+    if the resolved agent's CLI is not on PATH
+      then it exits 1 naming the missing CLI
+    if there is no surrounding git repository
+      then it exits 1
+    if creating the worktree at the blamed commit fails
+      then it exits 1
+    if the transcript cannot be rewound to the commit timestamp
+      then it exits 1
+
   seance --list
     when the repository contains trunk-sync commits
       then deduplicated sessions are printed in a table
