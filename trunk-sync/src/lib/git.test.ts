@@ -1,16 +1,19 @@
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, realpathSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { execSync } from "node:child_process";
 import {
+  getGitRoot,
   parseFileRef,
   extractSessionId,
   extractTranscriptPath,
   extractAgent,
   blame,
   getCommitBody,
+  getCommitSubject,
+  getCommitDate,
   getCommitTimestamp,
   commandExists,
   shortSha,
