@@ -1084,7 +1084,9 @@ assert_equals "ship it" "$(jq -r '.remainingSteps' "$CARD")" "preservation: cloc
 STALE_TS=$(node -e 'console.log(new Date(Date.now()-45*60*1000).toISOString())')
 jq --arg t "$STALE_TS" '.lastActiveAt=$t' "$CARD" > "$CARD.tmp" && mv "$CARD.tmp" "$CARD"
 ( cd "$WT_A" && git add -A && git commit -q -m "stale the card" )
-run_stop "$WT_A" "agentaaa" >/dev/null 2>&1 || true
+STOP_EXIT=0
+run_stop "$WT_A" "agentaaa" >/dev/null 2>&1 || STOP_EXIT=$?
+assert_equals "0" "$STOP_EXIT" "stop: the stop hook always exits 0 — the agent is never forced to act"
 assert_contains "$(git -C "$WT_A" log -1 --format=%s)" "heartbeat" "stop: stale heartbeat is committed"
 [[ "$(jq -r '.lastActiveAt' "$CARD")" != "$STALE_TS" ]] && HB_BUMPED=yes || HB_BUMPED=no
 assert_equals "yes" "$HB_BUMPED" "stop: stale heartbeat value is refreshed"
