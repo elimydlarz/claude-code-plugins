@@ -14,21 +14,22 @@ function runInstall(
   cwd?: string,
 ): { stdout: string; stderr: string; exitCode: number } {
   const cliPath = join(process.cwd(), "dist", "cli.js");
-  try {
-    const stdout = execSync(`node "${cliPath}" install ${args}`, {
+  // spawnSync captures stdout AND stderr on every exit code (success included),
+  // so warnings emitted via console.warn on a clean exit are observable.
+  const result = spawnSync(
+    process.execPath,
+    [cliPath, "install", ...args.split(/\s+/).filter(Boolean)],
+    {
       cwd,
       encoding: "utf-8",
       env: { ...process.env, ...env, PATH: env?.PATH ? `${env.PATH}:${nodeDir}` : process.env.PATH },
-    }).trim();
-    return { stdout, stderr: "", exitCode: 0 };
-  } catch (e: unknown) {
-    const err = e as { stderr?: string; stdout?: string; status?: number };
-    return {
-      stdout: (err.stdout || "").trim(),
-      stderr: (err.stderr || "").trim(),
-      exitCode: err.status ?? 1,
-    };
-  }
+    },
+  );
+  return {
+    stdout: (result.stdout || "").trim(),
+    stderr: (result.stderr || "").trim(),
+    exitCode: result.status ?? 1,
+  };
 }
 
 function makeFakeBin(dir: string, name: string, script = "#!/bin/sh\nexit 0"): void {
