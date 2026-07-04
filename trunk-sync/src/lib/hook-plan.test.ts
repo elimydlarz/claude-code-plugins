@@ -489,6 +489,8 @@ describe("buildClockInPlan", () => {
     assert.equal(plan!.timecard.hostname, "my-macbook");
     assert.equal(plan!.timecard.branch, "main");
     assert.equal(plan!.timecard.task, null);
+    assert.equal(plan!.timecard.lastStep, null);
+    assert.equal(plan!.timecard.remainingSteps, null);
   });
 
   it("returns null when session_id is null", () => {
