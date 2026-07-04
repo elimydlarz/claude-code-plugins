@@ -271,6 +271,8 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
       and a gitignored file is detected as gitignored
       and the current branch name is reported
       and a detached HEAD reports an empty currentBranch
+      and a merge in progress is reported when MERGE_HEAD is present
+      and the presence of staged changes is reported
       and the absence of a remote is reported
       and a configured remote with no `target-branch` override defaults targetBranch to "agents"
     while `target-branch` is set in `.trunk-sync/config`
