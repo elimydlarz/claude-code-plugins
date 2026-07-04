@@ -546,6 +546,8 @@ Use-case: config (src: src/commands/config.ts; use-case: src/commands/config.tes
         then the command still succeeds — the commit stands locally for the next sync to pick up
     if `config unset <key>` is called for a key that does not exist
       then it exits 1
+    if `config --unset` is called with no key
+      then it exits 1 with a usage message
     when the config file contains comments and blank lines
       then they are preserved on read
 ```
