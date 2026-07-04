@@ -218,6 +218,7 @@ function inspectOrLaunch(fileRef: string, inspect: boolean): void {
     console.log(`Commit:   ${sha}`);
     console.log(`Subject:  ${subject}`);
     console.log(`Session:  ${sessionId}`);
+    console.log(`Line:     ${line}${origLine !== line ? ` (originally ${origLine})` : ""}`);
     return;
   }
 
