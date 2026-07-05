@@ -467,11 +467,14 @@ dual-harness-compatibility (src: .claude-plugin/plugin.json, .codex-plugin/plugi
     then a manifest exists at .claude-plugin/plugin.json
     and a manifest exists at .codex-plugin/plugin.json declaring skills as ./skills/ and hooks as ./hooks/hooks.json
     and both manifests carry the same name and version
+    and .claude-plugin/plugin.json declares a name of "contree", a version, and a description
     and one hooks/hooks.json is shared by both harnesses
   when a hook fires
     then hooks.json invokes its script via $CLAUDE_PLUGIN_ROOT — the env var both harnesses set
   when an Edit, Write, or MultiEdit tool call completes
     then the PostToolUse matcher fires
+  when the Stop hook fires
+    then hooks.json wires it to hooks/stop-drift-check.sh
   when Codex is the harness
     then Codex itself aliases apply_patch to match this matcher — Codex-side behaviour, not contree-configured or testable from this repo
 ```
