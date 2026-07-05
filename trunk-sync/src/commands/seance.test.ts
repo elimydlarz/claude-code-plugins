@@ -216,8 +216,9 @@ describe("seance", () => {
       { cwd: dir, env: { ...process.env, GIT_COMMITTER_DATE: commitDate } },
     );
 
-    const output = runSeance(dir, `${file}:1`, binDir);
+    const { output, status } = runSeanceWithStatus(dir, `${file}:1`, binDir);
     assert.match(output, /Could not rewind transcript/);
+    assert.equal(status, 1);
 
     rmSync(binDir, { recursive: true, force: true });
     rmSync(transcriptDir, { recursive: true, force: true });
