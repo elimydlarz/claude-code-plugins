@@ -268,6 +268,54 @@ describe("gatherRepoState", () => {
     assert.deepEqual(state.modifiedFiles, []);
     assert.deepEqual(state.untrackedFiles, []);
   });
+
+  it("reports a merge in progress via MERGE_HEAD", () => {
+    writeFileSync(join(dir, ".git", "MERGE_HEAD"), "0".repeat(40) + "\n");
+    const origDir = process.cwd();
+    process.chdir(dir);
+    const state = gatherRepoState(makeInput());
+    process.chdir(origDir);
+    assert.ok(state);
+    assert.equal(state.inMerge, true);
+  });
+
+  it("reports no merge in progress when MERGE_HEAD is absent", () => {
+    const origDir = process.cwd();
+    process.chdir(dir);
+    const state = gatherRepoState(makeInput());
+    process.chdir(origDir);
+    assert.ok(state);
+    assert.equal(state.inMerge, false);
+  });
+
+  it("reports staged changes", () => {
+    writeFileSync(join(dir, "file.txt"), "staged change\n");
+    execSync("git add file.txt", { cwd: dir });
+    const origDir = process.cwd();
+    process.chdir(dir);
+    const state = gatherRepoState(makeInput());
+    process.chdir(origDir);
+    assert.ok(state);
+    assert.equal(state.hasStagedChanges, true);
+  });
+
+  it("reports no staged changes when the index is clean", () => {
+    const origDir = process.cwd();
+    process.chdir(dir);
+    const state = gatherRepoState(makeInput());
+    process.chdir(origDir);
+    assert.ok(state);
+    assert.equal(state.hasStagedChanges, false);
+  });
+});
+
+// ── getRuntimeContext ────────────────────────────────────────────────
+
+describe("getRuntimeContext", () => {
+  it("reports the host machine's hostname", () => {
+    const ctx = getRuntimeContext();
+    assert.equal(ctx.hostname, hostname());
+  });
 });
 
 // ── findWorktreeForBranch ────────────────────────────────────────────
