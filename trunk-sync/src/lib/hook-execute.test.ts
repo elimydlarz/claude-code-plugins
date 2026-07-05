@@ -1360,6 +1360,57 @@ describe("runStop", () => {
   it("does nothing when no session id is provided", () => {
     assert.doesNotThrow(() => runStop(makeState(dir), null));
   });
+
+  it("pushes the refreshed heartbeat to the remote when a remote is configured", () => {
+    const { remote, clone } = setupRepoWithRemote("stop-sync");
+    process.chdir(clone);
+
+    const staleTime = new Date(Date.now() - 45 * 60 * 1000).toISOString();
+    const timeclockDir = join(clone, ".trunk-sync", "timeclock");
+    mkdirSync(timeclockDir, { recursive: true });
+    writeFileSync(join(timeclockDir, "remote-session.json"), JSON.stringify({
+      sessionId: "remote-session", hostname: "h", clockedInAt: staleTime, lastActiveAt: staleTime,
+      branch: "main", task: null, lastStep: null, remainingSteps: null,
+    }));
+    execSync("git add . && git commit -m 'add card'", { cwd: clone, stdio: "ignore" });
+
+    const state = makeState(clone, { hasRemote: true, targetBranch: "main", currentBranch: "main" });
+    runStop(state, "remote-session");
+
+    execSync("git fetch origin main", { cwd: clone, stdio: "ignore" });
+    const remoteLog = execSync("git log --oneline origin/main", { cwd: clone, encoding: "utf-8" });
+    assert.match(remoteLog, /heartbeat/);
+
+    rmSync(remote, { recursive: true, force: true });
+    rmSync(clone, { recursive: true, force: true });
+  });
+
+  it("never throws even when the post-heartbeat sync fails — the stop hook always exits 0", () => {
+    const { remote, clone } = setupRepoWithRemote("stop-sync-fail");
+    process.chdir(clone);
+
+    // Make the remote unreachable so the internal sync call fails
+    execSync(`git remote set-url origin "/nonexistent/path/to/remote.git"`, { cwd: clone });
+
+    const staleTime = new Date(Date.now() - 45 * 60 * 1000).toISOString();
+    const timeclockDir = join(clone, ".trunk-sync", "timeclock");
+    mkdirSync(timeclockDir, { recursive: true });
+    writeFileSync(join(timeclockDir, "flaky-session.json"), JSON.stringify({
+      sessionId: "flaky-session", hostname: "h", clockedInAt: staleTime, lastActiveAt: staleTime,
+      branch: "main", task: null, lastStep: null, remainingSteps: null,
+    }));
+    execSync("git add . && git commit -m 'add card'", { cwd: clone, stdio: "ignore" });
+
+    const state = makeState(clone, { hasRemote: true, targetBranch: "main", currentBranch: "main" });
+    assert.doesNotThrow(() => runStop(state, "flaky-session"));
+
+    // The heartbeat is still bumped locally even though syncing it failed
+    const card = JSON.parse(readFileSync(join(timeclockDir, "flaky-session.json"), "utf-8")) as Timecard;
+    assert.ok(new Date(card.lastActiveAt).getTime() > new Date(staleTime).getTime());
+
+    rmSync(remote, { recursive: true, force: true });
+    rmSync(clone, { recursive: true, force: true });
+  });
 });
 
 describe("reapCards", () => {
