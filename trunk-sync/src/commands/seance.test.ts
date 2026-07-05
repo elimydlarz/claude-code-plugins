@@ -45,10 +45,13 @@ describe("seance", () => {
     writeFileSync(file, "const x = 1;\n");
     gitIn(dir, "add code.ts");
     gitIn(dir, "commit -m 'auto(abcd1234): add code' -m 'File: code.ts\nSession: aaaa-bbbb-cccc-dddd'");
+    const sha = gitIn(dir, "rev-parse HEAD");
 
     const output = runSeance(dir, `${file}:1 --inspect`);
+    assert.match(output, new RegExp(`Commit:\\s+${sha}`));
     assert.match(output, /Session:\s+aaaa-bbbb-cccc-dddd/);
     assert.match(output, /Subject:\s+auto\(abcd1234\): add code/);
+    assert.match(output, /Line:\s+1(?!\s*\(originally)/);
   });
 
   it("--inspect works when blamed line has shifted", () => {
@@ -64,6 +67,7 @@ describe("seance", () => {
 
     const output = runSeance(dir, `${file}:3 --inspect`);
     assert.match(output, /Session:\s+shift-test-session/);
+    assert.match(output, /Line:\s+3 \(originally 1\)/);
   });
 
   });
