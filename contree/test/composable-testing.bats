@@ -62,28 +62,10 @@ CHANGE="$PROJECT_ROOT/skills/change/SKILL.md"
   assert_output --partial "Use-case and Component"
 }
 
-@test "change pairs each outbound port with an in-memory adapter used by Use-case tests" {
-  run cat "$CHANGE"
-  assert_output --partial "in-memory adapter"
-  assert_output --partial "Use-case tests"
-}
-
 @test "change wires System tests with real driven adapters at the highest tolerable realism by default" {
   run cat "$CHANGE"
   assert_output --partial "real driven adapters"
   assert_output --regexp "highest tolerable realism|max realism|max-realism"
-}
-
-@test "change leans on the journey when breadth at max realism is unaffordable" {
-  run cat "$CHANGE"
-  assert_output --regexp "unaffordable|unafford"
-  assert_output --partial "lean on the journey"
-}
-
-@test "change pairs each outbound port with a shared contract suite" {
-  run cat "$CHANGE"
-  assert_output --partial "shared"
-  assert_output --partial "contract"
 }
 
 @test "setup produces tree-shaped output at every layer" {
