@@ -117,7 +117,8 @@ describe("gatherRepoState", () => {
     process.chdir(origDir);
     assert.ok(state);
     assert.equal(state.repoRoot, dir);
-    assert.equal(state.gitDir, join(dir, ".git"));
+    // `git rev-parse --git-dir` reports relative to cwd — ".git" when cwd is the repo root.
+    assert.equal(state.gitDir, ".git");
     assert.equal(state.insideRepo, true);
     assert.equal(state.relPath, "file.txt");
   });
