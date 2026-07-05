@@ -29,6 +29,12 @@ touch_nudge_seconds_ago() {
   touch "$nudge_dir/$(( SETUP_NOW - seconds_ago ))"
 }
 
+@test "hooks.json wires it to hooks/self-care-20-20-20.sh" {
+  run jq -r '.hooks.UserPromptSubmit[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json"
+  assert_success
+  assert_output --partial "self-care-20-20-20.sh"
+}
+
 @test "records a heartbeat when the hook fires" {
   run_hook
   [ "$status" -eq 0 ] || return 1
