@@ -354,16 +354,29 @@ exit 0
       env: { ...process.env, GIT_COMMITTER_DATE: commitDate },
     });
 
+    // A rival transcript at the derived path, with a different line count, so the
+    // assertion below can tell which source actually won if the snapshot were ignored.
+    const realDir = realpathSync(dir);
+    const repoSlug = realDir.replace(/[/.]/g, "-");
+    const derivedDir = join(process.env.HOME || "", ".claude", "projects", repoSlug);
+    mkdirSync(derivedDir, { recursive: true });
+    writeFileSync(
+      join(derivedDir, `${originalSessionId}.jsonl`),
+      JSON.stringify({ type: "user", timestamp: "2026-03-01T10:00:00.000Z", sessionId: originalSessionId, cwd: "/derived/rival", message: { role: "user", content: "rival task" } }) + "\n",
+    );
+
     const output = runSeance(dir, `${file}:1`, binDir);
 
     // Should rewind using the snapshot (no Transcript: field needed)
     assert.match(output, /Rewound session to commit/);
     assert.match(output, new RegExp(`Forking session ${originalSessionId}`));
 
-    // Verify the rewound transcript was created from snapshot
+    // Verify the rewound transcript was created from the snapshot, not the rival derived-path transcript
     assert.ok(existsSync(captureFile), "mock claude should have captured the rewound transcript");
     const capturedLines = readFileSync(captureFile, "utf-8").split("\n").filter(Boolean);
-    assert.equal(capturedLines.length, 3, "should have all 3 lines (timestamps <= commit time)");
+    assert.equal(capturedLines.length, 3, "should have all 3 snapshot lines (timestamps <= commit time), not the rival's 1");
+
+    rmSync(derivedDir, { recursive: true, force: true });
 
     // seance-read-only: claude is launched with restrictive flags
     const loggedArgs = readFileSync(logFile, "utf-8");
