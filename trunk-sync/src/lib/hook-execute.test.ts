@@ -117,6 +117,7 @@ describe("gatherRepoState", () => {
     process.chdir(origDir);
     assert.ok(state);
     assert.equal(state.repoRoot, dir);
+    assert.equal(state.gitDir, join(dir, ".git"));
     assert.equal(state.insideRepo, true);
     assert.equal(state.relPath, "file.txt");
   });
