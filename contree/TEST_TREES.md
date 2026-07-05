@@ -446,6 +446,7 @@ rules-loading (src: hooks/session-start.sh; system: test/rules-loading.bats; jou
 ```
 self-care-20-20-20 (src: hooks/self-care-20-20-20.sh; system: test/self-care.bats; journey: test/journey/docker-entrypoint.sh)
   when the UserPromptSubmit hook fires in any session
+    then hooks.json wires it to hooks/self-care-20-20-20.sh
     when the heartbeat is recorded
       then heartbeats older than one hour are pruned
       and while heartbeats with no gap longer than 5 minutes between them have been continuous for at least 20 minutes
