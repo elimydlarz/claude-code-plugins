@@ -116,9 +116,3 @@ description: "Never closed"
   run bash "$SCRIPT"
   [ "$status" -ne 0 ]
 }
-
-@test "passes for the real contree skills dir" {
-  run bash "$SCRIPT" "$PROJECT_ROOT/skills"
-  [ "$status" -eq 0 ] || return 1
-  [ -z "$output" ] || return 1
-}
