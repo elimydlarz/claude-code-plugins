@@ -188,6 +188,8 @@ post-update-hook (src: hooks/post-update-check.sh; system: test/post-update-hook
     and its findings are surfaced to Claude's next response via additional context
   when a file other than MENTAL_MODEL.md is edited
     then the validator does not run
+  when contree is installed
+    then hooks.json wires post-update-check.sh to the PostToolUse hook event
 ```
 
 ## mental-model-validator
