@@ -123,6 +123,12 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
   [[ "$output" == *"break the implementation intentionally"* ]]
 }
 
+@test "tdd observes the test failing, then fixes the implementation, observes it passing, and moves on" {
+  run cat "$SKILL"
+  assert_output --partial "observe the test failing"
+  assert_output --regexp "fix it, observe it passing, move on|fix, observe passing, move on"
+}
+
 @test "tdd runs mutation testing at the end, not during the cycle" {
   run cat "$SKILL"
   assert_output --partial "mutation"
