@@ -392,6 +392,36 @@ exit 0
     rmSync(binDir, { recursive: true, force: true });
   });
 
+  it("uses the transcript at TranscriptPath from the commit body when there is no snapshot", () => {
+    const binDir = mkdtempSync(join(tmpdir(), "seance-bin-"));
+    writeFileSync(join(binDir, "claude"), `#!/bin/sh\nexit 0\n`);
+    chmodSync(join(binDir, "claude"), 0o755);
+
+    const originalSessionId = "transcript-path-session";
+    // Deliberately NOT at the derived path — only reachable via the commit body's TranscriptPath
+    const customTranscriptDir = mkdtempSync(join(tmpdir(), "seance-custom-transcript-"));
+    const transcriptFile = join(customTranscriptDir, `${originalSessionId}.jsonl`);
+    writeFileSync(transcriptFile, JSON.stringify({
+      type: "user", timestamp: "2026-03-01T10:00:00.000Z", sessionId: originalSessionId, cwd: "/original/project",
+      message: { role: "user", content: "task" },
+    }) + "\n");
+
+    const file = join(dir, "code.ts");
+    writeFileSync(file, "const x = 1;\n");
+    gitIn(dir, "add code.ts");
+    const commitDate = "2026-03-01T10:00:01.000Z";
+    execSync(
+      `git commit -m 'auto(abcd1234): add code' -m 'Session: ${originalSessionId}\nTranscriptPath: ${transcriptFile}'`,
+      { cwd: dir, env: { ...process.env, GIT_COMMITTER_DATE: commitDate } },
+    );
+
+    const output = runSeance(dir, `${file}:1`, binDir);
+    assert.match(output, /Rewound session to commit/);
+
+    rmSync(binDir, { recursive: true, force: true });
+    rmSync(customTranscriptDir, { recursive: true, force: true });
+  });
+
   it("prompt uses original line number from blamed commit, not current line", () => {
     const binDir = mkdtempSync(join(tmpdir(), "seance-bin-"));
     const logFile = join(binDir, "claude.log");
