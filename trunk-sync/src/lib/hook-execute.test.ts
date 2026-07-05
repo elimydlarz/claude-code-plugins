@@ -836,6 +836,30 @@ describe("executeSync", () => {
     assert.match(log, /main change/);
   });
 
+  it("returns exit 2 with conflict feedback when merging the local target branch into the worktree branch conflicts", () => {
+    const { remote, clone } = setupRepoWithRemote("wt-local-conflict");
+    track(remote);
+    track(clone);
+
+    process.chdir(clone);
+    // Local-only commit on main, never pushed — this is what the second merge
+    // step (local target branch → worktree branch) must reconcile.
+    writeFileSync(join(clone, "shared.txt"), "local main content\n");
+    execSync("git add shared.txt && git commit -m 'local main only'", { cwd: clone, stdio: "ignore" });
+
+    // Branch off the point before that local commit, with a conflicting change to the same file
+    execSync("git checkout -b trunk-sync-wt HEAD~1", { cwd: clone, stdio: "ignore" });
+    writeFileSync(join(clone, "shared.txt"), "worktree content\n");
+    execSync("git add shared.txt && git commit -m 'wt commit'", { cwd: clone, stdio: "ignore" });
+
+    const sync: SyncPlan = { targetBranch: "main", currentBranch: "trunk-sync-wt" };
+    const result = executeSync(sync);
+
+    assert.equal(result.exitCode, 2);
+    assert.ok(result.stderr);
+    assert.match(result.stderr, /TRUNK-SYNC CONFLICT/);
+  });
+
   it("updates local target branch after push", () => {
     const { remote, clone } = setupRepoWithRemote("local-update");
     track(remote);
