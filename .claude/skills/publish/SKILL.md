@@ -57,6 +57,8 @@ The script handles: clean-source check, version bump, commit, annotated tag, pus
 
 **Auth:** trunk-sync's publish script reads `TRUNK_SYNC_PUBLISHER` from `$REPO_ROOT/.env`, writes it to a temp `trunk-sync/.npmrc` as `//registry.npmjs.org/:_authToken`, and runs `pnpm publish --no-git-checks`. The token is a scoped npm publish token with 2FA disabled. If publish fails with E401/E404, the `.env` token is stale or scope-restricted — the user regenerates it.
 
+**Never verify a publish with a global install** (`npm install -g` / `pnpm add -g`). Nothing in this repo tracks or cleans up global installs, so each one is permanent local machine state that silently drifts from the published version — this is exactly how the machine ended up with three dead trunk-sync identities (`trunk-sync@2.2.0` unscoped, `@susu-eng/trunk-sync`, and stale `@elimydlarz/trunk-sync` versions) before a 2026-07-05 cleanup. To confirm a publish reached the registry, use `npm view @elimydlarz/trunk-sync version` (no local state) or `npx --yes @elimydlarz/trunk-sync@latest --version` (ephemeral, not installed).
+
 ### 5. Update local marketplace and reinstall
 
 Both publish scripts do this automatically: refresh the local marketplace cache, then `claude plugin update <plugin>@elimydlarz` (falling back to `install` if it's not installed yet). `install` alone is a no-op once a plugin is already present — it doesn't check for a newer version — so `update` is required to actually pick up the new version on an existing install.
