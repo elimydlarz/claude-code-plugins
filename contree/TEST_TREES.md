@@ -413,7 +413,7 @@ skill-discoverability (src: hooks/session-start.sh; system: test/skill-discovera
 ## composable-testing
 
 ```
-composable-testing (src: skills/setup/SKILL.md; system: test/composable-testing.bats; journey: test/journey/docker-entrypoint.sh)
+composable-testing (src: skills/setup/SKILL.md, skills/change/SKILL.md; system: test/composable-testing.bats; journey: test/journey/docker-entrypoint.sh)
   when a project uses contree
     then Domain tests are colocated with source (*.domain.test.*)
     and Use-case tests are colocated with the use-case (*.use-case.test.*)
@@ -425,8 +425,6 @@ composable-testing (src: skills/setup/SKILL.md; system: test/composable-testing.
     and System tests wire real driven adapters at the highest tolerable realism by default
     and Journey tests wire real driving and driven adapters across the multi-capability arc at max realism
     and exhaustive single-capability breadth lives at the Component and Use-case layers
-    and each outbound port has an in-memory adapter used by Use-case tests
-    and each outbound port has a shared contract suite imported by both in-memory and real adapter tests
     and every layer produces tree-shaped output
     and mutation testing validates quality at the Domain and Use-case layers
 ```
