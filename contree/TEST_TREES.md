@@ -54,6 +54,7 @@ outside-in-tdd (src: skills/tdd/SKILL.md; system: test/outside-in-tdd.bats; jour
   when writing a System test
     then real driving and driven adapters are wired whole-app for one capability at the highest tolerable realism — the same surface a Component test covers, validated against real infrastructure
     and System tests are selective, not exhaustive — real-everything is expensive, so it is spent on the highest-impact capabilities and expanded over time
+    and when breadth at max realism is unaffordable, the journey is leaned on instead of wiring many in-memory System tests
   when writing a Component test
     then real driving and driven adapters are wired whole-app for one capability, with externals doubled only at the edge — an in-memory database and stubbed outbound HTTP
     and exhaustive single-capability behaviour coverage lives here, because doubling only the edges keeps it cheap enough to always write
