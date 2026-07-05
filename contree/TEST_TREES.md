@@ -520,6 +520,7 @@ second-opinion-reviews-completed-work (src: skills/second-opinion/SKILL.md; syst
 validate-skill-frontmatter (src: scripts/validate-skill-frontmatter.sh; system: test/validate-skill-frontmatter.bats)
   when every skills/*/SKILL.md has non-empty frontmatter name and description
     then the validator exits 0
+    and this holds for contree's own real skills/ directory, not just synthetic fixtures
   when the skills directory has no SKILL.md files
     then the validator exits 0
   if a SKILL.md's frontmatter name is missing
