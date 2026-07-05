@@ -38,6 +38,25 @@ describe("seance", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
+  describe("seance usage", () => {
+
+  it("prints usage on --help without launching a CLI", () => {
+    const output = runSeance(dir, "--help");
+    assert.match(output, /Usage: trunk-sync seance/);
+  });
+
+  it("prints usage on -h without launching a CLI", () => {
+    const output = runSeance(dir, "-h");
+    assert.match(output, /Usage: trunk-sync seance/);
+  });
+
+  it("prints usage when no file:line argument is given", () => {
+    const output = runSeance(dir, "");
+    assert.match(output, /Usage: trunk-sync seance/);
+  });
+
+  });
+
   describe("seance --inspect", () => {
 
   it("--inspect shows session info for trunk-sync commit", () => {
