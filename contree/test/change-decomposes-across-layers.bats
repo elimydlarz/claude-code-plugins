@@ -40,6 +40,13 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   assert_output --partial "system-oriented"
 }
 
+@test "change treats Use-case and Component as always-written exhaustive coverage, System and Journey as selective" {
+  run cat "$SKILL"
+  assert_output --partial "always written and exhaustive"
+  assert_output --partial "Use-case and Component carry exhaustive coverage"
+  assert_output --partial "System and Journey validate the same surfaces with real everything, selectively"
+}
+
 @test "change forbids designing inner-layer trees up front from speculation" {
   run cat "$SKILL"
   assert_output --regexp "YAGNI failure|speculation"
