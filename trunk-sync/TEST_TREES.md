@@ -456,9 +456,9 @@ Use-case: seance (src: src/commands/seance.ts; use-case: src/commands/seance.tes
 
   seance --inspect
     when the blamed commit is a trunk-sync commit
-      then the SHA, subject, and session id are printed without launching a CLI
+      then the SHA, subject, session id, and queried line are printed without launching a CLI
     when the blamed line has shifted from its original position
-      then the current line and the blamed commit's original line number are both reported
+      then the reported line also includes the blamed commit's original line number
 
   seance preconditions
     if the blamed line has uncommitted changes
