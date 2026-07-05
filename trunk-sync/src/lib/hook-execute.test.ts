@@ -731,6 +731,30 @@ describe("executeSync", () => {
     assert.match(remoteLog, /clone2 commit/);
   });
 
+  it("returns exit 2 with push-failure feedback when the retried push also fails", () => {
+    const { remote, clone } = setupRepoWithRemote("push-fail");
+    track(remote);
+    track(clone);
+
+    // A pre-receive hook that unconditionally rejects every push, so both the
+    // initial push and the retry push fail.
+    const hooksDir = join(remote, "hooks");
+    mkdirSync(hooksDir, { recursive: true });
+    writeFileSync(join(hooksDir, "pre-receive"), "#!/bin/sh\necho 'rejected by policy' >&2\nexit 1\n");
+    execSync(`chmod +x "${join(hooksDir, "pre-receive")}"`);
+
+    process.chdir(clone);
+    writeFileSync(join(clone, "new.txt"), "new\n");
+    execSync("git add new.txt && git commit -m 'add new'", { cwd: clone, stdio: "ignore" });
+
+    const sync: SyncPlan = { targetBranch: "main", currentBranch: "main" };
+    const result = executeSync(sync);
+
+    assert.equal(result.exitCode, 2);
+    assert.ok(result.stderr);
+    assert.match(result.stderr, /TRUNK-SYNC FAILED/);
+  });
+
   it("returns exit 2 on merge conflict during pull", () => {
     const { remote, clone } = setupRepoWithRemote("conflict");
     track(remote);
