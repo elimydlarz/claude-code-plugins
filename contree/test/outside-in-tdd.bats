@@ -16,6 +16,13 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
   assert_output --partial "Journey"
 }
 
+@test "tdd walks representative error paths in a Journey test and eventually succeeds, not enumerating every error" {
+  run cat "$SKILL"
+  assert_output --partial "representative"
+  assert_output --partial "eventually succeeds"
+  assert_output --regexp "does not enumerate every error|not enumerate every error"
+}
+
 @test "tdd leans on the journey and pushes detail to inner layers when breadth at max realism is unaffordable" {
   run cat "$SKILL"
   assert_output --partial "unaffordable"
