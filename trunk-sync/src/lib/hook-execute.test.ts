@@ -878,6 +878,39 @@ describe("executeSync", () => {
     const remoteRef = execSync("git rev-parse origin/main", { cwd: clone, encoding: "utf-8" }).trim();
     assert.equal(localRef, remoteRef);
   });
+
+  it("fast-forwards the local target branch in its own worktree when fetch cannot update it directly", () => {
+    const { remote, clone } = setupRepoWithRemote("wt-ff-fallback");
+    track(remote);
+    track(clone);
+
+    process.chdir(clone);
+    execSync("git checkout -b trunk-sync-wt", { cwd: clone, stdio: "ignore" });
+
+    // Check main out into its own worktree, so a direct `git fetch main:main`
+    // cannot update it (git refuses to move a ref checked out elsewhere).
+    const mainWtParent = mkdtempSync(join(tmpdir(), "wt-ff-fallback-mainwt-"));
+    const mainWt = realpathSync(mainWtParent);
+    rmSync(mainWt, { recursive: true, force: true });
+    track(mainWt);
+    execSync(`git worktree add "${mainWt}" main`, { cwd: clone, stdio: "ignore" });
+
+    writeFileSync(join(clone, "wt-only.txt"), "from worktree branch\n");
+    execSync("git add wt-only.txt && git commit -m 'wt commit'", { cwd: clone, stdio: "ignore" });
+
+    const sync: SyncPlan = { targetBranch: "main", currentBranch: "trunk-sync-wt" };
+    const result = executeSync(sync);
+
+    assert.equal(result.exitCode, 0);
+
+    const remoteLog = execSync("git log --oneline main", { cwd: remote, encoding: "utf-8" });
+    assert.match(remoteLog, /wt commit/);
+
+    // The separate main worktree must have been fast-forwarded, since fetch
+    // could not update the "main" ref directly while it was checked out there.
+    const mainWtLog = execSync("git log --oneline", { cwd: mainWt, encoding: "utf-8" });
+    assert.match(mainWtLog, /wt commit/);
+  });
 });
 
 // ── amendWithTranscriptSnapshot (via executePlan) ────────────────────
