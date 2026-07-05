@@ -30,6 +30,8 @@ ls .git/refs/tags/ | grep <tag-prefix> | sort -V | tail -1
 
 Then read the actual diff for any commit whose message is uninformative (the `auto(...)` commits from trunk-sync usually need this) so the notes describe real user-visible changes, not commit-message noise. Group related commits into one bullet rather than one-per-commit.
 
+**Concurrent sessions publish on this trunk too.** Before drafting notes, confirm the work isn't already shipped: `git diff <last-tag> -- <plugin>/` — if empty, another session already published exactly this state (check `gh release view <last-tag>` to confirm); stop and report that instead of re-publishing. If non-empty, the diff is what's actually pending — draft notes from that, not from everything since the tag.
+
 ### 3. Draft notes
 
 Write to `/tmp/<plugin>-notes.md`. Format:
