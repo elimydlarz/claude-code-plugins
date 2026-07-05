@@ -148,17 +148,21 @@ describe("seance", () => {
     const minimalPath = `${join(gitBin, "..")}:${join(nodeBin, "..")}`;
     const cliPath = join(process.cwd(), "dist", "cli.js");
     let output = "";
+    let status: number | null = null;
     try {
       output = execSync(`node "${cliPath}" seance ${file}:1`, {
         cwd: dir,
         encoding: "utf-8",
         env: { PATH: minimalPath },
       }).trim();
+      status = 0;
     } catch (e: unknown) {
-      const err = e as { stderr?: string; stdout?: string };
+      const err = e as { stderr?: string; stdout?: string; status?: number | null };
       output = (err.stderr || err.stdout || "").trim();
+      status = err.status ?? null;
     }
     assert.match(output, /claude CLI not found/);
+    assert.equal(status, 1);
   });
 
   it("exits 1 when creating the worktree at the blamed commit fails", () => {
