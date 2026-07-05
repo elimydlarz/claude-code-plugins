@@ -444,7 +444,12 @@ describe("extractTaskFromTranscript", () => {
     assert.equal(extractTaskFromTranscript(content), null);
   });
 
-  it("returns null for empty content", () => {
+  it("returns null when the user message content is empty", () => {
+    const content = jsonl({ type: "user", message: { role: "user", content: "" } });
+    assert.equal(extractTaskFromTranscript(content), null);
+  });
+
+  it("returns null for an empty transcript", () => {
     assert.equal(extractTaskFromTranscript(""), null);
   });
 
