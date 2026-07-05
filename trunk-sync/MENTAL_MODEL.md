@@ -58,7 +58,7 @@
 - Agents default to a dedicated `agents` branch, not the repo's actual default branch, so per-edit auto-commits never land directly on it — merging agent work into the real default branch stays a deliberate, separate step.
 - Handover progress is agent-authored via `trunk-sync progress` — transcript prose can't reliably yield last/next — and lives in the timecard, reaped only past a 14-day TTL; transcripts commit by default so seance and handover always have the durable record.
 - `dist/` is tracked because marketplace installs have no build step.
-- The two distribution channels (npm + marketplace) are bumped together to avoid version skew.
+- The two distribution channels (npm + marketplace) are bumped together to avoid version skew. Publish only ever touches the registry and the marketplace cache — never a local global npm/pnpm install — so verifying a release with `npm install -g`/`pnpm add -g` creates permanent drift nothing else tracks or cleans up, instead of confirming anything.
 
 ## Temporal View
 
