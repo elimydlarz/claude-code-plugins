@@ -59,13 +59,7 @@ The script handles: clean-source check, version bump, commit, annotated tag, pus
 
 ### 5. Update local marketplace and reinstall
 
-After the publish succeeds, refresh the local marketplace cache and reinstall so the publisher picks up the new version immediately:
-
-```
-claude plugin marketplace update elimydlarz
-claude plugin install <plugin>@elimydlarz        # project-scope (trunk-sync)
-claude plugin install contree@elimydlarz --scope user  # user-scope
-```
+Both publish scripts do this automatically: refresh the local marketplace cache, then `claude plugin update <plugin>@elimydlarz` (falling back to `install` if it's not installed yet). `install` alone is a no-op once a plugin is already present — it doesn't check for a newer version — so `update` is required to actually pick up the new version on an existing install.
 
 ### 6. If it fails
 
