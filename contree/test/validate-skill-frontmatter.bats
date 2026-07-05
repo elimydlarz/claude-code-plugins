@@ -32,6 +32,12 @@ EOF
   [ -z "$output" ] || return 1
 }
 
+@test "passes for the real contree skills dir" {
+  run bash "$SCRIPT" "$PROJECT_ROOT/skills"
+  [ "$status" -eq 0 ] || return 1
+  [ -z "$output" ] || return 1
+}
+
 @test "exits 0 when skills dir has no SKILL.md" {
   local skills="$BATS_TEST_TMPDIR/empty"
   mkdir -p "$skills"
