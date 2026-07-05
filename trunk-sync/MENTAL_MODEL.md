@@ -58,7 +58,7 @@
 - Agents default to a dedicated `agents` branch, not the repo's actual default branch, so per-edit auto-commits never land directly on it — merging agent work into the real default branch stays a deliberate, separate step.
 - Handover progress is agent-authored via `trunk-sync progress` — transcript prose can't reliably yield last/next — and lives in the timecard, reaped only past a 14-day TTL; transcripts commit by default so seance and handover always have the durable record.
 - `dist/` is tracked because marketplace installs have no build step.
-- The two distribution channels (npm + marketplace) are bumped together to avoid version skew. Publish only ever touches the registry and the marketplace cache; it never creates, updates, or verifies-via the user's global CLI install (`npm install -g @elimydlarz/trunk-sync`, the README's own onboarding step) or the Claude Code plugin — the plugin must stay project-scoped, never `--scope user`. Treating publish verification as a reason to reach for a global install is how the machine ended up with dead identities (`trunk-sync@2.2.0` unscoped, `@susu-eng/trunk-sync`) that nothing else was tracking or cleaning up.
+- The two distribution channels (npm + marketplace) are bumped together to avoid version skew. Publish updates only the registry and the marketplace cache — the CLI's global npm install and the plugin's install scope are user-owned state, set once via the README's onboarding steps, that publish never touches. The plugin installs project-scoped by default; `--scope user` is a deliberate user choice, not something publish does.
 
 ## Temporal View
 
