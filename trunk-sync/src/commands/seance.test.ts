@@ -116,6 +116,92 @@ describe("seance", () => {
 
   });
 
+  describe("seance launch failures", () => {
+
+  it("exits 1 naming the missing CLI when the resolved agent's CLI is not on PATH", () => {
+    const file = join(dir, "code.ts");
+    writeFileSync(file, "const x = 1;\n");
+    gitIn(dir, "add code.ts");
+    gitIn(dir, "commit -m 'auto(abcd1234): add code' -m 'Session: aaaa-bbbb-cccc-dddd'");
+
+    const gitBin = execSync("which git", { encoding: "utf-8" }).trim();
+    const nodeBin = execSync("which node", { encoding: "utf-8" }).trim();
+    // Minimal PATH with git and node only — no claude anywhere on it.
+    const minimalPath = `${join(gitBin, "..")}:${join(nodeBin, "..")}`;
+    const cliPath = join(process.cwd(), "dist", "cli.js");
+    let output = "";
+    try {
+      output = execSync(`node "${cliPath}" seance ${file}:1`, {
+        cwd: dir,
+        encoding: "utf-8",
+        env: { PATH: minimalPath },
+      }).trim();
+    } catch (e: unknown) {
+      const err = e as { stderr?: string; stdout?: string };
+      output = (err.stderr || err.stdout || "").trim();
+    }
+    assert.match(output, /claude CLI not found/);
+  });
+
+  it("exits 1 when creating the worktree at the blamed commit fails", () => {
+    const file = join(dir, "code.ts");
+    writeFileSync(file, "const x = 1;\n");
+    gitIn(dir, "add code.ts");
+    gitIn(dir, "commit -m 'auto(abcd1234): add code' -m 'Session: aaaa-bbbb-cccc-dddd'");
+    const sha = gitIn(dir, "rev-parse HEAD");
+    const short = sha.slice(0, 8);
+
+    // Block the exact path `git worktree add` needs with a plain file, not a directory.
+    const realDir = realpathSync(dir);
+    const worktreePath = join(realDir, ".claude", "worktrees", `seance-${short}`);
+    mkdirSync(join(worktreePath, ".."), { recursive: true });
+    writeFileSync(worktreePath, "not a worktree\n");
+
+    const binDir = mkdtempSync(join(tmpdir(), "seance-bin-"));
+    writeFileSync(join(binDir, "claude"), `#!/bin/sh\nexit 0\n`);
+    chmodSync(join(binDir, "claude"), 0o755);
+
+    const output = runSeance(dir, `${file}:1`, binDir);
+    assert.match(output, /Failed to create worktree/);
+
+    rmSync(binDir, { recursive: true, force: true });
+  });
+
+  it("exits 1 when the transcript cannot be rewound to the commit timestamp", () => {
+    const binDir = mkdtempSync(join(tmpdir(), "seance-bin-"));
+    writeFileSync(join(binDir, "claude"), `#!/bin/sh\nexit 0\n`);
+    chmodSync(join(binDir, "claude"), 0o755);
+
+    const originalSessionId = "no-rewind-session";
+    const realDir = realpathSync(dir);
+    const repoSlug = realDir.replace(/[/.]/g, "-");
+    const transcriptDir = join(process.env.HOME || "", ".claude", "projects", repoSlug);
+    mkdirSync(transcriptDir, { recursive: true });
+    const transcriptFile = join(transcriptDir, `${originalSessionId}.jsonl`);
+    // Every transcript entry postdates the commit — nothing to rewind to.
+    writeFileSync(transcriptFile, JSON.stringify({
+      type: "user", timestamp: "2026-03-01T11:00:00.000Z", sessionId: originalSessionId, cwd: dir,
+      message: { role: "user", content: "later task" },
+    }) + "\n");
+
+    const file = join(dir, "code.ts");
+    writeFileSync(file, "const x = 1;\n");
+    gitIn(dir, "add code.ts");
+    const commitDate = "2026-03-01T10:00:00.000Z";
+    execSync(
+      `git commit -m 'auto(abcd1234): add code' -m 'Session: ${originalSessionId}'`,
+      { cwd: dir, env: { ...process.env, GIT_COMMITTER_DATE: commitDate } },
+    );
+
+    const output = runSeance(dir, `${file}:1`, binDir);
+    assert.match(output, /Could not rewind transcript/);
+
+    rmSync(binDir, { recursive: true, force: true });
+    rmSync(transcriptDir, { recursive: true, force: true });
+  });
+
+  });
+
   describe("seance --list", () => {
 
   it("--list shows sessions", () => {
