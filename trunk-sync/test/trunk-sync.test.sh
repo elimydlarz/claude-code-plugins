@@ -1118,6 +1118,7 @@ assert_equals "yes" "$REAPED" "reap: an abandoned card past the TTL is swept on 
 #     record-progress instruction — a card past the reap TTL is neither active nor stale,
 #     so no handover roster is appended.
 setup_repos
+cd "$WT_A"
 mkdir -p "$WT_A/.trunk-sync/timeclock"
 REAP_TS=$(node -e 'console.log(new Date(Date.now()-20*24*60*60*1000).toISOString())')  # 20 days ago — past the 14-day reap ttl
 printf '{"sessionId":"reapableghost","hostname":"old-host","clockedInAt":"%s","lastActiveAt":"%s","branch":"main","task":null,"lastStep":"wrote half the parser","remainingSteps":"finish the parser"}' "$REAP_TS" "$REAP_TS" > "$WT_A/.trunk-sync/timeclock/reapableghost.json"
