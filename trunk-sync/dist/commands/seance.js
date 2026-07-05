@@ -176,6 +176,7 @@ function inspectOrLaunch(fileRef, inspect) {
         console.log(`Commit:   ${sha}`);
         console.log(`Subject:  ${subject}`);
         console.log(`Session:  ${sessionId}`);
+        console.log(`Line:     ${line}${origLine !== line ? ` (originally ${origLine})` : ""}`);
         return;
     }
     const agent = extractAgent(body);
@@ -184,11 +185,8 @@ function inspectOrLaunch(fileRef, inspect) {
         console.error(`${cliName} CLI not found.`);
         process.exit(1);
     }
+    // blame() above already required cwd to be inside a git repo, so this cannot be null.
     const root = getGitRoot();
-    if (!root) {
-        console.error("Not in a git repository.");
-        process.exit(1);
-    }
     const worktreePath = join(root, ".claude", "worktrees", `seance-${shortSha(sha)}`);
     if (existsSync(worktreePath)) {
         // Stale worktree from a previous seance — remove before recreating
