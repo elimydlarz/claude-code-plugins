@@ -491,7 +491,7 @@ Use-case: seance (src: src/commands/seance.ts; use-case: src/commands/seance.tes
       then the transcript at that path is used
     when the blamed line has shifted in the current file
       then the prompt uses the original line number from the blamed commit
-      and the actual line content is read from the current file
+      and the prompt includes the blamed line's code content
 
   seance default mode (Claude commit)
     when the blamed commit's `Agent:` is `claude` (or absent)
