@@ -106,6 +106,12 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
   [[ "$output" == *"real infrastructure"* || "$output" == *"real infra"* ]]
 }
 
+@test "tdd adds adapter-specific tests for behaviour beyond the shared contract when testing a real driven adapter" {
+  run cat "$SKILL"
+  assert_output --partial "adapter-specific"
+  assert_output --regexp "beyond the port contract|beyond the shared contract"
+}
+
 @test "tdd adds newly discovered cases without removing existing paths" {
   run cat "$SKILL"
   assert_output --regexp "add new cases as you discover them|add newly discovered cases"
