@@ -32,6 +32,20 @@ load test_helper
   [ "$claude_version" = "$codex_version" ]
 }
 
+@test "and .claude-plugin/plugin.json declares a name of \"contree\", a version, and a description" {
+  run jq -r '.name' "$PROJECT_ROOT/.claude-plugin/plugin.json"
+  assert_success
+  assert_output "contree"
+
+  run jq -r '.version' "$PROJECT_ROOT/.claude-plugin/plugin.json"
+  assert_success
+  refute_output "null"
+
+  run jq -r '.description' "$PROJECT_ROOT/.claude-plugin/plugin.json"
+  assert_success
+  refute_output "null"
+}
+
 @test "and one hooks/hooks.json is shared by both harnesses" {
   run test -f "$PROJECT_ROOT/hooks/hooks.json"
   assert_success
@@ -56,4 +70,12 @@ load test_helper
   run jq -r '.hooks.PostToolUse[0].matcher' "$PROJECT_ROOT/hooks/hooks.json"
   assert_success
   assert_output "Edit|Write|MultiEdit"
+}
+
+# --- when the Stop hook fires ---
+
+@test "then hooks.json wires it to hooks/stop-drift-check.sh" {
+  run jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json"
+  assert_success
+  assert_output --partial "stop-drift-check.sh"
 }
