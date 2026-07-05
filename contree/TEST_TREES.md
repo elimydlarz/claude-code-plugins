@@ -436,6 +436,7 @@ rules-loading (src: hooks/session-start.sh; system: test/rules-loading.bats; jou
   when a session starts
     then the rules list is shown
     and not repeated on every response
+    and hooks.json wires session-start.sh to the SessionStart hook event
 ```
 
 ## self-care-20-20-20
