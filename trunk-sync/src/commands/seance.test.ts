@@ -183,8 +183,9 @@ describe("seance", () => {
     writeFileSync(join(binDir, "claude"), `#!/bin/sh\nexit 0\n`);
     chmodSync(join(binDir, "claude"), 0o755);
 
-    const output = runSeance(dir, `${file}:1`, binDir);
+    const { output, status } = runSeanceWithStatus(dir, `${file}:1`, binDir);
     assert.match(output, /Failed to create worktree/);
+    assert.equal(status, 1);
 
     rmSync(binDir, { recursive: true, force: true });
   });
