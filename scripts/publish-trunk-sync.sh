@@ -98,7 +98,7 @@ gh release create "v$VERSION" --title "trunk-sync v$VERSION" --notes-file "$NOTE
 echo ""
 echo "==> Update marketplace and reinstall"
 claude plugin marketplace update elimydlarz
-claude plugin install trunk-sync@elimydlarz
+claude plugin update trunk-sync@elimydlarz || claude plugin install trunk-sync@elimydlarz
 
 echo ""
 echo "published @elimydlarz/trunk-sync v$VERSION"
