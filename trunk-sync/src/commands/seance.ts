@@ -229,11 +229,8 @@ function inspectOrLaunch(fileRef: string, inspect: boolean): void {
     process.exit(1);
   }
 
-  const root = getGitRoot();
-  if (!root) {
-    console.error("Not in a git repository.");
-    process.exit(1);
-  }
+  // blame() above already required cwd to be inside a git repo, so this cannot be null.
+  const root = getGitRoot()!;
 
   const worktreePath = join(root, ".claude", "worktrees", `seance-${shortSha(sha)}`);
 
