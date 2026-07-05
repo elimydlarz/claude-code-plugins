@@ -473,6 +473,7 @@ exit 0
     const log = readFileSync(logFile, "utf-8");
     assert.match(log, /code\.ts:1/, "prompt should reference original line 1, not current line 4");
     assert.ok(!log.includes("code.ts:4"), "prompt should NOT reference current line 4");
+    assert.match(log, /const target = true;/, "prompt should include the blamed line's code content");
 
     rmSync(binDir, { recursive: true, force: true });
     rmSync(transcriptDir, { recursive: true, force: true });
