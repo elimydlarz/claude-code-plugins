@@ -160,6 +160,11 @@ run_hook_with_last_text() {
   assert_output --partial "use"
 }
 
+@test "hook tells Claude to reply 0 when no nudge reports anything" {
+  run_hook '{}'
+  assert_output --partial "If nothing needs attention, reply 0"
+}
+
 # --- Question stop ---
 
 @test "hook injects the question-stop prompt and exits 2 when last assistant message ends with a question mark" {
