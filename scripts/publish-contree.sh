@@ -59,7 +59,7 @@ gh release create "contree-v$VERSION" --title "contree v$VERSION" --notes-file "
 echo ""
 echo "==> Update marketplace and reinstall"
 claude plugin marketplace update elimydlarz
-claude plugin install contree@elimydlarz --scope user
+claude plugin update contree@elimydlarz --scope user || claude plugin install contree@elimydlarz --scope user
 
 echo ""
 echo "published contree v$VERSION"
