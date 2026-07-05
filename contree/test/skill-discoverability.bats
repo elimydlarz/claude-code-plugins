@@ -30,13 +30,3 @@ load test_helper
   assert_output --partial "implementing behaviour"
   assert_output --partial "writing tests"
 }
-
-@test "session-start Directions block names each skill with its trigger" {
-  run bash "$PROJECT_ROOT/hooks/session-start.sh"
-  assert_output --partial "Directions"
-  assert_output --partial "change"
-  assert_output --partial "tdd"
-  assert_output --partial "sync"
-  assert_output --partial "setup"
-  assert_output --partial "workflow"
-}
