@@ -40,6 +40,7 @@ src/commands/install.test.ts  — install command tests (node:test)
 src/lib/git.ts                — shared git utilities (blame, parseFileRef, extractSessionId, findSnapshotInCommit)
 src/lib/git.test.ts           — unit tests (node:test)
 src/commands/seance.test.ts   — integration tests (node:test)
+src/commands/seance-codex.test.ts — unit tests for rewindCodexRollout (node:test)
 
 test/trunk-sync.test.sh       — hook e2e test suite (TAP, temp repos + bare remote); System-layer, simulates hook stdin
 test/functional/              — real-CLI System test (Docker): drives actual claude, handover case, deterministic self-verify (manual, billable)
