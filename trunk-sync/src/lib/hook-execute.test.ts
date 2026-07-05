@@ -1295,6 +1295,15 @@ describe("runSessionStart", () => {
   it("returns null when there is no session id", () => {
     assert.equal(runSessionStart(dir, null), null);
   });
+
+  it("omits the roster when the only other card is past the reap ttl", () => {
+    const reapableTime = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString();
+    writeCard({ sessionId: "ghost-id", task: "abandoned work", lastActiveAt: reapableTime });
+    const msg = runSessionStart(dir, "my-session-id")!;
+    assert.match(msg, /my-session-id/);
+    assert.doesNotMatch(msg, /TRUNK-SYNC HANDOVER/);
+    assert.doesNotMatch(msg, /ghost-id/);
+  });
 });
 
 describe("runStop", () => {
