@@ -797,6 +797,10 @@ assert_exit 0 "git-block: git -C <path> log is allowed"
 run_git_block "$(make_bash_input "git -C /some/other/repo show HEAD")"
 assert_exit 0 "git-block: git -C <path> show is allowed"
 
+# 28f6. git -C <path> clone is allowed
+run_git_block "$(make_bash_input "git -C /some/other/repo clone https://github.com/foo/bar")"
+assert_exit 0 "git-block: git -C <path> clone is allowed"
+
 # 28g. git push is blocked
 run_git_block "$(make_bash_input "git push origin main")"
 assert_exit 2 "git-block: git push is blocked"
