@@ -1069,6 +1069,34 @@ describe("amendWithTranscriptSnapshot", () => {
     assert.ok(!existsSync(join(dir, ".transcripts")));
   });
 
+  it("skips snapshot when no session_id", () => {
+    writeRepoConfig("commit-transcripts=true\n");
+
+    const transcriptPath = join(scratch, "session.jsonl");
+    writeFileSync(transcriptPath, jsonl({ type: "user", message: { role: "user", content: "task" } }));
+
+    const filePath = join(dir, "no-session.txt");
+    writeFileSync(filePath, "content\n");
+
+    const plan: HookPlan = {
+      action: "commit-and-sync",
+      commit: {
+        filesToStage: [filePath],
+        filesToRemove: [],
+        subject: "auto: write no-session.txt",
+        body: null,
+      },
+      sync: null,
+      clockIn: null,
+    };
+    const input = makeInput({ tool_input: { file_path: filePath }, transcript_path: transcriptPath });
+    const state = makeState(dir);
+
+    executePlan(plan, input, state);
+
+    assert.ok(!existsSync(join(dir, ".transcripts")));
+  });
+
   it("continues on snapshot failure", () => {
     writeRepoConfig("commit-transcripts=true\n");
 
