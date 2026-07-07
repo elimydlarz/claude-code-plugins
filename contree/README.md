@@ -28,16 +28,25 @@ Seven skills:
 
 Plus a **stop hook** that prompts Claude to keep test trees, mental model, CLAUDE.md, and README.md current after every response — and, when Claude ends with a question, injects a question stop that makes it answer the question from the rules, mental model, and test trees rather than reflexively ask you. A **self-care hook** that reminds you to look at something 20 feet away for 20 seconds every 20 minutes (20-20-20 rule). A **session-start header** with skill directions and coding rules, so the agent starts every session knowing when to reach for each skill.
 
-## Install
 
-**Claude Code:**
+**Codex CLI:**
 
-```sh
-claude plugin marketplace add elimydlarz/claude-code-plugins
-claude plugin install contree@elimydlarz --scope user
-```
+1. **Enable hooks** — contree ships with hook scripts (session-start, stop-drift-check, etc.) that only fire if you opt in. Add to `~/.codex/config.toml`:
+   ```toml
+   [features]
+   plugin_hooks = true
 
-**Codex CLI** — install via `/plugins` in the Codex CLI, pointing at this repository. Skills run by default; hooks require enabling codex's under-development `plugin_hooks` feature: `codex features enable plugin_hooks`. Codex sets `CLAUDE_PLUGIN_ROOT` in hook command env so the existing scripts work unchanged.
+   [plugins."contree@local-marketplace"]
+   enabled = true
+   ```
+2. **Install the plugin** — copy it into Codex's local marketplace cache:
+   ```sh
+   VERSION=$(jq -r .version contree/.codex-plugin/plugin.json)
+   mkdir -p ~/.codex/plugins/cache/local-marketplace/contree/$VERSION
+   rsync -a --exclude='.git' contree/ ~/.codex/plugins/cache/local-marketplace/contree/$VERSION/
+   ```
+
+Skills run automatically once installed. Hooks require the `plugin_hooks` flag above. Codex sets `CLAUDE_PLUGIN_ROOT` in hook command environment so scripts work unchanged.
 
 ## How it works
 
