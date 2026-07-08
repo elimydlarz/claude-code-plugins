@@ -30,6 +30,7 @@ if [ -f "$ENV_FILE" ]; then
 fi
 FIXTURES="$CONTREE_ROOT/test/fixtures"
 PROJECT_DIR="/tmp/contree-test-project"
+CODEX_TEST_HOME="$PROJECT_DIR/.codex-home"
 OUTPUT_DIR="$CONTREE_ROOT/test/journey"
 if [ -d "/output" ]; then
   OUTPUT_DIR="/output"
@@ -62,13 +63,18 @@ prime_codex_plugin() {
   [ "$CODEX_PRIMED" -eq 1 ] && return 0
   CODEX_PRIMED=1
 
-  local cache_dir="$HOME/.codex/plugins/cache/local-marketplace/contree/local"
+  rm -rf "$CODEX_TEST_HOME"
+  mkdir -p "$CODEX_TEST_HOME"
+  if [ -f "$HOME/.codex/auth.json" ]; then
+    cp "$HOME/.codex/auth.json" "$CODEX_TEST_HOME/auth.json"
+  fi
+
+  local cache_dir="$CODEX_TEST_HOME/plugins/cache/local-marketplace/contree/local"
   rm -rf "$cache_dir"
   mkdir -p "$(dirname "$cache_dir")"
   cp -r "$CONTREE_ROOT" "$cache_dir"
 
-  mkdir -p "$HOME/.codex"
-  cat > "$HOME/.codex/config.toml" <<'CONFIG'
+  cat > "$CODEX_TEST_HOME/config.toml" <<'CONFIG'
 model_reasoning_effort = "low"
 
 [features]
@@ -81,7 +87,9 @@ inherit = "all"
 enabled = true
 CONFIG
 
-  if [ ! -f "$HOME/.codex/auth.json" ] && [ -z "${CODEX_API_KEY:-}" ]; then
+  export CODEX_HOME="$CODEX_TEST_HOME"
+
+  if [ ! -f "$CODEX_TEST_HOME/auth.json" ] && [ -z "${CODEX_API_KEY:-}" ]; then
     echo "Codex harness requires either ~/.codex/auth.json or CODEX_API_KEY" >&2
     exit 1
   fi
@@ -112,6 +120,7 @@ run_agent() {
   if [ "$AGENT_CALL_COUNT" -eq 1 ]; then
     (cd "$PROJECT_DIR" && codex exec \
       --dangerously-bypass-approvals-and-sandbox \
+      --dangerously-bypass-hook-trust \
       --skip-git-repo-check \
       --json \
       -m gpt-5.4-mini \
@@ -120,6 +129,7 @@ run_agent() {
   else
     (cd "$PROJECT_DIR" && codex exec resume --last \
       --dangerously-bypass-approvals-and-sandbox \
+      --dangerously-bypass-hook-trust \
       --skip-git-repo-check \
       --json \
       -m gpt-5.4-mini \
