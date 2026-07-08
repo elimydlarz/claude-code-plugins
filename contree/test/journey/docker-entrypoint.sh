@@ -583,7 +583,6 @@ VERIFY
     echo "Unknown test: $TEST_NAME" >&2
     echo ""
     echo "Available tests:"
-    echo "  codex-hooks-smoke             — one-shot: Codex turn edits MENTAL_MODEL.md and fails on hook runner errors"
     echo "  layered-workflow              — HTTP API: setup → workflow → drift → sync (every tree, every layer)"
     echo "  mental-model-validator-smoke  — one-shot: malformed MM + agent edit → verifies PostToolUse hook + validator"
     echo "  describe-it-drift             — one-shot: pre-seeded describe/it mismatch → verifies sync flags it"
