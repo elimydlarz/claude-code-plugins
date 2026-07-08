@@ -225,8 +225,8 @@ export function buildClockInPlan(input, state, runtime) {
             lastActiveAt: now,
             branch: state.currentBranch || "detached",
             task: null, // enriched in execute layer from transcript
-            lastStep: null, // set by `trunk-sync progress`, preserved across clock-ins
-            remainingSteps: null, // set by `trunk-sync progress`, preserved across clock-ins
+            lastStep: null, // set by the progress recorder, preserved across clock-ins
+            remainingSteps: null, // set by the progress recorder, preserved across clock-ins
         },
     };
 }
