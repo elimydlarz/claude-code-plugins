@@ -4,7 +4,7 @@ A distributed file system for multi-agent software engineering, built on Git.
 
 Many Claude Code agents can work in the same repo at once — on worktrees, across remote machines, on [OpenClaw](https://openclaw.com), any mix. Everything stays in sync, agents work around each other, nothing gets left behind, and there's nothing manual to do. If you're confused about some code an agent wrote, you can summon its author with Seance.
 
-Two pieces: a **Claude Code / Codex CLI hook** that turns Git into continuous integration for agents, and a separate **CLI** with config, progress, and seance commands.
+Two pieces: a **Claude Code / Codex CLI hook** that turns Git into continuous integration for agents, and a separate **CLI** with config, progress, and seance commands. The plugin bundles its own progress recorder for handover, so handover does not require the CLI to be installed globally.
 
 ## Install
 
@@ -93,10 +93,10 @@ Failing tests — not the timecard — are the authoritative signal of unfinishe
 
 ## Handover — continue across sessions and context limits
 
-When a session is running low on context, it can hand off to the next one. At session start the hook gives the agent its own session id and shows it how to record progress:
+When a session is running low on context, it can hand off to the next one. At session start the hook gives the agent its own session id and shows it the exact bundled command to record progress:
 
 ```bash
-trunk-sync progress <session-id> --last "implemented the parser" --next "wire the CLI and write tests"
+<plugin-root>/scripts/trunk-sync-progress.sh <session-id> --last "implemented the parser" --next "wire the CLI and write tests"
 ```
 
 That last step and remaining steps are written into the agent's timecard and committed/pushed like any other. When the next session starts — yours after a fresh start, or another agent's, on any machine — its SessionStart surfaces the handover:
