@@ -14,6 +14,15 @@ run_hook_for_file() {
     bash -c 'printf "%s" "$INPUT" | bash "'"$HOOK"'"'
 }
 
+run_hook_for_patch() {
+  local project="$1"
+  local patch="$2"
+  local input
+  input=$(jq -nc --arg patch "$patch" '{tool_name:"apply_patch", tool_input:{command:$patch}}')
+  run env CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" CLAUDE_PROJECT_DIR="$project" INPUT="$input" \
+    bash -c 'printf "%s" "$INPUT" | bash "'"$HOOK"'"'
+}
+
 @test "post-update hook surfaces validator findings when MENTAL_MODEL.md is edited and has issues" {
   local project="$BATS_TEST_TMPDIR/project"
   mkdir -p "$project"
@@ -67,4 +76,20 @@ run_hook_for_file() {
   printf '## Glossary\n\n- one\n' > "$project/MENTAL_MODEL.md"
   run_hook_for_file "$project" "$project/MENTAL_MODEL.md" "MultiEdit"
   [[ "$output" == *"Glossary"* ]]
+}
+
+@test "post-update hook runs validator when Codex apply_patch touches MENTAL_MODEL.md" {
+  local project="$BATS_TEST_TMPDIR/project"
+  mkdir -p "$project"
+  printf '## Glossary\n\n- one\n' > "$project/MENTAL_MODEL.md"
+  run_hook_for_patch "$project" $'*** Begin Patch\n*** Update File: MENTAL_MODEL.md\n@@\n-old\n+new\n*** End Patch\n'
+  [[ "$output" == *"Glossary"* ]]
+}
+
+@test "post-update hook ignores Codex apply_patch for adjacent files" {
+  local project="$BATS_TEST_TMPDIR/project"
+  mkdir -p "$project"
+  printf '## Glossary\n\n- one\n' > "$project/MENTAL_MODEL.md"
+  run_hook_for_patch "$project" $'*** Begin Patch\n*** Update File: MENTAL_MODEL_DRAFT.md\n@@\n-old\n+new\n*** End Patch\n'
+  [ -z "$output" ]
 }
