@@ -177,6 +177,9 @@ post-task-hook (src: hooks/stop-drift-check.sh; system: test/post-task-hook.bats
     then the readme nudge instead directs creation of README.md describing what the project is, how consumers install it, configure it, and use it
   if MENTAL_MODEL.md and README.md exist at the project root but the hook runs from a subdirectory
     then no missing-file nudge is emitted, because presence is judged at the project root rather than the hook's working directory
+  when Codex runs the Stop hook without CLAUDE_PROJECT_DIR
+    then the hook uses the current working directory as the project root
+    and emits the normal drift prompt instead of failing
 ```
 
 ## post-update-hook
