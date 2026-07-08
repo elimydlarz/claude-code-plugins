@@ -1300,6 +1300,7 @@ describe("readTimecards", () => {
 
 describe("runSessionStart", () => {
   let dir: string;
+  const progressCommand = "/plugin/scripts/trunk-sync-progress.sh";
 
   beforeEach(() => {
     dir = realpathSync(mkdtempSync(join(tmpdir(), "ts-sessionstart-")));
@@ -1321,14 +1322,15 @@ describe("runSessionStart", () => {
   }
 
   it("hands the starting agent its own session id and the record-progress instruction", () => {
-    const msg = runSessionStart(dir, "my-session-id")!;
+    const msg = runSessionStart(dir, "my-session-id", progressCommand)!;
     assert.match(msg, /my-session-id/);
-    assert.match(msg, /trunk-sync progress my-session-id --last/);
+    assert.match(msg, /\/plugin\/scripts\/trunk-sync-progress\.sh my-session-id --last/);
+    assert.doesNotMatch(msg, /trunk-sync progress/);
   });
 
   it("appends the handover roster when another agent is clocked in", () => {
     writeCard({ sessionId: "other-id", task: "build X", lastStep: "did A", remainingSteps: "do B" });
-    const msg = runSessionStart(dir, "my-session-id")!;
+    const msg = runSessionStart(dir, "my-session-id", progressCommand)!;
     assert.match(msg, /TRUNK-SYNC HANDOVER/);
     assert.match(msg, /other-id/);
     assert.match(msg, /last: did A/);
@@ -1336,30 +1338,30 @@ describe("runSessionStart", () => {
   });
 
   it("prints only the own-id instruction when no other agents are clocked in", () => {
-    const msg = runSessionStart(dir, "my-session-id")!;
+    const msg = runSessionStart(dir, "my-session-id", progressCommand)!;
     assert.match(msg, /my-session-id/);
     assert.doesNotMatch(msg, /TRUNK-SYNC HANDOVER/);
   });
 
   it("still prints the own-id instruction when the timeclock directory does not exist", () => {
-    const msg = runSessionStart(dir, "my-session-id")!;
-    assert.match(msg, /trunk-sync progress my-session-id/);
+    const msg = runSessionStart(dir, "my-session-id", progressCommand)!;
+    assert.match(msg, /\/plugin\/scripts\/trunk-sync-progress\.sh my-session-id/);
   });
 
   it("excludes the starting session's own timecard from the roster", () => {
     writeCard({ sessionId: "my-session-id", task: "my own work" });
-    const msg = runSessionStart(dir, "my-session-id")!;
+    const msg = runSessionStart(dir, "my-session-id", progressCommand)!;
     assert.doesNotMatch(msg, /TRUNK-SYNC HANDOVER/);
   });
 
   it("returns null when there is no session id", () => {
-    assert.equal(runSessionStart(dir, null), null);
+    assert.equal(runSessionStart(dir, null, progressCommand), null);
   });
 
   it("omits the roster when the only other card is past the reap ttl", () => {
     const reapableTime = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString();
     writeCard({ sessionId: "ghost-id", task: "abandoned work", lastActiveAt: reapableTime });
-    const msg = runSessionStart(dir, "my-session-id")!;
+    const msg = runSessionStart(dir, "my-session-id", progressCommand)!;
     assert.match(msg, /my-session-id/);
     assert.doesNotMatch(msg, /TRUNK-SYNC HANDOVER/);
     assert.doesNotMatch(msg, /ghost-id/);
