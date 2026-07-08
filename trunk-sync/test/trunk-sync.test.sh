@@ -1129,7 +1129,7 @@ REAP_TS=$(node -e 'console.log(new Date(Date.now()-20*24*60*60*1000).toISOString
 printf '{"sessionId":"reapableghost","hostname":"old-host","clockedInAt":"%s","lastActiveAt":"%s","branch":"main","task":null,"lastStep":"wrote half the parser","remainingSteps":"finish the parser"}' "$REAP_TS" "$REAP_TS" > "$WT_A/.trunk-sync/timeclock/reapableghost.json"
 SS_REAP=$(run_session_start "$WT_A" "livesession9")
 assert_contains "$SS_REAP" "your session id is livesession9" "session-start reapable-only: own session id is surfaced"
-assert_contains "$SS_REAP" "trunk-sync progress livesession9" "session-start reapable-only: own record-progress instruction is surfaced"
+assert_contains "$SS_REAP" "scripts/trunk-sync-progress.sh' livesession9" "session-start reapable-only: own record-progress instruction is surfaced"
 assert_not_contains "$SS_REAP" "TRUNK-SYNC HANDOVER" "session-start reapable-only: no handover roster is surfaced"
 assert_not_contains "$SS_REAP" "finish the parser" "session-start reapable-only: the reapable card's remaining steps are NOT surfaced"
 
