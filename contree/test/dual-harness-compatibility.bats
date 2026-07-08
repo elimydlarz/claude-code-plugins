@@ -22,6 +22,14 @@ load test_helper
   assert_output "./hooks/hooks.json"
 }
 
+@test "and Codex installations require plugin_hooks so hooks/hooks.json is loaded" {
+  run grep -F "[features] plugin_hooks = true" "$PROJECT_ROOT/CLAUDE.md"
+  assert_success
+
+  run grep -F "plugin_hooks = true" "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
+  assert_success
+}
+
 @test "and both manifests carry the same name and version" {
   claude_name=$(jq -r '.name' "$PROJECT_ROOT/.claude-plugin/plugin.json")
   codex_name=$(jq -r '.name' "$PROJECT_ROOT/.codex-plugin/plugin.json")

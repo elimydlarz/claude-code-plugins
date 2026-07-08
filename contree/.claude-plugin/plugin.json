@@ -1,0 +1,31 @@
+{
+  "name": "contree",
+  "version": "1.3.12",
+  "description": "Test trees as living requirements — TDD with auto-synced specifications in CLAUDE.md",
+  "homepage": "https://github.com/elimydlarz/claude-code-plugins",
+  "repository": "https://github.com/elimydlarz/claude-code-plugins",
+  "license": "MIT",
+  "keywords": [
+    "tdd",
+    "test-trees",
+    "skills",
+    "specifications",
+    "contracts"
+  ],
+  "interface": {
+    "displayName": "Contree",
+    "shortDescription": "Test trees as the contract: change → sync → tdd, agent-driven.",
+    "longDescription": "Contree treats test trees as living requirements. Skills set expected behaviour (change), find drift (sync), close gaps with one failing test at a time (tdd), bootstrap a project (setup), or run the full arc end-to-end (workflow).",
+    "developerName": "Eli Mydlarz",
+    "category": "Coding",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "I want to add a feature — let's start with the test trees.",
+      "Check whether our test trees and code have drifted apart."
+    ]
+  }
+}
