@@ -479,6 +479,7 @@ dual-harness-compatibility (src: .claude-plugin/plugin.json, .codex-plugin/plugi
     then hooks.json wires it to hooks/stop-drift-check.sh
   when Codex is the harness
     then Codex installations require [features].plugin_hooks to be true so hooks/hooks.json is loaded
+    and a Codex journey exercises the configured hooks and fails if any hook reports a runner error
     and Codex itself aliases apply_patch to match this matcher — Codex-side behaviour, not contree-configured or testable from this repo
 ```
 
