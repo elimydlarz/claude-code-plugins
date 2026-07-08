@@ -51,6 +51,7 @@ fi
 # end-to-end journey and runs under both harnesses; the narrow cases run
 # under claude only.
 MATRIX=(
+  "codex-hooks-smoke:codex"
   "layered-workflow:claude"
   "layered-workflow:codex"
   "mental-model-validator-smoke:claude"
