@@ -81,7 +81,10 @@ inherit = "all"
 enabled = true
 CONFIG
 
-  : "${CODEX_API_KEY:?CODEX_API_KEY required for codex harness (set from OPENAI_API_KEY in docker-run.sh)}"
+  if [ ! -f "$HOME/.codex/auth.json" ] && [ -z "${CODEX_API_KEY:-}" ]; then
+    echo "Codex harness requires either ~/.codex/auth.json or CODEX_API_KEY" >&2
+    exit 1
+  fi
 }
 
 AGENT_CALL_COUNT=0
