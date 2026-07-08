@@ -74,6 +74,9 @@ model_reasoning_effort = "low"
 [features]
 plugin_hooks = true
 
+[shell_environment_policy]
+inherit = "all"
+
 [plugins."contree@local-marketplace"]
 enabled = true
 CONFIG
@@ -125,6 +128,14 @@ write_verify() {
   cat > "$VERIFY_FILE"
   echo ""
   cat "$VERIFY_FILE"
+}
+
+assert_no_hook_runner_errors() {
+  if grep -Eiq "hook .*failed|hook exited with code|command not found|No such file or directory|exec: .*: not found" "$TRANSCRIPT_FILE"; then
+    echo "Hook runner error found in $TRANSCRIPT_FILE:" >&2
+    grep -Ein "hook .*failed|hook exited with code|command not found|No such file or directory|exec: .*: not found" "$TRANSCRIPT_FILE" >&2
+    exit 1
+  fi
 }
 
 install_curl_shim() {
@@ -362,8 +373,8 @@ VERIFY
 
   diff-images)
     # Verifies the user-invoked /contree:diff-for-humans skill end to end against a mocked
-    # gpt-image-2 endpoint. Claude harness only — the stub overrides OPENAI_API_KEY,
-    # which the codex harness needs for its own model calls.
+    # gpt-image-2 endpoint. Codex model calls use CODEX_API_KEY, so the skill can
+    # still override OPENAI_API_KEY for the image-generation stub.
     seed_project "greenfield"
 
     # Introduce an uncommitted, staged change for /diff to depict.
@@ -415,8 +426,7 @@ VERIFY
 
   second-opinion)
     # Verifies the user-invoked /contree:second-opinion skill end to end against a
-    # mocked Z.AI GLM 5.2 endpoint. Claude harness only — the stub overrides
-    # ZAI_API_KEY; nothing real is billed.
+    # mocked Z.AI GLM 5.2 endpoint. Nothing real is billed.
     seed_project "greenfield"
 
     # A test-tree contract for the skill to send as the review's context.
@@ -585,6 +595,8 @@ VERIFY
     exit 1
     ;;
 esac
+
+assert_no_hook_runner_errors
 
 echo ""
 echo "Transcript: $TRANSCRIPT_FILE"
