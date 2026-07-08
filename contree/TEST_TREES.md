@@ -473,14 +473,14 @@ dual-harness-compatibility (src: .claude-plugin/plugin.json, .codex-plugin/plugi
     and one hooks/hooks.json is shared by both harnesses
   when a hook fires
     then hooks.json invokes its script via $CLAUDE_PLUGIN_ROOT — the env var both harnesses set
-  when an Edit, Write, or MultiEdit tool call completes
+  when an Edit, Write, MultiEdit, or apply_patch tool call completes
     then the PostToolUse matcher fires
   when the Stop hook fires
     then hooks.json wires it to hooks/stop-drift-check.sh
   when Codex is the harness
     then Codex installations require [features].plugin_hooks to be true so hooks/hooks.json is loaded
     and the automated journey matrix runs the existing functional cases under Codex
-    and Codex itself aliases apply_patch to match this matcher — Codex-side behaviour, not contree-configured or testable from this repo
+    and the PostToolUse hook accepts Codex apply_patch stdin, where touched files are listed in patch headers
 ```
 
 ## diff-images-the-change

@@ -7,7 +7,7 @@ A plugin that unifies test-tree-driven development with living requirements. Tes
 Ships under two harnesses from the same `skills/` and `hooks/` directories:
 
 - **Claude Code** — `.claude-plugin/plugin.json` + `hooks/hooks.json`.
-- **Codex CLI** — `.codex-plugin/plugin.json` declaring `"hooks": "./hooks/hooks.json"`. Codex injects `CLAUDE_PLUGIN_ROOT` (and `PLUGIN_ROOT`) into hook command env, so the existing hook commands work verbatim. Codex itself aliases `apply_patch` to match contree's `Edit|Write|MultiEdit` PostToolUse matcher — Codex-side behaviour, not contree-configured, so it isn't testable from this repo. SessionStart plain stdout becomes `additionalContext`. Stop hook stdin includes `transcript_path` (same shape as Claude). **Codex requires `[features] plugin_hooks = true` in `~/.codex/config.toml`** — the feature is `Stage::UnderDevelopment, default_enabled: false` in codex 0.128, so without opt-in `hooks.json` is ignored. Net (with the flag set): full enforcement on both harnesses from the same hook scripts and hooks.json.
+- **Codex CLI** — `.codex-plugin/plugin.json` declaring `"hooks": "./hooks/hooks.json"`. Codex injects `CLAUDE_PLUGIN_ROOT` (and `PLUGIN_ROOT`) into hook command env, so the existing hook commands work verbatim. Codex PostToolUse file edits arrive as `tool_name: "apply_patch"` with touched files in patch headers under `tool_input.command`, so contree matches `apply_patch` explicitly and the post-update hook parses those headers. SessionStart plain stdout becomes `additionalContext`. Stop hook stdin includes `transcript_path` (same shape as Claude). **Codex requires `[features] plugin_hooks = true` in `~/.codex/config.toml`** — the feature is `Stage::UnderDevelopment, default_enabled: false` in codex 0.128, so without opt-in `hooks.json` is ignored. Net (with the flag set): full enforcement on both harnesses from the same hook scripts and hooks.json.
 
 Mechanisms:
 
@@ -37,11 +37,11 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `.claude-plugin/plugin.json` — Claude Code plugin manifest (name, version, description)
 - `.codex-plugin/plugin.json` — Codex CLI plugin manifest (skills + hooks; mirrors Claude version, bumped together by `publish-contree.sh`)
 - `package.json` — dev dependencies (bats-support, bats-assert) and test scripts
-- `hooks/hooks.json` — wires SessionStart (rules), Stop (drift check), UserPromptSubmit (self-care), and PostToolUse (mental-model validator)
+- `hooks/hooks.json` — wires SessionStart (rules), Stop (drift check), UserPromptSubmit (self-care), and PostToolUse (mental-model validator; matches Claude edit tool names and Codex `apply_patch`)
 - `hooks/session-start.sh` — SessionStart hook: prints the skill Directions block and the inline rules list to stdout
 - `hooks/stop-drift-check.sh` — Stop hook: injects the drift-check prompt, or a question stop when Claude's last response ends with a question (directing it to resolve the question from the rules/mental model/test trees rather than ask)
 - `hooks/self-care-20-20-20.sh` — UserPromptSubmit hook: reminds user of the 20-20-20 rule after 20 min of keyboard time
-- `hooks/post-update-check.sh` — PostToolUse hook: when MENTAL_MODEL.md is edited, runs `validate-mental-model.sh` and surfaces findings to Claude via additionalContext JSON
+- `hooks/post-update-check.sh` — PostToolUse hook: when MENTAL_MODEL.md is edited, runs `validate-mental-model.sh` and surfaces findings via additionalContext JSON; accepts Claude `file_path` input and Codex `apply_patch` patch headers
 - `hooks/validate-mental-model.sh` — advisory validator: checks MENTAL_MODEL.md for the seven named sections, section caps, rogue headings, and file presence
 - `website/index.html` — self-contained explainer site (no build step) pitching contree to developers new to TDD: bridges from test-first to test-trees, living requirements, the layered architecture, the workflow, and the Claude Code hook mechanics (the four hooks, their stdout/stderr-exit-2/additionalContext injection channels, and the Stop-hook control flow). Published to GitHub Pages at https://elimydlarz.github.io/claude-code-plugins/contree/ by the repo-root `.github/workflows/pages.yml` workflow, which stages `contree/website/` into `_site/contree/` (one subdir per plugin, so other plugins can add their own pages) and deploys on push to main
 - `scripts/validate-skill-frontmatter.sh` — bats-only utility: asserts every `skills/*/SKILL.md` has non-empty `name` and `description`

@@ -49,7 +49,7 @@ Plus a **stop hook** that prompts Claude to keep test trees, mental model, CLAUD
    rsync -a --exclude='.git' contree/ ~/.codex/plugins/cache/local-marketplace/contree/$VERSION/
    ```
 
-Skills run automatically once installed. Hooks require the `plugin_hooks` flag above. Codex sets `CLAUDE_PLUGIN_ROOT` in hook command environment so scripts work unchanged.
+Skills run automatically once installed. Hooks require the `plugin_hooks` flag above. Codex sets `CLAUDE_PLUGIN_ROOT` in hook command environment so shared scripts run in the same plugin root as Claude Code. Codex file edits reach PostToolUse hooks as `apply_patch` payloads, so Contree matches that tool explicitly.
 
 ## How it works
 

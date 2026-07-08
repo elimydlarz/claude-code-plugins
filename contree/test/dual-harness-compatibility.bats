@@ -77,7 +77,7 @@ load test_helper
 @test "then the PostToolUse matcher fires" {
   run jq -r '.hooks.PostToolUse[0].matcher' "$PROJECT_ROOT/hooks/hooks.json"
   assert_success
-  assert_output "Edit|Write|MultiEdit"
+  assert_output "Edit|Write|MultiEdit|apply_patch"
 }
 
 @test "and the PostToolUse hook accepts Codex apply_patch stdin" {
