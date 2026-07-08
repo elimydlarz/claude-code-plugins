@@ -31,8 +31,10 @@ src/cli.ts                    — CLI entry point, argv dispatch
 src/commands/seance.ts        — trunk-sync seance (default/--inspect/--list modes)
 src/commands/seance-codex.ts  — pure Codex rollout rewind logic (rewindCodexRollout), used by seance.ts
 src/commands/config.ts        — trunk-sync config (read/write .trunk-sync/config in the repo, committed+synced; target-branch defaults "agents", commit-transcripts defaults off)
-src/commands/progress.ts      — trunk-sync progress (agent records lastStep/remainingSteps into its timecard)
-src/commands/progress.test.ts — progress command tests (node:test)
+src/lib/progress.ts           — shared progress recorder (lastStep/remainingSteps into the timecard)
+src/lib/progress-entry.ts     — plugin-bundled progress recorder entry point
+src/commands/progress.ts      — trunk-sync progress CLI wrapper around the shared recorder
+src/commands/progress.test.ts — progress recorder tests (node:test)
 src/commands/config.test.ts   — config command tests (node:test)
 .transcripts/                 — session snapshots committed by hook (opt in via commit-transcripts=true)
 src/lib/git.ts                — shared git utilities (blame, parseFileRef, extractSessionId, findSnapshotInCommit)

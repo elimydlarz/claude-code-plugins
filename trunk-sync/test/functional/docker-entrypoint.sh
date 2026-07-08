@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Runs a trunk-sync functional (System-layer, real-CLI) case against claude.
+# Runs a trunk-sync functional (System-layer, real-agent) case against claude.
 # Works inside Docker (called by docker-run.sh) or directly on the host.
 #
 # handover: drives TWO real claude sessions in one repo —
-#   Agent A makes an edit (hook clocks it in) and records progress via `trunk-sync progress`;
+#   Agent A makes an edit (hook clocks it in) and records progress via the bundled recorder;
 #   Agent B starts fresh and its SessionStart surfaces A's handover.
 # Self-verifies DETERMINISTICALLY (no AI eval): the timecard must carry A's authored
 # progress, and B's transcript must contain it (proving real SessionStart injection +
@@ -28,12 +28,6 @@ TRANSCRIPT_FILE="$OUTPUT_DIR/${TEST_NAME}-${HARNESS}-transcript.jsonl"
 VERIFY_FILE="$OUTPUT_DIR/${TEST_NAME}-${HARNESS}-verify.txt"
 rm -f "$TRANSCRIPT_FILE"
 
-# `trunk-sync` on PATH for the agent (production installs it globally via npm).
-BIN="$HOME/bin"; mkdir -p "$BIN"
-printf '#!/bin/bash\nexec node "%s/dist/cli.js" "$@"\n' "$TS_ROOT" > "$BIN/trunk-sync"
-chmod +x "$BIN/trunk-sync"
-export PATH="$BIN:$PATH"
-
 PROJECT_DIR="/tmp/trunk-sync-test-project"
 rm -rf "$PROJECT_DIR"; mkdir -p "$PROJECT_DIR"
 git -C "$PROJECT_DIR" init -q
@@ -55,7 +49,7 @@ LAST="implemented the parser"
 NEXT="wire the CLI and write tests"
 
 echo "=== Agent A: edit + record progress (real claude) ==="
-A_PROMPT="This project uses trunk-sync. At session start you were given your trunk-sync session id and how to record progress. Do exactly: (1) create a file notes.txt containing the word hello using the Write tool; (2) then record your progress by running the trunk-sync progress command for YOUR session id with --last \"$LAST\" and --next \"$NEXT\". Finally print the exact command you ran."
+A_PROMPT="This project uses trunk-sync. At session start you were given your trunk-sync session id and the exact command to record progress. Do exactly: (1) create a file notes.txt containing the word hello using the Write tool; (2) then record your progress by running that exact command for YOUR session id with --last \"$LAST\" and --next \"$NEXT\". Finally print the exact command you ran."
 run_agent "$A_PROMPT" >/dev/null
 
 CARD="$(ls "$PROJECT_DIR"/.trunk-sync/timeclock/*.json 2>/dev/null | head -1 || true)"
@@ -75,8 +69,8 @@ check() { if eval "$2"; then echo "PASS - $1"; PASS=$((PASS+1)); else echo "FAIL
 } > "$VERIFY_FILE"
 
 check "A's real session clocked in (timecard exists)" '[ -n "$CARD" ]'
-check "A recorded lastStep via trunk-sync progress"     'grep -q "$LAST" "${CARD:-/nonexistent}" 2>/dev/null'
-check "A recorded remainingSteps via trunk-sync progress" 'grep -q "$NEXT" "${CARD:-/nonexistent}" 2>/dev/null'
+check "A recorded lastStep via bundled progress recorder"     'grep -q "$LAST" "${CARD:-/nonexistent}" 2>/dev/null'
+check "A recorded remainingSteps via bundled progress recorder" 'grep -q "$NEXT" "${CARD:-/nonexistent}" 2>/dev/null'
 check "B's real SessionStart injected A's last step"      'grep -q "$LAST" <<< "$B_OUT"'
 check "B's real SessionStart injected A's remaining steps" 'grep -q "$NEXT" <<< "$B_OUT"'
 

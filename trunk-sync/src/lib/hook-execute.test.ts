@@ -1244,7 +1244,7 @@ describe("clockIn", () => {
     };
     const timeclockDir = join(dir, ".trunk-sync", "timeclock");
     mkdirSync(timeclockDir, { recursive: true });
-    // Agent recorded progress on a prior call (via `trunk-sync progress`)
+    // Agent recorded progress on a prior call.
     writeFileSync(join(timeclockDir, "test-session.json"), JSON.stringify({
       sessionId: "test-session", hostname: "test-host",
       clockedInAt: "2026-03-27T10:00:00.000Z",
