@@ -7,9 +7,9 @@ import { execSync } from "node:child_process";
 import type { Timecard } from "../lib/hook-types.js";
 
 function runProgress(args: string, cwd: string): { stdout: string; stderr: string; exitCode: number } {
-  const cliPath = join(process.cwd(), "dist", "cli.js");
+  const progressPath = join(process.cwd(), "dist", "lib", "progress-entry.js");
   try {
-    const stdout = execSync(`node "${cliPath}" progress ${args}`, { encoding: "utf-8", cwd }).trim();
+    const stdout = execSync(`node "${progressPath}" ${args}`, { encoding: "utf-8", cwd }).trim();
     return { stdout, stderr: "", exitCode: 0 };
   } catch (e: unknown) {
     const err = e as { stderr?: string; stdout?: string; status?: number };
