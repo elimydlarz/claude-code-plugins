@@ -36,6 +36,9 @@ Plus a **stop hook** that prompts Claude to keep test trees, mental model, CLAUD
    [features]
    plugin_hooks = true
 
+   [shell_environment_policy]
+   inherit = "all"
+
    [plugins."contree@local-marketplace"]
    enabled = true
    ```
