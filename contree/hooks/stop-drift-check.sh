@@ -5,10 +5,7 @@ if printf '%s' "$INPUT" | jq -e '.stop_hook_active' 2>/dev/null | grep -q true; 
   exit 0
 fi
 
-if [ -z "$CLAUDE_PROJECT_DIR" ]; then
-  printf 'stop-drift-check.sh requires CLAUDE_PROJECT_DIR\n' >&2
-  exit 1
-fi
+CLAUDE_PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$PWD}"
 
 TRANSCRIPT=$(printf '%s' "$INPUT" | jq -r '.transcript_path // empty' 2>/dev/null)
 if [ -n "$TRANSCRIPT" ] && [ -f "$TRANSCRIPT" ]; then
