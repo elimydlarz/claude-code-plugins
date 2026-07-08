@@ -47,16 +47,18 @@ else
   DOCKER_LLM_ENV=(-e ANTHROPIC_API_KEY)
 fi
 
-# (test-name, harness) pairs run by `all`. layered-workflow is the only
-# end-to-end journey and runs under both harnesses; the narrow cases run
-# under claude only.
+# (test-name, harness) pairs run by `all`.
 MATRIX=(
   "layered-workflow:claude"
   "layered-workflow:codex"
   "mental-model-validator-smoke:claude"
+  "mental-model-validator-smoke:codex"
   "describe-it-drift:claude"
+  "describe-it-drift:codex"
   "diff-images:claude"
+  "diff-images:codex"
   "second-opinion:claude"
+  "second-opinion:codex"
 )
 
 TEST_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
