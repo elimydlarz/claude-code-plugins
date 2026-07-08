@@ -177,11 +177,11 @@ export function readTimecards(repoRoot: string): Timecard[] {
  * record-progress instruction, then append the handover roster of active + stale sessions.
  * Returns null only when no session id is available.
  */
-export function runSessionStart(repoRoot: string, ownSessionId: string | null): string | null {
+export function runSessionStart(repoRoot: string, ownSessionId: string | null, progressCommand: string): string | null {
   if (!ownSessionId) return null;
   const intro =
     `TRUNK-SYNC SESSION: your session id is ${ownSessionId}. Record your progress as you work and before you pause:\n` +
-    `  trunk-sync progress ${ownSessionId} --last "<step you just finished>" --next "<steps still to do>"`;
+    `  ${progressCommand} ${ownSessionId} --last "<step you just finished>" --next "<steps still to do>"`;
   const now = new Date();
   const { active, stale } = classifyTimecards(ownSessionId, readTimecards(repoRoot), now);
   const roster = formatSessionStartSummary(active, stale, now);
