@@ -261,3 +261,12 @@ run_hook_with_last_text() {
   refute_output --partial "MENTAL_MODEL.md is missing"
   refute_output --partial "README.md is missing"
 }
+
+@test "hook uses the current working directory as the project root when Codex does not provide CLAUDE_PROJECT_DIR" {
+  local cmd; cmd=$(hook_command)
+  run env -u CLAUDE_PROJECT_DIR CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" CMD="$cmd" INPUT='{}' PROJECT_DIR="$BATS_TEST_TMPDIR" \
+    bash -c 'cd "$PROJECT_DIR" && printf "%s" "$INPUT" | bash -c "$CMD" 2>&1'
+  [ "$status" -eq 2 ] || return 1
+  assert_output --partial "TEST TREES"
+  refute_output --partial "requires CLAUDE_PROJECT_DIR"
+}
