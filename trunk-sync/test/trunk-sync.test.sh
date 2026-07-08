@@ -1041,7 +1041,7 @@ assert_equals "" "$SNAPSHOT_FILES" "opt-out: no .transcripts/ created when commi
 DIST_DIR="$(cd "$(dirname "$HOOK")/.." && pwd)/dist"
 
 record_progress() { # cwd id last next
-  ( cd "$1" && node "$DIST_DIR/cli.js" progress "$2" --last "$3" --next "$4" )
+  ( cd "$1" && "$DIST_DIR/../scripts/trunk-sync-progress.sh" "$2" --last "$3" --next "$4" )
 }
 run_session_start() { # cwd session_id
   printf '{"session_id":"%s","cwd":"%s","hook_event_name":"SessionStart","transcript_path":""}' "$2" "$1" \
@@ -1052,7 +1052,7 @@ run_stop() { # cwd session_id
     | node "$DIST_DIR/lib/stop-entry.js" )
 }
 
-# 31. Agent A clocks in (hook), then records progress via the real CLI.
+# 31. Agent A clocks in (hook), then records progress via the bundled recorder.
 setup_repos
 cd "$WT_A"
 echo "work" > "$WT_A/seed.txt"
@@ -1075,7 +1075,8 @@ SS_OUT=$(run_session_start "$WT_A" "agentbbb")
 assert_contains "$SS_OUT" "TRUNK-SYNC HANDOVER" "session-start: handover roster shown"
 assert_contains "$SS_OUT" "wrote the parser" "session-start: A's last step surfaced"
 assert_contains "$SS_OUT" "wire the CLI and add tests" "session-start: A's remaining steps surfaced"
-assert_contains "$SS_OUT" "trunk-sync progress agentbbb" "session-start: B told how to record its own progress"
+assert_contains "$SS_OUT" "scripts/trunk-sync-progress.sh' agentbbb" "session-start: B told how to record its own progress"
+assert_not_contains "$SS_OUT" "trunk-sync progress agentbbb" "session-start: B is not told to use the CLI"
 
 # 34. A clock-in re-fire preserves the agent-authored progress (does not wipe it).
 record_progress "$WT_A" "agentaaa" "all tests green" "ship it"
