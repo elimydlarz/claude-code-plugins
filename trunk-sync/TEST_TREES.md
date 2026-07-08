@@ -355,7 +355,7 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
       then clockedInAt is preserved across updates
       and lastActiveAt is bumped to now — the heartbeat that marks the agent recently alive
       and task is re-derived from the current transcript on each update
-      and lastStep and remainingSteps are preserved across updates, since only `trunk-sync progress` sets them
+      and lastStep and remainingSteps are preserved across updates, since only the progress recorder sets them
 
   readTimecards
     when the timeclock directory does not exist
@@ -389,7 +389,7 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
 
   runSessionStart
     when the session-start hook fires
-      then the starting agent's own session id and the instruction to record progress with `trunk-sync progress <id> --last … --next …` are printed to stdout for injection into context
+      then the starting agent's own session id and the instruction to record progress with the plugin-bundled progress recorder are printed to stdout for injection into context
       and every other session's timecard is read and classified by heartbeat age, the starting session excluded
       when active or stale cards are present
         then their labelled summary is appended — active to coordinate around, stale to verify against the tests and resume
@@ -554,9 +554,9 @@ Use-case: config (src: src/commands/config.ts; use-case: src/commands/config.tes
 ## progress
 
 ```
-Use-case: progress (src: src/commands/progress.ts; use-case: src/commands/progress.test.ts; system: test/trunk-sync.test.sh)
+Use-case: progress (src: src/lib/progress.ts; use-case: src/commands/progress.test.ts; system: test/trunk-sync.test.sh)
 
-  progress command
+  progress recorder
     then `--help` prints usage
     when called with a session id, a last step, and remaining steps
       then the matching timecard's lastStep and remainingSteps are both set
