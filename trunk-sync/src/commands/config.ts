@@ -4,7 +4,7 @@ import { dirname, join } from "node:path";
 import { getGitRoot } from "../lib/git.js";
 
 const DEFAULTS: Record<string, string> = {
-  "commit-transcripts": "true",
+  "commit-transcripts": "false",
   "target-branch": "agents",
 };
 

@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { getGitRoot } from "../lib/git.js";
 const DEFAULTS = {
-    "commit-transcripts": "true",
+    "commit-transcripts": "false",
     "target-branch": "agents",
 };
 const USAGE = `Usage: trunk-sync config                   Show all config

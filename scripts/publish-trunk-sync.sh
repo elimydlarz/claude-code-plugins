@@ -77,7 +77,7 @@ pnpm version "$BUMP" --no-git-tag-version
 node scripts/sync-plugin-version.js
 
 VERSION=$(node -p "require('./package.json').version")
-git -C "$REPO_ROOT" add trunk-sync/package.json trunk-sync/.claude-plugin/plugin.json
+git -C "$REPO_ROOT" add trunk-sync/package.json trunk-sync/.claude-plugin/plugin.json trunk-sync/.codex-plugin/plugin.json
 git -C "$REPO_ROOT" commit -m "v$VERSION"
 git -C "$REPO_ROOT" tag -a "v$VERSION" -m "trunk-sync v$VERSION"
 
@@ -94,11 +94,6 @@ git -C "$REPO_ROOT" push origin main --follow-tags
 
 echo "==> Create GitHub release"
 gh release create "v$VERSION" --title "trunk-sync v$VERSION" --notes-file "$NOTES_FILE"
-
-echo ""
-echo "==> Update marketplace and reinstall"
-claude plugin marketplace update elimydlarz
-claude plugin update trunk-sync@elimydlarz || claude plugin install trunk-sync@elimydlarz
 
 echo ""
 echo "published @elimydlarz/trunk-sync v$VERSION"

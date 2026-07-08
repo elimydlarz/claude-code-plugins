@@ -595,6 +595,37 @@ describe("executePlan", () => {
     assert.equal(subject, "auto: update seed.txt");
   });
 
+  it("stages repo-root-relative files when the hook runs from a subdirectory", () => {
+    mkdirSync(join(dir, "nested"));
+    process.chdir(join(dir, "nested"));
+    writeFileSync(join(dir, "root-file.txt"), "created from nested cwd\n");
+
+    const plan: HookPlan = {
+      action: "commit-and-sync",
+      commit: {
+        filesToStage: ["root-file.txt"],
+        filesToRemove: [],
+        subject: "auto: update root-file.txt",
+        body: null,
+      },
+      sync: null,
+      clockIn: null,
+    };
+    const input = makeInput();
+    const state = makeState(dir, { untrackedFiles: ["root-file.txt"] });
+
+    const result = executePlan(plan, input, state);
+
+    assert.equal(result.exitCode, 0);
+    const committed = execSync("git show --name-only --format= HEAD", {
+      cwd: dir,
+      encoding: "utf-8",
+    }).trim();
+    assert.equal(committed, "root-file.txt");
+    const status = execSync("git status --porcelain", { cwd: dir, encoding: "utf-8" }).trim();
+    assert.equal(status, "");
+  });
+
   it("enriches commit subject from transcript", () => {
     const filePath = join(dir, "enriched.txt");
     writeFileSync(filePath, "enriched\n");
@@ -1013,8 +1044,8 @@ describe("amendWithTranscriptSnapshot", () => {
     assert.ok(!existsSync(join(dir, ".transcripts")));
   });
 
-  it("snapshots by default when commit-transcripts is unset", () => {
-    // No config file → defaults to ON (session records committed for seance)
+  it("does not snapshot by default when commit-transcripts is unset", () => {
+    // No config file → defaults to OFF
     const transcriptPath = join(scratch, "session.jsonl");
     writeFileSync(transcriptPath, jsonl({ type: "user", message: { role: "user", content: "task" } }));
 
@@ -1041,7 +1072,7 @@ describe("amendWithTranscriptSnapshot", () => {
 
     executePlan(plan, input, state);
 
-    assert.ok(existsSync(join(dir, ".transcripts")));
+    assert.ok(!existsSync(join(dir, ".transcripts")));
   });
 
   it("skips snapshot when no transcript_path", () => {

@@ -336,12 +336,12 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
       then it is fast-forwarded in that worktree instead of by fetch
 
   amendWithTranscriptSnapshot
-    while `commit-transcripts` is unset or any value other than `false` — the default-on behaviour
+    while `commit-transcripts=true` — the explicit opt-in
       when the hook fires with a transcript path
         then the transcript is snapshotted into `.transcripts/` and the code commit is amended to include it
       if the snapshot operation fails
         then the hook continues without aborting
-    while `commit-transcripts=false` — the explicit opt-out
+    while `commit-transcripts` is unset or any value other than `true` — the default-off behaviour
       then no snapshot is created
     if no transcript_path is provided
       then no snapshot is created
@@ -410,37 +410,6 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
       then it exits 0 without creating one — a session that never edited has no handover to keep alive
     if no session id is provided
       then it exits 0 without action
-```
-
-## install
-
-```
-Use-case: install (src: src/commands/install.ts; use-case: src/commands/install.test.ts; system: none)
-
-  install command
-    then `--help` prints usage
-    if jq is not on PATH
-      then it fails with an install hint
-    if the claude CLI is not on PATH
-      then it fails with an install hint
-    when run outside a git repo with project scope
-      then a warning is emitted
-    when run outside a git repo with user scope
-      then the warning is suppressed (cwd is irrelevant for user scope)
-    if the scope is neither `project` nor `user`
-      then it is rejected
-    when run with a valid scope
-      then the scope is passed to `claude plugin marketplace add` and `claude plugin install`
-    if the plugin install step fails
-      then it exits 1 with a failure message
-    when run with `--client codex`
-      then an `elimydlarz` entry is upserted into `$HOME/.agents/plugins/marketplace.json`
-      and the operation is idempotent across repeated runs
-      and unrelated existing plugins in the marketplace are preserved
-      if jq is not on PATH
-        then it fails with an install hint
-    if `--client` is neither `claude` nor `codex`
-      then it is rejected
 ```
 
 ## seance
@@ -564,7 +533,7 @@ Use-case: config (src: src/commands/config.ts; use-case: src/commands/config.tes
     when `config <key>` is called
       then the single value is printed
     when `config <key>` is called for a key that has a built-in default and is unset
-      then the default is printed (e.g. `commit-transcripts` defaults to `true`, so session records are committed and pushed unless opted out; `target-branch` defaults to `agents`)
+      then the default is printed (e.g. `commit-transcripts` defaults to `false`, so session records are not committed by default; `target-branch` defaults to `agents`)
     if `config <key>` is called for an unknown key
       then it exits 1 with `Unknown key`
     when `config unset <key>` is called

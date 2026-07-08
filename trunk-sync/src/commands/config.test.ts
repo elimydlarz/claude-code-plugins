@@ -81,7 +81,7 @@ describe("config command", () => {
     try {
       const { stdout, exitCode } = runConfig("commit-transcripts", noRepoDir);
       assert.equal(exitCode, 0);
-      assert.equal(stdout, "true");
+      assert.equal(stdout, "false");
       assert.ok(existsSync(join(noRepoDir, ".git")));
     } finally {
       rmSync(noRepoDir, { recursive: true, force: true });

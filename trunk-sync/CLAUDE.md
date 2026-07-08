@@ -28,15 +28,13 @@ src/lib/session-start-entry.ts — SessionStart entry point: prints own-id + han
 src/lib/stop-entry.ts         — Stop entry point: heartbeat-only (bumps lastActiveAt + syncs; never forces)
 
 src/cli.ts                    — CLI entry point, argv dispatch
-src/commands/install.ts       — trunk-sync install
 src/commands/seance.ts        — trunk-sync seance (default/--inspect/--list modes)
 src/commands/seance-codex.ts  — pure Codex rollout rewind logic (rewindCodexRollout), used by seance.ts
-src/commands/config.ts        — trunk-sync config (read/write .trunk-sync/config in the repo, committed+synced; target-branch defaults "agents", commit-transcripts defaults on)
+src/commands/config.ts        — trunk-sync config (read/write .trunk-sync/config in the repo, committed+synced; target-branch defaults "agents", commit-transcripts defaults off)
 src/commands/progress.ts      — trunk-sync progress (agent records lastStep/remainingSteps into its timecard)
 src/commands/progress.test.ts — progress command tests (node:test)
 src/commands/config.test.ts   — config command tests (node:test)
-src/commands/install.test.ts  — install command tests (node:test)
-.transcripts/                 — session snapshots committed by hook (on by default; opt out via commit-transcripts=false)
+.transcripts/                 — session snapshots committed by hook (opt in via commit-transcripts=true)
 src/lib/git.ts                — shared git utilities (blame, parseFileRef, extractSessionId, findSnapshotInCommit)
 src/lib/git.test.ts           — unit tests (node:test)
 src/commands/seance.test.ts   — integration tests (node:test)
@@ -54,7 +52,7 @@ Behavioural requirements live as test trees in [`TEST_TREES.md`](./TEST_TREES.md
 
 ## Conventions (non-behavioural)
 
-- **version-sync**: `npm version` automatically updates `.claude-plugin/plugin.json` to match `package.json` via the `version` lifecycle script
+- **version-sync**: `npm version` automatically updates plugin manifests to match `package.json` via the `version` lifecycle script
 - **dist-tracked**: `dist/` is committed to git (excluding tests and `.d.ts`) so marketplace plugin installs have the compiled hook entry point
 - **doc-alignment**: user-facing docs (README, rules, CLI output) must stay consistent with the trees — worktree mode is optional (for multi-agent), not required for single-agent use
 
@@ -135,7 +133,7 @@ git push origin main
 
 ### Key conventions
 
-- Hook no longer requires `jq` at runtime (TypeScript handles JSON parsing); `jq` is still checked by `install` command
+- Hook no longer requires `jq` at runtime (TypeScript handles JSON parsing)
 - CLI has zero runtime dependencies — only devDependencies (typescript, tsx, @types/node)
 - All TypeScript imports use `.js` extensions (Node16 ESM requirement)
 - Hook exit codes: 0 = success/no-op, 2 = conflict/failure with agent feedback on stderr

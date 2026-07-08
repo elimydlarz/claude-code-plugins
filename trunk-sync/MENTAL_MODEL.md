@@ -1,6 +1,6 @@
 ## Core Domain Identity
 
-- trunk-sync keeps multiple agents in continuous integration on a shared branch via a post-edit git hook, plus a CLI for install / seance / config.
+- trunk-sync keeps multiple agents in continuous integration on a shared branch via a post-edit git hook, plus a separate CLI for seance / config / progress.
 - Two independent layers share one repo: a Claude Code hook (auto commit/pull/push) and a TypeScript CLI.
 - Conflicts are surfaced as hook feedback for the agent to resolve in file content; the hook completes the merge on the next fire — agents never run git themselves.
 - Every commit is provenance-stamped so any line can be traced back to the conversation that wrote it (seance).
@@ -9,7 +9,7 @@
 ## World-to-Code Mapping
 
 - Pure decision logic → `hook-plan.ts`; git/fs execution → `hook-execute.ts`; PostToolUse wiring → `hook-entry.ts`; SessionStart wiring → `session-start-entry.ts`; bash wrappers → `scripts/trunk-sync*.sh`.
-- CLI commands → `src/commands/{install,seance,config}.ts`; shared git utilities → `src/lib/git.ts`.
+- CLI commands → `src/commands/{seance,config,progress}.ts`; shared git utilities → `src/lib/git.ts`.
 - A line of code → `git blame` → commit-body provenance → truncated transcript → worktree at that commit → resumed agent session (seance).
 - "Who is active" + handover → `.trunk-sync/timeclock/<session-id>.json` (heartbeat `lastActiveAt`, branch, task, lastStep, remainingSteps), committed and pushed; progress set by `trunk-sync progress`, surfaced at SessionStart.
 - Trunk → `origin/agents` by default (`.trunk-sync/config`'s `target-branch` key overrides); worktree → optional isolation for multi-agent (`claude -w`).
@@ -19,7 +19,7 @@
 
 - Trunk — `origin/agents` by default, the shared integration branch kept separate from the repo's actual default branch; overridable via the `target-branch` key in `.trunk-sync/config`.
 - Hook layer — fires on Edit/Write/Bash (stage, commit, pull, push) and on SessionStart (surface handovers).
-- CLI layer — `trunk-sync install | seance | config`.
+- CLI layer — `trunk-sync seance | config | progress`.
 - Seance — reconstruct and resume the agent session behind a line of code; modes default / `--inspect` / `--list`.
 - Session ID — links a commit to a Claude/Codex conversation.
 - Provenance fields — `Session:`, `Agent:`, `TranscriptPath:` in the commit body.
@@ -28,12 +28,10 @@
 - Liveness — the age of a card's heartbeat (`lastActiveAt`): active within the hour, stale (possibly disrupted) beyond it, reapable past a 14-day TTL. No PID and no clock-out command — the first edit creates the card, `trunk-sync progress` records the handover.
 - Worktree — optional isolated working tree for multi-agent runs.
 - Conflict feedback — exit 2 with a stderr message; the agent fixes file content only.
-- Install scope — project by default, `--scope user` for all repos, `--client codex` for the Codex marketplace path.
 
 ## Bounded Contexts
 
 - Hook (continuous integration) — the auto commit/pull/push loop and conflict surfacing.
-- CLI install — marketplace registration + plugin install across Claude Code and Codex.
 - Seance — provenance-driven session reconstruction and resume.
 - Timeclock — cross-machine agent presence, resource-conflict signalling, and cross-session handover.
 - Config — the `.trunk-sync/config` key=value store in the repo, committed and synced like timecards.
@@ -58,7 +56,7 @@
 - Agents default to a dedicated `agents` branch, not the repo's actual default branch, so per-edit auto-commits never land directly on it — merging agent work into the real default branch stays a deliberate, separate step.
 - Handover progress is agent-authored via `trunk-sync progress` — transcript prose can't reliably yield last/next — and lives in the timecard, reaped only past a 14-day TTL; transcripts commit by default so seance and handover always have the durable record.
 - `dist/` is tracked because marketplace installs have no build step.
-- The two distribution channels (npm + marketplace) are bumped together to avoid version skew. Publish updates only the registry and the marketplace cache — the CLI's global npm install and the plugin's install scope are user-owned state, set once via the README's onboarding steps, that publish never touches. The plugin installs project-scoped by default; `--scope user` is a deliberate user choice, not something publish does.
+- The two distribution channels (npm + marketplace) are bumped together to avoid version skew. The npm CLI and agent plugin are separate install surfaces; the CLI never installs or manages the plugin.
 
 ## Temporal View
 

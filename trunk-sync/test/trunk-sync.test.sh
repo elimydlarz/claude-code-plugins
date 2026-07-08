@@ -974,7 +974,7 @@ assert_contains "$REMOTE_FILES" "added-by-codex.txt" "codex apply_patch add: new
 
 # --- Transcript snapshots ---
 
-# 28. Default: .transcripts/ IS created (commit-transcripts defaults on for seance)
+# 28. Default: .transcripts/ is NOT created (commit-transcripts defaults off)
 setup_repos
 echo "default snapshot" > "$WT_A/seed.txt"
 TRANSCRIPT="$TMPDIR_BASE/transcript-defaultsnapshot.jsonl"
@@ -984,7 +984,7 @@ run_hook "$(make_input "$WT_A/seed.txt" "dfsn1234" "Edit" "$TRANSCRIPT")"
 assert_exit 0 "default: commit succeeds"
 LAST_SHA=$(git -C "$WT_A" rev-parse HEAD)
 SNAPSHOT_FILES=$(git -C "$WT_A" diff-tree --no-commit-id --name-only -r "$LAST_SHA" -- .transcripts/)
-assert_contains "$SNAPSHOT_FILES" ".transcripts" "default: .transcripts/ created without opt-in"
+assert_equals "" "$SNAPSHOT_FILES" "default: no .transcripts/ created without opt-in"
 
 # 29. Enabled: snapshot in same commit as code change
 setup_repos

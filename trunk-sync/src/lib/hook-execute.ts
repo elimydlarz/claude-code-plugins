@@ -349,10 +349,10 @@ export function executePlan(
     // Stage the file if provided
     const filePath = input.tool_input.file_path;
     if (filePath) {
-      execSync(`git add -- "${filePath}"`);
+      execSync(`git add -- "${filePath}"`, { cwd: state.repoRoot });
     }
     try {
-      execSync(`git commit -m "${escapeForShell(plan.message)}"`);
+      execSync(`git commit -m "${escapeForShell(plan.message)}"`, { cwd: state.repoRoot });
     } catch (e: unknown) {
       // Let git's exit code pass through (e.g. 128 for unresolved merge paths)
       const code = getExitCode(e);
@@ -384,7 +384,7 @@ export function executePlan(
 
   // Stage file edits
   for (const file of commit.filesToStage) {
-    execSync(`git add -- "${file}"`);
+    execSync(`git add -- "${file}"`, { cwd: state.repoRoot });
   }
 
   // Clock in and check who else is working
@@ -392,7 +392,7 @@ export function executePlan(
 
   // Check if there's anything staged (may have been a no-op)
   try {
-    execSync("git diff --cached --quiet", { stdio: "ignore" });
+    execSync("git diff --cached --quiet", { cwd: state.repoRoot, stdio: "ignore" });
     return { exitCode: 0 }; // nothing to commit
   } catch {
     // has staged changes — continue
@@ -417,9 +417,10 @@ export function executePlan(
   if (finalCommit.body) {
     execSync(
       `git commit -m "${escapeForShell(finalCommit.subject)}" -m "${escapeForShell(finalCommit.body)}"`,
+      { cwd: state.repoRoot },
     );
   } else {
-    execSync(`git commit -m "${escapeForShell(finalCommit.subject)}"`);
+    execSync(`git commit -m "${escapeForShell(finalCommit.subject)}"`, { cwd: state.repoRoot });
   }
 
   // Snapshot transcript into the commit (opt-in via config)
@@ -438,7 +439,7 @@ export function executePlan(
 function amendWithTranscriptSnapshot(input: HookInput, state: RepoState): void {
   try {
     const config = readConfig(state.repoRoot);
-    if (config.get("commit-transcripts") === "false") return;
+    if (config.get("commit-transcripts") !== "true") return;
     if (!input.transcript_path || !input.session_id) return;
 
     const expanded = input.transcript_path.replace(/^~/, homedir());

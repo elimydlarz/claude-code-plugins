@@ -4,20 +4,23 @@ A distributed file system for multi-agent software engineering, built on Git.
 
 Many Claude Code agents can work in the same repo at once — on worktrees, across remote machines, on [OpenClaw](https://openclaw.com), any mix. Everything stays in sync, agents work around each other, nothing gets left behind, and there's nothing manual to do. If you're confused about some code an agent wrote, you can summon its author with Seance.
 
-Two pieces: a **Claude Code / Codex CLI hook** that turns Git into continuous integration for agents, and a **CLI** with install, config, and seance commands.
+Two pieces: a **Claude Code / Codex CLI hook** that turns Git into continuous integration for agents, and a separate **CLI** with config, progress, and seance commands.
 
 ## Install
 
+Install the plugin with your agent's plugin manager:
+
 ```bash
-npm install -g @elimydlarz/trunk-sync
-trunk-sync install                  # Claude Code, project scope
-trunk-sync install --scope user     # Claude Code, all repos
-trunk-sync install --client codex   # OpenAI Codex CLI
+claude plugin install trunk-sync@elimydlarz
 ```
 
-That's it. Every file edit is now committed and pushed automatically.
+For Codex CLI, install `trunk-sync` from this repository through Codex's `/plugins` flow. The `trunk-sync` CLI is separate from plugin installation:
 
-The Codex install writes an entry to `~/.agents/plugins/marketplace.json`; finish in Codex with `/plugins install trunk-sync`.
+```bash
+npm install -g @elimydlarz/trunk-sync
+```
+
+Once the plugin is installed, every file edit is committed and pushed automatically.
 
 **Prerequisites:** [Claude Code](https://docs.anthropic.com/en/docs/claude-code) or [Codex CLI](https://developers.openai.com/codex), `jq`, a git repo with a remote (`origin`).
 
@@ -62,7 +65,7 @@ Setting or unsetting a key commits the change immediately, and pushes it (best-e
   ```bash
   trunk-sync config target-branch=main     # sync directly to main instead
   ```
-- **`commit-transcripts`** (default `true`) — snapshot the session transcript into every commit. See [Transcript commits](#transcript-commits) below.
+- **`commit-transcripts`** (default `false`) — snapshot the session transcript into every commit. See [Transcript commits](#transcript-commits) below.
 
 ## Clocking In — agents that know about each other
 
@@ -129,15 +132,13 @@ Under the hood: `git blame` → commit → session ID + agent → transcript rew
 
 ### Transcript commits
 
-By default, each auto-commit includes a snapshot of the session transcript, so seance can find it directly in the commit via `git diff-tree` regardless of which machine wrote the code — across machines, CI, and cleaned-up sessions. This is on by default because seance and cross-session handover are most useful when the record is always there.
-
-**Security note:** Transcripts contain your full conversation with Claude, committed to git in the clear. On repos where you don't want that visibility, opt out — repo-wide, for every machine and agent working on it:
+By default, session transcripts are **not** committed to git. To enable them — so seance can find them directly in the commit via `git diff-tree` regardless of which machine wrote the code, across machines and CI:
 
 ```bash
-trunk-sync config commit-transcripts=false
+trunk-sync config commit-transcripts=true
 ```
 
-With the opt-out set, seance falls back to transcripts on the local filesystem — which works for code written on the same machine, but not for code from other machines, CI, or cleaned-up sessions.
+Transcripts contain your full conversation with Claude, committed to git in the clear. If you prefer that visibility only on certain repos, enable it there explicitly; for most projects, leaving the default off is fine.
 
 ## License
 
