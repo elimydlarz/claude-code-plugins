@@ -1,5 +1,6 @@
-import { PROGRESS_USAGE, recordProgress } from "../lib/progress.js";
-export function progressCommand(args) {
+import { PROGRESS_USAGE, recordProgress } from "./progress.js";
+function main() {
+    const args = process.argv.slice(2);
     if (args.includes("--help") || args.includes("-h")) {
         console.log(PROGRESS_USAGE);
         return;
@@ -13,3 +14,4 @@ export function progressCommand(args) {
         process.exit(1);
     }
 }
+main();
