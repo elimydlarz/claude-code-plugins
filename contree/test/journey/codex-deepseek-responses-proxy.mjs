@@ -146,7 +146,7 @@ function toChatTools(tools) {
         function: {
           name: tool.name,
           description: tool.description || '',
-          parameters: tool.parameters || {}
+          parameters: parametersForChat(tool.parameters)
         }
       }]
     }
@@ -157,13 +157,21 @@ function toChatTools(tools) {
         function: {
           name: tool.name,
           description: tool.description || '',
-          parameters: tool.parameters || {}
+          parameters: parametersForChat(tool.parameters)
         }
       }]
     }
 
     return []
   })
+}
+
+function parametersForChat(parameters) {
+  if (!parameters || typeof parameters !== 'object' || parameters.type === null) {
+    return { type: 'object', properties: {}, additionalProperties: true }
+  }
+
+  return parameters
 }
 
 function writeResponsesEventStream(res, chat) {
