@@ -252,56 +252,37 @@ export default defineConfig({
 })
 ```
 
-**Separating the six test layers** — use Vitest projects (replaces deprecated `vitest.workspace.ts` in v3.2+). One project per layer: `domain`, `use-case`, `component`, `adapter`, `system`, `journey`. Same pattern shown below — adjust `include` globs and timeouts per layer. Adapter (driven), System, and Journey (real infra) may need much higher timeouts than Domain/Use-case/Component:
+**Normal command mapping** — include Unit, Port contract, Adapter, and Component tests in the default config:
 ```ts
 export default defineConfig({
   test: {
     reporters: ['tree', 'junit'],
     outputFile: { junit: './reports/junit.xml' },
-    projects: [
-      {
-        test: {
-          name: 'domain',
-          include: ['src/**/*.domain.test.{ts,js}'],
-        },
-      },
-      {
-        test: {
-          name: 'use-case',
-          include: ['src/**/*.use-case.test.{ts,js}'],
-        },
-      },
-      {
-        test: {
-          name: 'adapter',
-          include: ['src/**/*.adapter.test.{ts,js}'],
-          testTimeout: 30_000,
-          hookTimeout: 30_000,
-        },
-      },
-      {
-        test: {
-          name: 'component',
-          include: ['test/component/**/*.component.test.{ts,js}'],
-        },
-      },
-      {
-        test: {
-          name: 'system',
-          include: ['test/system/**/*.system.test.{ts,js}'],
-          testTimeout: 30_000,
-          hookTimeout: 30_000,
-        },
-      },
-      {
-        test: {
-          name: 'journey',
-          include: ['test/journey/**/*.journey.test.{ts,js}'],
-          testTimeout: 60_000,
-          hookTimeout: 60_000,
-        },
-      },
+    include: [
+      'src/**/*.unit.test.{ts,js}',
+      'src/**/*.domain.test.{ts,js}',
+      'src/**/*.use-case.test.{ts,js}',
+      'src/**/*.adapter.test.{ts,js}',
+      'test/component/**/*.component.test.{ts,js}',
     ],
+  },
+})
+```
+
+**Functional command mapping** — use a second config for System and Journey:
+```ts
+import { defineConfig } from 'vitest/config'
+
+export default defineConfig({
+  test: {
+    reporters: ['tree', 'junit'],
+    outputFile: { junit: './reports/junit-functional.xml' },
+    include: [
+      'test/system/**/*.system.test.{ts,js}',
+      'test/journey/**/*.journey.test.{ts,js}',
+    ],
+    testTimeout: 60_000,
+    hookTimeout: 60_000,
   },
 })
 ```
@@ -310,22 +291,16 @@ export default defineConfig({
 ```json
 {
   "test": "vitest run",
-  "test:domain": "vitest run --project domain",
-  "test:use-case": "vitest run --project use-case",
-  "test:adapter": "vitest run --project adapter",
-  "test:component": "vitest run --project component",
-  "test:system": "vitest run --project system",
-  "test:journey": "vitest run --project journey",
-  "test:changed": "vitest run --changed",
+  "test:functional": "vitest run --config vitest.functional.config.ts",
   "test:watch": "vitest",
-  "test:mutate": "stryker run"
+  "test:mutate": "stryker run",
+  "lint": "pnpm lint:code && pnpm lint:arch"
 }
 ```
 
 **Gotchas:**
-- `reporters` is root-level only — setting it inside a `projects[*].test` block is silently ignored
-- `--changed` uses the import graph but only tracks changed source files, not changed test files — use `--watch` for local TDD
-- `vitest.workspace.ts` is deprecated since v3.2 — use the `projects` array inside `vitest.config.ts`
+- Functional tests need their own include globs because System and Journey do not run from the normal command.
+- Adapter tests stay in the normal command even when they need a Docker harness; the normal command should start that harness itself.
 
 ---
 
