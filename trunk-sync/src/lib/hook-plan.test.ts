@@ -493,7 +493,7 @@ describe("buildClockInPlan", () => {
     assert.equal(plan!.timecard.sessionId, "abcdef12-3456-7890-abcd-ef1234567890");
     assert.equal(plan!.timecard.hostname, "my-macbook");
     assert.equal(plan!.timecard.branch, "main");
-    assert.equal(plan!.timecard.task, null);
+    assert.equal("task" in plan!.timecard, false);
   });
 
   it("returns null when session_id is null", () => {
@@ -551,7 +551,6 @@ describe("classifyTimecards", () => {
       clockedInAt: "2026-03-27T09:00:00.000Z",
       lastActiveAt: "2026-03-27T10:04:00.000Z",
       branch: "main",
-      task: null,
       ...overrides,
     };
   }
@@ -608,7 +607,7 @@ describe("formatClockInMessage", () => {
       hostname: "my-macbook",
       clockedInAt: "2026-03-27T10:00:00.000Z",
       lastActiveAt: "2026-03-27T10:04:30.000Z",
-      branch: "main", task: null,
+      branch: "main",
       ...overrides,
     };
   }
@@ -617,7 +616,7 @@ describe("formatClockInMessage", () => {
     assert.equal(formatClockInMessage([], now, false), null);
   });
 
-  it("formats a single active agent without a task", () => {
+  it("formats a single active agent", () => {
     const msg = formatClockInMessage([card()], now, false)!;
     assert.match(msg, /1 other agent active/);
     assert.match(msg, /abcdef12 on my-macbook/);
@@ -627,20 +626,14 @@ describe("formatClockInMessage", () => {
     assert.match(msg, /share resources/);
   });
 
-  it("includes the task description when present", () => {
-    const msg = formatClockInMessage([card({ task: "Fix the login bug" })], now, false)!;
-    assert.match(msg, /"Fix the login bug"/);
-  });
-
   it("lists all active agents when multiple are present", () => {
     const msg = formatClockInMessage([
-      card({ sessionId: "aaaa0000-0000-0000-0000-000000000000", hostname: "mac-1", lastActiveAt: "2026-03-27T10:04:00.000Z", task: "Add tests" }),
+      card({ sessionId: "aaaa0000-0000-0000-0000-000000000000", hostname: "mac-1", lastActiveAt: "2026-03-27T10:04:00.000Z" }),
       card({ sessionId: "bbbb0000-0000-0000-0000-000000000000", hostname: "mac-2", branch: "feature", lastActiveAt: "2026-03-27T10:02:00.000Z" }),
     ], now, false)!;
     assert.match(msg, /2 other agents active/);
     assert.match(msg, /aaaa0000 on mac-1/);
     assert.match(msg, /bbbb0000 on mac-2/);
-    assert.match(msg, /"Add tests"/);
   });
 
   it("rounds the elapsed minutes to match wall time", () => {
@@ -658,9 +651,8 @@ describe("formatClockInMessage", () => {
   });
 
   it("includes both the active roster and the run-tests nudge on the first clock-in with others present", () => {
-    const msg = formatClockInMessage([card({ task: "Refactoring auth" })], now, true)!;
+    const msg = formatClockInMessage([card()], now, true)!;
     assert.match(msg, /1 other agent active/);
-    assert.match(msg, /"Refactoring auth"/);
     assert.match(msg, /TRUNK-SYNC WIP/);
     assert.match(msg, /Run the test suite/);
   });
@@ -675,51 +667,25 @@ describe("formatSessionStartSummary", () => {
       hostname: "mac-1",
       clockedInAt: "2026-03-27T10:00:00.000Z",
       lastActiveAt: "2026-03-27T10:04:00.000Z",
-      branch: "main", task: null,
+      branch: "main",
       ...overrides,
     };
   }
 
   it("returns null when neither an active nor a stale card is present", () => {
-    assert.equal(formatSessionStartSummary([], [], now), null);
+    assert.equal(formatSessionStartSummary([], now), null);
   });
 
-  it("lists an active card with branch and task, labelled to coordinate", () => {
-    const msg = formatSessionStartSummary([card({ task: "Add handover" })], [], now)!;
+  it("lists an active card with branch, labelled to coordinate", () => {
+    const msg = formatSessionStartSummary([card()], now)!;
     assert.match(msg, /aaaa0000 on mac-1/);
     assert.match(msg, /branch: main/);
     assert.match(msg, /active: coordinate/);
-    assert.match(msg, /task: Add handover/);
+    assert.doesNotMatch(msg, /task:/);
   });
 
-  it("lists a stale card labelled possibly-disrupted with a verify-against-tests warning", () => {
-    const msg = formatSessionStartSummary(
-      [],
-      [card({ task: "Half-done refactor" })],
-      now,
-    )!;
-    assert.match(msg, /stale, possibly disrupted/);
-    assert.match(msg, /verify against the test suite/);
-    assert.match(msg, /may already be done/);
-  });
-
-  it("still lists a card that has no recorded remaining steps, pointing at its committed timecard context", () => {
-    const msg = formatSessionStartSummary([card({ task: "Some task" })], [], now)!;
-    assert.match(msg, /task: Some task/);
-    assert.doesNotMatch(msg, /next:/);
-    assert.match(msg, /committed timecards/);
-  });
-
-  it("renders a card's age in hours once its heartbeat is an hour or more old", () => {
-    // now is 10:05:00Z; a heartbeat at 08:05:00Z is exactly 2 hours old.
-    const msg = formatSessionStartSummary(
-      [],
-      [card({ lastActiveAt: "2026-03-27T08:05:00.000Z" })],
-      now,
-    )!;
-    assert.match(msg, /\b2h ago\b/);
-    // and the age is not rendered in minutes
-    assert.doesNotMatch(msg, /\bm ago\b/);
+  it("omits stale cards because timecards are presence only", () => {
+    assert.equal(formatSessionStartSummary([], now), null);
   });
 });
 
