@@ -10,14 +10,12 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   [[ "$output" == *"merge"* || "$output" == *"do not overwrite"* || "$output" == *"augment"* ]] || return 1
 }
 
-@test "setup configures tree reporters for local dev and CI" {
+@test "setup configures tree-shaped output where available" {
   run cat "$SKILL"
   assert_output --regexp "(tree reporters|tree-shaped)"
-  assert_output --partial "local dev"
-  assert_output --partial "JUnit"
 }
 
-@test "setup configures the SessionStart test kinds as separate commands" {
+@test "setup configures project test kinds as separate commands" {
   run cat "$SKILL"
   assert_output --partial "Unit"
   assert_output --partial "Port contract"
@@ -25,6 +23,7 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "Adapter"
   assert_output --partial "System"
   assert_output --partial "Journey"
+  refute_output --partial "SessionStart hook"
 }
 
 @test "setup notes Component tests run in-process needing no external services" {
@@ -59,9 +58,9 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "Do not compose the trees yourself"
 }
 
-@test "setup examples follow SessionStart rules" {
+@test "setup examples follow setup rules" {
   run cat "$SKILL"
-  assert_output --partial "SessionStart rules"
+  assert_output --partial "setup rules"
   assert_output --partial "no copied comments"
   assert_output --partial "no env-var behaviour switches"
   assert_output --partial "composition over inheritance"
