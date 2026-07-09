@@ -24,7 +24,7 @@ src/lib/hook-plan.test.ts     — unit tests for pure logic (fast, no repos)
 src/lib/hook-execute.ts       — gathers git state, executes the plan; incl. runSessionStart, runStop (clock-out), reapCards
 src/lib/hook-execute.test.ts  — integration tests (temp repos)
 src/lib/hook-entry.ts         — PostToolUse entry point: reads stdin, wires layers, exits
-src/lib/session-start-entry.ts — SessionStart entry point: prints own-id + active roster to stdout
+src/lib/session-start-entry.ts — SessionStart entry point: creates/syncs own timecard, prints own-id + active roster to stdout
 src/lib/stop-entry.ts         — Stop entry point: removes the session timecard + syncs; never forces
 
 src/cli.ts                    — CLI entry point, argv dispatch
