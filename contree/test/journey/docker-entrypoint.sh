@@ -78,7 +78,13 @@ prime_codex_plugin() {
   cat > "$PROJECT_DIR/.codex/post-tool-use-contree.sh" <<CONFIG
 #!/usr/bin/env bash
 export CLAUDE_PLUGIN_ROOT="$cache_dir"
-exec bash "$cache_dir/hooks/post-update-check.sh"
+INPUT=\$(cat)
+printf '%s\n' "\$INPUT" >> "$PROJECT_DIR/.codex/post-tool-use-input.jsonl"
+OUTPUT=\$(printf '%s' "\$INPUT" | bash "$cache_dir/hooks/post-update-check.sh")
+if [ -n "\$OUTPUT" ]; then
+  printf '%s\n' "\$OUTPUT" >> "$PROJECT_DIR/.codex/post-tool-use-output.jsonl"
+  printf '%s\n' "\$OUTPUT"
+fi
 CONFIG
   chmod +x "$PROJECT_DIR/.codex/post-tool-use-contree.sh"
 
@@ -162,6 +168,7 @@ run_agent() {
       -m gpt-5.4-mini \
       -C "$PROJECT_DIR" \
       "$prompt" 2>&1) | tee -a "$TRANSCRIPT_FILE" || true
+    append_codex_artifacts
   else
     (cd "$PROJECT_DIR" && codex exec resume --last \
       --dangerously-bypass-approvals-and-sandbox \
@@ -170,6 +177,37 @@ run_agent() {
       --json \
       -m gpt-5.4-mini \
       "$prompt" 2>&1) | tee -a "$TRANSCRIPT_FILE" || true
+    append_codex_artifacts
+  fi
+}
+
+append_codex_artifacts() {
+  [ "$HARNESS" = "codex" ] || return 0
+
+  local session_file
+  session_file="$(find "$CODEX_TEST_HOME/sessions" -type f -name '*.jsonl' 2>/dev/null | sort | tail -n 1 || true)"
+  if [ -n "$session_file" ] && [ -f "$session_file" ]; then
+    {
+      echo ""
+      echo "=== codex internal session transcript: $session_file ==="
+      cat "$session_file"
+    } >> "$TRANSCRIPT_FILE"
+  fi
+
+  if [ -f "$PROJECT_DIR/.codex/post-tool-use-input.jsonl" ]; then
+    {
+      echo ""
+      echo "=== codex PostToolUse hook stdin ==="
+      cat "$PROJECT_DIR/.codex/post-tool-use-input.jsonl"
+    } >> "$TRANSCRIPT_FILE"
+  fi
+
+  if [ -f "$PROJECT_DIR/.codex/post-tool-use-output.jsonl" ]; then
+    {
+      echo ""
+      echo "=== codex PostToolUse hook stdout ==="
+      cat "$PROJECT_DIR/.codex/post-tool-use-output.jsonl"
+    } >> "$TRANSCRIPT_FILE"
   fi
 }
 
@@ -338,14 +376,16 @@ The scenario: MENTAL_MODEL.md was seeded malformed (missing the Temporal View
 section; contains an extra "Rogue Extra Section" heading that is not one of
 the seven named sections). The agent then edits the file. The PostToolUse hook
 must fire, invoke the validator, and surface its findings via additionalContext
-JSON, visible in the transcript as a hook event.
+JSON. Under Codex, `codex exec --json` does not emit hook context entries, so
+the harness appends Codex's internal session transcript plus the project-local
+hook stdin/stdout logs to make the hook evidence visible.
 
 Expected signals in the transcript:
 
-  - a hook-event entry whose hookEventName is "PostToolUse"
+  - a Codex hook stdin entry whose hook_event_name is "PostToolUse" or hook stdout whose hookEventName is "PostToolUse"
   - additionalContext naming the missing "Temporal View" section
   - additionalContext naming the rogue "Rogue Extra Section" heading
-  - the agent acknowledges the findings in its next response
+  - Codex's internal session contains the findings as developer context after the apply_patch call
 
 For each `when/then` path in `post-update-hook` and `mental-model-validator`,
 return PASS / FAIL / N/A with quoted evidence. Report counts at the end.
