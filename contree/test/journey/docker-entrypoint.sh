@@ -7,7 +7,7 @@ set -euo pipefail
 # Expects:
 #   - For claude: ANTHROPIC_API_KEY or DEEPSEEK_API_KEY (via docker-run.sh DeepSeek env vars)
 #   - For codex:  CODEX_API_KEY or ~/.codex/auth.json
-#   - $1 is the test name (layered-workflow | mental-model-validator-smoke | describe-it-drift | diff-images | second-opinion | second-opinion-live)
+#   - $1 is the test name (layered-workflow | describe-it-drift | diff-images | second-opinion | second-opinion-live)
 #   - $2 is the harness  (claude | codex), default claude
 
 TEST_NAME="${1:?Usage: docker-entrypoint.sh <test-name> [claude|codex]}"
@@ -75,36 +75,6 @@ prime_codex_plugin() {
   cp -r "$CONTREE_ROOT" "$cache_dir"
 
   mkdir -p "$PROJECT_DIR/.codex"
-  cat > "$PROJECT_DIR/.codex/post-tool-use-contree.sh" <<CONFIG
-#!/usr/bin/env bash
-export CLAUDE_PLUGIN_ROOT="$cache_dir"
-INPUT=\$(cat)
-printf '%s\n' "\$INPUT" >> "$PROJECT_DIR/.codex/post-tool-use-input.jsonl"
-OUTPUT=\$(printf '%s' "\$INPUT" | bash "$cache_dir/hooks/post-update-check.sh")
-if [ -n "\$OUTPUT" ]; then
-  printf '%s\n' "\$OUTPUT" >> "$PROJECT_DIR/.codex/post-tool-use-output.jsonl"
-  printf '%s\n' "\$OUTPUT"
-fi
-CONFIG
-  chmod +x "$PROJECT_DIR/.codex/post-tool-use-contree.sh"
-
-  cat > "$PROJECT_DIR/.codex/hooks.json" <<CONFIG
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write|MultiEdit|apply_patch",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$PROJECT_DIR/.codex/post-tool-use-contree.sh\""
-          }
-        ]
-      }
-    ]
-  }
-}
-CONFIG
   {
     echo ".codex/"
     echo ".codex-home/"
@@ -210,21 +180,6 @@ append_codex_artifacts() {
     } >> "$TRANSCRIPT_FILE"
   fi
 
-  if [ -f "$PROJECT_DIR/.codex/post-tool-use-input.jsonl" ]; then
-    {
-      echo ""
-      echo "=== codex PostToolUse hook stdin ==="
-      cat "$PROJECT_DIR/.codex/post-tool-use-input.jsonl"
-    } >> "$TRANSCRIPT_FILE"
-  fi
-
-  if [ -f "$PROJECT_DIR/.codex/post-tool-use-output.jsonl" ]; then
-    {
-      echo ""
-      echo "=== codex PostToolUse hook stdout ==="
-      cat "$PROJECT_DIR/.codex/post-tool-use-output.jsonl"
-    } >> "$TRANSCRIPT_FILE"
-  fi
 }
 
 write_verify() {
