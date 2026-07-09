@@ -47,6 +47,10 @@ fi
 TEST_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 NAME="${1:-handover}"
 HARNESS="${2:-claude}"
+CODEX_AUTH_MOUNT=()
+if [ -z "${OPENAI_API_KEY:-}" ] && [ -f "$HOME/.codex/auth.json" ]; then
+  CODEX_AUTH_MOUNT=(-v "$HOME/.codex:/home/testuser/.codex:ro")
+fi
 
 echo "Building test image..."
 docker build -q -t "$IMAGE_NAME" -f "$SCRIPT_DIR/Dockerfile" "$TEST_DIR"
@@ -59,6 +63,7 @@ run_pair() {
     --name "trunk-sync-test-${name}-${harness}-$$" \
     "${DOCKER_LLM_ENV[@]}" \
     -e "CODEX_API_KEY=${OPENAI_API_KEY:-}" \
+    "${CODEX_AUTH_MOUNT[@]}" \
     -v "$REPO_ROOT:/repo:ro" \
     -v "$SCRIPT_DIR:/output" \
     "$IMAGE_NAME" \
