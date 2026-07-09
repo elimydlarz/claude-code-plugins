@@ -62,7 +62,7 @@ If config exists, **merge into it** — add the reporter setting alongside exist
 
 Detect existing test framework from project manifests. If none exists, identify the most suitable for the project's language.
 
-When multiple test frameworks are detected, Choose the test framework from project evidence and tree-output quality. Ask before choosing the main application framework for a project.
+When multiple test frameworks are detected, choose the test framework from project evidence and tree-output quality. Ask before choosing the main application framework for a project.
 
 ### 3. SUGGEST
 
