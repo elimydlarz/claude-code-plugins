@@ -118,16 +118,14 @@ export function gatherRepoState(input) {
         untrackedFiles,
     };
 }
-// --- Presence: clock-in (heartbeat) and reaping ---
 export function getRuntimeContext() {
     return { hostname: hostname() };
 }
-/** Clock in: write or update this agent's timecard on the timeclock. */
-export function clockIn(repoRoot, plan, task) {
+export function clockIn(repoRoot, plan) {
     const dir = join(repoRoot, ".trunk-sync", "timeclock");
     mkdirSync(dir, { recursive: true });
     const filePath = join(repoRoot, plan.timecardPath);
-    let timecard = { ...plan.timecard, task };
+    let timecard = { ...plan.timecard };
     try {
         const existing = JSON.parse(readFileSync(filePath, "utf-8"));
         if (existing.clockedInAt) {
@@ -138,7 +136,6 @@ export function clockIn(repoRoot, plan, task) {
     }
     writeFileSync(filePath, JSON.stringify(timecard, null, 2) + "\n");
 }
-/** Read all timecards from the timeclock directory. */
 export function readTimecards(repoRoot) {
     const dir = join(repoRoot, ".trunk-sync", "timeclock");
     if (!existsSync(dir))
@@ -151,65 +148,44 @@ export function readTimecards(repoRoot) {
             timecards.push(JSON.parse(content));
         }
         catch {
-            // Skip unparseable files
         }
     }
     return timecards;
 }
-/**
- * Build the session-start message: hand the starting agent its own session id, then append the handover roster of active + stale sessions.
- * Returns null only when no session id is available.
- */
 export function runSessionStart(repoRoot, ownSessionId) {
     if (!ownSessionId)
         return null;
     const intro = `TRUNK-SYNC SESSION: your session id is ${ownSessionId}.`;
     const now = new Date();
-    const { active, stale } = classifyTimecards(ownSessionId, readTimecards(repoRoot), now);
-    const roster = formatSessionStartSummary(active, stale, now);
+    const { active } = classifyTimecards(ownSessionId, readTimecards(repoRoot), now);
+    const roster = formatSessionStartSummary(active, now);
     return roster ? `${intro}\n\n${roster}` : intro;
 }
-/**
- * Heartbeat-only Stop hook: if this session has a timecard, bump its heartbeat and sync it
- * so remote readers stay fresh through a long no-edit turn. Never forces the agent (no exit 2).
- * No-ops when a recent tool-use sync already refreshed the heartbeat, and creates no card for
- * a session that never edited.
- */
 export function runStop(state, sessionId) {
     if (!sessionId)
         return;
     const cardPath = join(state.repoRoot, ".trunk-sync", "timeclock", `${sessionId}.json`);
-    let card;
     try {
-        card = JSON.parse(readFileSync(cardPath, "utf-8"));
+        unlinkSync(cardPath);
     }
     catch {
-        return; // no card — a session that never edited has no timecard to keep alive
+        return;
     }
-    const age = Date.now() - new Date(card.lastActiveAt).getTime();
-    if (age < HEARTBEAT_STALE_MS)
-        return; // a recent tool-use sync already refreshed the heartbeat
-    card.lastActiveAt = new Date().toISOString();
     try {
-        writeFileSync(cardPath, JSON.stringify(card, null, 2) + "\n");
         execSync(`git -C "${state.repoRoot}" add -- ".trunk-sync/timeclock/${sessionId}.json"`, { stdio: "ignore" });
-        execSync(`git -C "${state.repoRoot}" commit -m "auto: heartbeat ${sessionId.slice(0, 8)}"`, {
-            stdio: "ignore",
-        });
+        execSync(`git -C "${state.repoRoot}" commit -m "auto: clock-out ${sessionId.slice(0, 8)}"`, { stdio: "ignore" });
     }
     catch {
-        return; // nothing to commit or write failed — best-effort
+        return;
     }
     if (state.hasRemote) {
         try {
             executeSync({ targetBranch: state.targetBranch, currentBranch: state.currentBranch });
         }
         catch {
-            // best-effort: the next tool-use sync retries; the Stop hook always exits 0
         }
     }
 }
-/** Reap the given (reapable) cards by removing their timecard files; returns removed paths. */
 export function reapCards(repoRoot, ids) {
     const removed = [];
     for (const id of ids) {
@@ -219,7 +195,6 @@ export function reapCards(repoRoot, ids) {
             removed.push(filePath);
         }
         catch {
-            // Already gone
         }
     }
     return removed;
@@ -240,49 +215,26 @@ function writeThrottleTimestamp(sessionId, now) {
 function tmpdir() {
     return process.env.TMPDIR || "/tmp";
 }
-const THROTTLE_MS = 5 * 60 * 1000; // 5 minutes
-/** How stale a heartbeat must be before the Stop hook refreshes and re-syncs it. */
-const HEARTBEAT_STALE_MS = 30 * 60 * 1000; // 30 minutes — half the active display window
-/**
- * Extract the agent's current task from the transcript (same logic as commit enrichment).
- * Returns null if transcript is unavailable or unparseable.
- */
-function extractTask(input) {
-    if (!input.transcript_path)
-        return null;
-    const expanded = input.transcript_path.replace(/^~/, homedir());
-    try {
-        const content = readFileSync(expanded, "utf-8");
-        return extractTaskFromTranscript(content);
-    }
-    catch {
-        return null;
-    }
-}
+const THROTTLE_MS = 5 * 60 * 1000;
 /**
  * Clock in, reap abandoned cards (heartbeat past the TTL), and check who else is active.
  * Returns a message if other agents are active and throttle allows.
  */
-function executeClockIn(plan, input, state) {
+function executeClockIn(plan, _input, state) {
     try {
-        const task = extractTask(input);
-        clockIn(state.repoRoot, plan, task);
+        clockIn(state.repoRoot, plan);
         const allTimecards = readTimecards(state.repoRoot);
         const now = new Date();
         const { active, reapable } = classifyTimecards(plan.timecard.sessionId, allTimecards, now);
         if (reapable.length > 0) {
             reapCards(state.repoRoot, reapable.map((tc) => tc.sessionId));
         }
-        // Stage timeclock directory (timecard + any removals)
         const timeclockDir = join(state.repoRoot, ".trunk-sync", "timeclock");
         try {
             execSync(`git add -- "${timeclockDir}"`, { cwd: state.repoRoot, stdio: "ignore" });
         }
         catch {
-            // best-effort
         }
-        // The first clock-in of a session always speaks (run the tests, resume WIP);
-        // the co-worker roster repeats at most once per throttle window.
         const lastWarning = readThrottleTimestamp(plan.timecard.sessionId);
         const nowMs = now.getTime();
         const isFirstClockIn = lastWarning === null;
@@ -294,7 +246,6 @@ function executeClockIn(plan, input, state) {
         return null;
     }
     catch {
-        // Clock-in is best-effort — never fail the hook
         return null;
     }
 }

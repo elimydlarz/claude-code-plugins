@@ -206,12 +206,6 @@ export function summarizeDeletions(files) {
         return first;
     return `${first} (+${files.length - 1} more)`;
 }
-// --- Presence: agents register a heartbeated timecard and see who else is active ---
-/**
- * Build a clock-in plan for this agent's timecard.
- * Pure: needs runtime context (hostname) passed in.
- * Task is populated later in the execute layer (requires transcript I/O).
- */
 export function buildClockInPlan(input, state, runtime) {
     if (!input.session_id)
         return null;
@@ -224,22 +218,11 @@ export function buildClockInPlan(input, state, runtime) {
             clockedInAt: now,
             lastActiveAt: now,
             branch: state.currentBranch || "detached",
-            task: null, // enriched in execute layer from transcript
         },
     };
 }
-/** Recent heartbeat ⇒ the agent is active (coordinate, don't duplicate). */
-export const ACTIVE_WINDOW_MS = 60 * 60 * 1000; // 60 minutes
-/** Heartbeat older than this ⇒ the card is abandoned and swept. */
-export const REAP_TTL_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
-/**
- * Classify timecards purely by heartbeat age — one uniform rule for every card,
- * no PID and no local/remote split (a stored PID is the ephemeral hook process,
- * never the agent). Own session excluded.
- *  - within the display window        → active (recently alive)
- *  - past the window, within the TTL   → stale (possibly disrupted; surfaced to resume)
- *  - past the TTL                      → reapable (even with unfinished steps)
- */
+export const ACTIVE_WINDOW_MS = 60 * 60 * 1000;
+export const REAP_TTL_MS = 14 * 24 * 60 * 60 * 1000;
 export function classifyTimecards(ownSessionId, timecards, now) {
     const active = [];
     const stale = [];
@@ -257,20 +240,12 @@ export function classifyTimecards(ownSessionId, timecards, now) {
     }
     return { active, stale, reapable };
 }
-/**
- * Format the mid-work roster an agent sees while it works: who else is active
- * (recent heartbeat) so it can coordinate on shared resources. On the agent's
- * first clock-in of the session it also nudges running the tests — failing tests
- * are the authoritative signal of unfinished WIP; the roster is advisory context.
- * Returns null when there is nothing to say.
- */
 export function formatClockInMessage(active, now, isFirstClockIn) {
     const sections = [];
     if (active.length > 0) {
         const lines = active.map((tc) => {
             const agoStr = formatAge(now.getTime() - new Date(tc.lastActiveAt).getTime());
-            const taskStr = tc.task ? ` — "${tc.task}"` : "";
-            return `- ${tc.sessionId.slice(0, 8)} on ${tc.hostname} (branch: ${tc.branch}, ${agoStr} ago)${taskStr}`;
+            return `- ${tc.sessionId.slice(0, 8)} on ${tc.hostname} (branch: ${tc.branch}, ${agoStr} ago)`;
         });
         sections.push(`TRUNK-SYNC ACTIVE: ${active.length} other agent${active.length > 1 ? "s" : ""} active. Continue your work as planned — no action required.`, ...lines);
     }
@@ -294,31 +269,20 @@ function formatAge(ms) {
     const hours = Math.floor(minutes / 60);
     return `${hours}h`;
 }
-/**
- * Format the handover roster shown at session start: every other non-reaped session,
- * active and stale alike (including those with no recorded next step), so a starting
- * agent discovers work already in flight. Failing tests are the authoritative WIP
- * signal; these cards are advisory context from committed timecards.
- * Returns null when there is nothing to surface.
- */
-export function formatSessionStartSummary(active, stale, now) {
-    if (active.length === 0 && stale.length === 0)
+export function formatSessionStartSummary(active, now) {
+    if (active.length === 0)
         return null;
     const render = (tc, label) => {
         const age = formatAge(now.getTime() - new Date(tc.lastActiveAt).getTime());
-        let line = `- ${tc.sessionId.slice(0, 8)} on ${tc.hostname} (branch: ${tc.branch}, ${age} ago) — ${label}`;
-        if (tc.task)
-            line += `\n    task: ${tc.task}`;
-        return line;
+        return `- ${tc.sessionId.slice(0, 8)} on ${tc.hostname} (branch: ${tc.branch}, ${age} ago) — ${label}`;
     };
     const lines = [
         ...active.map((tc) => render(tc, "active: coordinate, do not duplicate")),
-        ...stale.map((tc) => render(tc, "stale, possibly disrupted: verify against the test suite before resuming — it may already be done")),
     ];
-    const count = active.length + stale.length;
+    const count = active.length;
     return [
-        `TRUNK-SYNC HANDOVER: ${count} other session${count > 1 ? "s have" : " has"} work in progress. Failing tests on the trunk are the authoritative signal of what is unfinished; the cards below are advisory context.`,
+        `TRUNK-SYNC ACTIVE: ${count} other session${count > 1 ? "s are" : " is"} clocked in. Coordinate around shared resources when needed.`,
         ...lines,
-        "Use the committed timecards as handover summaries. If transcript commits are enabled, .transcripts/ carries the full session record for seance. If a card's owner is still active, coordinate rather than duplicate.",
+        "Timecards show presence only. Failing tests are the authoritative signal of unfinished work.",
     ].join("\n");
 }
