@@ -16,7 +16,7 @@
 - A tree's coverage on disk → a parenthesised label set, one per layer: `src`, `domain`, `use-case`, `adapter`, `component`, `system`, `journey`; `none` marks a declared gap.
 - An outbound dependency → a Port; each Port ships an in-memory twin plus a real adapter, both bound by one shared `*.contract.ts` suite.
 - Workflow phases → skills: `setup`, `change`, `sync`, `tdd`, `second-opinion`, `workflow`.
-- Enforcement → hooks: SessionStart (rules + trees), Stop (drift check), PostToolUse (mental-model validator).
+- Enforcement → hooks: SessionStart (rules + trees) and Stop (drift check).
 - The product's theory → `MENTAL_MODEL.md` (this file); its behaviour → `## Test Trees`; its operating discipline → the rules.
 
 ## Ubiquitous Language
@@ -43,7 +43,7 @@
 - Tree language — EARS syntax, causal nesting, one-tree-one-file, leaf granularity; the grammar of the contract.
 - Test-layer taxonomy — Journey ▸ System ▸ Component ▸ Adapter ▸ Use-case ▸ Domain (+ Port contract); each layer owns its own seam.
 - Skill workflow — `setup` (configure) → `change` (set behaviour) → `sync` (find drift) → `tdd` (close gaps) → `second-opinion` (independent review from another model); `workflow` runs the arc.
-- Enforcement hooks — SessionStart, Stop drift-check, PostToolUse mental-model validator.
+- Enforcement hooks — SessionStart and Stop drift-check.
 - Hexagonal architecture — domain pure, I/O in adapters, dependencies inward, a boundary linter holding the line.
 - Dual-harness packaging — one source directory, parallel `.claude-plugin` / `.codex-plugin` manifests, `CLAUDE_PLUGIN_ROOT` shared by both.
 
@@ -58,7 +58,7 @@
 - Each outbound Port has an in-memory twin and a real adapter, both bound by one shared contract suite.
 - Trees are never modified silently; drift is never resolved unilaterally — both surface to the user.
 - Behaviour, not internals: a tree describes only what crosses its layer's seam.
-- Shared hook scripts preserve enforcement across Claude Code and Codex; small harness adapters translate Codex-specific payloads and transcript surfaces.
+- Shared hook scripts preserve enforcement across Claude Code and Codex.
 
 ## Decision Rationale
 
@@ -67,7 +67,7 @@
 - Hexagonal layering is chosen over "unit/integration/functional" because seams give sharper targets; a green higher layer can still hide an untested seam. The cheap tier splits into Use-case (behaviour, in-memory twins) and Component (system, real adapters with edges doubled) so the assembled wiring the twins skip is still covered exhaustively without paying for real infrastructure.
 - Trees live in `TEST_TREES.md`, not a separate requirements doc, so spec and tests can never drift into two truths.
 - One source directory with parallel manifests avoids duplicating skills/hooks per harness; `CLAUDE_PLUGIN_ROOT` lets shared scripts run on both while harness adapters handle Codex-specific payload and transcript differences.
-- Enforcement is hook-driven (Stop, PostToolUse) rather than advisory prose, because rules in text alone get ignored under pressure.
+- Enforcement is hook-driven rather than advisory prose, because rules in text alone get ignored under pressure.
 - The mental model is fixed at seven capped sections so it stays a theory, not a dumping ground.
 
 ## Temporal View
