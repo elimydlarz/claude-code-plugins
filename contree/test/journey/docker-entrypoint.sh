@@ -190,9 +190,9 @@ run_agent() {
     append_codex_artifacts
   fi
 
-  if grep -Eq '"turn\.failed"|usage limit|rate limit' "$TRANSCRIPT_FILE"; then
+  if grep -Eq '"type":"turn\.failed"|"(message|text)":"[^"]*(usage limit|rate limit)' "$TRANSCRIPT_FILE"; then
     echo "Codex agent failure found in $TRANSCRIPT_FILE:" >&2
-    grep -En '"turn\.failed"|usage limit|rate limit' "$TRANSCRIPT_FILE" >&2
+    grep -En '"type":"turn\.failed"|"(message|text)":"[^"]*(usage limit|rate limit)' "$TRANSCRIPT_FILE" >&2
     exit 1
   fi
 }
