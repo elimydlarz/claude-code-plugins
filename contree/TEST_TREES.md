@@ -422,8 +422,9 @@ dual-harness-compatibility (src: .claude-plugin/plugin.json, .codex-plugin/plugi
   when Codex is the harness
     then Codex installations require [features].hooks and [features].plugin_hooks to be true so hooks/hooks.json is loaded
     and the automated journey matrix runs the existing functional cases under Codex
-    and Claude journey runs do not require Codex auth docker arguments
+    and both journey harnesses use DeepSeek auth from DEEPSEEK_API_KEY
     and Claude journey runs fail fast without Claude provider auth
+    and Codex journey runs fail fast without DeepSeek provider auth
     and the journey harness distinguishes hook runner failures from ordinary agent command failures and test framework hook timeout output
     and the journey harness distinguishes structured Codex failures from ordinary transcript text and recoverable tool diagnostics
 ```
