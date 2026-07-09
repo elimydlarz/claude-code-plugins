@@ -6,7 +6,7 @@ load test_helper
   run sed -n '/^---$/,/^---$/p' "$PROJECT_ROOT/skills/change/SKILL.md"
   assert_output --partial "TRIGGER"
   assert_output --partial "behaviour change"
-  assert_output --partial "before any code is discussed or written"
+  assert_output --partial "before code changes"
 }
 
 @test "sync skill's frontmatter TRIGGERs on drift/gaps/staleness phrasings" {
@@ -29,4 +29,11 @@ load test_helper
   assert_output --partial "TRIGGER"
   assert_output --partial "implementing behaviour"
   assert_output --partial "writing tests"
+}
+
+@test "workflow skill's frontmatter TRIGGERs on full end-to-end workflow phrasings" {
+  run sed -n '/^---$/,/^---$/p' "$PROJECT_ROOT/skills/workflow/SKILL.md"
+  assert_output --partial "TRIGGER"
+  assert_output --partial "full workflow"
+  assert_output --partial "end to end"
 }

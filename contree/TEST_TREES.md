@@ -409,6 +409,8 @@ skill-discoverability (src: hooks/session-start.sh; system: test/skill-discovera
     then the setup skill is triggered
   when a user asks to implement from existing requirements without naming a skill
     then the tdd skill is triggered
+  when a user asks to take an idea through the full workflow without naming a skill
+    then the workflow skill is triggered
 ```
 
 ## composable-testing
