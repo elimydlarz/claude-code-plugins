@@ -121,6 +121,23 @@ load test_helper
   assert_success
 }
 
+@test "and Codex journey model calls reach DeepSeek through a Responses-compatible local boundary" {
+  run grep -F 'base_url = "http://127.0.0.1:$CODEX_DEEPSEEK_PROXY_PORT/v1"' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
+  assert_success
+
+  run grep -F 'wire_api = "responses"' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
+  assert_success
+
+  run grep -F 'codex-deepseek-responses-proxy.mjs' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
+  assert_success
+
+  run grep -F 'https://api.deepseek.com/v1/chat/completions' "$PROJECT_ROOT/test/journey/codex-deepseek-responses-proxy.mjs"
+  assert_success
+
+  run grep -F 'Bearer ${apiKey}' "$PROJECT_ROOT/test/journey/codex-deepseek-responses-proxy.mjs"
+  assert_success
+}
+
 @test "and Claude journey runs fail fast without Claude provider auth" {
   run grep -F "Claude harness requires DEEPSEEK_API_KEY" "$PROJECT_ROOT/test/journey/docker-run.sh"
   assert_success
