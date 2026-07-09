@@ -7,23 +7,6 @@ fi
 
 CLAUDE_PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$PWD}"
 
-transcript_path=$(printf '%s' "$INPUT" | jq -r '.transcript_path // empty' 2>/dev/null)
-if [ -n "$transcript_path" ] && [ -f "$transcript_path" ]; then
-  last_assistant_text=$(jq -rs '
-    [ .[]
-      | select(.type == "assistant")
-      | .message.content[]?
-      | select(.type == "text")
-      | .text
-    ] | last // ""
-  ' "$transcript_path")
-  trimmed_text=$(printf '%s' "$last_assistant_text" | sed 's/[[:space:]]*$//')
-  if [ "${trimmed_text#"${trimmed_text%?}"}" = "?" ]; then
-    echo "QUESTION STOP: Your response ended with a question to the user. Before handing it over, check whether the Rules, the mental model, and the test trees already determine the answer. If they do, do not ask — decide and act on what they say, then continue. Put the question to the user only when the answer is genuinely under-determined by all of them." >&2
-    exit 2
-  fi
-fi
-
 if [ ! -f "$CLAUDE_PROJECT_DIR/MENTAL_MODEL.md" ]; then
   echo "MENTAL MODEL: MENTAL_MODEL.md is missing at the project root. Create it with these seven H2 sections in order: Core Domain Identity, World-to-Code Mapping, Ubiquitous Language, Bounded Contexts, Invariants, Decision Rationale, Temporal View. Each section starts with a one-line placeholder describing what belongs there until real content lands." >&2
 else
