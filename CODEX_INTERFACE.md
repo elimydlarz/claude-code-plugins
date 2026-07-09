@@ -74,3 +74,4 @@ inherit = "all"
 - Plugin-bundled `Stop` and `SessionStart` hooks are visible in Codex sessions.
 - For `PostToolUse`, the harness installs a project-local shim that invokes the plugin's real `post-update-check.sh`, because this path is directly observable and gives deterministic stdin/stdout logs for functional assertions.
 - Hook runner failures are treated as functional failures by scanning transcripts for phrases such as `hook exited with code`, `command not found`, missing executables, and `exec: ... not found`.
+- API-backed skill journeys route deterministic stubs through explicit base URL variables such as `OPENAI_BASE_URL` and `ZAI_BASE_URL`. Do not rely on a PATH-shadowed `curl` shim for Codex subprocesses; Codex shell execution may call the real endpoint even when the parent harness prepended a shim directory.
