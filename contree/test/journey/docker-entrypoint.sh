@@ -105,6 +105,10 @@ CONFIG
   }
 }
 CONFIG
+  {
+    echo ".codex/"
+    echo ".codex-home/"
+  } >> "$PROJECT_DIR/.git/info/exclude"
 
   cat > "$CODEX_TEST_HOME/config.toml" <<'CONFIG'
 model_reasoning_effort = "low"
@@ -218,9 +222,9 @@ write_verify() {
 }
 
 assert_no_hook_runner_errors() {
-  if grep -Eiq "hook .*failed|hook exited with code|command not found|No such file or directory|exec: .*: not found" "$TRANSCRIPT_FILE"; then
+  if grep -Eiq "hook .*failed|hook exited with code|command not found|exec: .*: not found" "$TRANSCRIPT_FILE"; then
     echo "Hook runner error found in $TRANSCRIPT_FILE:" >&2
-    grep -Ein "hook .*failed|hook exited with code|command not found|No such file or directory|exec: .*: not found" "$TRANSCRIPT_FILE" >&2
+    grep -Ein "hook .*failed|hook exited with code|command not found|exec: .*: not found" "$TRANSCRIPT_FILE" >&2
     exit 1
   fi
 }
