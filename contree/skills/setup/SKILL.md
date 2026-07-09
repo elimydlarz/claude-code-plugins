@@ -14,7 +14,7 @@ Prepares the project for ongoing test-tree-driven development. Configures the te
 3. **SessionStart test kinds, always.** Configure the kinds named by the SessionStart hook where the project has that surface:
    - **Journey** — broad, production-like test of a curated user arc across capabilities. `test/journey/`. `*.journey.test.*`.
    - **System** — deep, production-like test of one capability through the whole app. `test/system/`. `*.system.test.*`.
-   - **Component** — deep in-process test of one capability through the whole app, with external services replaced by test doubles that carry visible reason markers. `test/component/`. `*.component.test.*`.
+   - **Component** — deep in-process test of one capability through the whole app, with external services replaced by reason-marked test doubles such as stubbed outbound HTTP. `test/component/`. `*.component.test.*`.
    - **Adapter** — one concrete boundary implementation against the real boundary it adapts. Colocated. `*.adapter.test.*`.
    - **Port contract** — shared contract suite for an application interface; every implementation passes it. Colocated with the port. `*.contract.ts`.
    - **Unit** — one public surface on one subject. Domain units use `*.domain.test.*`; Use-case units use `*.use-case.test.*`.
@@ -246,7 +246,7 @@ Add or update the following sections:
   - Outside-in TDD workflow summary
   - Example tree structure for this project
 
-Configured examples must follow the SessionStart rules: no copied comments, no env-var behaviour switches, no config inheritance, and visible reason markers for mocks and stubs. Treat those test doubles as reason-marked. Environment variables remain appropriate for secrets and external connection details because they configure boundaries rather than changing test/runtime behaviour.
+Configured examples must follow the SessionStart rules: no copied comments, no env-var behaviour switches, no config inheritance, and reason-marked mocks and stubs. Environment variables remain appropriate for secrets and external connection details because they configure boundaries rather than changing test/runtime behaviour.
 
 ### 12. SCAFFOLD MENTAL_MODEL.md
 
@@ -627,14 +627,14 @@ export default {
     ui: 'bdd',
   },
 ```
-Note: Mocha runner does NOT reliably support `coverageAnalysis: 'perTest'` — fall back to `'all'` if you see errors.
+Note: Mocha runner does NOT reliably support `coverageAnalysis: 'perTest'` — use `'all'` when `perTest` errors in this runner.
 
 **Gotchas:**
 - The runner plugin MUST match the test framework — `@stryker-mutator/vitest-runner` for Vitest, `jest-runner` for Jest, etc. Mismatching silently fails or crashes.
 - `vitest.related: true` and `jest.enableFindRelatedTests: true` are critical for performance — without them Stryker runs ALL tests for every mutant
 - `coverageAnalysis: 'perTest'` is the most efficient option — `'all'` re-runs the full suite per mutant
 - `ignoreStatic: true` skips mutants in `const x = 'hello'` at module scope — these are killed by every importing test, slow and low value
-- `thresholds.break` is `null` by default (no CI failure) — set it to enforce the gate
+- `thresholds.break` has no CI gate by default — set it to enforce one
 - For the TypeScript checker, install `@stryker-mutator/typescript-checker`
 
 ---
@@ -877,7 +877,6 @@ failure-output = "immediate"
 success-output = "never"
 
 [profile.ci]
-retries = 3
 fail-fast = false
 failure-output = "immediate-final"
 
@@ -914,10 +913,9 @@ cargo install --locked cargo-mutants
 test_tool = "nextest"
 ```
 
-Add a speed-optimised profile in `Cargo.toml`:
+Add an explicit speed-optimised profile in `Cargo.toml`:
 ```toml
 [profile.mutants]
-inherits = "test"
 debug = false
 ```
 
@@ -1223,7 +1221,7 @@ dotnet tool install -g dotnet-stryker
     "stryker-config": {
         "solution": "MyApp.sln",
         "test-projects": ["tests/MyApp.UnitTests/MyApp.UnitTests.csproj"],
-        "mutate": ["**objbinMigrations/**"],
+        "mutate": ["**/*.cs", "!**/obj/**", "!**/bin/**", "!**/Migrations/**"],
         "reporters": ["html", "progress", "cleartext"],
         "thresholds": { "high": 80, "low": 60, "break": 0 },
         "concurrency": 4,
@@ -1449,7 +1447,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yml"
 
 cleanup() {
-  docker compose -f "$COMPOSE_FILE" down --volumes --remove-orphans 2>/dev/null || true
+  docker compose -f "$COMPOSE_FILE" down --volumes --remove-orphans
 }
 trap cleanup EXIT
 
@@ -1525,7 +1523,7 @@ import os
 import pytest
 import httpx
 
-BASE_URL = os.environ.get("APP_URL", "http://localhost:3001")
+BASE_URL = os.environ["APP_URL"]
 
 def describe_user_registration():
     def describe_when_valid_details():
@@ -1549,9 +1547,9 @@ import (
 )
 
 func TestUserRegistration_ValidDetails_CreatesAccount(t *testing.T) {
-    baseURL := os.Getenv("APP_URL")
-    if baseURL == "" {
-        baseURL = "http://localhost:3001"
+    baseURL, ok := os.LookupEnv("APP_URL")
+    if !ok {
+        t.Fatal("APP_URL is required")
     }
 }
 ```
@@ -1599,8 +1597,8 @@ Usually no Docker needed. Functional tests:
 #### Mobile/desktop app backend
 
 Same as Web API, but also consider:
-1. Mock the mobile client's requests using recorded fixtures
-2. Test push notification delivery to a mock push service (add it to compose)
+1. Use reason-marked recorded fixtures for the mobile client's requests
+2. Test push notification delivery to a reason-marked fake push service (add it to compose)
 
 ---
 
