@@ -1009,29 +1009,26 @@ assert_equals "" "$SNAPSHOT_FILES" "opt-out: no .transcripts/ created when commi
 
 # ── Timecards: automatic clock-in and clock-out ──────────────────────────────
 
-DIST_DIR="$(cd "$(dirname "$HOOK")/.." && pwd)/dist"
-
-run_session_start() { # cwd session_id
-  printf '{"session_id":"%s","cwd":"%s","hook_event_name":"SessionStart","transcript_path":""}' "$2" "$1" \
-    | node "$DIST_DIR/lib/session-start-entry.js"
-}
-run_stop() { # cwd session_id
-  ( cd "$1" && printf '{"session_id":"%s","hook_event_name":"Stop","stop_hook_active":false,"transcript_path":""}' "$2" \
-    | node "$DIST_DIR/lib/stop-entry.js" )
-}
-
 # 31. Agent A clocks in and writes a timecard.
 setup_repos
 cd "$WT_A"
-echo "work" > "$WT_A/seed.txt"
-run_hook "$(make_input "$WT_A/seed.txt" "agentaaa" "Edit" "")"   # clock A in, commit timecard
+SS_A=$(run_session_start "$WT_A" "agentaaa")
 CARD="$WT_A/.trunk-sync/timeclock/agentaaa.json"
+assert_contains "$SS_A" "your session id is agentaaa" "session-start: A is clocked in and given its session id"
 assert_equals "agentaaa" "$(jq -r '.sessionId' "$CARD")" "timecard: sessionId written"
 assert_equals "trunk-sync/agent-a" "$(jq -r '.branch' "$CARD")" "timecard: branch written"
 assert_equals "no" "$(jq 'has("lastStep") or has("remainingSteps")' "$CARD" | sed 's/false/no/; s/true/yes/')" "timecard: no progress fields are written"
+OLD_ACTIVE=$(jq -r '.lastActiveAt' "$CARD")
+sleep 1
+echo "work" > "$WT_A/seed.txt"
+run_hook "$(make_input "$WT_A/seed.txt" "agentaaa" "Edit" "")"
+assert_exit 0 "timecard: write after session start exits 0"
+NEW_ACTIVE=$(jq -r '.lastActiveAt' "$CARD")
+[[ "$OLD_ACTIVE" == "$NEW_ACTIVE" ]] && TOUCHED=no || TOUCHED=yes
+assert_equals "yes" "$TOUCHED" "timecard: lastActiveAt is updated by the write"
 
 # 32. Agent B's SessionStart surfaces A's active timecard and no recorder instruction.
-SS_OUT=$(run_session_start "$WT_A" "agentbbb")
+SS_OUT=$(run_session_start "$WT_B" "agentbbb")
 assert_contains "$SS_OUT" "TRUNK-SYNC ACTIVE" "session-start: active roster shown"
 assert_contains "$SS_OUT" "agentaaa" "session-start: A's timecard is surfaced"
 assert_not_contains "$SS_OUT" "trunk-sync-progress" "session-start: no progress recorder is surfaced"
