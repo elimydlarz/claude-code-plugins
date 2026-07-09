@@ -11,6 +11,12 @@ if (!apiKey) {
 
 const server = http.createServer(async (req, res) => {
   try {
+    if (req.method === 'GET' && req.url === '/health') {
+      res.writeHead(200, { 'content-type': 'application/json' })
+      res.end(JSON.stringify({ ok: true }))
+      return
+    }
+
     if (req.method !== 'POST' || !req.url?.startsWith('/v1/responses')) {
       res.writeHead(404, { 'content-type': 'application/json' })
       res.end(JSON.stringify({ error: { message: 'not found' } }))
