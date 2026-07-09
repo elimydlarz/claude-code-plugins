@@ -88,9 +88,17 @@ load test_helper
 
 @test "and the journey harness does not treat bare agent command-not-found output as a hook runner error" {
   run grep -F "hook.*command not found" "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
-  assert_success
+  assert_failure
 
   run grep -F "|command not found|" "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
+  assert_failure
+}
+
+@test "and the journey harness does not treat Vitest hook timeout output as a hook runner error" {
+  run grep -F "(SessionStart|Stop|PreToolUse|PostToolUse|UserPromptSubmit|Notification) hook \\(failed\\)" "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
+  assert_success
+
+  run grep -F "hook .*failed" "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
   assert_failure
 }
 
