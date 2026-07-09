@@ -56,5 +56,6 @@ claude plugin marketplace add elimydlarz/claude-code-plugins
   - `--verbose`
 - Multi-phase journeys continue the same Claude conversation with `-c`.
 - The functional harness writes `<test>-claude-transcript.jsonl` and `<test>-claude-verify.txt`.
-- Hook runner failures are treated as functional failures by scanning transcripts for phrases such as `hook exited with code`, `command not found`, missing executables, and `exec: ... not found`.
+- Hook runner failures are treated as functional failures by scanning transcripts for explicit hook-runner phrases such as `<HookEvent> hook (failed)`, `hook exited with code`, and `exec: ... not found`.
+- Transcript scanners must avoid broad patterns like `hook .*failed` or bare `command not found` because command output can contain ordinary test-framework text such as `Hook timed out` plus unrelated `failed` counts.
 - API-backed skill journeys route deterministic stubs through explicit base URL variables such as `OPENAI_BASE_URL` and `ZAI_BASE_URL`.
