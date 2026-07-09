@@ -369,19 +369,19 @@ export default defineConfig({
       {
         test: {
           name: 'domain',
-          include: ['src*.domain.test.{ts,js}'],
+          include: ['src/**/*.domain.test.{ts,js}'],
         },
       },
       {
         test: {
           name: 'use-case',
-          include: ['src*.use-case.test.{ts,js}'],
+          include: ['src/**/*.use-case.test.{ts,js}'],
         },
       },
       {
         test: {
           name: 'adapter',
-          include: ['src*.adapter.test.{ts,js}'],
+          include: ['src/**/*.adapter.test.{ts,js}'],
           testTimeout: 30_000,
           hookTimeout: 30_000,
         },
@@ -389,13 +389,13 @@ export default defineConfig({
       {
         test: {
           name: 'component',
-          include: ['test/component*.component.test.{ts,js}'],
+          include: ['test/component/**/*.component.test.{ts,js}'],
         },
       },
       {
         test: {
           name: 'system',
-          include: ['test/system*.system.test.{ts,js}'],
+          include: ['test/system/**/*.system.test.{ts,js}'],
           testTimeout: 30_000,
           hookTimeout: 30_000,
         },
@@ -403,7 +403,7 @@ export default defineConfig({
       {
         test: {
           name: 'journey',
-          include: ['test/journey*.journey.test.{ts,js}'],
+          include: ['test/journey/**/*.journey.test.{ts,js}'],
           testTimeout: 60_000,
           hookTimeout: 60_000,
         },
@@ -454,13 +454,13 @@ const config: Config = {
   projects: [
     {
       displayName: 'domain',
-      testMatch: ['<rootDir>/src*.domain.test.{ts,js}'],
+      testMatch: ['<rootDir>/src/**/*.domain.test.{ts,js}'],
       transform: { '^.+\\.tsx?$': 'ts-jest' },
       testEnvironment: 'node',
     },
     {
       displayName: 'system',
-      testMatch: ['<rootDir>/test/system*.system.test.{ts,js}'],
+      testMatch: ['<rootDir>/test/system/**/*.system.test.{ts,js}'],
       transform: { '^.+\\.tsx?$': 'ts-jest' },
       testEnvironment: 'node',
       testTimeout: 30_000,
@@ -513,7 +513,7 @@ extension:
 `.mocharc.domain.yml`:
 ```yaml
 require: [tsx]
-spec: 'src*.domain.test.{ts,js}'
+spec: 'src/**/*.domain.test.{ts,js}'
 reporter: spec
 parallel: true
 jobs: 4
@@ -523,7 +523,7 @@ timeout: 5000
 `.mocharc.system.yml`:
 ```yaml
 require: [tsx]
-spec: 'test/system*.system.test.{ts,js}'
+spec: 'test/system/**/*.system.test.{ts,js}'
 reporter: spec
 parallel: false
 timeout: 30000
@@ -568,20 +568,20 @@ export default {
   },
 
   mutate: [
-    'src*.ts',
-    '!src*.test.ts',
-    '!src*.spec.ts',
-    '!src*.domain.test.ts',
-    '!src*.use-case.test.ts',
-    '!src*.adapter.test.ts',
-    '!src*.component.test.ts',
-    '!src*.system.test.ts',
-    '!src*.journey.test.ts',
-    '!test*.component.test.ts',
-    '!test*.system.test.ts',
-    '!test*.journey.test.ts',
-    '!src*.contract.ts',
-    '!src*.d.ts',
+    'src/**/*.ts',
+    '!src/**/*.test.ts',
+    '!src/**/*.spec.ts',
+    '!src/**/*.domain.test.ts',
+    '!src/**/*.use-case.test.ts',
+    '!src/**/*.adapter.test.ts',
+    '!src/**/*.component.test.ts',
+    '!src/**/*.system.test.ts',
+    '!src/**/*.journey.test.ts',
+    '!test/**/*.component.test.ts',
+    '!test/**/*.system.test.ts',
+    '!test/**/*.journey.test.ts',
+    '!src/**/*.contract.ts',
+    '!src/**/*.d.ts',
   ],
 
   coverageAnalysis: 'perTest',
@@ -618,7 +618,7 @@ export default {
 ```js
   testRunner: 'mocha',
   mochaOptions: {
-    spec: ['src*.domain.test.ts'],
+    spec: ['src/**/*.domain.test.ts'],
     config: '.mocharc.domain.yml',
     require: ['tsx'],
     timeout: 10_000,
