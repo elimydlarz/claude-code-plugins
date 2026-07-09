@@ -143,17 +143,17 @@ describe("seance", () => {
     gitIn(dir, "commit -m 'auto(abcd1234): add code' -m 'Session: aaaa-bbbb-cccc-dddd'");
 
     const gitBin = execSync("which git", { encoding: "utf-8" }).trim();
-    const nodeBin = execSync("which node", { encoding: "utf-8" }).trim();
-    // Minimal PATH with git and node only — no claude anywhere on it.
-    const minimalPath = `${join(gitBin, "..")}:${join(nodeBin, "..")}`;
+    const binDir = mkdtempSync(join(tmpdir(), "seance-minimal-bin-"));
+    writeFileSync(join(binDir, "git"), `#!/bin/sh\nexec "${gitBin}" "$@"\n`);
+    chmodSync(join(binDir, "git"), 0o755);
     const cliPath = join(process.cwd(), "dist", "cli.js");
     let output = "";
     let status: number | null = null;
     try {
-      output = execSync(`node "${cliPath}" seance ${file}:1`, {
+      output = execSync(`"${process.execPath}" "${cliPath}" seance ${file}:1`, {
         cwd: dir,
         encoding: "utf-8",
-        env: { PATH: minimalPath },
+        env: { PATH: binDir },
       }).trim();
       status = 0;
     } catch (e: unknown) {
@@ -163,6 +163,7 @@ describe("seance", () => {
     }
     assert.match(output, /claude CLI not found/);
     assert.equal(status, 1);
+    rmSync(binDir, { recursive: true, force: true });
   });
 
   it("exits 1 when creating the worktree at the blamed commit fails", () => {
