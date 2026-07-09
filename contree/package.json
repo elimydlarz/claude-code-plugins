@@ -1,6 +1,7 @@
 {
   "private": true,
   "devDependencies": {
+    "bats": "^1.13.0",
     "bats-support": "github:bats-core/bats-support",
     "bats-assert": "github:bats-core/bats-assert"
   },
