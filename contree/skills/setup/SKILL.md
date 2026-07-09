@@ -701,30 +701,10 @@ gotestsum --junitfile results.xml ./...
 
 `testdox` output groups by package, then lists tests as sentences — one level deep. Go's test model has no describe/context nesting, so no tool can produce a deep tree. Be honest about this.
 
-**Separating unit and integration tests — build tags:**
-```go
-
-package myapp
-```
-
+**Normal and functional command mapping** uses explicit package lists because `go test ./...` is flat and includes every package:
 ```bash
-go test ./...
-go test -tags=integration ./...
-```
-
-Critical: `-tags=integration` runs tagged AND untagged files. To run ONLY integration tests, also tag unit tests with `//go:build !integration`, or use the `-short` convention:
-
-```go
-func TestSlowIntegration(t *testing.T) {
-    if testing.Short() {
-        t.Skip("skipping integration test in short mode")
-    }
-}
-```
-
-```bash
-go test -short ./...
-go test ./...
+gotestsum --format testdox ./internal/... ./pkg/... ./test/component/...
+gotestsum --format testdox ./test/system/... ./test/journey/...
 ```
 
 **Mutation testing — gremlins:**
@@ -734,7 +714,7 @@ go install github.com/go-gremlins/gremlins/cmd/gremlins@latest
 
 ```bash
 gremlins unleash
-gremlins unleash --tags=unit
+gremlins unleash ./internal/...
 ```
 
 Gremlins (v0.6+, actively maintained) is the best Go mutation tool available. Supports arithmetic, conditionals, increment/decrement mutations. Limitation: runs full test suite per mutation, so impractical for large monolithic modules. Works well for microservice-sized modules (which is most Go code).
