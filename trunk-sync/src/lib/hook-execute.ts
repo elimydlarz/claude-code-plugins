@@ -267,14 +267,12 @@ export function executePlan(
   if (plan.action === "skip") return { exitCode: 0 };
 
   if (plan.action === "commit-merge") {
-    // Clock in and check who else is working
-    const clockInMsg = plan.clockIn ? executeClockIn(plan.clockIn, input, state) : null;
-
     // Stage the file if provided
     const filePath = input.tool_input.file_path;
     if (filePath) {
       execSync(`git add -- "${filePath}"`, { cwd: state.repoRoot });
     }
+    touchTimecard(state, input.session_id);
     try {
       execSync(`git commit -m "${escapeForShell(plan.message)}"`, { cwd: state.repoRoot });
     } catch (e: unknown) {
@@ -284,16 +282,14 @@ export function executePlan(
     }
     if (plan.sync) {
       const syncResult = executeSync(plan.sync);
-      if (syncResult.exitCode !== 0) return syncResult;
-      if (clockInMsg) return { exitCode: 2, stderr: clockInMsg };
+      if (syncResult.exitCode !== 0) return appendConflictRoster(syncResult, state, input.session_id);
       return syncResult;
     }
-    if (clockInMsg) return { exitCode: 2, stderr: clockInMsg };
     return { exitCode: 0 };
   }
 
   // commit-and-sync
-  const { commit, sync, clockIn: clockInPlan } = plan;
+  const { commit, sync } = plan;
 
   // Stage deletions
   for (const file of commit.filesToRemove) {
@@ -311,9 +307,6 @@ export function executePlan(
     execSync(`git add -- "${file}"`, { cwd: state.repoRoot });
   }
 
-  // Clock in and check who else is working
-  const clockInMsg = clockInPlan ? executeClockIn(clockInPlan, input, state) : null;
-
   // Check if there's anything staged (may have been a no-op)
   try {
     execSync("git diff --cached --quiet", { cwd: state.repoRoot, stdio: "ignore" });
@@ -321,6 +314,9 @@ export function executePlan(
   } catch {
     // has staged changes — continue
   }
+
+  touchTimecard(state, input.session_id);
+  reapOldTimecards(state, input.session_id);
 
   // Try to enrich commit message with task from transcript
   let finalCommit = commit;
@@ -352,12 +348,23 @@ export function executePlan(
 
   if (sync) {
     const syncResult = executeSync(sync);
-    if (syncResult.exitCode !== 0) return syncResult;
-    if (clockInMsg) return { exitCode: 2, stderr: clockInMsg };
+    if (syncResult.exitCode !== 0) return appendConflictRoster(syncResult, state, input.session_id);
     return syncResult;
   }
-  if (clockInMsg) return { exitCode: 2, stderr: clockInMsg };
   return { exitCode: 0 };
+}
+
+function appendConflictRoster(
+  result: { exitCode: number; stderr?: string },
+  state: RepoState,
+  ownSessionId: string | null,
+): { exitCode: number; stderr?: string } {
+  const roster = formatConflictRoster(state, ownSessionId);
+  if (!roster) return result;
+  return {
+    exitCode: result.exitCode,
+    stderr: result.stderr ? `${result.stderr}\n\n${roster}` : roster,
+  };
 }
 
 function amendWithTranscriptSnapshot(input: HookInput, state: RepoState): void {
