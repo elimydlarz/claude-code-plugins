@@ -132,11 +132,13 @@ pre-task-hook (src: hooks/session-start.sh; system: test/pre-task-hook.bats; jou
     and the agent is directed to use the mental model's existing concepts, vocabulary, and decisions rather than inventing parallel ones
     and the agent is directed to preserve the mental model's invariants, surfacing conflict when a task appears to require breaking one rather than routing around it
     and the agent is directed to flag the mental model as wrong, incomplete, or misleading rather than silently reshaping it through code
-    and the agent is directed to treat test trees as the authoritative behaviour contract
+    and the agent is directed that trees are the contract — every observable behaviour and side effect belongs in TEST_TREES.md, every tree maps to one test file, and every test file's describe/it hierarchy mirrors its tree verbatim
     and the agent is directed to describe each level's observable behaviour at its interface — inputs, outputs, and side-effects — not the implementation inside it
-    and the agent is directed that every layer owns complete coverage of its own behaviour — a higher-layer test, green or red, never excuses a missing lower-layer test, and overlap across layers is intentional
-    and the agent is directed that journey and functional coverage is never coverage of the layers beneath — implementation waits for a ground-level failing test under the journey/functional failure
-    and the agent is directed to descend outside-in through every layer the behaviour touches — running each failing test to guide the next one layer down, to the lowest applicable level — never stopping because the behaviour appears already covered at a higher layer, then folding back up as the layers beneath pass
+    and the agent is directed that Journey, System, Component, Adapter, Port contract, and Unit are the test kinds
+    and the agent is directed to start outside-in with a Journey when the change affects a user arc, otherwise a System test for the capability
+    and the agent is directed to let each failing higher test pull the next lower test kind into being until the behaviour reaches its native Unit, Adapter, or Port-contract test
+    and the agent is directed to implement only after the native failing test exists, then make tests pass upward
+    and the agent is directed that higher-level tests are never adequate by themselves — we always test right to the bottom, at the level where the behaviour lives
     and the agent is directed to decide obvious questions itself rather than asking the user — consulting these rules and the mental model first, then its own best judgment from the code in front of it, escalating to the user only a consequential, genuinely under-determined choice that neither resolves
     and the agent is directed to apply the same ladder to anything it would flag, caveat, or surface — fixing it where these rules or the mental model direct, else using its judgment, else staying silent rather than reporting it
     and the agent is directed to eagerly use the listed skills to fulfil operator requests where applicable

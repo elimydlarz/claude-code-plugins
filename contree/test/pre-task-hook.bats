@@ -52,11 +52,12 @@ run_hook_in() {
   assert_output --partial "silently reshaping"
 }
 
-@test "session start directs the agent to treat test trees as the authoritative behaviour contract" {
+@test "session start directs the agent that trees are the contract" {
   run_hook_in "$BATS_TEST_TMPDIR"
-  assert_output --partial "test trees"
-  assert_output --partial "authoritative"
-  assert_output --partial "behaviour contract"
+  assert_output --partial "Trees are the contract"
+  assert_output --partial "TEST_TREES.md"
+  assert_output --partial "every observable behaviour and side effect"
+  assert_output --partial "describe/it hierarchy mirrors its tree verbatim"
 }
 
 @test "session start directs the agent to describe each level's observable behaviour at its interface, not the implementation inside it" {
@@ -65,26 +66,24 @@ run_hook_in() {
   assert_output --partial "observable at the seam"
 }
 
-@test "session start directs the agent that every layer owns complete coverage of its own behaviour" {
+@test "session start explains the test kinds" {
   run_hook_in "$BATS_TEST_TMPDIR"
-  assert_output --partial "Layer completeness"
-  assert_output --partial "every layer owns complete coverage of its own behaviour"
-  assert_output --partial "Overlap across layers is intentional"
-  assert_output --partial "never excuses a missing lower-layer test"
+  assert_output --partial "Test kinds"
+  assert_output --partial "Journey: broad, production-like test of a curated user arc across capabilities"
+  assert_output --partial "System: deep, production-like test of one capability through the whole app"
+  assert_output --partial "Component: deep in-process test of one capability through the whole app"
+  assert_output --partial "Adapter: test of one concrete boundary implementation"
+  assert_output --partial "Port contract: tests for an application interface"
+  assert_output --partial "Unit: test of one public surface on one subject"
 }
 
-@test "session start directs the agent that journey and functional coverage is never coverage of the layers beneath" {
+@test "session start directs outside-in tdd right to the bottom" {
   run_hook_in "$BATS_TEST_TMPDIR"
-  assert_output --partial "ground layer"
-  assert_output --partial "Journey and functional coverage is never coverage of the layers beneath"
-}
-
-@test "session start directs the agent to descend to the lowest level and fold back up" {
-  run_hook_in "$BATS_TEST_TMPDIR"
-  assert_output --partial "Descend to the lowest level, then fold back up"
-  assert_output --partial "lowest layer the behaviour reaches"
-  assert_output --partial "never stop descending because"
-  assert_output --partial "fold back up"
+  assert_output --partial "Outside-in TDD"
+  assert_output --partial "start with a Journey when the change affects a user arc"
+  assert_output --partial "native Unit, Adapter, or Port-contract test"
+  assert_output --partial "make tests pass upward"
+  assert_output --partial "we always test right to the bottom"
 }
 
 @test "session start directs the agent to decide obvious questions itself rather than asking the user" {
