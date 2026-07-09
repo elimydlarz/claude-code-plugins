@@ -69,7 +69,7 @@ Setting or unsetting a key commits the change immediately, and pushes it (best-e
 
 ## Clocking In — agents that know about each other
 
-Agents are automatically aware of each other. On every commit, the hook writes a presence-only timecard recording the agent's session, host, branch, clock-in time, and heartbeat. Timecards are committed and pushed alongside code, so agents on different machines see each other too.
+Agents are automatically aware of each other. On session start, the hook writes a presence-only timecard recording the agent's session, host, branch, clock-in time, and heartbeat. Timecards are committed and pushed, so agents on different machines see each other too. On each later committed edit, the hook refreshes that card's `lastActiveAt` timestamp alongside the code change.
 
 When another agent is working in the same repo:
 
@@ -79,15 +79,7 @@ TRUNK-SYNC ACTIVE: 1 other agent active. Continue your work as planned — no ac
 If you share resources (ports, test databases, build locks), coordinate accordingly. Otherwise, ignore this message.
 ```
 
-An agent clocks in automatically on its first synced edit and clocks out automatically when the Stop hook fires by removing and syncing its timecard. If a session is disrupted before Stop runs, liveness falls back to the heartbeat age: within an hour it is active; after an hour it is stale and omitted from presence rosters; after 14 days it is reaped. There are no process IDs to check. The active message is throttled to avoid noise.
-
-On its **first** edit of a session, an agent is also nudged to run the test suite:
-
-```
-TRUNK-SYNC WIP: Run the test suite before starting. Failing tests are the authoritative signal of
-unfinished work — any failing test not owned by a currently-active agent is WIP for you to resume.
-The active roster above is advisory context for who already holds work.
-```
+An agent clocks in automatically on SessionStart and clocks out automatically when the Stop hook fires by removing and syncing its timecard. If a session is disrupted before Stop runs, liveness falls back to the heartbeat age: within an hour it is active; after an hour it is stale and omitted from presence rosters; after 14 days it is reaped. There are no process IDs to check.
 
 Failing tests — not the timecard — are the authoritative signal of unfinished work. Timecards are advisory presence context for coordinating around currently active sessions.
 
