@@ -5,7 +5,7 @@ description: "Prepare a project for ongoing test-tree-driven development by conf
 
 # Setup Contree
 
-Prepares the project for ongoing test-tree-driven development. Configures the test framework, creates `TEST_TREES.md` when needed, and hands tree composition to the `change` skill so the contract between intent and implementation starts in the right place.
+Prepares the project for ongoing test-tree-driven development. Configures the test framework and creates `TEST_TREES.md` when needed.
 
 ## Critical Rules
 
@@ -22,7 +22,7 @@ Prepares the project for ongoing test-tree-driven development. Configures the te
    See `skills/tdd/SKILL.md` for the full mapping, the in-memory adapter pattern, and the shared port contract suite.
 4. **CI dual reporters.** Configure tree output for local dev AND structured output (JUnit XML) for CI. Both, not either/or.
 5. **Verify after configuring.** Run the tests and confirm tree-shaped output before moving on.
-6. **No test files.** Setup configures the framework and creates the test-tree home. Do NOT create any test files (`*.test.*`, `*.spec.*`). The `change` skill writes trees and the `tdd` skill handles test implementation later.
+6. **No test files.** Setup configures the framework and creates the test-tree home. Do NOT create any test files (`*.test.*`, `*.spec.*`). Trees and tests happen after setup.
 
 ## Process
 
@@ -219,13 +219,11 @@ Configure commands to run only tests affected by recent changes. Be aware of the
 
 Commands should be simple to invoke — package.json scripts, Makefile targets, or mix aliases.
 
-### 10. CREATE TEST_TREES.md AND HAND OFF TREE COMPOSITION TO THE CHANGE SKILL
+### 10. CREATE TEST_TREES.md
 
 Create `TEST_TREES.md` at the project root if it does not already exist, containing a short header noting that the file holds the project's test trees and that new trees should be added as `###` subsections using EARS patterns.
 
-**Do not compose the trees yourself in this step.** Tree decomposition is the `change` skill's expertise — it enforces one-tree-one-file, the system/inner-layer naming heuristic, the EARS-by-requirement-nature rule, and causal nesting. Doing it inline here tends to drop those rules and produce grouped or mis-layered trees.
-
-Once the framework is configured and `TEST_TREES.md` exists, invoke `/contree:change` and let that skill drive the tree composition. Do not attempt it yourself, even if the project looks simple.
+**Do not compose the trees yourself in this step.** Setup prepares the project. It does not define requirements.
 
 **Do not create any `*.test.*` or `*.spec.*` files in this step**, not even with `.todo`/`.skip` stubs. Tests are the `tdd` skill's output.
 

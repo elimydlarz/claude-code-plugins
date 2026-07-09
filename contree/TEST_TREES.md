@@ -184,11 +184,9 @@ setup-prepares-project (src: skills/setup/SKILL.md; system: test/setup-prepares-
     and mutation testing is configured with explicit test file exclusions for every layer's suffix
     and changed-test runners are configured with known gotchas addressed
     and TEST_TREES.md is created when missing
-    and tree composition is handed to the change skill
     and CLAUDE.md is updated to point at TEST_TREES.md if it does not already
   when setup is run on a new project
     then TEST_TREES.md is created when missing
-    and tree composition is handed to the change skill
     and tests are NOT implemented yet
   when the language only supports flat test output
     then the best available option is configured

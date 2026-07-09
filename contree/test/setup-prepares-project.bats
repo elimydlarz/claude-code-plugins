@@ -50,10 +50,9 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "!src/**/*.contract.ts"
 }
 
-@test "setup creates TEST_TREES.md and delegates tree composition to change" {
+@test "setup creates TEST_TREES.md without composing trees" {
   run cat "$SKILL"
   assert_output --partial "TEST_TREES.md"
-  assert_output --partial "change"
   assert_output --partial "Do not compose the trees yourself"
 }
 
