@@ -13,7 +13,7 @@ Mechanisms:
 
 - **Directions** — skill routing printed by the SessionStart hook. Names each skill (`change`, `tdd`, `sync`, `setup`, `workflow`) with a one-line trigger so the agent reaches for skills eagerly rather than relying on skill-frontmatter discovery alone. Lives inline in `hooks/session-start.sh`.
 - **Rules** — coding principles printed by the SessionStart hook (simplicity, expressiveness, fail-fast, no fake code, etc.). The rules list lives inline in `hooks/session-start.sh` so it ships with the plugin install.
-- **setup skill** — prepare the project for ongoing test-tree-driven development. Configures test framework with tree reporters and creates `TEST_TREES.md` when needed.
+- **setup skill** — prepare the project for ongoing test-tree-driven development. Configures test framework tree reporters, normal and functional test commands, linting, `TEST_TREES.md`, and the mental model when needed.
 - **change skill** — set expected behaviour. Talks through the change, writes or modifies test trees before code exists.
 - **sync skill** — identify gaps and cruft. Compares test trees against implementation in both directions — surfaces drift, staleness, and missing coverage.
 - **tdd skill** — close gaps. Outside-in TDD where every test traces back to a test tree — one failing test at a time until the contract is fulfilled.
@@ -40,7 +40,7 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `hooks/stop-drift-check.sh` — Stop hook: injects the drift-check prompt after each response
 - `website/index.html` — self-contained explainer site (no build step) pitching contree to developers new to TDD: bridges from test-first to test-trees, living requirements, the layered architecture, the workflow, and the Claude Code hook mechanics (SessionStart and Stop). Published to GitHub Pages at https://elimydlarz.github.io/claude-code-plugins/contree/ by the repo-root `.github/workflows/pages.yml` workflow, which stages `contree/website/` into `_site/contree/` (one subdir per plugin, so other plugins can add their own pages) and deploys on push to main
 - `scripts/validate-skill-frontmatter.sh` — bats-only utility: asserts every `skills/*/SKILL.md` has non-empty `name` and `description`
-- `skills/setup/SKILL.md` — prepare the project for test-tree-driven development: framework, reporters, `TEST_TREES.md`, mental model
+- `skills/setup/SKILL.md` — prepare the project for test-tree-driven development: framework, reporters, normal and functional test commands, linting, `TEST_TREES.md`, mental model
 - `skills/change/SKILL.md` — set expected behaviour: write or modify test trees before code exists
 - `skills/sync/SKILL.md` — identify gaps and cruft: test trees vs implementation in both directions
 - `skills/tdd/SKILL.md` — close gaps: outside-in TDD, one failing test at a time

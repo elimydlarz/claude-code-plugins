@@ -15,7 +15,7 @@ Then install what you need:
 | Tool | Install | What it does |
 |------|---------|--------------|
 | [trunk-sync](trunk-sync/README.md) | Plugin: `claude plugin install trunk-sync@elimydlarz` (Claude Code) — Codex CLI: install from this repo via `/plugins`; CLI: `npm i -g @elimydlarz/trunk-sync` | Auto-commit every edit to trunk — run multiple agents in parallel |
-| [contree](contree/README.md) | `claude plugin install contree@elimydlarz` (Claude Code) — Codex CLI: install from this repo via `/plugins` | Test trees as living requirements — TDD with auto-synced specs in CLAUDE.md |
+| [contree](contree/README.md) | `claude plugin install contree@elimydlarz` (Claude Code) — Codex CLI: install from this repo via `/plugins` | Test trees as living requirements — TDD with auto-synced specs in TEST_TREES.md |
 
 Integration surface notes live in [CLAUDE_CODE_INTERFACE.md](CLAUDE_CODE_INTERFACE.md) and [CODEX_INTERFACE.md](CODEX_INTERFACE.md).
 
