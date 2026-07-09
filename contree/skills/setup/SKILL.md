@@ -107,7 +107,9 @@ Two functional layers, each its own command/config:
 
 - **System** — `test/system/`, `*.system.test.*` — whole app for a single capability
 - **Journey** — `test/journey/`, `*.journey.test.*` — the multi-capability user arc, the outside-in entry point
+- **Component** — `test/component/`, `*.component.test.*` — one capability in-process with real driving and driven adapters; needs no external services because externals are doubled at the edge, such as an in-memory database and stubbed outbound HTTP.
 - Both wire **real driven adapters** at the highest tolerable realism — never in-memory at these layers. Speed for combinatorial breadth comes from the cheap Use-case and Component layers, not from diluting these into in-memory tests.
+- Journey tests exercise real everything across the multi-capability arc at max realism.
 - Tree-style output; runnable independently from the inner layers and from each other
 - Higher timeouts — they assemble the whole app; the Journey is the slowest
 - Where real infrastructure is heavy, gate the heaviest runs behind a separate command (pre-release, not per-push) — but keep them real; do not substitute in-memory wiring to make them cheap
@@ -124,7 +126,7 @@ When configuring Docker:
 
 Install appropriate mutation testing tool (see Mutation Testing Reference below). Configure with:
 
-- Mutator targeting source files, **explicitly excluding test files** — if tests are colocated, the exclusion globs must match the naming convention exactly (e.g., `!src/**/*.domain.test.*`, `!src/**/*.use-case.test.*`, `!src/**/*.adapter.test.*`, `!src/**/*.contract.ts`)
+- Mutator targeting source files, **explicitly excluding test files** — if tests are colocated, the exclusion globs must match the naming convention exactly (e.g., `!src/**/*.domain.test.*`, `!src/**/*.use-case.test.*`, `!src/**/*.adapter.test.*`, `!src/**/*.contract.ts`). For TypeScript projects, include the precise layer suffixes: `!src/**/*.domain.test.ts`, `!src/**/*.use-case.test.ts`, `!src/**/*.adapter.test.ts`, `!src/**/*.component.test.ts`, `!src/**/*.system.test.ts`, `!src/**/*.journey.test.ts`, `!test/**/*.component.test.ts`, `!test/**/*.system.test.ts`, `!test/**/*.journey.test.ts`, and `!src/**/*.contract.ts`.
 - Domain and Use-case test runners only (Adapter and System tests are too slow for mutation testing)
 - Thresholds: `high: 80, low: 60, break: 50`
 - Incremental mode where available (stores state between runs for speed)
