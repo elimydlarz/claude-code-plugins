@@ -82,7 +82,7 @@ run_pair() {
   local name="$1"
   local harness="$2"
   echo "=== Starting: $name ($harness) ==="
-  docker run --rm \
+  if docker run --rm \
     --name "contree-test-${name}-${harness}-$$" \
     "${DOCKER_LLM_ENV[@]}" \
     "${DOCKER_CODEX_ENV[@]}" \
@@ -90,9 +90,12 @@ run_pair() {
     -v "$REPO_ROOT:/repo:ro" \
     -v "$SCRIPT_DIR:/output" \
     "$IMAGE_NAME" \
-    bash -c "cp -r /repo/contree /work/contree && chmod +x /work/contree/test/journey/*.sh && /work/contree/test/journey/docker-entrypoint.sh $name $harness" \
-    && echo "=== Done: $name ($harness) ===" \
-    || echo "=== Failed: $name ($harness) ==="
+    bash -c "cp -r /repo/contree /work/contree && chmod +x /work/contree/test/journey/*.sh && /work/contree/test/journey/docker-entrypoint.sh $name $harness"; then
+    echo "=== Done: $name ($harness) ==="
+  else
+    echo "=== Failed: $name ($harness) ==="
+    return 1
+  fi
 }
 
 ARG="${1:?Usage: ./docker-run.sh <test-name|all> [claude|codex]}"
@@ -103,10 +106,12 @@ if [ "$ARG" = "all" ]; then
     run_pair "${pair%%:*}" "${pair##*:}" &
     pids+=($!)
   done
-  for pid in "${pids[@]}"; do wait "$pid" || true; done
+  failed=0
+  for pid in "${pids[@]}"; do wait "$pid" || failed=1; done
 else
   HARNESS="${2:-claude}"
   run_pair "$ARG" "$HARNESS"
+  failed=0
 fi
 
 echo ""
@@ -126,3 +131,5 @@ else
   echo "  $SCRIPT_DIR/${ARG}-${HARNESS}-transcript.jsonl"
   echo "  $SCRIPT_DIR/${ARG}-${HARNESS}-verify.txt"
 fi
+
+exit "$failed"
