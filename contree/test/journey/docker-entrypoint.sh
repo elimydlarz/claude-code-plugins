@@ -6,7 +6,7 @@ set -euo pipefail
 #
 # Expects:
 #   - For claude: ANTHROPIC_API_KEY or DEEPSEEK_API_KEY (via docker-run.sh DeepSeek env vars)
-#   - For codex:  CODEX_API_KEY or ~/.codex/auth.json
+#   - For codex:  DEEPSEEK_API_KEY
 #   - $1 is the test name (layered-workflow | describe-it-drift | diff-images | second-opinion | second-opinion-live)
 #   - $2 is the harness  (claude | codex), default claude
 
@@ -65,9 +65,6 @@ prime_codex_plugin() {
 
   rm -rf "$CODEX_TEST_HOME"
   mkdir -p "$CODEX_TEST_HOME"
-  if [ -f "$HOME/.codex/auth.json" ]; then
-    cp "$HOME/.codex/auth.json" "$CODEX_TEST_HOME/auth.json"
-  fi
 
   local cache_dir="$CODEX_TEST_HOME/plugins/cache/local-marketplace/contree/local"
   rm -rf "$cache_dir"
@@ -81,6 +78,8 @@ prime_codex_plugin() {
   } >> "$PROJECT_DIR/.git/info/exclude"
 
   cat > "$CODEX_TEST_HOME/config.toml" <<'CONFIG'
+model = "deepseek-chat"
+model_provider = "deepseek"
 model_reasoning_effort = "low"
 
 [features]
@@ -92,6 +91,11 @@ inherit = "all"
 
 [plugins."contree@local-marketplace"]
 enabled = true
+
+[model_providers.deepseek]
+name = "DeepSeek"
+base_url = "https://api.deepseek.com/v1"
+env_key = "DEEPSEEK_API_KEY"
 CONFIG
 
   cat >> "$CODEX_TEST_HOME/config.toml" <<CONFIG
@@ -105,8 +109,8 @@ CONFIG
 
   export CODEX_HOME="$CODEX_TEST_HOME"
 
-  if [ ! -f "$CODEX_TEST_HOME/auth.json" ] && [ -z "${CODEX_API_KEY:-}" ]; then
-    echo "Codex harness requires either ~/.codex/auth.json or CODEX_API_KEY" >&2
+  if [ -z "${DEEPSEEK_API_KEY:-}" ]; then
+    echo "Codex harness requires DEEPSEEK_API_KEY" >&2
     exit 1
   fi
 }
@@ -139,7 +143,6 @@ run_agent() {
       --dangerously-bypass-hook-trust \
       --skip-git-repo-check \
       --json \
-      -m gpt-5.4-mini \
       -C "$PROJECT_DIR" \
       "$prompt" 2>&1) | tee -a "$TRANSCRIPT_FILE"; then
       append_codex_artifacts
@@ -152,7 +155,6 @@ run_agent() {
       --dangerously-bypass-hook-trust \
       --skip-git-repo-check \
       --json \
-      -m gpt-5.4-mini \
       "$prompt" 2>&1) | tee -a "$TRANSCRIPT_FILE"; then
       append_codex_artifacts
       exit 1
@@ -372,7 +374,7 @@ VERIFY
 
   diff-images)
     # Verifies the user-invoked /contree:diff-for-humans skill end to end against a mocked
-    # gpt-image-2 endpoint. Codex model calls use CODEX_HOME auth or CODEX_API_KEY,
+    # gpt-image-2 endpoint. Codex model calls use DEEPSEEK_API_KEY,
     # so the skill can still override OPENAI_API_KEY for the image-generation stub.
     seed_project "greenfield"
 
