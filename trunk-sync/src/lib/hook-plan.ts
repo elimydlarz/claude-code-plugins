@@ -249,7 +249,6 @@ export function classifyTimecards(
 export function formatClockInMessage(
   active: Timecard[],
   now: Date,
-  isFirstClockIn: boolean,
 ): string | null {
   const sections: string[] = [];
 
@@ -261,12 +260,6 @@ export function formatClockInMessage(
     sections.push(
       `TRUNK-SYNC ACTIVE: ${active.length} other agent${active.length > 1 ? "s" : ""} active. Continue your work as planned — no action required.`,
       ...lines,
-    );
-  }
-
-  if (isFirstClockIn) {
-    sections.push(
-      "TRUNK-SYNC WIP: Run the test suite before starting. Failing tests are the authoritative signal of unfinished work — any failing test not owned by a currently-active agent is WIP for you to resume. The active roster above is advisory context for who is present.",
     );
   }
 
