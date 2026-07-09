@@ -5,13 +5,7 @@
 cat <<'EOF'
 # Directions
 
-Eagerly use these skills to fulfil operator requests, where applicable:
-
-- **change** — any behaviour change, before any code is discussed or written
-- **tdd** — implementing behaviour, writing code, or writing tests
-- **sync** — drift, gaps, staleness, or completeness
-- **setup** — no test framework is configured or TEST_TREES.md is absent
-- **workflow** — the full arc from idea to verified working software
+Use Contree skills as directed by their frontmatter: **change**, **tdd**, **sync**, **setup**, **workflow**.
 
 # Rules
 

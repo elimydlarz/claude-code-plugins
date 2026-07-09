@@ -1,6 +1,6 @@
 ---
 name: workflow
-description: "The full arc from idea to verified working software — set expected behaviour, identify gaps, close them. Runs without pausing."
+description: "Run the full Contree arc from idea to verified software: change sets expected behaviour, sync finds drift and gaps, tdd closes them, and second-opinion reviews the result. TRIGGER when: the user wants the full workflow, asks to take an idea through implementation, asks to make the project complete, or wants change/sync/tdd handled end to end."
 ---
 
 # Workflow

@@ -141,12 +141,8 @@ pre-task-hook (src: hooks/session-start.sh; system: test/pre-task-hook.bats; jou
     and the agent is directed that higher-level tests are never adequate by themselves — we always test right to the bottom, at the level where the behaviour lives
     and the agent is directed to decide obvious questions itself rather than asking the user — consulting these rules and the mental model first, then its own best judgment from the code in front of it, escalating to the user only a consequential, genuinely under-determined choice that neither resolves
     and the agent is directed to apply the same ladder to anything it would flag, caveat, or surface — fixing it where these rules or the mental model direct, else using its judgment, else staying silent rather than reporting it
-    and the agent is directed to eagerly use the listed skills to fulfil operator requests where applicable
-    and the agent is directed to use the change skill for any behaviour change, before any code is discussed or written
-    and the agent is directed to use the tdd skill when implementing behaviour, writing code, or writing tests
-    and the agent is directed to use the sync skill when asked about drift, gaps, staleness, or completeness
-    and the agent is directed to use the setup skill when no test framework is configured or TEST_TREES.md is absent
-    and the agent is directed to use the workflow skill for the full arc from idea to verified working software
+    and the agent is directed to use Contree skills as directed by skill frontmatter
+    and the agent is shown the skill names change, tdd, sync, setup, and workflow
 ```
 
 ## post-task-hook

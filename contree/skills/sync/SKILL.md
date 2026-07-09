@@ -1,6 +1,6 @@
 ---
 name: sync
-description: "Identify gaps and cruft — where intent and implementation have drifted apart. Compares test trees against code in both directions, then hands gaps to tdd. TRIGGER when: the user asks about drift, gaps, staleness, or completeness — including loose phrasings like 'check for drift', 'audit the project', 'something feels off', 'is this in sync', 'review the trees vs the code', 'propose fixes for drift', or 'what's missing?'."
+description: "Identify drift between test trees and implementation in both directions, including gaps, cruft, stale trees, and failing tests. TRIGGER when: the user asks about drift, gaps, staleness, completeness, whether trees match code, whether the project is in sync, what is missing, or what should be removed."
 ---
 
 # Sync

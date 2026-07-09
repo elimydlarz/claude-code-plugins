@@ -1,6 +1,6 @@
 ---
 name: setup
-description: "Prepare the project for ongoing test-tree-driven development — configures test framework with tree reporters and generates initial test trees in TEST_TREES.md. TRIGGER when: project has no test framework configured, no TEST_TREES.md at project root, or user is starting a new project. Run once per project."
+description: "Prepare a project for ongoing test-tree-driven development by configuring the test framework and creating TEST_TREES.md. TRIGGER when: a project has no test framework configured, no TEST_TREES.md at the project root, no mental model, or the user is starting a new project."
 ---
 
 # Setup Contree

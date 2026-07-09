@@ -1,6 +1,6 @@
 ---
 name: tdd
-description: "Close gaps between intent and implementation — one failing test at a time, outside-in, until the contract is fulfilled. TRIGGER when: implementing behaviour, writing code, or writing tests."
+description: "Close gaps between test trees and implementation one failing test at a time. TRIGGER when: implementing behaviour, writing code, writing tests, fixing a failing test, or closing an implementation gap from existing test trees."
 ---
 
 # TDD — Test-Driven Development
