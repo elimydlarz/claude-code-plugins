@@ -74,10 +74,30 @@ prime_codex_plugin() {
   mkdir -p "$(dirname "$cache_dir")"
   cp -r "$CONTREE_ROOT" "$cache_dir"
 
+  mkdir -p "$PROJECT_DIR/.codex"
+  cat > "$PROJECT_DIR/.codex/hooks.json" <<CONFIG
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|apply_patch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CLAUDE_PLUGIN_ROOT=\"$cache_dir\" bash \"$cache_dir/hooks/post-update-check.sh\""
+          }
+        ]
+      }
+    ]
+  }
+}
+CONFIG
+
   cat > "$CODEX_TEST_HOME/config.toml" <<'CONFIG'
 model_reasoning_effort = "low"
 
 [features]
+hooks = true
 plugin_hooks = true
 
 [shell_environment_policy]
@@ -85,6 +105,15 @@ inherit = "all"
 
 [plugins."contree@local-marketplace"]
 enabled = true
+CONFIG
+
+  cat >> "$CODEX_TEST_HOME/config.toml" <<CONFIG
+
+[projects."$PROJECT_DIR"]
+trust_level = "trusted"
+
+[projects."/private${PROJECT_DIR}"]
+trust_level = "trusted"
 CONFIG
 
   export CODEX_HOME="$CODEX_TEST_HOME"
