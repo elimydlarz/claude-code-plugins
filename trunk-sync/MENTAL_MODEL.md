@@ -24,7 +24,7 @@
 - Session ID — links a commit to a Claude/Codex conversation.
 - Provenance fields — `Session:`, `Agent:`, `TranscriptPath:` in the commit body.
 - Timecard — `.trunk-sync/timeclock/<id>.json`; who is clocked in, on what, and their handover (last step + remaining steps).
-- Handover — the last step + remaining steps an agent records in its timecard via the progress recorder, surfaced to the next session at SessionStart; advisory context, reaped only past the 14-day TTL (the committed transcript is the durable record).
+- Handover — the last step + remaining steps an agent records in its committed timecard via the progress recorder, surfaced to the next session at SessionStart; advisory context, reaped only past the 14-day TTL.
 - Liveness — the age of a card's heartbeat (`lastActiveAt`): active within the hour, stale (possibly disrupted) beyond it, reapable past a 14-day TTL. No PID and no clock-out command — the first edit creates the card, the progress recorder records the handover.
 - Worktree — optional isolated working tree for multi-agent runs.
 - Conflict feedback — exit 2 with a stderr message; the agent fixes file content only.
@@ -65,6 +65,6 @@
 - Throttled (≤ once / 5 min): surface other active agents so the agent can reason about shared resources.
 - At session start: the SessionStart hook hands the agent its session id and surfaces other sessions' handovers — active to coordinate around, stale (possibly disrupted) to verify-and-resume — so work continues across sessions.
 - End of every turn: a Stop hook bumps the heartbeat (and re-syncs it when stale) so a busy-but-quiet agent stays visible to remote readers; it never forces the agent.
-- Reaping: any card whose heartbeat is older than the 14-day TTL, swept on the next agent's commit — uniform, regardless of remaining work (the committed transcript is the durable record).
+- Reaping: any card whose heartbeat is older than the 14-day TTL, swept on the next agent's commit — uniform, regardless of remaining work.
 - Seance, on demand: blame → provenance → transcript truncation → worktree → resume.
 - Release: bump both manifests → build → `pnpm publish` (npm) → push to GitHub (marketplace).

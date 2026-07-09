@@ -721,11 +721,11 @@ describe("formatSessionStartSummary", () => {
     assert.match(msg, /may already be done/);
   });
 
-  it("still lists a card that has no recorded remaining steps, pointing at its transcript", () => {
+  it("still lists a card that has no recorded remaining steps, pointing at its committed timecard context", () => {
     const msg = formatSessionStartSummary([card({ task: "Some task" })], [], now)!;
     assert.match(msg, /task: Some task/);
     assert.doesNotMatch(msg, /next:/);
-    assert.match(msg, /\.transcripts\//);
+    assert.match(msg, /committed timecards/);
   });
 
   it("renders a card's age in hours once its heartbeat is an hour or more old", () => {

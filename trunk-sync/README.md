@@ -40,7 +40,7 @@ By default, agents sync to a dedicated `agents` branch, not directly to your rep
 
 ## Configuration
 
-Config lives at `.trunk-sync/config` in the repo — committed and synced like timecards and transcripts, so every machine and agent working on the repo sees the same settings. It's not a personal dotfile: set a key once and it applies everywhere the repo is worked on.
+Config lives at `.trunk-sync/config` in the repo — committed and synced like timecards, so every machine and agent working on the repo sees the same settings. It's not a personal dotfile: set a key once and it applies everywhere the repo is worked on.
 
 ```bash
 trunk-sync config                        # show all config
@@ -108,10 +108,10 @@ authoritative signal of what is unfinished; the cards below are advisory context
     task: Add agent-authored progress to trunk-sync
     last: implemented the parser
     next: wire the CLI and write tests
-If transcript commits are enabled, each session's full record is in `.transcripts/`; resume it with seance.
+Use the committed timecard as the handover summary. If transcript commits are enabled, `.transcripts/` carries the full session record for seance.
 ```
 
-So you can stop a session that's low on context — or one that crashes mid-task — and pick the work up in a fresh one without re-explaining where you were. Because liveness is a heartbeat rather than a live process, a disrupted session's work is surfaced as a resumable handover instead of being lost; abandoned cards are reaped only after 14 days, and the committed transcript remains the durable record regardless.
+So you can stop a session that's low on context — or one that crashes mid-task — and pick the work up in a fresh one without re-explaining where you were. Because liveness is a heartbeat rather than a live process, a disrupted session's work is surfaced as a resumable handover instead of being lost; abandoned cards are reaped only after 14 days.
 
 ## Seance — summon the author of any line of code
 

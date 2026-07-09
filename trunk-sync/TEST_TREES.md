@@ -138,7 +138,7 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
     when a card's heartbeat is older than the display window but within the reap ttl
       then it is classified stale — possibly disrupted; surfaced for resume, not reaped
     when a card's heartbeat is older than the reap ttl
-      then it is classified reapable even with unfinished remaining steps — abandoned; the committed transcript remains the durable record
+      then it is classified reapable even with unfinished remaining steps — abandoned
 
   formatClockInMessage
     when no other agent is active and this is not the first clock-in
@@ -168,7 +168,7 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
     when a stale card is present
       then it is listed labelled stale — possibly disrupted; verify against the test suite before resuming, since it may already be done
     when a card has no recorded remaining steps
-      then it is still listed, pointing at its committed transcript for context rather than omitted
+      then it is still listed, pointing at its committed timecard context rather than omitted
     when a card's heartbeat age is an hour or more
       then its age is rendered in hours
 ```
@@ -607,7 +607,7 @@ System: hook-sync (system: test/trunk-sync.test.sh; journey: test/functional/doc
   when an agent is disrupted mid-task and a new session starts
     then the disrupted agent's stale card is surfaced as a handover, corroborated against the failing tests before resuming
     when the resumer finishes and the original card ages past the reap ttl
-      then it is swept on the next agent's commit, its committed transcript remaining as the record
+      then it is swept on the next agent's commit
   when an agent records progress and the hook later fires
     then the progress-bearing timecard is committed and pushed, propagating the handover to other machines
   when a merge conflict arises during sync
