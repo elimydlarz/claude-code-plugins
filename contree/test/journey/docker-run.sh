@@ -47,12 +47,7 @@ else
   DOCKER_LLM_ENV=(-e ANTHROPIC_API_KEY)
 fi
 
-DOCKER_CODEX_ENV=()
-if [ -n "${OPENAI_API_KEY:-}" ]; then
-  DOCKER_CODEX_ENV=(-e CODEX_API_KEY="$OPENAI_API_KEY")
-elif [ -f "$HOME/.codex/auth.json" ]; then
-  DOCKER_CODEX_ENV=(-v "$HOME/.codex/auth.json:/home/testuser/.codex/auth.json:ro")
-fi
+DOCKER_CODEX_ENV=(-e DEEPSEEK_API_KEY)
 
 # (test-name, harness) pairs run by `all`.
 MATRIX=(
@@ -81,6 +76,10 @@ run_pair() {
   local harness="$2"
   if [ "$harness" = "claude" ] && [ -z "${ANTHROPIC_API_KEY:-}" ] && [ -z "${ANTHROPIC_AUTH_TOKEN:-}" ]; then
     echo "Claude harness requires ANTHROPIC_API_KEY or DEEPSEEK_API_KEY" >&2
+    return 1
+  fi
+  if [ "$harness" = "codex" ] && [ -z "${DEEPSEEK_API_KEY:-}" ]; then
+    echo "Codex harness requires DEEPSEEK_API_KEY" >&2
     return 1
   fi
   local docker_env_args=("${DOCKER_LLM_ENV[@]}")
