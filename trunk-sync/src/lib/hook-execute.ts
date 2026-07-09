@@ -3,7 +3,7 @@ import { existsSync, readFileSync, realpathSync, mkdirSync, copyFileSync, writeF
 import { join } from "node:path";
 import { homedir, hostname } from "node:os";
 import { readConfig } from "../commands/config.js";
-import type { HookInput, RepoState, HookPlan, SyncPlan, ClockInPlan, Timecard, RuntimeContext } from "./hook-types.js";
+import type { HookInput, RepoState, HookPlan, SyncPlan, Timecard, RuntimeContext } from "./hook-types.js";
 import { HOOK_EXPLAINER } from "./hook-types.js";
 import { extractTaskFromTranscript, buildCommitPlanWithTask, classifyTimecards, formatClockInMessage, formatSessionStartSummary } from "./hook-plan.js";
 
@@ -130,19 +130,19 @@ export function getRuntimeContext(): RuntimeContext {
   return { hostname: hostname() };
 }
 
-export function clockIn(repoRoot: string, plan: ClockInPlan): void {
+export function clockIn(repoRoot: string, timecard: Timecard): void {
   const dir = join(repoRoot, ".trunk-sync", "timeclock");
   mkdirSync(dir, { recursive: true });
-  const filePath = join(repoRoot, plan.timecardPath);
-  let timecard = { ...plan.timecard };
+  const filePath = join(dir, `${timecard.sessionId}.json`);
+  let nextTimecard = { ...timecard };
   try {
     const existing = JSON.parse(readFileSync(filePath, "utf-8")) as Timecard;
     if (existing.clockedInAt) {
-      timecard = { ...timecard, clockedInAt: existing.clockedInAt };
+      nextTimecard = { ...nextTimecard, clockedInAt: existing.clockedInAt };
     }
   } catch {
   }
-  writeFileSync(filePath, JSON.stringify(timecard, null, 2) + "\n");
+  writeFileSync(filePath, JSON.stringify(nextTimecard, null, 2) + "\n");
 }
 
 export function readTimecards(repoRoot: string): Timecard[] {
@@ -160,11 +160,15 @@ export function readTimecards(repoRoot: string): Timecard[] {
   return timecards;
 }
 
-export function runSessionStart(repoRoot: string, ownSessionId: string | null): string | null {
+export function runSessionStart(state: RepoState, ownSessionId: string | null, runtime: RuntimeContext): string | null {
   if (!ownSessionId) return null;
+  clockIn(state.repoRoot, buildTimecard(ownSessionId, state, runtime));
+  commitTimecardChange(state, `auto: clock-in ${ownSessionId.slice(0, 8)}`);
+  syncBestEffort(state);
+
   const intro = `TRUNK-SYNC SESSION: your session id is ${ownSessionId}.`;
   const now = new Date();
-  const { active } = classifyTimecards(ownSessionId, readTimecards(repoRoot), now);
+  const { active } = classifyTimecards(ownSessionId, readTimecards(state.repoRoot), now);
   const roster = formatSessionStartSummary(active, now);
   return roster ? `${intro}\n\n${roster}` : intro;
 }
@@ -178,19 +182,8 @@ export function runStop(state: RepoState, sessionId: string | null): void {
     return;
   }
 
-  try {
-    execSync(`git -C "${state.repoRoot}" add -- ".trunk-sync/timeclock/${sessionId}.json"`, { stdio: "ignore" });
-    execSync(`git -C "${state.repoRoot}" commit -m "auto: clock-out ${sessionId.slice(0, 8)}"`, { stdio: "ignore" });
-  } catch {
-    return;
-  }
-
-  if (state.hasRemote) {
-    try {
-      executeSync({ targetBranch: state.targetBranch, currentBranch: state.currentBranch });
-    } catch {
-    }
-  }
+  commitTimecardChange(state, `auto: clock-out ${sessionId.slice(0, 8)}`);
+  syncBestEffort(state);
 }
 
 export function reapCards(repoRoot: string, ids: string[]): string[] {
