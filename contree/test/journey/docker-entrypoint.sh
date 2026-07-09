@@ -31,6 +31,7 @@ fi
 FIXTURES="$CONTREE_ROOT/test/fixtures"
 PROJECT_DIR="/tmp/contree-test-project"
 CODEX_TEST_HOME="$PROJECT_DIR/.codex-home"
+CODEX_DEEPSEEK_PROXY_PORT=8783
 OUTPUT_DIR="$CONTREE_ROOT/test/journey"
 if [ -d "/output" ]; then
   OUTPUT_DIR="/output"
@@ -54,6 +55,7 @@ seed_project() {
 }
 
 CODEX_PRIMED=0
+CODEX_DEEPSEEK_PROXY_PID=0
 
 prime_codex_plugin() {
   # Codex reads cached plugins from ~/.codex/plugins/cache/<marketplace>/<plugin>/<version>/
@@ -77,7 +79,7 @@ prime_codex_plugin() {
     echo ".codex-home/"
   } >> "$PROJECT_DIR/.git/info/exclude"
 
-  cat > "$CODEX_TEST_HOME/config.toml" <<'CONFIG'
+  cat > "$CODEX_TEST_HOME/config.toml" <<CONFIG
 model = "deepseek-chat"
 model_provider = "deepseek"
 model_reasoning_effort = "low"
@@ -94,8 +96,9 @@ enabled = true
 
 [model_providers.deepseek]
 name = "DeepSeek"
-base_url = "https://api.deepseek.com/v1"
+base_url = "http://127.0.0.1:$CODEX_DEEPSEEK_PROXY_PORT/v1"
 env_key = "DEEPSEEK_API_KEY"
+wire_api = "responses"
 CONFIG
 
   cat >> "$CODEX_TEST_HOME/config.toml" <<CONFIG
@@ -113,6 +116,10 @@ CONFIG
     echo "Codex harness requires DEEPSEEK_API_KEY" >&2
     exit 1
   fi
+
+  CODEX_DEEPSEEK_PROXY_PORT="$CODEX_DEEPSEEK_PROXY_PORT" node "$CONTREE_ROOT/test/journey/codex-deepseek-responses-proxy.mjs" &
+  CODEX_DEEPSEEK_PROXY_PID=$!
+  trap 'kill "$CODEX_DEEPSEEK_PROXY_PID" 2>/dev/null || true' EXIT
 }
 
 AGENT_CALL_COUNT=0
