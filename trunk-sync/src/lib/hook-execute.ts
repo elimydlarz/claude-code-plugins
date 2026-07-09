@@ -199,69 +199,60 @@ export function reapCards(repoRoot: string, ids: string[]): string[] {
   return removed;
 }
 
-function readThrottleTimestamp(sessionId: string): number | null {
-  const path = join(tmpdir(), `trunk-sync-clockin-${sessionId}`);
+function buildTimecard(sessionId: string, state: RepoState, runtime: RuntimeContext): Timecard {
+  const now = new Date().toISOString();
+  return {
+    sessionId,
+    hostname: runtime.hostname,
+    clockedInAt: now,
+    lastActiveAt: now,
+    branch: state.currentBranch || "detached",
+  };
+}
+
+function touchTimecard(state: RepoState, sessionId: string | null): void {
+  if (!sessionId) return;
+  const cardPath = join(state.repoRoot, ".trunk-sync", "timeclock", `${sessionId}.json`);
+  let card: Timecard;
   try {
-    return parseInt(readFileSync(path, "utf-8"), 10);
+    card = JSON.parse(readFileSync(cardPath, "utf-8")) as Timecard;
   } catch {
-    return null;
+    return;
+  }
+
+  card.lastActiveAt = new Date().toISOString();
+  card.branch = state.currentBranch || "detached";
+  writeFileSync(cardPath, JSON.stringify(card, null, 2) + "\n");
+  execSync(`git -C "${state.repoRoot}" add -- ".trunk-sync/timeclock/${sessionId}.json"`, { stdio: "ignore" });
+}
+
+function reapOldTimecards(state: RepoState, ownSessionId: string | null): void {
+  const { reapable } = classifyTimecards(ownSessionId, readTimecards(state.repoRoot), new Date());
+  if (reapable.length === 0) return;
+  reapCards(state.repoRoot, reapable.map((tc) => tc.sessionId));
+  execSync(`git add -- "${join(state.repoRoot, ".trunk-sync", "timeclock")}"`, { cwd: state.repoRoot, stdio: "ignore" });
+}
+
+function commitTimecardChange(state: RepoState, message: string): void {
+  try {
+    execSync(`git add -- "${join(state.repoRoot, ".trunk-sync", "timeclock")}"`, { cwd: state.repoRoot, stdio: "ignore" });
+    execSync(`git -C "${state.repoRoot}" commit -m "${escapeForShell(message)}"`, { stdio: "ignore" });
+  } catch {
   }
 }
 
-function writeThrottleTimestamp(sessionId: string, now: number): void {
-  const path = join(tmpdir(), `trunk-sync-clockin-${sessionId}`);
-  writeFileSync(path, String(now));
-}
-
-function tmpdir(): string {
-  return process.env.TMPDIR || "/tmp";
-}
-
-const THROTTLE_MS = 5 * 60 * 1000;
-
-/**
- * Clock in, reap abandoned cards (heartbeat past the TTL), and check who else is active.
- * Returns a message if other agents are active and throttle allows.
- */
-function executeClockIn(
-  plan: ClockInPlan,
-  _input: HookInput,
-  state: RepoState,
-): string | null {
+function syncBestEffort(state: RepoState): void {
+  if (!state.hasRemote) return;
   try {
-    clockIn(state.repoRoot, plan);
-    const allTimecards = readTimecards(state.repoRoot);
-    const now = new Date();
-    const { active, reapable } = classifyTimecards(
-      plan.timecard.sessionId,
-      allTimecards,
-      now,
-    );
-
-    if (reapable.length > 0) {
-      reapCards(state.repoRoot, reapable.map((tc) => tc.sessionId));
-    }
-
-    const timeclockDir = join(state.repoRoot, ".trunk-sync", "timeclock");
-    try {
-      execSync(`git add -- "${timeclockDir}"`, { cwd: state.repoRoot, stdio: "ignore" });
-    } catch {
-    }
-
-    const lastWarning = readThrottleTimestamp(plan.timecard.sessionId);
-    const nowMs = now.getTime();
-    const isFirstClockIn = lastWarning === null;
-    const throttleElapsed = isFirstClockIn || (nowMs - lastWarning) >= THROTTLE_MS;
-
-    if (isFirstClockIn || (active.length > 0 && throttleElapsed)) {
-      writeThrottleTimestamp(plan.timecard.sessionId, nowMs);
-      return formatClockInMessage(active, now, isFirstClockIn);
-    }
-
-    return null;
+    executeSync({ targetBranch: state.targetBranch, currentBranch: state.currentBranch });
   } catch {
-    return null;
   }
+}
+
+function formatConflictRoster(state: RepoState, ownSessionId: string | null): string | null {
+  const now = new Date();
+  const { active } = classifyTimecards(ownSessionId, readTimecards(state.repoRoot), now);
+  return formatClockInMessage(active, now, false);
 }
 
 /**
