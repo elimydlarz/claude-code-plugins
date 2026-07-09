@@ -381,7 +381,7 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
       when active cards are present
         then their labelled summary is appended to coordinate around automatic clock-ins
       when only stale cards are present
-        then only the own-id is printed because stale cards are not progress handovers
+        then only the own-id is printed because stale cards are not session summaries
       when only reapable cards (or none) remain
         then only the own-id is printed
     if the timeclock directory does not exist
@@ -560,7 +560,7 @@ System: hook-sync (system: test/trunk-sync.test.sh)
   every session start
     then the starting agent is handed its own session id
     when other sessions have stale cards
-      then they are omitted because timecards represent presence, not progress handover
+      then they are omitted because timecards represent presence, not session summaries
     when other sessions have active cards
       then that recently-alive work is surfaced to coordinate around
     when only reapable cards remain
