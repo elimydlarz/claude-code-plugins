@@ -425,6 +425,7 @@ dual-harness-compatibility (src: .claude-plugin/plugin.json, .codex-plugin/plugi
     and Claude journey runs do not require Codex auth docker arguments
     and Claude journey runs fail fast without Claude provider auth
     and the journey harness distinguishes hook runner failures from ordinary agent command failures
+    and the journey harness distinguishes structured Codex failures from ordinary transcript text and recoverable tool diagnostics
 ```
 
 ## diff-images-the-change
