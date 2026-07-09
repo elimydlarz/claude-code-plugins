@@ -11,13 +11,13 @@ Prepares the project for ongoing test-tree-driven development. Configures the te
 
 1. **Read before write.** Always read existing config files before modifying them. Never overwrite — merge surgically.
 2. **Tree output is non-negotiable.** If a framework can produce nested output, configure it. If it can only produce flat output, use it and be honest.
-3. **Six test layers, always.** Layers are named for the seam under test, not for infrastructure presence:
-   - **Domain** — pure domain objects and services. No collaborators. Colocated with source. `*.domain.test.*`.
-   - **Use-case** — application orchestration. In-memory driven adapters as collaborators (real port implementations, not mocks). Colocated. `*.use-case.test.*`.
-   - **Adapter** — one adapter against its port contract. Driving: mock the use-case. Driven: real infrastructure. Colocated. `*.adapter.test.*`.
-   - **Component** — the whole app for one capability with real driving and driven adapters, externals doubled only at the edge — an in-memory database and stubbed outbound HTTP. Runs in-process, needs no external services; carries exhaustive single-capability coverage. `test/component/`. `*.component.test.*`.
-   - **System** — the whole app for one capability, real driving and driven adapters at the highest tolerable realism. `test/system/`. `*.system.test.*`.
-   - **Journey** — the full user arc across capabilities and contexts at max realism, real everything; walks representative error paths and eventually succeeds. The outside-in entry point. `test/journey/`. `*.journey.test.*`.
+3. **SessionStart test kinds, always.** Configure the kinds named by the SessionStart hook where the project has that surface:
+   - **Journey** — broad, production-like test of a curated user arc across capabilities. `test/journey/`. `*.journey.test.*`.
+   - **System** — deep, production-like test of one capability through the whole app. `test/system/`. `*.system.test.*`.
+   - **Component** — deep in-process test of one capability through the whole app, with external services replaced by test doubles that carry visible reason markers. `test/component/`. `*.component.test.*`.
+   - **Adapter** — one concrete boundary implementation against the real boundary it adapts. Colocated. `*.adapter.test.*`.
+   - **Port contract** — shared contract suite for an application interface; every implementation passes it. Colocated with the port. `*.contract.ts`.
+   - **Unit** — one public surface on one subject. Domain units use `*.domain.test.*`; Use-case units use `*.use-case.test.*`.
 
    See `skills/tdd/SKILL.md` for the full mapping, the in-memory adapter pattern, and the shared port contract suite.
 4. **CI dual reporters.** Configure tree output for local dev AND structured output (JUnit XML) for CI. Both, not either/or.
@@ -62,11 +62,11 @@ If config exists, **merge into it** — add the reporter setting alongside exist
 
 Detect existing test framework from project manifests. If none exists, identify the most suitable for the project's language.
 
-When multiple frameworks are detected (e.g., both Jest and Vitest deps exist during a migration), present both and ask the user which to use.
+When multiple test frameworks are detected, choose the test framework from project evidence and tree-output quality. Ask before choosing the main application framework for a project.
 
 ### 3. SUGGEST
 
-Present identified frameworks with trade-offs and recommendation. Include tree output quality in the comparison. Let the user choose before proceeding.
+Present the chosen test framework with the evidence and tree-output quality behind the choice. If setup would choose the main application framework, ask before proceeding.
 
 ### 4. DETERMINE TEST STRATEGY
 
@@ -91,7 +91,7 @@ Confirm how conventions apply to this project:
 - System tests: at monorepo root `test/system/` if they exercise cross-package behaviour, or per-package if they test a single package
 - Journey tests: at monorepo root `test/journey/` — they span packages and capabilities by nature
 - Never create a single root-level test config that reaches into all packages — follow the monorepo tool's conventions (Turborepo tasks, Nx project graph, pnpm workspace scripts)
-- Use shared base config that each package extends
+- Prefer direct per-package config over config inheritance.
 
 ### 5. CONFIGURE INNER TEST RUNNERS
 
@@ -242,6 +242,8 @@ Add or update the following sections:
   - Command to run mutation testing (Domain + Use-case only)
   - Outside-in TDD workflow summary
   - Example tree structure for this project
+
+Configured examples must follow the SessionStart rules: no copied comments, no env-var behaviour switches, no config inheritance, and visible reason markers for mocks and stubs. Environment variables remain appropriate for secrets and external connection details because they configure boundaries rather than changing test/runtime behaviour.
 
 ### 12. SCAFFOLD MENTAL_MODEL.md
 
