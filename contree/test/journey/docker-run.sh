@@ -81,6 +81,10 @@ docker build -q -t "$IMAGE_NAME" -f "$SCRIPT_DIR/Dockerfile" "$TEST_DIR"
 run_pair() {
   local name="$1"
   local harness="$2"
+  if [ "$harness" = "claude" ] && [ -z "${ANTHROPIC_API_KEY:-}" ] && [ -z "${ANTHROPIC_AUTH_TOKEN:-}" ]; then
+    echo "Claude harness requires ANTHROPIC_API_KEY or DEEPSEEK_API_KEY" >&2
+    return 1
+  fi
   local docker_env_args=("${DOCKER_LLM_ENV[@]}")
   if [ "${#DOCKER_CODEX_ENV[@]}" -gt 0 ]; then
     docker_env_args+=("${DOCKER_CODEX_ENV[@]}")

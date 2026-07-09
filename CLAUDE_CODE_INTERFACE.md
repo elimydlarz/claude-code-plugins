@@ -48,6 +48,7 @@ claude plugin marketplace add elimydlarz/claude-code-plugins
 
 ## Functional Harness Notes
 
+- Claude functional journeys require provider authentication in the container. `docker-run.sh` passes DeepSeek as Anthropic-compatible env vars when `DEEPSEEK_API_KEY` is set, otherwise it passes `ANTHROPIC_API_KEY`. Without either one, the harness fails fast instead of letting `claude -p` return `Not logged in`.
 - Contree's Claude functional journeys call `claude -p` with:
   - `--plugin-dir "$CONTREE_ROOT"`
   - `--dangerously-skip-permissions`
@@ -56,4 +57,4 @@ claude plugin marketplace add elimydlarz/claude-code-plugins
 - Multi-phase journeys continue the same Claude conversation with `-c`.
 - The functional harness writes `<test>-claude-transcript.jsonl` and `<test>-claude-verify.txt`.
 - Hook runner failures are treated as functional failures by scanning transcripts for phrases such as `hook exited with code`, `command not found`, missing executables, and `exec: ... not found`.
-
+- API-backed skill journeys route deterministic stubs through explicit base URL variables such as `OPENAI_BASE_URL` and `ZAI_BASE_URL`.

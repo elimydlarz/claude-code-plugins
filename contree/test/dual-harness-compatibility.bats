@@ -122,3 +122,8 @@ load test_helper
   run grep -F 'docker_env_args+=("${DOCKER_CODEX_ENV[@]}")' "$PROJECT_ROOT/test/journey/docker-run.sh"
   assert_success
 }
+
+@test "and Claude journey runs fail fast without Claude provider auth" {
+  run grep -F "Claude harness requires ANTHROPIC_API_KEY or DEEPSEEK_API_KEY" "$PROJECT_ROOT/test/journey/docker-run.sh"
+  assert_success
+}
