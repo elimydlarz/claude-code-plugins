@@ -564,7 +564,7 @@
   "hooks": {
     "SessionStart":    [{ "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/session-start.sh" }],
     "Stop":            [{ "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/stop-drift-check.sh" }],
-    "PostToolUse": [{ "matcher": "Edit|Write|MultiEdit",
+    "PostToolUse": [{ "matcher": "Edit|Write|MultiEdit|apply_patch",
                       "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/post-update-check.sh" }]
   }
 }</pre>
