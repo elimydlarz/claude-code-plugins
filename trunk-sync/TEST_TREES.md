@@ -114,22 +114,6 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
     when called with multiple files
       then the count and a representative filename are returned
 
-  buildClockInPlan
-    when the runtime context provides a session id and branch
-      then a clock-in plan with presence-only timecard data is returned
-    if the session id is null
-      then null is returned
-    if the current branch is empty
-      then `detached` is recorded as the branch
-
-  planHook clock-in plan
-    when runtime context is provided
-      then a clock-in plan is included alongside the commit plan
-    if no runtime context is provided
-      then clockIn is null
-    while a merge is in progress
-      then a clock-in plan is included on commit-merge
-
   classifyTimecards
     then the own session is excluded
     when a card's heartbeat is within the display window
@@ -148,12 +132,6 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
       then all are listed
     when the elapsed minutes value is rounded
       then the formatting matches the elapsed wall time
-    when this is the first clock-in
-      then the message tells the agent to run the test suite before starting
-      and it explains failing tests are the authoritative signal of unfinished WIP to resume, with active cards as advisory context for who is present
-      and it scopes resumable WIP to work not held by an active agent
-    when this is the first clock-in and other agents are active
-      then both the active roster and the run-tests nudge are included
 
   formatSessionStartSummary
     when no active card is present
@@ -338,7 +316,7 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
       then no snapshot is created
 
   clockIn
-    when a session id and runtime context are present
+    when timecard data is provided
       then the timeclock directory is created and a valid presence-only timecard is written
     when a timecard already exists for this session
       then clockedInAt is preserved across updates
@@ -358,15 +336,13 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
     when a timecard file is already gone
       then it is handled gracefully
 
-  executePlan with clock-in
-    when a commit fires with runtime context
-      then a timecard is committed alongside the code change
-    when the agent clocks in for the first time in a session
-      then exit 2 is returned with a message telling the agent to run the tests and resume any unfinished WIP
-    when other agents are active
-      then exit 2 is returned with a throttled roster of who is active
-    when the throttle file is fresh
-      then the roster message is suppressed
+  executePlan with timecard touch
+    when a commit fires and the session already has a timecard
+      then lastActiveAt is updated and committed alongside the code change
+    when a commit fires and the session has no timecard
+      then no timecard is created
+    when a trunk-sync conflict happens and other agents are active
+      then exit 2 includes the conflict feedback and the active roster
     when another agent's card is older than the reap ttl
       then it is reaped as part of the same commit
     when another agent's card is within the reap ttl
@@ -376,7 +352,8 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
 
   runSessionStart
     when the session-start hook fires
-      then the starting agent's own session id is printed to stdout for injection into context
+      then the starting agent's timecard is created and synced
+      and the starting agent's own session id is printed to stdout for injection into context
       and every other session's timecard is read and classified by heartbeat age, the starting session excluded
       when active cards are present
         then their labelled summary is appended to coordinate around automatic clock-ins
@@ -385,9 +362,9 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
       when only reapable cards (or none) remain
         then only the own-id is printed
     if the timeclock directory does not exist
-      then the own-id is still printed and the hook exits 0
+      then it is created for the starting session and the hook exits 0
     if no session id is provided
-      then nothing is printed
+      then no timecard is created and nothing is printed
 
   runStop
     when the stop hook fires and the session has a timecard
@@ -558,7 +535,7 @@ System: hook-sync (system: test/trunk-sync.test.sh)
     when the git command is in the read-only allowlist
       then it is allowed through
   every session start
-    then the starting agent is handed its own session id
+    then the starting agent is clocked in and handed its own session id
     when other sessions have stale cards
       then they are omitted because timecards represent presence, not session summaries
     when other sessions have active cards
@@ -572,6 +549,7 @@ System: hook-sync (system: test/trunk-sync.test.sh)
     then the disrupted agent's stale card is omitted and failing tests remain the authoritative signal of unfinished work
   when a merge conflict arises during sync
     then exit 2 surfaces self-contained conflict-resolution instructions
+    and active timecards are surfaced again to coordinate around ongoing sessions
     when the agent edits the conflicted file and the hook fires again
       then the merge is completed
   when a push is rejected
