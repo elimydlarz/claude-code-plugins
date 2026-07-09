@@ -47,6 +47,13 @@ else
   DOCKER_LLM_ENV=(-e ANTHROPIC_API_KEY)
 fi
 
+DOCKER_CODEX_ENV=()
+if [ -n "${OPENAI_API_KEY:-}" ]; then
+  DOCKER_CODEX_ENV=(-e CODEX_API_KEY="$OPENAI_API_KEY")
+elif [ -f "$HOME/.codex/auth.json" ]; then
+  DOCKER_CODEX_ENV=(-v "$HOME/.codex/auth.json:/home/testuser/.codex/auth.json:ro")
+fi
+
 # (test-name, harness) pairs run by `all`.
 MATRIX=(
   "layered-workflow:claude"
@@ -78,7 +85,7 @@ run_pair() {
   docker run --rm \
     --name "contree-test-${name}-${harness}-$$" \
     "${DOCKER_LLM_ENV[@]}" \
-    -e "CODEX_API_KEY=${OPENAI_API_KEY:-}" \
+    "${DOCKER_CODEX_ENV[@]}" \
     -e "ZAI_API_KEY=${ZAI_API_KEY:-}" \
     -v "$REPO_ROOT:/repo:ro" \
     -v "$SCRIPT_DIR:/output" \

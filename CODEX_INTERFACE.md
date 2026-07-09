@@ -26,6 +26,7 @@ inherit = "all"
 
 - `shell_environment_policy.inherit = "all"` is required when hook scripts need the same PATH and toolchain that the interactive shell has. This fixed the original `node` not found / hook exit 127 class of failures.
 - Account-backed Codex runs can use `~/.codex/auth.json`. Do not set a dummy `CODEX_API_KEY`; Codex treats it as a real API key and fails authentication.
+- Dockerized Codex journeys either pass `CODEX_API_KEY` when `OPENAI_API_KEY` is set, or mount the host `~/.codex/auth.json` read-only into `/home/testuser/.codex/auth.json` for account-backed auth.
 
 ## Hook Environment
 
@@ -72,4 +73,3 @@ inherit = "all"
 - Plugin-bundled `Stop` and `SessionStart` hooks are visible in Codex sessions.
 - For `PostToolUse`, the harness installs a project-local shim that invokes the plugin's real `post-update-check.sh`, because this path is directly observable and gives deterministic stdin/stdout logs for functional assertions.
 - Hook runner failures are treated as functional failures by scanning transcripts for phrases such as `hook exited with code`, `command not found`, missing executables, and `exec: ... not found`.
-

@@ -3,7 +3,7 @@ FROM node:22-slim
 RUN apt-get update && apt-get install -y git jq procps curl && rm -rf /var/lib/apt/lists/*
 RUN npm install -g @anthropic-ai/claude-code @openai/codex
 
-RUN useradd -m -s /bin/bash testuser
+RUN useradd -m -s /bin/bash testuser && mkdir -p /home/testuser/.codex && chown -R testuser:testuser /home/testuser/.codex
 
 # Fixtures are added via build context (built from contree/test/)
 COPY --chown=testuser:testuser fixtures/ /fixtures/
