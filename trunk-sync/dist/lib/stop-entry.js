@@ -10,6 +10,14 @@ function main() {
         // no stdin
     }
     const input = parseHookInput(rawInput || "{}");
+    if (input.cwd) {
+        try {
+            process.chdir(input.cwd);
+        }
+        catch {
+            process.exit(0);
+        }
+    }
     const state = gatherRepoState(input);
     // Not in a git repo — no-op
     if (!state)
