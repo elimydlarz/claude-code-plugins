@@ -325,6 +325,7 @@ sync-audits-and-resolves (src: skills/sync/SKILL.md; system: test/sync-audits-an
   when a test file's describe/it hierarchy disagrees with its tree
     then both are presented to the user for resolution
     and sync does not pick a side
+    and the functional journey verifies those signals deterministically without AI evaluation
   when stale trees or dead paths are found
     then they are discussed with the user before removal
   when gaps are identified
@@ -432,6 +433,7 @@ dual-harness-compatibility (src: .claude-plugin/plugin.json, .codex-plugin/plugi
     and Codex journey runs fail fast without DeepSeek provider auth
     and the journey harness distinguishes hook runner failures from ordinary agent command failures and test framework hook timeout output
     and the journey harness distinguishes structured Codex failures from ordinary transcript text and recoverable tool diagnostics
+    and the journey harness treats unavailable Codex tools as functional failures when a scenario forbids them
 ```
 
 ## diff-images-the-change
