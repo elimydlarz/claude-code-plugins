@@ -684,26 +684,21 @@ findings=$(validate-mental-model.sh)             <span class="co"># 7 named sect
         <span class="stagenum">3</span>
         <div class="stagewhen">Claude finishes its reply</div>
         <div class="stagemeta"><span class="hookbadge">Stop</span><span class="scr">stop-drift-check.sh</span><span class="chan chan-err">stderr · exit 2</span></div>
-        <p class="sub">As the model goes to hand the turn back to you, <code>Stop</code> fires. A loop guard runs first — it's what makes a hook that re-prompts on <em>every</em> turn safe. Then, if my reply ended in a question, a <em>question stop</em> re-prompts me to check it against the rules before it reaches you; otherwise the drift check runs.</p>
+        <p class="sub">As the model goes to hand the turn back to you, <code>Stop</code> fires. A loop guard runs first — it's what makes a hook that re-prompts on <em>every</em> turn safe. Then the drift check pushes the four reconciliation prompts back into the model before the turn completes.</p>
 <pre>INPUT=$(<span class="fn">cat</span>)                                   <span class="co"># the Stop event JSON, on stdin</span>
 
 <span class="co"># guard 1 — set when a hook's own exit 2 re-triggered the model.</span>
 <span class="co">#           bail, or we'd drift-check our own drift-check forever.</span>
 <span class="fn">jq</span> -e .stop_hook_active &lt;&lt;&lt;"$INPUT" &amp;&amp; <span class="fn">exit</span> 0
 
-<span class="co"># question stop — if my last reply ended in “?”, don't just hand it over:</span>
-<span class="co">#           re-prompt me to answer it from the rules before bothering you.</span>
-last=$(<span class="fn">jq</span> -rs '<span class="st">last assistant text | trim | final char</span>' "$transcript_path")
-[ "$last" = "?" ] &amp;&amp; { <span class="fn">echo</span> "QUESTION STOP: do the rules, mental model, and trees already answer this? if so, decide and act — only ask when genuinely under-determined." &gt;&amp;2; <span class="fn">exit</span> 2; }
-
-<span class="co"># otherwise — push back the four reconciliation prompts and force a turn</span>
+	<span class="co"># push back the four reconciliation prompts and force a turn</span>
 <span class="fn">echo</span> "MENTAL MODEL: did this task reveal knowledge not in the docs?" &gt;&amp;2
 <span class="fn">echo</span> "TEST TREES:   have trees and implementation drifted?"          &gt;&amp;2
 <span class="fn">echo</span> "CLAUDE.md:    has it drifted from reality?"                     &gt;&amp;2
 <span class="fn">echo</span> "README:       is it out of date now?"                          &gt;&amp;2
 <span class="fn">exit</span> 2                                          <span class="co"># → Claude must answer before stopping</span></pre>
         <div class="impact">
-          <p><span class="lbl">Why</span> Docs rot because nothing checks them at the moment of change. This makes the check immediate and unavoidable — while the loop guard stops it repeating, and the question stop turns a reflexive “which way?” back into a decision I should make from the rules before it reaches you.</p>
+          <p><span class="lbl">Why</span> Docs rot because nothing checks them at the moment of change. This makes the check immediate and unavoidable, while the loop guard stops it repeating.</p>
           <p><span class="lbl">Impact</span> After every substantive response, the trees, mental model, CLAUDE.md, and README are reconciled against what just changed before the model is allowed to rest.</p>
         </div>
         <details class="real">

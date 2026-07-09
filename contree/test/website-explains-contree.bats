@@ -39,7 +39,7 @@ SITE="$PROJECT_ROOT/website/index.html"
   assert_output --partial "additionalContext"
   assert_output --partial "loop guard"
   assert_output --partial "stop_hook_active"
-  assert_output --partial "QUESTION STOP"
+  assert_output --partial "four reconciliation prompts"
 }
 
 @test "the page requires no build step" {
