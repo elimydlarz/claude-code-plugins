@@ -354,7 +354,7 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
       and the starting agent's own session id is printed to stdout for injection into context
       and every other session's timecard is read and classified by heartbeat age, the starting session excluded
       when active cards are present
-        then their labelled summary is appended to coordinate around automatic clock-ins
+        then their labelled summary is appended to coordinate around automatic session presence
       when only stale cards are present
         then only the own-id is printed because stale cards are not session summaries
       when only reapable cards (or none) remain
