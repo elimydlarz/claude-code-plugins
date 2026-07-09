@@ -81,6 +81,17 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   refute_output --partial "baseURL = \"http://localhost:3001\""
   refute_output --partial "\"**objbinMigrations/**\""
   assert_output --partial "\"mutate\": [\"**/*.cs\", \"!**/obj/**\", \"!**/bin/**\", \"!**/Migrations/**\"]"
+  refute_output --partial "test.unit"
+  refute_output --partial "test.integration"
+  refute_output --partial "--tag domain"
+  refute_output --partial "--tag system"
+  refute_output --partial "tests/domain/"
+  refute_output --partial "tests/system/"
+  refute_output --partial "go test -tags=integration"
+  refute_output --partial "go test -short"
+  refute_output --partial "dependsOn(testing.suites.named(\"systemTest\"))"
+  refute_output --partial "\"break\": 0"
+  refute_output --partial "|| (docker compose"
 }
 
 @test "setup chooses test frameworks but asks before choosing the application framework" {
