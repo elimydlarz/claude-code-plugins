@@ -113,7 +113,7 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
 
 @test "change wires the real driven adapter for System tests, never the in-memory twin, even when a Use-case in-memory twin exists" {
   run cat "$SKILL"
-  assert_output --partial "System tests do NOT lean on the in-memory adapter"
+  assert_output --partial "System tests do not lean on the in-memory twin"
   assert_output --partial "wire real driven adapters and exercise real infrastructure"
-  assert_output --partial "dilute System tests into slow Use-case tests"
+  assert_output --partial "System tests and production wire real adapters"
 }
