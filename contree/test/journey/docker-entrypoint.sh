@@ -401,7 +401,7 @@ JS
     start_openai_image_stub
 
     run_agent \
-      "Run /contree:diff-for-humans to generate an image of the current change. Use the skill's curl/OpenAI images API recipe exactly so the local mocked gpt-image-2 endpoint is exercised. Do not use any built-in image-generation tool or generated_images mechanism."
+      "Run only /contree:diff-for-humans for the current staged change. This is not setup, workflow, sync, tdd, second-opinion, or project implementation work. Do not install packages, do not create TEST_TREES.md, do not create README.md, do not create MENTAL_MODEL.md, and do not change source code except writing the returned image file. Read skills/diff-for-humans/SKILL.md, gather the staged git diff, call the skill's curl/OpenAI images API recipe exactly against OPENAI_BASE_URL with model gpt-image-2-2026-04-21, decode data[0].b64_json, save the png, and stop."
 
     kill "$OPENAI_STUB_PID" 2>/dev/null || true
 
@@ -415,7 +415,7 @@ JS
       called="FAIL — no mocked gpt-image-2 images/generations call recorded"
       pass=0
     fi
-    if grep -rlF "$STUB_MARKER" "$PROJECT_DIR" --exclude-dir=.git >/dev/null 2>&1; then
+    if grep -rlF "$STUB_MARKER" "$PROJECT_DIR" --exclude-dir=.git --exclude-dir=.codex --exclude-dir=.codex-home --exclude='docker-entrypoint.sh' >/dev/null 2>&1; then
       saved="PASS — the returned image bytes were saved to a file in the project"
     else
       saved="FAIL — no file containing the returned image bytes was found"
