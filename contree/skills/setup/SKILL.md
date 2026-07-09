@@ -76,7 +76,7 @@ Configure one normal test command and one functional test command using native p
 - `test` or the language's default test command runs Unit, Port contract, Adapter, and Component tests.
 - `test:functional` or the closest native equivalent runs System and Journey tests.
 - System and Journey tests do not run automatically from the normal test command.
-- Component tests run in-process with real driving and driven adapters, with external services doubled only at the edge.
+- Component tests run in-process with real driving and driven adapters, with external services doubled only at the edge; they need no external services.
 - System and Journey wire real driven adapters at the highest tolerable realism.
 - Tree-style output is configured for both commands where the framework can produce it.
 - If no tests exist yet, the empty suite output is enough to verify command wiring.
@@ -104,7 +104,7 @@ Install appropriate mutation testing tool (see Mutation Testing Reference below)
 
 ### 7. CONFIGURE LINTING
 
-Configure normal lint and hex-boundary lint together. The outcome is one combined lint command that CI can run.
+Configure a normal linter and hex-boundary lint together. The outcome is one combined lint command that CI can run.
 
 For normal lint, use the project's language conventions:
 
