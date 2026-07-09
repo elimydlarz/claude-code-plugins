@@ -137,20 +137,13 @@ export function clockIn(repoRoot: string, plan: ClockInPlan, task: string | null
   const dir = join(repoRoot, ".trunk-sync", "timeclock");
   mkdirSync(dir, { recursive: true });
   const filePath = join(repoRoot, plan.timecardPath);
-  // Preserve clockedInAt and agent-authored progress from existing timecard if present
   let timecard = { ...plan.timecard, task };
   try {
     const existing = JSON.parse(readFileSync(filePath, "utf-8")) as Timecard;
     if (existing.clockedInAt) {
       timecard = { ...timecard, clockedInAt: existing.clockedInAt };
     }
-    timecard = {
-      ...timecard,
-      lastStep: existing.lastStep ?? null,
-      remainingSteps: existing.remainingSteps ?? null,
-    };
   } catch {
-    // No existing file — use plan's clockedInAt and null progress
   }
   writeFileSync(filePath, JSON.stringify(timecard, null, 2) + "\n");
 }
@@ -173,15 +166,12 @@ export function readTimecards(repoRoot: string): Timecard[] {
 }
 
 /**
- * Build the session-start message: hand the starting agent its own session id and the
- * record-progress instruction, then append the handover roster of active + stale sessions.
+ * Build the session-start message: hand the starting agent its own session id, then append the handover roster of active + stale sessions.
  * Returns null only when no session id is available.
  */
-export function runSessionStart(repoRoot: string, ownSessionId: string | null, progressCommand: string): string | null {
+export function runSessionStart(repoRoot: string, ownSessionId: string | null): string | null {
   if (!ownSessionId) return null;
-  const intro =
-    `TRUNK-SYNC SESSION: your session id is ${ownSessionId}. Record your progress as you work and before you pause:\n` +
-    `  ${progressCommand} ${ownSessionId} --last "<step you just finished>" --next "<steps still to do>"`;
+  const intro = `TRUNK-SYNC SESSION: your session id is ${ownSessionId}.`;
   const now = new Date();
   const { active, stale } = classifyTimecards(ownSessionId, readTimecards(repoRoot), now);
   const roster = formatSessionStartSummary(active, stale, now);
@@ -201,7 +191,7 @@ export function runStop(state: RepoState, sessionId: string | null): void {
   try {
     card = JSON.parse(readFileSync(cardPath, "utf-8")) as Timecard;
   } catch {
-    return; // no card — a session that never edited has no handover to keep alive
+    return; // no card — a session that never edited has no timecard to keep alive
   }
 
   const age = Date.now() - new Date(card.lastActiveAt).getTime();

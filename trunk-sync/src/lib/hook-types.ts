@@ -59,8 +59,6 @@ export interface Timecard {
   lastActiveAt: string; // ISO 8601 — the heartbeat; liveness is its age, never a PID
   branch: string;
   task: string | null; // what the agent is working on (from transcript)
-  lastStep: string | null; // last step the agent completed (agent-authored via progress recorder)
-  remainingSteps: string | null; // steps the agent still has to do (agent-authored via progress recorder)
 }
 
 /** Plan for clocking in (writing/updating a timecard) */
