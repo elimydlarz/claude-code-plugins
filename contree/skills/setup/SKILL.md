@@ -60,74 +60,67 @@ Present the chosen test framework with the evidence and tree-output quality behi
 
 ### 4. DETERMINE TEST STRATEGY
 
-Confirm how conventions apply to this project:
+The fixed Contree test strategy is set by the harness rules. Setup maps it to the project's framework conventions:
 
-- Domain tests: colocated with source, `*.domain.test.*`
-- Use-case tests: colocated with source, `*.use-case.test.*`
-- Adapter tests: colocated with the adapter (driving or driven), `*.adapter.test.*`
-- System tests: `test/system/` at project root, `*.system.test.*`
-- Journey tests: `test/journey/` at project root, `*.journey.test.*`
-- Shared port contract suites: colocated with the port interface, `*.contract.ts` (not a test file — a suite imported by both the in-memory and real adapter tests)
-- Tree-style output at every layer
+- **Normal tests** run automatically from the project's default test command. They include Unit, Port contract, Adapter, and Component tests.
+- **Functional tests** run from a separate command. They include System and Journey tests and are not part of the default test command.
+- **JS/TS, Python, PHP, Ruby** usually map this with filename globs or suites.
+- **JVM and .NET** usually map this with source sets, suites, or test projects.
+- **Go, Rust, Elixir, Bash, Swift** use native tags, directories, module filters, or wrapper scripts because their CLI output is flatter.
+- **Monorepos** expose the same two commands through workspace tasks and keep per-package configuration local.
 
-**Language-specific conventions that override defaults:**
-- **Rust**: Domain and Use-case tests live inside source (`#[cfg(test)] mod tests`); Adapter (driven), System, and Journey tests live in `tests/` at crate root — this is the language convention
-- **Go**: tests are always colocated (`foo_test.go` next to `foo.go`); Adapter (driven) tests use `*_integration_test.go` with `//go:build integration` tags; System and Journey tests live in `test/system/` and `test/journey/` (or `tests/...`) per convention
-- **Ruby/RSpec**: separated `spec/` directory is the overwhelming convention — follow it, subdivide by layer (`spec/domain/`, `spec/use_case/`, `spec/adapter/`, `spec/system/`, `spec/journey/`)
-- **Python**, **JS/TS**, **PHP**: both colocated and separated patterns work; prefer colocated for Domain, Use-case, Adapter
+### 5. CONFIGURE TEST COMMANDS
 
-**Monorepo strategy:**
-- Colocated test layers (Domain, Use-case, Adapter): stay with source in each package
-- System tests: at monorepo root `test/system/` if they exercise cross-package behaviour, or per-package if they test a single package
-- Journey tests: at monorepo root `test/journey/` — they span packages and capabilities by nature
-- Never create a single root-level test config that reaches into all packages — follow the monorepo tool's conventions (Turborepo tasks, Nx project graph, pnpm workspace scripts)
-- Prefer composed, direct per-package config over inherited base config.
+Configure one normal test command and one functional test command using native project commands: package.json scripts, Makefile targets, mix aliases, cargo aliases, Gradle tasks, composer scripts, or the ecosystem equivalent.
 
-### 5. CONFIGURE INNER TEST RUNNERS
+- `test` or the language's default test command runs Unit, Port contract, Adapter, and Component tests.
+- `test:functional` or the closest native equivalent runs System and Journey tests.
+- System and Journey tests do not run automatically from the normal test command.
+- Component tests run in-process with real driving and driven adapters, with external services doubled only at the edge.
+- System and Journey wire real driven adapters at the highest tolerable realism.
+- Tree-style output is configured for both commands where the framework can produce it.
+- If no tests exist yet, the empty suite output is enough to verify command wiring.
 
-Configure the Domain, Use-case, and Adapter layers as separate projects/configurations in the test runner. See the Framework Reference below for the Vitest projects example.
+If the config already has a `reporters` or `verbose` key, check whether changing it would break CI, such as removing a JUnit XML reporter. Present the conflict to the user rather than silently overwriting.
 
-**Do NOT skip. Do NOT rely on defaults. Do NOT overwrite existing config — merge into it.**
-
-If the config already has a `reporters` or `verbose` key, check whether changing it would break CI (e.g., removing a JUnit XML reporter). Present the conflict to the user rather than silently overwriting.
-
-### 6. CONFIGURE SYSTEM AND JOURNEY TEST RUNNERS
-
-Two functional layers, each its own command/config:
-
-- **System** — `test/system/`, `*.system.test.*` — whole app for a single capability
-- **Journey** — `test/journey/`, `*.journey.test.*` — the multi-capability user arc, the outside-in entry point
-- **Component** — `test/component/`, `*.component.test.*` — one capability in-process with real driving and driven adapters; needs no external services because externals are doubled at the edge, such as an in-memory database and stubbed outbound HTTP.
-- Both wire **real driven adapters** at the highest tolerable realism — never in-memory at these layers. Speed for combinatorial breadth comes from the cheap Use-case and Component layers, not from diluting these into in-memory tests.
-- Journey tests exercise real everything across the multi-capability arc at max realism.
-- exhaustive single-capability breadth belongs at the Use-case and Component layers.
-- Tree-style output; runnable independently from the inner layers and from each other
-- Higher timeouts — they assemble the whole app; the Journey is the slowest
-- Where real infrastructure is heavy, gate the heaviest runs behind a separate command (pre-release, not per-push) — but keep them real; do not substitute in-memory wiring to make them cheap
-
-**Determine whether a Docker harness is needed.** See the Docker Harness Reference below. Key question: do Adapter (driven), System, or Journey tests need external processes — databases, queues, HTTP servers? If yes, set up a Docker Compose harness. If the software is pure in-process, Docker is unnecessary.
+**Determine whether a Docker harness is needed.** See the Docker Harness Reference below. Key question: do Adapter, System, or Journey tests need external processes — databases, queues, HTTP servers? If yes, set up a Docker Compose harness behind the normal or functional command that needs it. If the software is pure in-process, Docker is unnecessary.
 
 When configuring Docker:
-- `docker-compose.yml` lives at project root (or `test/system/docker-compose.yml` if the project root is already crowded)
+- `docker-compose.yml` lives at project root, or `test/system/docker-compose.yml` if the project root is already crowded
 - Real-infra test scripts start compose, wait for readiness, run tests, tear down
-- Add a `test:system:real` script (or `test:adapter:real`) that orchestrates the full lifecycle
+- Functional scripts orchestrate the full lifecycle before running System and Journey tests
+- Normal scripts orchestrate the full lifecycle when Adapter tests need real external processes
 - Never assume Docker services are already running — the harness must be self-contained
 
-### 7. CONFIGURE MUTATION TESTING
+### 6. CONFIGURE MUTATION TESTING
 
 Install appropriate mutation testing tool (see Mutation Testing Reference below). Configure with:
 
 - Mutator targeting source files, **explicitly excluding test files** — if tests are colocated, the exclusion globs must match the naming convention exactly (e.g., `!src/**/*.domain.test.*`, `!src/**/*.use-case.test.*`, `!src/**/*.adapter.test.*`, `!src/**/*.contract.ts`). For TypeScript projects, include the precise layer suffixes: `!src/**/*.domain.test.ts`, `!src/**/*.use-case.test.ts`, `!src/**/*.adapter.test.ts`, `!src/**/*.component.test.ts`, `!src/**/*.system.test.ts`, `!src/**/*.journey.test.ts`, `!test/**/*.component.test.ts`, `!test/**/*.system.test.ts`, `!test/**/*.journey.test.ts`, and `!src/**/*.contract.ts`.
-- Domain and Use-case test runners only (Adapter and System tests are too slow for mutation testing)
+- Unit-level test runners only, using Domain and Use-case suffixes where the project already names those tests separately. Adapter, Component, System, and Journey tests are too slow for mutation testing.
 - Thresholds: `high: 80, low: 60, break: 50`
 - Incremental mode where available (stores state between runs for speed)
 - Add script/command (e.g., `npm run test:mutate`)
 
-### 8. CONFIGURE ARCHITECTURAL LINTER
+### 7. CONFIGURE LINTING
 
-Contree prescribes hexagonal architecture: domain is pure, I/O lives in adapters, dependencies point inward. Install a linter that enforces this so boundary violations break the build rather than the review.
+Configure normal lint and hex-boundary lint together. The outcome is one combined lint command that CI can run.
 
-The enforced rules are: Domain has no I/O, use-cases depend on ports/interfaces and not concrete adapters, and circular dependencies are rejected.
+For normal lint, use the project's language conventions:
+
+| Language | Normal lint |
+|---|---|
+| JS/TS | ESLint plus TypeScript checking when TypeScript is present |
+| Python | Ruff |
+| Ruby | RuboCop |
+| Go | `go vet` plus `staticcheck` when already present or acceptable to install |
+| Rust | `cargo clippy` |
+| Java / Kotlin | Gradle `check`, Checkstyle, ktlint, or the project's existing quality plugin |
+| PHP | PHPStan, Psalm, Pint, or the project's existing standard |
+
+Contree also prescribes hexagonal architecture: domain is pure, I/O lives in adapters, dependencies point inward. Install a hex-boundary linter that enforces this so boundary violations break the build rather than the review.
+
+The enforced hex-boundary lint rules are: Domain has no I/O, use-cases depend on ports/interfaces and not concrete adapters, and circular dependencies are rejected.
 
 **For JS/TS projects** — install dependency-cruiser:
 
@@ -170,13 +163,16 @@ Add a script and wire it into the project's lint command:
 ```json
 {
   "scripts": {
+    "lint:code": "eslint .",
     "lint:arch": "depcruise src --config .dependency-cruiser.cjs",
-    "lint": "... && pnpm lint:arch"
+    "lint": "pnpm lint:code && pnpm lint:arch"
   }
 }
 ```
 
-Ensure CI runs `pnpm lint` (or `pnpm lint:arch` directly) so architectural violations fail builds.
+This makes `lint:code` the normal lint command, `lint:arch` the hex-boundary lint command, and `lint` the combined lint command.
+
+Ensure CI runs `pnpm lint` or the ecosystem's combined lint command so normal and boundary violations fail the build.
 
 **For non-JS/TS projects** — recommend the language-native equivalent. Don't attempt to install without a template; tell the user the rules they need to enforce (no imports from domain into adapters; no imports from application into adapters) and name the tool:
 
@@ -189,56 +185,15 @@ Ensure CI runs `pnpm lint` (or `pnpm lint:arch` directly) so architectural viola
 
 State the limitation honestly: without contree-provided config, the user wires the rules themselves.
 
-### 9. SET UP CHANGED-TEST RUNNERS
+### 8. CREATE TEST_TREES.md
 
-Configure commands to run only tests affected by recent changes. Be aware of the gotchas — several "changed" flags silently run zero tests in common situations.
-
-**Framework-native support:**
-
-| Framework | Command | Gotcha |
-|---|---|---|
-| Vitest | `--changed` | Only tracks changed source files, NOT changed test files. If you edit a test without changing source, zero tests run. Use `--watch` for local TDD instead. |
-| Jest | `--onlyChanged` / `-o` | Uses `git status` — after committing, nothing is "changed" and zero tests run. Useless in CI. |
-| Jest | `--changedSince=main` | CI-appropriate. Requires `git fetch origin main` first (shallow clones break it). Use `origin/main` not `main`. |
-| pytest | `pytest-testmon` | Tracks dependencies via coverage.py. First run builds the map (slower). `.testmondata` goes in `.gitignore`. |
-| pytest | `--last-failed` | Built-in. Re-runs failures from previous run. Good complement to testmon. |
-| RSpec | `--only-failures` | Requires `example_status_persistence_file_path` in spec_helper. |
-| Go | `gotestsum --watch` | File watcher, re-runs on save. No git-aware mode. |
-| Rust | `cargo nextest run` + watchexec | No built-in changed mode. Use `watchexec -e rs -- cargo nextest run`. |
-
-**For local TDD**: prefer file watchers (`vitest --watch`, `gotestsum --watch`, `guard-rspec`, `watchexec`) over git-based `--changed` flags. Watchers are more reliable during rapid red-green cycles.
-
-**For CI**: use branch-comparison flags (`--changedSince=origin/main`, `nx affected:test`, `turbo run test --filter=...[origin/main]`). Ensure adequate git fetch depth.
-
-Commands should be simple to invoke — package.json scripts, Makefile targets, or mix aliases.
-
-### 10. CREATE TEST_TREES.md
-
-Create `TEST_TREES.md` at the project root if it does not already exist, containing a short header noting that the file holds the project's test trees and that new trees should be added as `###` subsections using EARS patterns.
+Create `TEST_TREES.md` at the project root if it does not already exist, containing a short header noting that the file holds the project's test trees.
 
 **Do not compose the trees yourself in this step.** Setup prepares the project. It does not define requirements.
 
 **Do not create any `*.test.*` or `*.spec.*` files in this step**, not even with `.todo`/`.skip` stubs. Tests are the `tdd` skill's output.
 
-### 11. UPDATE CLAUDE.md
-
-Add or update the following sections:
-
-- A pointer line identifying `TEST_TREES.md` as the definition of the project's test trees. If `CLAUDE.md` already references `TEST_TREES.md`, do not duplicate the pointer.
-- Testing commands section with:
-  - Command to run Domain tests with tree output
-  - Command to run Use-case tests with tree output
-  - Command to run Adapter tests with tree output (driving and driven)
-  - Command to run System tests with tree output (real driven adapters at the highest tolerable realism)
-  - Command to run Journey tests with tree output (the full multi-capability arc at max realism)
-  - Command to run only changed tests at each layer
-  - Command to run mutation testing (Domain + Use-case only)
-  - Outside-in TDD workflow summary
-  - Example tree structure for this project
-
-Configured examples must follow the setup rules: no copied comments, no env-var behaviour switches, and strong preference for composition over inheritance. Environment variables remain appropriate for secrets and external connection details because they configure boundaries rather than changing test/runtime behaviour.
-
-### 12. SCAFFOLD MENTAL_MODEL.md
+### 9. SCAFFOLD MENTAL_MODEL.md
 
 **This step is mandatory. Do not skip it.** If `MENTAL_MODEL.md` does not exist at the project root, create it now — before VERIFY — with exactly seven H2 sections.
 
@@ -258,72 +213,18 @@ The placeholders are replaced as the project accrues real content; their purpose
 
 Then add a pointer line to `CLAUDE.md` identifying `MENTAL_MODEL.md` as the definition of the project's mental model. If `CLAUDE.md` already references `MENTAL_MODEL.md`, do not duplicate the pointer.
 
-### 13. VERIFY
+### 10. VERIFY
 
-Run each layer's test suite and confirm tree-shaped output at each layer:
+Configured examples must follow the setup rules: no copied comments, no env-var behaviour switches, and strong preference for composition over inheritance. Environment variables remain appropriate for secrets and external connection details because they configure boundaries rather than changing test/runtime behaviour.
 
-- Domain (`*.domain.test.*`) — tree-shaped (or best available for the language)
-- Use-case (`*.use-case.test.*`) — tree-shaped
-- Adapter (`*.adapter.test.*`) — tree-shaped
-- System (`*.system.test.*`) — tree-shaped
-- Journey (`*.journey.test.*`) — tree-shaped
-- Mutation testing runs and produces a score report
+Run the configured commands and confirm tree-shaped output where the framework can produce it:
+
+- Normal test command — Unit, Port contract, Adapter, and Component tests
+- Functional test command — System and Journey tests
+- Combined lint command — normal lint and hex-boundary lint
+- Mutation testing command — unit-level mutation report
 
 **Do NOT create test files to verify the reporter.** If no tests exist yet, the empty suite's output (no tests found, reporter-formatted) is sufficient evidence that the reporter is wired correctly. Writing smoke tests or stubs violates the No test files rule. The `tdd` skill writes tests later, from the trees.
-
----
-
-## EARS Patterns
-
-Test trees use EARS (Easy Approach to Requirements Syntax) to choose the right keyword for each requirement. Match the pattern to the requirement's nature — don't force everything into `when/then`.
-
-**Ubiquitous** — always true, no condition:
-```
-then <outcome>
-```
-
-**State-driven** — active while a condition holds:
-```
-while <precondition>
-  then <outcome>
-```
-
-**Event-driven** — response to a trigger:
-```
-when <trigger>
-  then <outcome>
-```
-
-**Optional feature** — applies only when a feature is present:
-```
-where <feature>
-  then <outcome>
-```
-
-**Unwanted behaviour** — response to error or undesired situation:
-```
-if <condition>
-  then <outcome>
-```
-
-**Complex** — state + event combined:
-```
-while <precondition>
-  when <trigger>
-    then <outcome>
-```
-
-**Causal nesting** — when a trigger can only occur as a consequence of a prior outcome, nest it under that outcome:
-```
-when <trigger>
-  then <outcome>
-    when <consequence of outcome>
-      then <next outcome>
-```
-
-A `when` that depends on a preceding `then` is not a sibling — it is a child. If "refresh fails" can only happen because "refresh was attempted", nest it under the `then` that attempts the refresh.
-
-Choose the pattern that fits: a system constraint is ubiquitous; a precondition that must hold is state-driven; a discrete trigger is event-driven; an error case is unwanted behaviour; a feature flag is optional. Combine when needed. Nest when one behaviour depends on another's outcome.
 
 ---
 
