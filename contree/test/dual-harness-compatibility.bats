@@ -78,27 +78,6 @@ load test_helper
   done <<< "$commands"
 }
 
-# --- when an Edit, Write, MultiEdit, or apply_patch tool call completes ---
-
-@test "then the PostToolUse matcher fires" {
-  run jq -r '.hooks.PostToolUse[0].matcher' "$PROJECT_ROOT/hooks/hooks.json"
-  assert_success
-  assert_output "Edit|Write|MultiEdit|apply_patch"
-}
-
-@test "and the PostToolUse hook accepts Codex apply_patch stdin" {
-  local project="$BATS_TEST_TMPDIR/project"
-  mkdir -p "$project"
-  printf '## Glossary\n\n- one\n' > "$project/MENTAL_MODEL.md"
-  local input
-  input=$(jq -nc --arg patch $'*** Begin Patch\n*** Update File: MENTAL_MODEL.md\n@@\n-old\n+new\n*** End Patch\n' '{tool_name:"apply_patch", tool_input:{command:$patch}}')
-
-  run env CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" CLAUDE_PROJECT_DIR="$project" INPUT="$input" \
-    bash -c 'printf "%s" "$INPUT" | bash "$CLAUDE_PLUGIN_ROOT/hooks/post-update-check.sh"'
-  assert_success
-  assert_output --partial "PostToolUse"
-}
-
 # --- when the Stop hook fires ---
 
 @test "then hooks.json wires it to hooks/stop-drift-check.sh" {
