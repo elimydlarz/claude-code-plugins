@@ -120,6 +120,10 @@ CONFIG
   CODEX_DEEPSEEK_PROXY_PORT="$CODEX_DEEPSEEK_PROXY_PORT" node "$CONTREE_ROOT/test/journey/codex-deepseek-responses-proxy.mjs" &
   CODEX_DEEPSEEK_PROXY_PID=$!
   trap 'kill "$CODEX_DEEPSEEK_PROXY_PID" 2>/dev/null || true' EXIT
+  for _ in $(seq 1 50); do
+    curl -fsS "http://127.0.0.1:$CODEX_DEEPSEEK_PROXY_PORT/health" >/dev/null 2>&1 && break
+    sleep 0.1
+  done
 }
 
 AGENT_CALL_COUNT=0
