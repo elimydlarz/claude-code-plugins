@@ -81,11 +81,14 @@ docker build -q -t "$IMAGE_NAME" -f "$SCRIPT_DIR/Dockerfile" "$TEST_DIR"
 run_pair() {
   local name="$1"
   local harness="$2"
+  local docker_env_args=("${DOCKER_LLM_ENV[@]}")
+  if [ "${#DOCKER_CODEX_ENV[@]}" -gt 0 ]; then
+    docker_env_args+=("${DOCKER_CODEX_ENV[@]}")
+  fi
   echo "=== Starting: $name ($harness) ==="
   if docker run --rm \
     --name "contree-test-${name}-${harness}-$$" \
-    "${DOCKER_LLM_ENV[@]}" \
-    "${DOCKER_CODEX_ENV[@]}" \
+    "${docker_env_args[@]}" \
     -e "ZAI_API_KEY=${ZAI_API_KEY:-}" \
     -v "$REPO_ROOT:/repo:ro" \
     -v "$SCRIPT_DIR:/output" \
