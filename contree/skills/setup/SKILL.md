@@ -241,6 +241,16 @@ Run the configured commands and confirm tree-shaped output where the framework c
 
 ## Framework Reference
 
+The examples in this reference must obey the setup process above and the session-start rules:
+
+- Configure exactly one normal command and one functional command.
+- Keep Unit, Port contract, Adapter, and Component in the normal command.
+- Keep System and Journey in the functional command.
+- Do not add per-layer test commands during setup.
+- Do not use environment variables to switch behaviour between test and runtime. Environment variables are only for secrets and external connection details.
+- Do not copy example comments into generated config or tests.
+- Prefer composition patterns over inherited test classes.
+
 ### Tree Output Support
 
 **True tree output** (nested indentation): Vitest, Jest, Mocha, RSpec, Gradle test-logger-plugin (mocha theme), Maven tree-reporter
