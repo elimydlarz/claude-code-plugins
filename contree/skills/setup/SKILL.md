@@ -815,27 +815,26 @@ describe "when empty" do
 end
 ```
 
-**Test separation — tags:**
+**Normal and functional command mapping:**
 ```elixir
-ExUnit.start(trace: true, exclude: [:integration])
+ExUnit.start(trace: true, exclude: [:functional])
 ```
 
 ```elixir
-@moduletag :integration
+@moduletag :functional
 ```
 
 ```bash
 mix test
-mix test --include integration
-mix test --only integration
+mix test --only functional
 ```
 
 **Mix aliases** for convenience in `mix.exs`:
 ```elixir
 defp aliases do
   [
-    "test.unit": ["test --exclude integration"],
-    "test.integration": ["test --only integration"],
+    "test": ["test --exclude functional"],
+    "test.functional": ["test --only functional"],
   ]
 end
 ```
