@@ -564,32 +564,61 @@ VERIFY
     seed_project "describe-it-drift"
 
     run_agent \
-      "Check this project for drift between the test trees and the test files. When you find describe/it drift, present both sides and ask which side is authoritative. Do not silently choose a side, and do not modify files."
+      "Check this project for drift between the test trees and the test files. When you find describe/it drift, present both sides and ask which side is authoritative in your assistant response. Do not call request_user_input. Do not silently choose a side, and do not modify files."
 
-    write_verify << 'VERIFY'
-Evaluate the transcript against the `sync-audits-and-resolves` tree,
-specifically the describe/it drift case.
+    pass=1
+    if grep -Eiq "(/contree:sync|sync process|drift between the test trees|drift detected)" "$TRANSCRIPT_FILE"; then
+      follows_sync="PASS — transcript follows the sync/drift process"
+    else
+      follows_sync="FAIL — transcript does not show sync/drift process"
+      pass=0
+    fi
+    if grep -Eiq "describe/it.*drift|describe.*it.*does not (mirror|match)|hierarchy.*drift" "$TRANSCRIPT_FILE"; then
+      identifies_drift="PASS — transcript identifies describe/it hierarchy drift"
+    else
+      identifies_drift="FAIL — transcript does not identify describe/it hierarchy drift"
+      pass=0
+    fi
+    if grep -q "when called with an https URL" "$TRANSCRIPT_FILE" \
+      && grep -q "then the canonical form is returned" "$TRANSCRIPT_FILE" \
+      && grep -q "if called with a non-URL string" "$TRANSCRIPT_FILE" \
+      && grep -q "then InvalidUrl is thrown" "$TRANSCRIPT_FILE" \
+      && grep -q "URL handling" "$TRANSCRIPT_FILE" \
+      && grep -q "returns canonical https form" "$TRANSCRIPT_FILE" \
+      && grep -q "throws for garbage input" "$TRANSCRIPT_FILE"; then
+      presents_both="PASS — transcript presents both tree paths and test-file describe/it structure"
+    else
+      presents_both="FAIL — transcript does not present both tree and test-file structures"
+      pass=0
+    fi
+    if grep -Eiq "which side is authoritative|should I align the test file|update the tree to match" "$TRANSCRIPT_FILE"; then
+      asks_authority="PASS — transcript asks which side is authoritative"
+    else
+      asks_authority="FAIL — transcript does not ask which side is authoritative"
+      pass=0
+    fi
+    if grep -q "request_user_input is unavailable" "$TRANSCRIPT_FILE"; then
+      no_unavailable_tool="FAIL — transcript attempted unavailable request_user_input"
+      pass=0
+    else
+      no_unavailable_tool="PASS — transcript did not attempt unavailable request_user_input"
+    fi
 
-The fixture: one tree named `Bookmark` with paths
-  `parseUrl / when called with an https URL / then the canonical form is returned`
-  `parseUrl / if called with a non-URL string / then InvalidUrl is thrown`
-and a test file `src/bookmark.domain.test.js` whose describe/it hierarchy is
-  `Bookmark / URL handling / returns canonical https form`
-  `Bookmark / URL handling / throws for garbage input`
-The code and the tree agree — only the test file's structure has drifted.
+    write_verify <<VERIFY
+describe-it-drift — deterministic verification (no AI eval):
 
-Expected signals in the transcript:
+  $follows_sync
+  $identifies_drift
+  $presents_both
+  $asks_authority
+  $no_unavailable_tool
 
-  - the agent invokes /contree:sync or follows the sync process
-  - the agent identifies describe/it drift — the test file's describe/it hierarchy
-    does not mirror the tree verbatim
-  - the agent presents BOTH the tree paths AND the test file's describe/it structure
-    to the user
-  - the agent asks the user which side is authoritative — does NOT silently pick
-
-For each expected signal, return PASS / FAIL / N/A with quoted evidence.
-Report counts at the end.
+These cover the describe/it drift path from sync-audits-and-resolves for this
+functional fixture: the agent follows sync, identifies structural test drift,
+presents both sides, and asks for authority without using unavailable Codex tools.
 VERIFY
+
+    [ "$pass" -eq 1 ] || { echo "describe-it-drift: FAILED deterministic checks" >&2; exit 1; }
     ;;
 
   *)
