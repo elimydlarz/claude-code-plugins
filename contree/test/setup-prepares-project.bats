@@ -41,6 +41,13 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "!src/**/*.domain.test.*"
   assert_output --partial "!src/**/*.use-case.test.*"
   assert_output --partial "!src/**/*.adapter.test.*"
+  assert_output --partial "!src/**/*.component.test.*"
+  assert_output --partial "!src/**/*.system.test.*"
+  assert_output --partial "!src/**/*.journey.test.*"
+  assert_output --partial "!test/**/*.component.test.*"
+  assert_output --partial "!test/**/*.system.test.*"
+  assert_output --partial "!test/**/*.journey.test.*"
+  assert_output --partial "!src/**/*.contract.ts"
 }
 
 @test "setup creates TEST_TREES.md and delegates tree composition to change" {
