@@ -18,7 +18,7 @@ scripts/trunk-sync-session-start.sh — SessionStart wrapper: exec node dist/lib
 scripts/trunk-sync-stop.sh    — Stop wrapper: exec node dist/lib/stop-entry.js
 scripts/sync-plugin-version.js — npm version hook: syncs plugin.json version from package.json
 
-src/lib/hook-types.ts         — types (HookInput, RepoState, HookPlan, Timecard: heartbeat lastActiveAt + lastStep/remainingSteps, no pid)
+src/lib/hook-types.ts         — types (HookInput, RepoState, HookPlan, Timecard: heartbeat lastActiveAt, branch, task, no pid)
 src/lib/hook-plan.ts          — pure decision logic (no I/O, no git); incl. classifyTimecards (heartbeat-age), formatSessionStartSummary
 src/lib/hook-plan.test.ts     — unit tests for pure logic (fast, no repos)
 src/lib/hook-execute.ts       — gathers git state, executes the plan; incl. runSessionStart, runStop (heartbeat), reapCards
@@ -31,10 +31,6 @@ src/cli.ts                    — CLI entry point, argv dispatch
 src/commands/seance.ts        — trunk-sync seance (default/--inspect/--list modes)
 src/commands/seance-codex.ts  — pure Codex rollout rewind logic (rewindCodexRollout), used by seance.ts
 src/commands/config.ts        — trunk-sync config (read/write .trunk-sync/config in the repo, committed+synced; target-branch defaults "agents", commit-transcripts defaults off)
-src/lib/progress.ts           — shared progress recorder (lastStep/remainingSteps into the timecard)
-src/lib/progress-entry.ts     — plugin-bundled progress recorder entry point
-src/commands/progress.ts      — trunk-sync progress CLI wrapper around the shared recorder
-src/commands/progress.test.ts — progress recorder tests (node:test)
 src/commands/config.test.ts   — config command tests (node:test)
 .transcripts/                 — session snapshots committed by hook (opt in via commit-transcripts=true)
 src/lib/git.ts                — shared git utilities (blame, parseFileRef, extractSessionId, findSnapshotInCommit)
@@ -43,7 +39,6 @@ src/commands/seance.test.ts   — integration tests (node:test)
 src/commands/seance-codex.test.ts — unit tests for rewindCodexRollout (node:test)
 
 test/trunk-sync.test.sh       — hook e2e test suite (TAP, temp repos + bare remote); System-layer, simulates hook stdin
-test/functional/              — real-CLI System test (Docker): drives the shared handover case through Claude and Codex harnesses, deterministic self-verify (manual, billable)
 test/local-setup.sh           — manual test setup
 test/local-cleanup.sh         — manual test teardown
 ```

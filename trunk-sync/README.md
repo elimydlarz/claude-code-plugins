@@ -4,7 +4,7 @@ A distributed file system for multi-agent software engineering, built on Git.
 
 Many Claude Code agents can work in the same repo at once — on worktrees, across remote machines, on [OpenClaw](https://openclaw.com), any mix. Everything stays in sync, agents work around each other, nothing gets left behind, and there's nothing manual to do. If you're confused about some code an agent wrote, you can summon its author with Seance.
 
-Two pieces: a **Claude Code / Codex CLI hook** that turns Git into continuous integration for agents, and a separate **CLI** with config, progress, and seance commands. The plugin bundles its own progress recorder for handover, so handover does not require the CLI to be installed globally.
+Two pieces: a **Claude Code / Codex CLI hook** that turns Git into continuous integration for agents, and a separate **CLI** with config and seance commands.
 
 ## Install
 
@@ -91,27 +91,19 @@ The active roster above is advisory context for who already holds work.
 
 Failing tests — not the timecard — are the authoritative signal of unfinished work. Cross-referencing them against who is still active tells a fresh agent which unfinished work is orphaned and safe to pick up; the cards are advisory context.
 
-## Handover — continue across sessions and context limits
+## Session Start — see active and stale sessions
 
-When a session is running low on context, it can hand off to the next one. At session start the hook gives the agent its own session id and shows it the exact bundled command to record progress:
-
-```bash
-<plugin-root>/scripts/trunk-sync-progress.sh <session-id> --last "implemented the parser" --next "wire the CLI and write tests"
-```
-
-That last step and remaining steps are written into the agent's timecard and committed/pushed like any other. When the next session starts — yours after a fresh start, or another agent's, on any machine — its SessionStart surfaces the handover:
+At session start the hook gives the agent its own session id and surfaces other committed timecards:
 
 ```
 TRUNK-SYNC HANDOVER: 1 other session has work in progress. Failing tests on the trunk are the
 authoritative signal of what is unfinished; the cards below are advisory context.
 - 43605dd6 on dev-macbook (branch: main, 3h ago) — stale, possibly disrupted: verify against the test suite before resuming — it may already be done
-    task: Add agent-authored progress to trunk-sync
-    last: implemented the parser
-    next: wire the CLI and write tests
+    task: Add timecards to trunk-sync
 Use the committed timecard as the handover summary. If transcript commits are enabled, `.transcripts/` carries the full session record for seance.
 ```
 
-So you can stop a session that's low on context — or one that crashes mid-task — and pick the work up in a fresh one without re-explaining where you were. Because liveness is a heartbeat rather than a live process, a disrupted session's work is surfaced as a resumable handover instead of being lost; abandoned cards are reaped only after 14 days.
+Because liveness is a heartbeat rather than a live process, a disrupted session's stale card remains visible for a later agent to verify against the tests before resuming; abandoned cards are reaped only after 14 days.
 
 ## Seance — summon the author of any line of code
 
