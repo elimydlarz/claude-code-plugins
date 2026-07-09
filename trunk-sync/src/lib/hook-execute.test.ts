@@ -395,7 +395,6 @@ describe("executePlan", () => {
         body: null,
       },
       sync: null,
-      clockIn: null,
     };
     const input = makeInput({ tool_input: { file_path: filePath } });
     const state = makeState(dir);
@@ -420,7 +419,6 @@ describe("executePlan", () => {
         body: `Session: ${sessionId}`,
       },
       sync: null,
-      clockIn: null,
     };
     const input = makeInput({ tool_input: { file_path: filePath }, session_id: sessionId });
     const state = makeState(dir);
@@ -441,7 +439,6 @@ describe("executePlan", () => {
         body: null,
       },
       sync: null,
-      clockIn: null,
     };
     const input = makeInput({ tool_input: { file_path: filePath } });
     const state = makeState(dir);
@@ -468,7 +465,6 @@ describe("executePlan", () => {
         body: null,
       },
       sync: null,
-      clockIn: null,
     };
     const input = makeInput();
     const state = makeState(dir);
@@ -515,7 +511,6 @@ describe("executePlan", () => {
       action: "commit-merge",
       message: "auto: resolve merge conflict in conflict.txt",
       sync: null,
-      clockIn: null,
     };
     const input = makeInput({ tool_input: { file_path: filePath } });
     const gitDir = execSync("git rev-parse --git-dir", { cwd: clone, encoding: "utf-8" }).trim();
@@ -560,7 +555,6 @@ describe("executePlan", () => {
       action: "commit-merge",
       message: "auto: resolve merge conflict",
       sync: null,
-      clockIn: null,
     };
     const input = makeInput({ tool_input: { file_path: join(clone, "conflict1.txt") } });
     const gitDir = execSync("git rev-parse --git-dir", { cwd: clone, encoding: "utf-8" }).trim();
@@ -583,7 +577,6 @@ describe("executePlan", () => {
         body: null,
       },
       sync: null,
-      clockIn: null,
     };
     const input = makeInput();
     const state = makeState(dir, { modifiedFiles: ["seed.txt"] });
@@ -609,7 +602,6 @@ describe("executePlan", () => {
         body: null,
       },
       sync: null,
-      clockIn: null,
     };
     const input = makeInput();
     const state = makeState(dir, { untrackedFiles: ["root-file.txt"] });
@@ -645,7 +637,6 @@ describe("executePlan", () => {
         body: null,
       },
       sync: null,
-      clockIn: null,
     };
     const input = makeInput({
       tool_input: { file_path: filePath },
@@ -672,7 +663,6 @@ describe("executePlan", () => {
         body: null,
       },
       sync: null,
-      clockIn: null,
     };
     const input = makeInput({
       tool_input: { file_path: filePath },
@@ -993,7 +983,6 @@ describe("amendWithTranscriptSnapshot", () => {
         body: null,
       },
       sync: null,
-      clockIn: null,
     };
     const input = makeInput({
       tool_input: { file_path: filePath },
@@ -1030,7 +1019,6 @@ describe("amendWithTranscriptSnapshot", () => {
         body: null,
       },
       sync: null,
-      clockIn: null,
     };
     const input = makeInput({
       tool_input: { file_path: filePath },
@@ -1061,7 +1049,6 @@ describe("amendWithTranscriptSnapshot", () => {
         body: null,
       },
       sync: null,
-      clockIn: null,
     };
     const input = makeInput({
       tool_input: { file_path: filePath },
@@ -1090,7 +1077,6 @@ describe("amendWithTranscriptSnapshot", () => {
         body: null,
       },
       sync: null,
-      clockIn: null,
     };
     const input = makeInput({ tool_input: { file_path: filePath } });
     const state = makeState(dir);
@@ -1118,7 +1104,6 @@ describe("amendWithTranscriptSnapshot", () => {
         body: null,
       },
       sync: null,
-      clockIn: null,
     };
     const input = makeInput({ tool_input: { file_path: filePath }, transcript_path: transcriptPath });
     const state = makeState(dir);
@@ -1143,7 +1128,6 @@ describe("amendWithTranscriptSnapshot", () => {
         body: null,
       },
       sync: null,
-      clockIn: null,
     };
     const input = makeInput({
       tool_input: { file_path: filePath },
