@@ -190,7 +190,7 @@ write_verify() {
 
 assert_no_hook_runner_errors() {
   local matches
-  matches="$(grep -Ein "hook .*failed|hook exited with code|hook.*command not found|exec: .*: not found" "$TRANSCRIPT_FILE" || true)"
+  matches="$(grep -Ein "(SessionStart|Stop|PreToolUse|PostToolUse|UserPromptSubmit|Notification) hook \(failed\)|hook exited with code|exec: .*: not found" "$TRANSCRIPT_FILE" || true)"
   if [ -n "$matches" ]; then
     echo "Hook runner error found in $TRANSCRIPT_FILE:" >&2
     printf '%s\n' "$matches" >&2
@@ -311,7 +311,7 @@ case "$TEST_NAME" in
     echo ""
     echo "=== Phase 1: setup ==="
     run_agent \
-      "This project has no code yet — read CLAUDE.md for the Mental Model, then run /contree:setup to configure the test framework and generate test trees. This project has HTTP endpoints and a persistence port, so expect trees at multiple layers."
+      "This project has no code yet — read CLAUDE.md for the Mental Model, then run /contree:setup to configure the test framework and generate test trees. This project has HTTP endpoints and a persistence port, so expect trees at multiple layers. Configure mutation testing if setup calls for it, but do not execute Stryker in this run."
 
     echo ""
     echo "=== Phase 2: workflow (change → sync → tdd) ==="
