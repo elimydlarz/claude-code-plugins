@@ -542,7 +542,7 @@ pip install pytest-spec pytest-describe
 
 ```toml
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["src", "test"]
 addopts = "--spec --strict-markers"
 
 describe_prefixes = ["describe_", "context_", "when_"]
@@ -554,9 +554,8 @@ spec_failure_indicator = "-"
 spec_skipped_indicator = "?"
 
 markers = [
-    "domain: Fast isolated domain-layer tests",
-    "system: Whole-app system tests against real infra",
-    "slow: Tests taking >5s",
+    "normal: Unit, Port contract, Adapter, and Component tests",
+    "functional: System and Journey tests",
 ]
 strict_markers = true
 ```
@@ -571,30 +570,26 @@ def describe_wallet():
 
 **pytest-spec** formats the output as indented tree. They compose — use both together for best results.
 
-**Separating domain and system tests:**
+**Normal and functional command mapping:**
 ```
-tests/
-  domain/
-    conftest.py
-    test_models.py
+src/
+  wallet/
+    wallet.domain.test.py
+    save_wallet.use_case.test.py
+    postgres_wallet.adapter.test.py
+test/
+  component/
+    wallet.component.test.py
   system/
-    conftest.py
-    test_api.py
-  conftest.py
+    wallet.system.test.py
+  journey/
+    checkout.journey.test.py
 ```
 
-Auto-mark by directory in `tests/domain/conftest.py`:
-```python
-import pytest
-def pytest_collection_modifyitems(items):
-    for item in items:
-        item.add_marker(pytest.mark.domain)
-```
-
-Run independently:
+Configure the project commands:
 ```bash
-pytest tests/domain/
-pytest tests/system/
+pytest src test/component
+pytest test/system test/journey
 ```
 
 **Changed-test runner — pytest-testmon:**
@@ -615,8 +610,8 @@ pip install mutmut
 ```toml
 [tool.mutmut]
 paths_to_mutate = ["src/"]
-tests_dir = ["tests/"]
-runner = "python -m pytest -x --tb=short -q"
+tests_dir = ["src/"]
+runner = "python -m pytest src -x --tb=short -q"
 do_not_mutate = [
     "src/*/migrations/*",
     "src/*/config.py",
