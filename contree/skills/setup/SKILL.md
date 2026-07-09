@@ -1330,28 +1330,27 @@ export DATABASE_URL="postgres://test:test@localhost:5433/test"
 export REDIS_URL="redis://localhost:6380"
 
 
-npm run test:system
+npm run test:functional
 ```
 
 #### package.json scripts (Node.js)
 
 ```json
 {
-  "test:system": "vitest run --project system",
-  "test:system:docker": "bash test/system/run-docker.sh",
-  "test:system:ci": "bash test/system/run-docker.sh"
+  "test": "vitest run",
+  "test:functional": "bash test/functional/run-docker.sh"
 }
 ```
 
 #### Makefile (language-agnostic)
 
 ```makefile
-.PHONY: test-system
-test-system:
-	docker compose -f test/system/docker-compose.yml up -d --wait
+.PHONY: test-functional
+test-functional:
+	docker compose -f test/functional/docker-compose.yml up -d --wait
 	DATABASE_URL=postgres://test:test@localhost:5433/test \
-	  pytest tests/system/ || (docker compose -f test/system/docker-compose.yml down -v; exit 1)
-	docker compose -f test/system/docker-compose.yml down -v
+	  pytest tests/system tests/journey || (docker compose -f test/functional/docker-compose.yml down -v; exit 1)
+	docker compose -f test/functional/docker-compose.yml down -v
 ```
 
 ---
