@@ -69,6 +69,17 @@ The fixed Contree test strategy is set by the harness rules. Setup maps it to th
 - **Go, Rust, Elixir, Bash, Swift** use native tags, directories, module filters, or wrapper scripts because their CLI output is flatter.
 - **Monorepos** expose the same two commands through workspace tasks and keep per-package configuration local.
 
+Default naming when the ecosystem does not force another convention:
+
+- Domain tests are colocated with source as `*.domain.test.*`.
+- Use-case tests are colocated with the use-case as `*.use-case.test.*`.
+- Adapter tests are colocated with the driving or driven adapter as `*.adapter.test.*`.
+- Component tests live under `test/component/` as `*.component.test.*`.
+- System tests live under `test/system/` as `*.system.test.*`.
+- Journey tests live under `test/journey/` as `*.journey.test.*`.
+
+Journey tests exercise real everything across the multi-capability arc at max realism. Component tests exercise one capability in-process with real driving and driven adapters, an in-memory database, and stubbed outbound HTTP. Exhaustive single-capability breadth belongs at the Use-case and Component layers.
+
 ### 5. CONFIGURE TEST COMMANDS
 
 Configure one normal test command and one functional test command using native project commands: package.json scripts, Makefile targets, mix aliases, cargo aliases, Gradle tasks, composer scripts, or the ecosystem equivalent.
