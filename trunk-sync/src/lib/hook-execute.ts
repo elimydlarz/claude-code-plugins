@@ -252,7 +252,7 @@ function syncBestEffort(state: RepoState): void {
 function formatConflictRoster(state: RepoState, ownSessionId: string | null): string | null {
   const now = new Date();
   const { active } = classifyTimecards(ownSessionId, readTimecards(state.repoRoot), now);
-  return formatClockInMessage(active, now, false);
+  return formatClockInMessage(active, now);
 }
 
 /**
