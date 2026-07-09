@@ -25,24 +25,17 @@ for env_file in "$SCRIPT_DIR/.env" "$REPO_ROOT/.env"; do
   [ -f "$env_file" ] && set -a && . "$env_file" && set +a
 done
 
-# Provider selection: DeepSeek (preferred) or Anthropic — same pattern as contree.
-if [ -n "${DEEPSEEK_API_KEY:-}" ]; then
-  export ANTHROPIC_BASE_URL="https://api.deepseek.com/anthropic"
-  export ANTHROPIC_AUTH_TOKEN="$DEEPSEEK_API_KEY"
-  export ANTHROPIC_MODEL="deepseek-v4-pro[1m]"
-  export ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-v4-pro[1m]"
-  export ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-v4-flash"
-  export CLAUDE_CODE_SUBAGENT_MODEL="deepseek-v4-flash"
-  DOCKER_LLM_ENV=(
-    -e ANTHROPIC_BASE_URL -e ANTHROPIC_AUTH_TOKEN -e ANTHROPIC_MODEL
-    -e ANTHROPIC_DEFAULT_SONNET_MODEL -e ANTHROPIC_DEFAULT_HAIKU_MODEL -e CLAUDE_CODE_SUBAGENT_MODEL
-  )
-else
-  if [ "${2:-claude}" = "claude" ] || [ "${1:-handover}" = "all" ]; then
-    : "${ANTHROPIC_API_KEY:?Set ANTHROPIC_API_KEY or DEEPSEEK_API_KEY for Claude functional runs}"
-  fi
-  DOCKER_LLM_ENV=(-e "ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}")
-fi
+: "${DEEPSEEK_API_KEY:?Set DEEPSEEK_API_KEY in .env for Trunk-Sync functional runs}"
+export ANTHROPIC_BASE_URL="https://api.deepseek.com/anthropic"
+export ANTHROPIC_AUTH_TOKEN="$DEEPSEEK_API_KEY"
+export ANTHROPIC_MODEL="deepseek-v4-pro[1m]"
+export ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-v4-pro[1m]"
+export ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-v4-flash"
+export CLAUDE_CODE_SUBAGENT_MODEL="deepseek-v4-flash"
+DOCKER_LLM_ENV=(
+  -e ANTHROPIC_BASE_URL -e ANTHROPIC_AUTH_TOKEN -e ANTHROPIC_MODEL
+  -e ANTHROPIC_DEFAULT_SONNET_MODEL -e ANTHROPIC_DEFAULT_HAIKU_MODEL -e CLAUDE_CODE_SUBAGENT_MODEL
+)
 
 TEST_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 NAME="${1:-handover}"
