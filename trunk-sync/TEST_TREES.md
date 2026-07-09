@@ -124,7 +124,7 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
       then it is classified reapable
 
   formatClockInMessage
-    when no other agent is active and this is not the first clock-in
+    when no other agent is active
       then null is returned
     when one other agent is active
       then a single-agent message is returned
