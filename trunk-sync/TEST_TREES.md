@@ -589,6 +589,7 @@ System: hook-sync (system: test/trunk-sync.test.sh; journey: test/functional/doc
       and the shared fixture carries minimal project docs so unrelated installed hooks have context
       and the real Codex CLI edits, records progress, and receives the handover
       and Codex session and hook logs are appended to the transcript for hook evidence
+      and Docker runs can use host Codex auth when `OPENAI_API_KEY` is absent
     then hook runner failures are rejected without matching ordinary command stderr
 
   every Edit/Write/Bash/apply_patch/local_shell tool use
