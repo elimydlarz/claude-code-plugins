@@ -38,7 +38,7 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/trunk-sync-session-start.sh",
-            "statusMessage": "Reading trunk-sync handover"
+            "statusMessage": "Reading trunk-sync active sessions"
           }
         ]
       }
