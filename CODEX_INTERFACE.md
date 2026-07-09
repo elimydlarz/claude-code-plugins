@@ -29,6 +29,8 @@ inherit = "all"
 - The harness writes an isolated `CODEX_HOME/config.toml` with a custom `deepseek` model provider, `wire_api = "responses"`, `env_key = "DEEPSEEK_API_KEY"`, and `base_url` pointing at the harness-local Responses boundary.
 - Current Codex rejects `wire_api = "chat"` and requires `wire_api = "responses"` for custom providers. DeepSeek does not expose `/v1/responses`, so Contree's functional harness starts `test/journey/codex-deepseek-responses-proxy.mjs` and points Codex at `http://127.0.0.1:<port>/v1`.
 - The local boundary forwards model calls to `https://api.deepseek.com/v1/chat/completions` with the same `DEEPSEEK_API_KEY` and maps the chat-completions message/tool-call shape back to the Responses event stream Codex expects.
+- Codex can emit Responses tool schemas that DeepSeek's chat-completions validator rejects, including tools with missing or null object schema fields. The harness boundary normalizes those schemas to object-shaped JSON Schema before forwarding.
+- Codex sends tool results back through Responses `input` items. The harness boundary feeds those results into the next DeepSeek chat-completions request as user context and skips prior assistant `function_call` input items so DeepSeek does not reject the conversation for unmatched `tool_calls`.
 - The harness fails fast when `DEEPSEEK_API_KEY` is missing instead of falling back to a Codex app/session account, `CODEX_API_KEY`, `OPENAI_API_KEY`, or copied `~/.codex/auth.json`.
 
 ## Hook Environment
