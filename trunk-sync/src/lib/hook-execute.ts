@@ -224,25 +224,7 @@ function tmpdir(): string {
   return process.env.TMPDIR || "/tmp";
 }
 
-const THROTTLE_MS = 5 * 60 * 1000; // 5 minutes
-
-/** How stale a heartbeat must be before the Stop hook refreshes and re-syncs it. */
-const HEARTBEAT_STALE_MS = 30 * 60 * 1000; // 30 minutes — half the active display window
-
-/**
- * Extract the agent's current task from the transcript (same logic as commit enrichment).
- * Returns null if transcript is unavailable or unparseable.
- */
-function extractTask(input: HookInput): string | null {
-  if (!input.transcript_path) return null;
-  const expanded = input.transcript_path.replace(/^~/, homedir());
-  try {
-    const content = readFileSync(expanded, "utf-8");
-    return extractTaskFromTranscript(content);
-  } catch {
-    return null;
-  }
-}
+const THROTTLE_MS = 5 * 60 * 1000;
 
 /**
  * Clock in, reap abandoned cards (heartbeat past the TTL), and check who else is active.
@@ -250,12 +232,11 @@ function extractTask(input: HookInput): string | null {
  */
 function executeClockIn(
   plan: ClockInPlan,
-  input: HookInput,
+  _input: HookInput,
   state: RepoState,
 ): string | null {
   try {
-    const task = extractTask(input);
-    clockIn(state.repoRoot, plan, task);
+    clockIn(state.repoRoot, plan);
     const allTimecards = readTimecards(state.repoRoot);
     const now = new Date();
     const { active, reapable } = classifyTimecards(
@@ -268,16 +249,12 @@ function executeClockIn(
       reapCards(state.repoRoot, reapable.map((tc) => tc.sessionId));
     }
 
-    // Stage timeclock directory (timecard + any removals)
     const timeclockDir = join(state.repoRoot, ".trunk-sync", "timeclock");
     try {
       execSync(`git add -- "${timeclockDir}"`, { cwd: state.repoRoot, stdio: "ignore" });
     } catch {
-      // best-effort
     }
 
-    // The first clock-in of a session always speaks (run the tests, resume WIP);
-    // the co-worker roster repeats at most once per throttle window.
     const lastWarning = readThrottleTimestamp(plan.timecard.sessionId);
     const nowMs = now.getTime();
     const isFirstClockIn = lastWarning === null;
@@ -290,7 +267,6 @@ function executeClockIn(
 
     return null;
   } catch {
-    // Clock-in is best-effort — never fail the hook
     return null;
   }
 }
