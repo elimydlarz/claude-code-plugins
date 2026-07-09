@@ -63,6 +63,16 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "no env-var behaviour switches"
   assert_output --partial "no config inheritance"
   assert_output --partial "reason-marked"
+  assert_output --partial "reason-marked mocks and stubs"
+  refute_output --partial "process.env.CI"
+  refute_output --partial "extends: true"
+  refute_output --partial "inherits ="
+  refute_output --partial "fall back"
+  refute_output --partial "|| true"
+  refute_output --partial "os.environ.get(\"APP_URL\""
+  refute_output --partial "baseURL = \"http://localhost:3001\""
+  refute_output --partial "\"**objbinMigrations/**\""
+  assert_output --partial "\"mutate\": [\"**/*.cs\", \"!**/obj/**\", \"!**/bin/**\", \"!**/Migrations/**\"]"
 }
 
 @test "setup chooses test frameworks but asks before choosing the application framework" {
