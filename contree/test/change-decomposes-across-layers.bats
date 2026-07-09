@@ -33,17 +33,16 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   assert_output --partial "edge"
 }
 
-@test "change teaches the 2x2: Use-case is to Component as Journey is to System" {
+@test "change teaches every layer as consumer-driven" {
   run cat "$SKILL"
-  assert_output --partial "Use-case is to Component as Journey is to System"
-  assert_output --partial "behaviour-oriented"
-  assert_output --partial "system-oriented"
+  assert_output --partial "every layer is consumer-driven"
+  assert_output --partial "higher-level tree and failing test create the demand for the next inner unit"
 }
 
 @test "change treats Use-case and Component as always-written exhaustive coverage, System and Journey as selective" {
   run cat "$SKILL"
   assert_output --partial "always written and exhaustive"
-  assert_output --partial "Use-case and Component carry exhaustive coverage"
+  assert_output --partial "Component and Use-case carry exhaustive"
   assert_output --partial "System and Journey validate the same surfaces with real everything, selectively"
 }
 
