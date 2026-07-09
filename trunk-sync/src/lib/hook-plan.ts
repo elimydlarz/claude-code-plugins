@@ -289,7 +289,7 @@ export function formatClockInMessage(
 
   if (isFirstClockIn) {
     sections.push(
-      "TRUNK-SYNC WIP: Run the test suite before starting. Failing tests are the authoritative signal of unfinished work — any failing test not owned by a currently-active agent is WIP for you to resume. The active roster above is advisory context for who already holds work.",
+      "TRUNK-SYNC WIP: Run the test suite before starting. Failing tests are the authoritative signal of unfinished work — any failing test not owned by a currently-active agent is WIP for you to resume. The active roster above is advisory context for who is present.",
     );
   }
 
