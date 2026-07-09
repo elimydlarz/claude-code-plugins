@@ -1185,16 +1185,15 @@ describe("clockIn", () => {
         clockedInAt: "2026-03-27T10:00:00.000Z",
         lastActiveAt: "2026-03-27T10:05:00.000Z",
         branch: "main",
-        task: null,
       },
     };
-    clockIn(dir, plan, "Fix the login bug");
+    clockIn(dir, plan);
     const filePath = join(dir, ".trunk-sync", "timeclock", "test-session.json");
     assert.ok(existsSync(filePath));
     const content = JSON.parse(readFileSync(filePath, "utf-8")) as Timecard;
     assert.equal(content.sessionId, "test-session");
     assert.equal(content.hostname, "test-host");
-    assert.equal(content.task, "Fix the login bug");
+    assert.equal("task" in content, false);
   });
 
   it("preserves clockedInAt from existing timecard", () => {
@@ -1205,10 +1204,8 @@ describe("clockIn", () => {
         clockedInAt: "2026-03-27T10:05:00.000Z",
         lastActiveAt: "2026-03-27T10:05:00.000Z",
         branch: "main",
-        task: null,
       },
     };
-    // Write first timecard
     const timeclockDir = join(dir, ".trunk-sync", "timeclock");
     mkdirSync(timeclockDir, { recursive: true });
     writeFileSync(join(timeclockDir, "test-session.json"), JSON.stringify({
@@ -1216,10 +1213,8 @@ describe("clockIn", () => {
       clockedInAt: "2026-03-27T10:00:00.000Z",
       lastActiveAt: "2026-03-27T10:00:00.000Z",
       branch: "main",
-      task: null,
     }));
-    // Update timecard
-    clockIn(dir, plan, null);
+    clockIn(dir, plan);
     const content = JSON.parse(readFileSync(join(timeclockDir, "test-session.json"), "utf-8")) as Timecard;
     assert.equal(content.clockedInAt, "2026-03-27T10:00:00.000Z");
     assert.equal(content.lastActiveAt, "2026-03-27T10:05:00.000Z");
