@@ -30,12 +30,10 @@ Eagerly use these skills to fulfil operator requests, where applicable:
 - **No comments** — descriptive tests and expressive code obviate comments; comments bias agents against change, but trees and tests make the contract explicit so code can change radically. Never pollute the codebase with comments, fallbacks, or excuses — set expectations in test trees, enforce them in tests, express them in code.
 - **Composition over inheritance** — no `extends`; use hooks, functional utilities, component composition
 - **Typing** — type everything; no `any`
-- **Z-index** — avoid z-index; good layout doesn't rely on it
-- **Read docs** — use Context7 before using any library; don't guess API usage
+- **Read docs** — use Context7 for latest docs before using any library; don't guess API usage
 - **Consumer-driven** — implement only what a consumer already needs
 - **Resolve uncertainty** — look directly and remove optionality; don't hedge with fallbacks
 - **Act, don't ask** — if your reasoning or response already includes the right answer, act on it rather than externalising the decision
-- **pnpm** — use pnpm, not npm, for JS/TS
 - **Trees are the contract** — every expected behaviour and side effect goes in `## Test Trees`; every tree is verified by a test; every test drives the real implementation. File writes, external calls, state mutations, and cleanup all count as behaviour — if it's observable anywhere (filesystem, network, logs, next invocation), it belongs in the tree. If you're wondering whether an expectation belongs in the trees, the answer is yes.
 - **Behaviour, not internals** — every tree describes what crosses its level's interface (inputs, outputs, side-effects). Never the implementation inside. Journey/System/Adapter speak the consumer's vocabulary; Domain/Use-case/Port-contract speak the unit's own functions, types, and errors — both only as observable at the seam.
 - **Debugging means a test gap** — if you're debugging, the tests weren't good enough. Before fixing, find the tree path that should have caught the bug (add it if it's missing), write the failing test, then fix the code.
