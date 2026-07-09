@@ -469,11 +469,11 @@ second-opinion-reviews-completed-work (src: skills/second-opinion/SKILL.md; syst
     and the work it gathers includes new files not yet tracked by git
     and untracked file diffs do not make the recipe fail when git diff --no-index reports differences
     and it reads the test trees as the contract the work must satisfy
-    and it sends the change and the test trees to Z.AI's GLM 5.2 via the chat completions API authenticated with ZAI_API_KEY, with ZAI_BASE_URL selecting the API root
+    and it sends the change and the test trees to Z.AI's GLM 5.2 via the chat completions API authenticated with ZAI_API_KEY, or DEEPSEEK_API_KEY when ZAI_API_KEY is absent, with ZAI_BASE_URL selecting the API root
     and it surfaces GLM 5.2's review to the user attributed to GLM 5.2
   when there are no non-trivial changes to review
     then it says so and stops without calling the API
-  if the review request fails — missing ZAI_API_KEY, an API error, a non-2xx response, or empty content
+  if the review request fails — missing both ZAI_API_KEY and DEEPSEEK_API_KEY, an API error, a non-2xx response, or empty content
     then the failure is surfaced as an error and no review is fabricated
 ```
 
