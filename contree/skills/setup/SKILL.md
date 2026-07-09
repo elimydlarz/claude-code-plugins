@@ -1332,10 +1332,7 @@ npm run test:functional
 ```makefile
 .PHONY: test-functional
 test-functional:
-	docker compose -f test/functional/docker-compose.yml up -d --wait
-	DATABASE_URL=postgres://test:test@localhost:5433/test \
-	  pytest tests/system tests/journey || (docker compose -f test/functional/docker-compose.yml down -v; exit 1)
-	docker compose -f test/functional/docker-compose.yml down -v
+	bash test/functional/run-docker.sh
 ```
 
 ---
