@@ -101,7 +101,7 @@ TRUNK-SYNC ACTIVE: 1 other session is clocked in. Coordinate around shared resou
 Timecards show presence only. Failing tests are the authoritative signal of unfinished work.
 ```
 
-Because timecards are presence-only, stale cards are not treated as progress handovers. A disrupted session's unfinished work is discovered through the test suite and, when transcript commits are enabled, `.transcripts/` carries the session record for seance. Abandoned cards are reaped after 14 days.
+Because timecards are presence-only, stale cards are not treated as session summaries. A disrupted session's unfinished work is discovered through the test suite and, when transcript commits are enabled, `.transcripts/` carries the session record for seance. Abandoned cards are reaped after 14 days.
 
 ## Seance — summon the author of any line of code
 
