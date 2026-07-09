@@ -69,17 +69,17 @@ Setting or unsetting a key commits the change immediately, and pushes it (best-e
 
 ## Clocking In — agents that know about each other
 
-Agents are automatically aware of each other. On every commit, the hook writes a timecard recording the agent's branch and current task (extracted from the conversation). Timecards are committed and pushed alongside code, so agents on different machines see each other too.
+Agents are automatically aware of each other. On every commit, the hook writes a presence-only timecard recording the agent's session, host, branch, clock-in time, and heartbeat. Timecards are committed and pushed alongside code, so agents on different machines see each other too.
 
 When another agent is working in the same repo:
 
 ```
 TRUNK-SYNC ACTIVE: 1 other agent active. Continue your work as planned — no action required.
-- abc12345 on dev-macbook (branch: main, 30s ago) — "Fix the login bug"
+- abc12345 on dev-macbook (branch: main, 30s ago)
 If you share resources (ports, test databases, build locks), coordinate accordingly. Otherwise, ignore this message.
 ```
 
-An agent counts as active while its heartbeat is fresh — bumped on every edit, and at each turn's end by a Stop hook. After an hour of silence its card reads as stale (possibly disrupted); abandoned cards are reaped only after 14 days. There are no process IDs to check and no clock-out command — liveness is purely the age of the last heartbeat. The message is throttled to avoid noise.
+An agent clocks in automatically on its first synced edit and clocks out automatically when the Stop hook fires by removing and syncing its timecard. If a session is disrupted before Stop runs, liveness falls back to the heartbeat age: within an hour it is active; after an hour it is stale and omitted from presence rosters; after 14 days it is reaped. There are no process IDs to check. The active message is throttled to avoid noise.
 
 On its **first** edit of a session, an agent is also nudged to run the test suite:
 
@@ -91,19 +91,17 @@ The active roster above is advisory context for who already holds work.
 
 Failing tests — not the timecard — are the authoritative signal of unfinished work. Cross-referencing them against who is still active tells a fresh agent which unfinished work is orphaned and safe to pick up; the cards are advisory context.
 
-## Session Start — see active and stale sessions
+## Session Start — see active sessions
 
-At session start the hook gives the agent its own session id and surfaces other committed timecards:
+At session start the hook gives the agent its own session id and surfaces other active committed timecards:
 
 ```
-TRUNK-SYNC HANDOVER: 1 other session has work in progress. Failing tests on the trunk are the
-authoritative signal of what is unfinished; the cards below are advisory context.
-- 43605dd6 on dev-macbook (branch: main, 3h ago) — stale, possibly disrupted: verify against the test suite before resuming — it may already be done
-    task: Add timecards to trunk-sync
-Use the committed timecard as the handover summary. If transcript commits are enabled, `.transcripts/` carries the full session record for seance.
+TRUNK-SYNC ACTIVE: 1 other session is clocked in. Coordinate around shared resources when needed.
+- 43605dd6 on dev-macbook (branch: main, 30s ago) — active: coordinate, do not duplicate
+Timecards show presence only. Failing tests are the authoritative signal of unfinished work.
 ```
 
-Because liveness is a heartbeat rather than a live process, a disrupted session's stale card remains visible for a later agent to verify against the tests before resuming; abandoned cards are reaped only after 14 days.
+Because timecards are presence-only, stale cards are not treated as progress handovers. A disrupted session's unfinished work is discovered through the test suite and, when transcript commits are enabled, `.transcripts/` carries the session record for seance. Abandoned cards are reaped after 14 days.
 
 ## Seance — summon the author of any line of code
 
