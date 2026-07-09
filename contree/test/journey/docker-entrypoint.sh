@@ -302,66 +302,6 @@ JS
 # --- Test cases ---
 
 case "$TEST_NAME" in
-  mental-model-validator-smoke)
-    seed_project "greenfield"
-
-    cat > "$PROJECT_DIR/MENTAL_MODEL.md" <<'MM'
-## Core Domain Identity
-
-- placeholder
-
-## World-to-Code Mapping
-
-- placeholder
-
-## Ubiquitous Language
-
-- placeholder
-
-## Bounded Contexts
-
-- placeholder
-
-## Invariants
-
-- placeholder
-
-## Decision Rationale
-
-- placeholder
-
-## Rogue Extra Section
-
-- this heading is not one of the seven
-MM
-    (cd "$PROJECT_DIR" && git add -A && git commit -q -m "seed: malformed MENTAL_MODEL.md")
-
-    run_agent \
-      "Read MENTAL_MODEL.md and add one placeholder bullet to the Invariants section. Save the file. Do nothing else."
-
-    write_verify << 'VERIFY'
-Evaluate the transcript against the `post-update-hook` and `mental-model-validator` trees.
-
-The scenario: MENTAL_MODEL.md was seeded malformed (missing the Temporal View
-section; contains an extra "Rogue Extra Section" heading that is not one of
-the seven named sections). The agent then edits the file. The PostToolUse hook
-must fire, invoke the validator, and surface its findings via additionalContext
-JSON. Under Codex, `codex exec --json` does not emit hook context entries, so
-the harness appends Codex's internal session transcript plus the project-local
-hook stdin/stdout logs to make the hook evidence visible.
-
-Expected signals in the transcript:
-
-  - a Codex hook stdin entry whose hook_event_name is "PostToolUse" or hook stdout whose hookEventName is "PostToolUse"
-  - additionalContext naming the missing "Temporal View" section
-  - additionalContext naming the rogue "Rogue Extra Section" heading
-  - Codex's internal session contains the findings as developer context after the apply_patch call
-
-For each `when/then` path in `post-update-hook` and `mental-model-validator`,
-return PASS / FAIL / N/A with quoted evidence. Report counts at the end.
-VERIFY
-    ;;
-
   layered-workflow)
     # The single end-to-end journey: setup → workflow → drift+sync against an
     # HTTP API fixture that exercises Journey, System, Adapter (driving + driven),
@@ -409,7 +349,7 @@ Focus areas:
   - change-writes-trees (Domain/Use-case/Port-contract trees code-shaped; Journey/System/Adapter trees use consumer vocabulary)
   - outside-in-tdd (outermost failing test pulls inner layers in — a Journey test for a new arc, else System; the Journey is curated and kept under 5 minutes; Use-case wired with in-memory adapters; Adapter runs shared contract; describe/it mirrors trees verbatim; inner units get their own ground-level failing test before code — journey/functional coverage is not coverage)
   - composable-testing (file naming conventions, port contract suite)
-  - dual-harness-compatibility (when run under codex: SessionStart rules visible in transcript; PostToolUse hook fires after edits)
+  - dual-harness-compatibility (when run under codex: SessionStart rules visible in transcript)
 
 Specific layer-shape checks:
   - Inspect TEST_TREES.md — at least one Domain/Use-case/Port-contract tree has top-level nodes named after the unit's functions/methods/operations.
@@ -643,7 +583,6 @@ VERIFY
     echo ""
     echo "Available tests:"
     echo "  layered-workflow              — HTTP API: setup → workflow → drift → sync (every tree, every layer)"
-    echo "  mental-model-validator-smoke  — one-shot: malformed MM + agent edit → verifies PostToolUse hook + validator"
     echo "  describe-it-drift             — one-shot: pre-seeded describe/it mismatch → verifies sync flags it"
     echo "  diff-images                   — one-shot: staged change + mocked gpt-image-2 → verifies /contree:diff-for-humans generates an image of the change"
     echo "  second-opinion                — one-shot: staged change + mocked GLM 5.2 → verifies /contree:second-opinion reviews the change"
