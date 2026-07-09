@@ -672,7 +672,7 @@ describe("formatSessionStartSummary", () => {
     };
   }
 
-  it("returns null when neither an active nor a stale card is present", () => {
+  it("returns null when no active card is present", () => {
     assert.equal(formatSessionStartSummary([], now), null);
   });
 
@@ -682,10 +682,6 @@ describe("formatSessionStartSummary", () => {
     assert.match(msg, /branch: main/);
     assert.match(msg, /active: coordinate/);
     assert.doesNotMatch(msg, /task:/);
-  });
-
-  it("omits stale cards because timecards are presence only", () => {
-    assert.equal(formatSessionStartSummary([], now), null);
   });
 });
 
