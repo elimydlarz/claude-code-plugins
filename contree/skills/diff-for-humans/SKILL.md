@@ -24,7 +24,7 @@ Work out *what* to depict before reading it. Rely on natural language, not on a 
 Gather that change as a diff. For the working tree plus any new untracked files (the common case):
 
 ```bash
-CHANGE=$(git diff HEAD; git ls-files --others --exclude-standard | while read -r f; do git diff --no-index -- /dev/null "$f"; done)
+CHANGE=$(git diff HEAD; git ls-files --others --exclude-standard | while read -r f; do git diff --no-index -- /dev/null "$f" || true; done)
 ```
 
 For a wider grouping spanning several trunk-sync commits, diff the appropriate range instead. If there are no non-trivial changes to depict, say so and stop — there is nothing to depict.

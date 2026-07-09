@@ -25,7 +25,7 @@ Work out *what* to review before gathering it. Rely on natural language, not on 
 Gather that change as a diff. For the working tree plus any new untracked files (the common case):
 
 ```bash
-CHANGE=$(git diff HEAD; git ls-files --others --exclude-standard | while read -r f; do git diff --no-index -- /dev/null "$f"; done)
+CHANGE=$(git diff HEAD; git ls-files --others --exclude-standard | while read -r f; do git diff --no-index -- /dev/null "$f" || true; done)
 ```
 
 For a wider grouping spanning several trunk-sync commits, diff the appropriate range instead. Then read `## Test Trees` (or `TEST_TREES.md`) — this is the contract the work must satisfy. If there are no non-trivial changes to review, say so and stop — there is nothing to review.
