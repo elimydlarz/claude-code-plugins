@@ -77,7 +77,7 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
 
 @test "setup chooses test frameworks but asks before choosing the application framework" {
   run cat "$SKILL"
-  assert_output --partial "Choose the test framework"
+  assert_output --partial "choose the test framework"
   assert_output --partial "Ask before choosing the main application framework"
 }
 
