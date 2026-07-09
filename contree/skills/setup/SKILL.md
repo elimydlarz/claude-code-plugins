@@ -368,19 +368,19 @@ export default defineConfig({
       {
         test: {
           name: 'domain',
-          include: ['src/**/*.domain.test.{ts,js}'],
+          include: ['src*.domain.test.{ts,js}'],
         },
       },
       {
         test: {
           name: 'use-case',
-          include: ['src/**/*.use-case.test.{ts,js}'],
+          include: ['src*.use-case.test.{ts,js}'],
         },
       },
       {
         test: {
           name: 'adapter',
-          include: ['src/**/*.adapter.test.{ts,js}'],
+          include: ['src*.adapter.test.{ts,js}'],
           testTimeout: 30_000,
           hookTimeout: 30_000,
         },
@@ -388,13 +388,13 @@ export default defineConfig({
       {
         test: {
           name: 'component',
-          include: ['test/component/**/*.component.test.{ts,js}'],
+          include: ['test/component*.component.test.{ts,js}'],
         },
       },
       {
         test: {
           name: 'system',
-          include: ['test/system/**/*.system.test.{ts,js}'],
+          include: ['test/system*.system.test.{ts,js}'],
           testTimeout: 30_000,
           hookTimeout: 30_000,
         },
@@ -402,7 +402,7 @@ export default defineConfig({
       {
         test: {
           name: 'journey',
-          include: ['test/journey/**/*.journey.test.{ts,js}'],
+          include: ['test/journey*.journey.test.{ts,js}'],
           testTimeout: 60_000,
           hookTimeout: 60_000,
         },
@@ -453,13 +453,13 @@ const config: Config = {
   projects: [
     {
       displayName: 'domain',
-      testMatch: ['<rootDir>/src/**/*.domain.test.{ts,js}'],
+      testMatch: ['<rootDir>/src*.domain.test.{ts,js}'],
       transform: { '^.+\\.tsx?$': 'ts-jest' },
       testEnvironment: 'node',
     },
     {
       displayName: 'system',
-      testMatch: ['<rootDir>/test/system/**/*.system.test.{ts,js}'],
+      testMatch: ['<rootDir>/test/system*.system.test.{ts,js}'],
       transform: { '^.+\\.tsx?$': 'ts-jest' },
       testEnvironment: 'node',
       testTimeout: 30_000,
@@ -512,7 +512,7 @@ extension:
 `.mocharc.domain.yml`:
 ```yaml
 require: [tsx]
-spec: 'src/**/*.domain.test.{ts,js}'
+spec: 'src*.domain.test.{ts,js}'
 reporter: spec
 parallel: true
 jobs: 4
@@ -522,7 +522,7 @@ timeout: 5000
 `.mocharc.system.yml`:
 ```yaml
 require: [tsx]
-spec: 'test/system/**/*.system.test.{ts,js}'
+spec: 'test/system*.system.test.{ts,js}'
 reporter: spec
 parallel: false
 timeout: 30000
@@ -567,20 +567,20 @@ export default {
   },
 
   mutate: [
-    'src/**/*.ts',
-    '!src/**/*.test.ts',
-    '!src/**/*.spec.ts',
-    '!src/**/*.domain.test.ts',
-    '!src/**/*.use-case.test.ts',
-    '!src/**/*.adapter.test.ts',
-    '!src/**/*.component.test.ts',
-    '!src/**/*.system.test.ts',
-    '!src/**/*.journey.test.ts',
-    '!test/**/*.component.test.ts',
-    '!test/**/*.system.test.ts',
-    '!test/**/*.journey.test.ts',
-    '!src/**/*.contract.ts',
-    '!src/**/*.d.ts',
+    'src*.ts',
+    '!src*.test.ts',
+    '!src*.spec.ts',
+    '!src*.domain.test.ts',
+    '!src*.use-case.test.ts',
+    '!src*.adapter.test.ts',
+    '!src*.component.test.ts',
+    '!src*.system.test.ts',
+    '!src*.journey.test.ts',
+    '!test*.component.test.ts',
+    '!test*.system.test.ts',
+    '!test*.journey.test.ts',
+    '!src*.contract.ts',
+    '!src*.d.ts',
   ],
 
   coverageAnalysis: 'perTest',
@@ -617,7 +617,7 @@ export default {
 ```js
   testRunner: 'mocha',
   mochaOptions: {
-    spec: ['src/**/*.domain.test.ts'],
+    spec: ['src*.domain.test.ts'],
     config: '.mocharc.domain.yml',
     require: ['tsx'],
     timeout: 10_000,
@@ -641,26 +641,21 @@ Note: Mocha runner does NOT reliably support `coverageAnalysis: 'perTest'` — f
 **Tree reporter — pytest-spec + pytest-describe:**
 ```bash
 pip install pytest-spec pytest-describe
-# or: uv add --dev pytest-spec pytest-describe
 ```
 
 ```toml
-# pyproject.toml
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "--spec --strict-markers"
 
-# pytest-describe: enable when/context prefixes for nested blocks
 describe_prefixes = ["describe_", "context_", "when_"]
 
-# pytest-spec: configure output format
 spec_header_format = "{module_path}:"
 spec_test_format = "{result} {name}"
 spec_success_indicator = "+"
 spec_failure_indicator = "-"
 spec_skipped_indicator = "?"
 
-# Markers for test categorisation
 markers = [
     "domain: Fast isolated domain-layer tests",
     "system: Whole-app system tests against real infra",
@@ -683,12 +678,12 @@ def describe_wallet():
 ```
 tests/
   domain/
-    conftest.py       # auto-marks all tests as @pytest.mark.domain
+    conftest.py
     test_models.py
   system/
-    conftest.py       # auto-marks all tests as @pytest.mark.system
+    conftest.py
     test_api.py
-  conftest.py         # shared fixtures
+  conftest.py
 ```
 
 Auto-mark by directory in `tests/domain/conftest.py`:
@@ -701,8 +696,8 @@ def pytest_collection_modifyitems(items):
 
 Run independently:
 ```bash
-pytest tests/domain/          # or: pytest -m domain
-pytest tests/system/          # or: pytest -m system
+pytest tests/domain/
+pytest tests/system/
 ```
 
 **Changed-test runner — pytest-testmon:**
@@ -710,8 +705,8 @@ pytest tests/system/          # or: pytest -m system
 pip install pytest-testmon
 ```
 ```bash
-pytest --testmon              # first run builds dependency map; subsequent runs only affected tests
-pytest --last-failed          # built-in: re-run failures from previous run
+pytest --testmon
+pytest --last-failed
 ```
 `.testmondata` goes in `.gitignore` — it is machine-specific.
 
@@ -721,7 +716,6 @@ pip install mutmut
 ```
 
 ```toml
-# pyproject.toml
 [tool.mutmut]
 paths_to_mutate = ["src/"]
 tests_dir = ["tests/"]
@@ -730,13 +724,13 @@ do_not_mutate = [
     "src/*/migrations/*",
     "src/*/config.py",
 ]
-mutate_only_covered_lines = true  # huge speed improvement — always enable
+mutate_only_covered_lines = true
 ```
 
 ```bash
-mutmut run                    # run all mutations
-mutmut run "src/myapp/models*"  # target specific modules
-mutmut browse                 # TUI to inspect results (replaces mutmut html in v3)
+mutmut run
+mutmut run "src/myapp/models*"
+mutmut browse
 ```
 
 **Gotchas:**
@@ -752,7 +746,6 @@ mutmut browse                 # TUI to inspect results (replaces mutmut html in 
 
 **Tree reporter — RSpec:**
 ```
-# .rspec
 --format documentation
 --color
 --order random
@@ -763,7 +756,6 @@ The `documentation` formatter prints nested `describe`/`context`/`it` blocks as 
 
 **Separating spec directories:**
 ```ruby
-# spec/spec_helper.rb
 RSpec.configure do |config|
   config.define_derived_metadata(file_path: %r{/spec/system/}) do |metadata|
     metadata[:system] = true
@@ -771,7 +763,6 @@ RSpec.configure do |config|
   config.define_derived_metadata(file_path: %r{/spec/domain/}) do |metadata|
     metadata[:domain] = true
   end
-  # Persistence file for --only-failures:
   config.example_status_persistence_file_path = "spec/examples.txt"
 end
 ```
@@ -780,19 +771,17 @@ Run by tag:
 ```bash
 rspec --tag domain
 rspec --tag system
-rspec --only-failures         # re-run previous failures
-rspec --next-failure          # stop at first failure
+rspec --only-failures
+rspec --next-failure
 ```
 
 **File watching** — guard-rspec:
 ```ruby
-# Gemfile
 gem 'guard-rspec', require: false
 ```
 
 **Mutation testing — mutant:**
 ```ruby
-# Gemfile
 group :development, :test do
   gem 'mutant'
   gem 'mutant-rspec'
@@ -818,26 +807,23 @@ go install gotest.tools/gotestsum@latest
 ```
 
 ```bash
-gotestsum --format testdox ./...          # BDD-style sentences, grouped by package
-gotestsum --format testname ./...         # one line per test with package prefix
-gotestsum --format testdox --watch ./...  # file watcher for TDD
-gotestsum --junitfile results.xml ./...   # JUnit XML for CI
+gotestsum --format testdox ./...
+gotestsum --format testname ./...
+gotestsum --format testdox --watch ./...
+gotestsum --junitfile results.xml ./...
 ```
 
 `testdox` output groups by package, then lists tests as sentences — one level deep. Go's test model has no describe/context nesting, so no tool can produce a deep tree. Be honest about this.
 
 **Separating unit and integration tests — build tags:**
 ```go
-// integration_test.go
-//go:build integration
 
 package myapp
-// ...
 ```
 
 ```bash
-go test ./...                          # unit tests only (no tag)
-go test -tags=integration ./...        # both unit AND integration
+go test ./...
+go test -tags=integration ./...
 ```
 
 Critical: `-tags=integration` runs tagged AND untagged files. To run ONLY integration tests, also tag unit tests with `//go:build !integration`, or use the `-short` convention:
@@ -851,8 +837,8 @@ func TestSlowIntegration(t *testing.T) {
 ```
 
 ```bash
-go test -short ./...    # skip integration
-go test ./...           # run everything
+go test -short ./...
+go test ./...
 ```
 
 **Mutation testing — gremlins:**
@@ -861,8 +847,8 @@ go install github.com/go-gremlins/gremlins/cmd/gremlins@latest
 ```
 
 ```bash
-gremlins unleash                       # run from module root
-gremlins unleash --tags=unit           # with build tags
+gremlins unleash
+gremlins unleash --tags=unit
 ```
 
 Gremlins (v0.6+, actively maintained) is the best Go mutation tool available. Supports arithmetic, conditionals, increment/decrement mutations. Limitation: runs full test suite per mutation, so impractical for large monolithic modules. Works well for microservice-sized modules (which is most Go code).
@@ -876,11 +862,9 @@ Gremlins (v0.6+, actively maintained) is the best Go mutation tool available. Su
 **Best available output — cargo nextest:**
 ```bash
 cargo install cargo-nextest --locked
-# or: cargo binstall cargo-nextest
 ```
 
 ```toml
-# .config/nextest.toml
 [profile.default]
 test-threads = "num-cpus"
 fail-fast = true
@@ -899,10 +883,10 @@ path = "target/nextest/ci/junit.xml"
 ```
 
 ```bash
-cargo nextest run                           # all tests
-cargo nextest run --lib                     # unit tests only (inline #[cfg(test)])
-cargo nextest run -E 'kind(test)'           # integration tests only (tests/ dir)
-cargo nextest run --profile ci              # CI profile with retries + JUnit
+cargo nextest run
+cargo nextest run --lib
+cargo nextest run -E 'kind(test)'
+cargo nextest run --profile ci
 ```
 
 cargo nextest is a strict upgrade over `cargo test` — each test runs in its own process (better isolation), parallel by default, better failure output. Only limitation: cannot run doctests (use `cargo test --doc` separately).
@@ -914,34 +898,32 @@ Output is flat — module paths, not nested indentation. Rust's `#[test]` model 
 - Integration tests: `tests/` directory at crate root — separate crates, public API only
 
 ```bash
-cargo nextest run --lib                    # unit only
-cargo nextest run -E 'kind(test)'          # integration only
+cargo nextest run --lib
+cargo nextest run -E 'kind(test)'
 ```
 
 **Mutation testing — cargo-mutants:**
 ```bash
 cargo install --locked cargo-mutants
-# or: cargo binstall cargo-mutants
 ```
 
 ```toml
-# .cargo/mutants.toml
-test_tool = "nextest"  # use nextest instead of cargo test
+test_tool = "nextest"
 ```
 
 Add a speed-optimised profile in `Cargo.toml`:
 ```toml
 [profile.mutants]
 inherits = "test"
-debug = false          # skip debug symbols — faster builds
+debug = false
 ```
 
 ```bash
-cargo mutants                              # all mutations
-cargo mutants -f "src/user.rs"             # specific file
-cargo mutants -F "validate"                # specific function regex
-cargo mutants --shard 1/4                  # CI sharding (parallel)
-cargo mutants --profile=mutants            # use speed-optimised profile
+cargo mutants
+cargo mutants -f "src/user.rs"
+cargo mutants -F "validate"
+cargo mutants --shard 1/4
+cargo mutants --profile=mutants
 ```
 
 cargo-mutants (v1.1+, actively maintained) is the most mature Rust mutation tool. Replaces function bodies with default return values, deletes match arms, replaces operators. Works on any stable compiler (no nightly required).
@@ -952,7 +934,6 @@ cargo-mutants (v1.1+, actively maintained) is the most mature Rust mutation tool
 
 **Best available output — ExUnit trace mode:**
 ```elixir
-# test/test_helper.exs
 ExUnit.start(trace: true)
 ```
 
@@ -972,19 +953,17 @@ end
 
 **Test separation — tags:**
 ```elixir
-# test/test_helper.exs
 ExUnit.start(trace: true, exclude: [:integration])
 ```
 
 ```elixir
-# In integration test files:
 @moduletag :integration
 ```
 
 ```bash
-mix test                          # unit only (integration excluded)
-mix test --include integration    # everything
-mix test --only integration       # integration only
+mix test
+mix test --include integration
+mix test --only integration
 ```
 
 **Mix aliases** for convenience in `mix.exs`:
@@ -1005,7 +984,6 @@ end
 
 **PHPUnit — testdox config:**
 ```xml
-<!-- phpunit.xml -->
 <phpunit testdox="true" colors="true">
     <testsuites>
         <testsuite name="Unit">
@@ -1032,16 +1010,15 @@ vendor/bin/phpunit --testsuite=Functional
 
 **Pest PHP alternative:** If the project uses Pest (v3+), it supports `describe`/`it` blocks and has built-in mutation testing:
 ```bash
-./vendor/bin/pest                      # run tests
-./vendor/bin/pest --mutate             # mutation testing
-./vendor/bin/pest --mutate --min=80    # fail if MSI below 80%
+./vendor/bin/pest
+./vendor/bin/pest --mutate
+./vendor/bin/pest --mutate --min=80
 ```
 
 Pest v3's built-in mutation testing is a significant advantage over managing Infection separately.
 
 **Infection** (if not using Pest):
 ```json5
-// infection.json5
 {
     "source": {
         "directories": ["src"],
@@ -1063,7 +1040,7 @@ Pest v3's built-in mutation testing is a significant advantage over managing Inf
 
 ```bash
 vendor/bin/infection --threads=max --show-mutations
-vendor/bin/infection --git-diff-lines                # only changed lines — great for CI
+vendor/bin/infection --git-diff-lines
 ```
 
 ---
@@ -1072,7 +1049,6 @@ vendor/bin/infection --git-diff-lines                # only changed lines — gr
 
 **Tree reporter — gradle-test-logger-plugin:**
 ```kotlin
-// build.gradle.kts
 plugins {
     id("com.adarshr.test-logger") version "4.0.0"
 }
@@ -1096,11 +1072,9 @@ testing {
     suites {
         val test by getting(JvmTestSuite::class) {
             useJUnitJupiter()
-            // src/test/java — unit tests
         }
         val systemTest by registering(JvmTestSuite::class) {
             useJUnitJupiter()
-            // src/systemTest/java — system tests
             dependencies {
                 implementation(project())
             }
@@ -1124,9 +1098,9 @@ Run: `./gradlew test` (the fast colocated layers) vs `./gradlew systemTest`.
 ```java
 class OrderTest {
     @Nested class WhenEmpty {
-        @Test void isNotReady() { /* ... */ }
+        @Test void isNotReady() { }
         @Nested class AfterAddingItem {
-            @Test void isReady() { /* ... */ }
+            @Test void isReady() { }
         }
     }
 }
@@ -1160,10 +1134,9 @@ Run: `./gradlew pitest`. Incremental: `./gradlew pitest` caches results between 
 
 **Tree reporter — maven-surefire-junit5-tree-reporter:**
 ```xml
-<!-- pom.xml -->
 <plugin>
     <artifactId>maven-surefire-plugin</artifactId>
-    <version>3.5.3</version> <!-- MUST be <= 3.5.3; breaks on 3.5.4+ -->
+    <version>3.5.3</version>
     <dependencies>
         <dependency>
             <groupId>me.fabriciorby</groupId>
@@ -1221,8 +1194,8 @@ Incremental (only changed code): `mvn org.pitest:pitest-maven:scmMutationCoverag
 **Output:** `dotnet test` output is flat in ALL verbosity modes — it lists `Namespace.Class.Method PASSED` one per line. There is no nested indentation in the CLI. True tree output only exists in Visual Studio/Rider GUIs.
 
 ```bash
-dotnet test --logger "console;verbosity=detailed"   # most verbose, still flat
-dotnet test --logger "trx"                           # structured output for CI
+dotnet test --logger "console;verbosity=detailed"
+dotnet test --logger "trx"
 ```
 
 **Test separation** — separate `.csproj` projects:
@@ -1243,12 +1216,11 @@ dotnet tool install -g dotnet-stryker
 ```
 
 ```json
-// stryker-config.json
 {
     "stryker-config": {
         "solution": "MyApp.sln",
         "test-projects": ["tests/MyApp.UnitTests/MyApp.UnitTests.csproj"],
-        "mutate": ["**/*.cs", "!**/obj/**", "!**/bin/**", "!**/Migrations/**"],
+        "mutate": ["**objbinMigrations/**"],
         "reporters": ["html", "progress", "cleartext"],
         "thresholds": { "high": 80, "low": 60, "break": 0 },
         "concurrency": 4,
@@ -1262,8 +1234,8 @@ dotnet tool install -g dotnet-stryker
 ```
 
 ```bash
-dotnet stryker                    # full run
-dotnet stryker --since:main       # only mutate changes since main branch
+dotnet stryker
+dotnet stryker --since:main
 ```
 
 The `since` feature is very useful for CI — only mutates code changed since the target branch. The `cleartext-tree` reporter shows mutations grouped by file in a tree structure in the console.
@@ -1276,8 +1248,8 @@ Be honest: .NET CLI test output is flat. The value here is in the test structure
 
 **Output:** Flat only. No describe/context blocks.
 ```bash
-bats --pretty test/             # coloured pass/fail
-bats --formatter tap test/      # TAP format for CI
+bats --pretty test/
+bats --formatter tap test/
 ```
 
 Simulate tree structure through naming conventions:
@@ -1331,15 +1303,15 @@ The harness lives alongside the real-infra test layers:
 
 ```
 test/system/
-  docker-compose.yml      # service definitions (shared with driven-adapter tests if needed)
-  wait-for-ready.sh       # readiness checks (or use healthchecks in compose)
-  *.system.test.*         # System test files
+  docker-compose.yml
+  wait-for-ready.sh
+  *.system.test.*
 ```
 
 Or, for projects where `docker-compose.yml` belongs at root (e.g., the project already has one for dev):
 
 ```
-docker-compose.test.yml   # test-specific overrides
+docker-compose.test.yml
 test/system/
   *.system.test.*
 ```
@@ -1359,14 +1331,14 @@ services:
       POSTGRES_USER: test
       POSTGRES_PASSWORD: test
     ports:
-      - "5433:5432"   # non-default port to avoid clashing with local Postgres
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U test"]
       interval: 2s
       timeout: 5s
       retries: 10
     tmpfs:
-      - /var/lib/postgresql/data   # RAM-backed storage — fast, disposable
+      - /var/lib/postgresql/data
 ```
 
 Key decisions:
@@ -1383,17 +1355,16 @@ When the software itself IS the server being tested:
 services:
   db:
     image: postgres:17-alpine
-    # ... same as above ...
 
   app:
     build:
-      context: ../..           # project root
-      dockerfile: Dockerfile   # or Dockerfile.test if different from prod
+      context: ../..
+      dockerfile: Dockerfile
     environment:
       DATABASE_URL: postgres://test:test@db:5432/test
       PORT: "3000"
     ports:
-      - "3001:3000"            # non-default host port
+      - "3001:3000"
     depends_on:
       db:
         condition: service_healthy
@@ -1417,8 +1388,8 @@ services:
   rabbitmq:
     image: rabbitmq:4-management-alpine
     ports:
-      - "5673:5672"    # AMQP
-      - "15673:15672"  # management UI (useful for debugging)
+      - "5673:5672"
+      - "15673:15672"
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
       interval: 5s
@@ -1447,23 +1418,19 @@ services:
 services:
   db:
     image: postgres:17-alpine
-    # ...
   redis:
     image: redis:7-alpine
-    # ...
   app:
     build: ../..
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
-    # ...
   worker:
     build: ../..
     command: ["node", "worker.js"]
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
-    # ...
 ```
 
 ---
@@ -1473,8 +1440,6 @@ services:
 #### Shell wrapper (works with any test framework)
 
 ```bash
-#!/usr/bin/env bash
-# test/system/run-docker.sh
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -1485,17 +1450,12 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# Start services and wait for health
 docker compose -f "$COMPOSE_FILE" up -d --wait
 
-# Export connection details for tests
 export DATABASE_URL="postgres://test:test@localhost:5433/test"
 export REDIS_URL="redis://localhost:6380"
 
-# Run migrations if needed
-# npm run db:migrate  (or equivalent)
 
-# Run system tests
 npm run test:system
 ```
 
@@ -1528,7 +1488,6 @@ The tests themselves should not know about Docker — they connect to services v
 
 **Node.js/TypeScript example:**
 ```typescript
-// test/system/user-registration.system.test.ts
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createApp } from '../../src/app'
 
@@ -1536,7 +1495,6 @@ describe('UserRegistration', () => {
   let app: ReturnType<typeof createApp>
 
   beforeAll(async () => {
-    // Uses DATABASE_URL from environment (set by run-docker.sh)
     app = createApp()
     await app.db.migrate()
   })
@@ -1560,7 +1518,6 @@ describe('UserRegistration', () => {
 
 **Python example:**
 ```python
-# tests/system/test_user_registration.py
 import os
 import pytest
 import httpx
@@ -1579,8 +1536,6 @@ def describe_user_registration():
 
 **Go example:**
 ```go
-// test/system/user_test.go
-//go:build integration
 
 package system
 
@@ -1595,7 +1550,6 @@ func TestUserRegistration_ValidDetails_CreatesAccount(t *testing.T) {
     if baseURL == "" {
         baseURL = "http://localhost:3001"
     }
-    // ...
 }
 ```
 
@@ -1618,11 +1572,9 @@ func TestUserRegistration_ValidDetails_CreatesAccount(t *testing.T) {
 3. Assert on exit codes, stdout/stderr, and side effects (files created, database state)
 
 ```bash
-# Bats example for a CLI that talks to a database
 @test "import command loads CSV into database" {
   run ./mycli import --file fixtures/data.csv --db "$DATABASE_URL"
   [ "$status" -eq 0 ]
-  # Verify data landed in the database
   count=$(psql "$DATABASE_URL" -t -c "SELECT count(*) FROM imports")
   [ "$(echo "$count" | tr -d ' ')" -eq 42 ]
 }
