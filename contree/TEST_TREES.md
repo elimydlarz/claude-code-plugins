@@ -173,36 +173,6 @@ post-task-hook (src: hooks/stop-drift-check.sh; system: test/post-task-hook.bats
     and emits the normal drift prompt instead of failing
 ```
 
-## post-update-hook
-
-```
-post-update-hook (src: hooks/post-update-check.sh; system: test/post-update-hook.bats; journey: test/journey/docker-entrypoint.sh)
-  when MENTAL_MODEL.md is edited via a tool call
-    then the validator runs against the post-edit content
-    and its findings are surfaced to Claude's next response via additional context
-  when a file other than MENTAL_MODEL.md is edited
-    then the validator does not run
-  when contree is installed
-    then hooks.json wires post-update-check.sh to the PostToolUse hook event
-```
-
-## mental-model-validator
-
-```
-mental-model-validator (src: hooks/validate-mental-model.sh; system: test/mental-model-validator.bats; journey: test/journey/docker-entrypoint.sh)
-  then the validator's output is advisory and does not block edits
-  when MENTAL_MODEL.md is well-formed
-    then the validator reports no issues
-  when a section exceeds the upper bound of its cap range
-    then the validator flags the overflow and names the section
-  when MENTAL_MODEL.md contains a heading that is not one of the seven named sections
-    then the validator flags the rogue heading
-  when one of the seven named sections is missing
-    then the validator flags the missing section
-  when MENTAL_MODEL.md does not exist
-    then the validator flags that the file is missing
-```
-
 ## setup-generates-trees
 
 ```
@@ -447,8 +417,6 @@ dual-harness-compatibility (src: .claude-plugin/plugin.json, .codex-plugin/plugi
     and one hooks/hooks.json is shared by both harnesses
   when a hook fires
     then hooks.json invokes its script via $CLAUDE_PLUGIN_ROOT — the env var both harnesses set
-  when an Edit, Write, MultiEdit, or apply_patch tool call completes
-    then the PostToolUse matcher fires
   when the Stop hook fires
     then hooks.json wires it to hooks/stop-drift-check.sh
   when Codex is the harness
@@ -456,8 +424,6 @@ dual-harness-compatibility (src: .claude-plugin/plugin.json, .codex-plugin/plugi
     and the automated journey matrix runs the existing functional cases under Codex
     and Claude journey runs do not require Codex auth docker arguments
     and Claude journey runs fail fast without Claude provider auth
-    and the PostToolUse hook accepts Codex apply_patch stdin, where touched files are listed in patch headers
-    and the Codex journey harness installs a project-local PostToolUse shim that invokes the plugin's real post-update script
     and the journey harness distinguishes hook runner failures from ordinary agent command failures
 ```
 
