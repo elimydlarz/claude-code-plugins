@@ -5,7 +5,7 @@ description: "Prepare a project for ongoing test-tree-driven development by conf
 
 # Setup Contree
 
-Prepares the project for ongoing test-tree-driven development. Configures the test framework, creates `TEST_TREES.md` when needed, and hands tree composition to the `change` skill so the contract between intent and implementation starts in the right place.
+Prepares the project for ongoing test-tree-driven development. Configures the test framework, generates initial test trees in CLAUDE.md, and establishes the contract between intent and implementation that the other skills maintain.
 
 ## Critical Rules
 
@@ -22,7 +22,7 @@ Prepares the project for ongoing test-tree-driven development. Configures the te
    See `skills/tdd/SKILL.md` for the full mapping, the in-memory adapter pattern, and the shared port contract suite.
 4. **CI dual reporters.** Configure tree output for local dev AND structured output (JUnit XML) for CI. Both, not either/or.
 5. **Verify after configuring.** Run the tests and confirm tree-shaped output before moving on.
-6. **No test files.** Setup configures the framework and creates the test-tree home. Do NOT create any test files (`*.test.*`, `*.spec.*`). The `change` skill writes trees and the `tdd` skill handles test implementation later.
+6. **No test files.** Setup configures the framework and generates requirement trees. Do NOT create any test files (`*.test.*`, `*.spec.*`). The `tdd` skill handles test implementation later.
 
 ## Process
 
