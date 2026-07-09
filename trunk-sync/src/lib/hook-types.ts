@@ -4,6 +4,7 @@ export interface HookInput {
   tool_input: { file_path?: string };
   session_id: string | null;
   transcript_path: string | null;
+  cwd?: string | null;
 }
 
 /** Git state gathered before planning */
