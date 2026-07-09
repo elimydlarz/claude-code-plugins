@@ -18,13 +18,13 @@
 ## Ubiquitous Language
 
 - Trunk — `origin/agents` by default, the shared integration branch kept separate from the repo's actual default branch; overridable via the `target-branch` key in `.trunk-sync/config`.
-- Hook layer — fires on Edit/Write/Bash (stage, commit, pull, push) and on SessionStart (surface timecards).
+- Hook layer — fires on SessionStart (create/sync own timecard + surface active timecards), Edit/Write/Bash (stage, commit, pull, push), and Stop (remove/sync own timecard).
 - CLI layer — `trunk-sync seance | config`.
 - Seance — reconstruct and resume the agent session behind a line of code; modes default / `--inspect` / `--list`.
 - Session ID — links a commit to a Claude/Codex conversation.
 - Provenance fields — `Session:`, `Agent:`, `TranscriptPath:` in the commit body.
 - Timecard — `.trunk-sync/timeclock/<id>.json`; who is clocked in, where, and when its heartbeat was last refreshed.
-- Liveness — the age of a card's heartbeat (`lastActiveAt`): active within the hour, stale beyond it, reapable past a 14-day TTL. No PID — the first edit creates the card, and the Stop hook removes it.
+- Liveness — the age of a card's heartbeat (`lastActiveAt`): active within the hour, stale beyond it, reapable past a 14-day TTL. No PID — SessionStart creates the card, writes refresh it, and Stop removes it.
 - Worktree — optional isolated working tree for multi-agent runs.
 - Conflict feedback — exit 2 with a stderr message; the agent fixes file content only.
 
@@ -51,7 +51,7 @@
 - The hook handles git so agents stay focused on content and never corrupt the shared branch with ad-hoc git.
 - The functional-core / imperative-shell split keeps decision logic pure and fast to unit-test.
 - Seance finds Codex rollouts by scanning `~/.codex/sessions/<date>/`; placing a rewritten rollout at the canonical path is sufficient — no DB insertion, do not add it.
-- Timecards and config are committed (not local-only) so presence and settings are visible across every machine and agent working on the repo — same reasoning for both. Liveness is the heartbeat's age, not a PID — the hook runs as an ephemeral process, so a stored PID is never the agent's; remote liveness can only ever be presumed from the heartbeat, and failing tests are the authoritative WIP signal.
+- Timecards and config are committed (not local-only) so presence and settings are visible across every machine and agent working on the repo — same reasoning for both. Liveness is the heartbeat's age, not a PID — the hook runs as an ephemeral process, so a stored PID is never the agent's; remote liveness can only ever be presumed from the heartbeat, and failing tests are the authoritative unfinished-work signal.
 - Agents default to a dedicated `agents` branch, not the repo's actual default branch, so per-edit auto-commits never land directly on it — merging agent work into the real default branch stays a deliberate, separate step.
 - Timecards stay limited to presence; handover belongs in tests, transcripts, or conversation, not the timeclock.
 - `dist/` is tracked because marketplace installs have no build step.
@@ -59,10 +59,8 @@
 
 ## Temporal View
 
-- Per edit: stage → commit (provenance + timecard) → pull the target branch (`origin/agents` by default) → push; on conflict, exit 2 → agent edits → next fire completes the merge.
-- First edit of a session: nudge the agent to run the tests — failing tests are the authoritative signal of unfinished WIP, resumable when not owned by an active agent; the cards are advisory context.
-- Throttled (≤ once / 5 min): surface other active agents so the agent can reason about shared resources.
-- At session start: the SessionStart hook hands the agent its session id and surfaces active sessions' timecards so the agent can coordinate around shared resources.
+- At session start: the SessionStart hook creates and syncs the agent's timecard, hands the agent its session id, and surfaces active sessions' timecards so the agent can coordinate around shared resources.
+- Per edit: stage → commit (provenance + refreshed timecard when one exists) → pull the target branch (`origin/agents` by default) → push; on conflict, exit 2 with active timecards included → agent edits → next fire completes the merge.
 - End of session: the Stop hook removes and syncs the session's timecard, automatically clocking the agent out; it never forces the agent.
 - Reaping: any card whose heartbeat is older than the 14-day TTL, swept on the next agent's commit.
 - Seance, on demand: blame → provenance → transcript truncation → worktree → resume.
