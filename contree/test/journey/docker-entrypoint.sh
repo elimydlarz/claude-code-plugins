@@ -348,13 +348,13 @@ Harness under test: **$HARNESS**.
 
 Focus areas:
   - change-decomposes-across-layers (Journey → System → inner-layer decomposition; port decomposition, in-memory + real adapters, shared contract)
-  - change-writes-trees (Domain/Use-case/Port-contract trees code-shaped; Journey/System/Adapter trees use consumer vocabulary)
+  - change-writes-trees (every layer is consumer-driven; inner trees describe what the outer consumer needs from the unit it forced into existence)
   - outside-in-tdd (outermost failing test pulls inner layers in — a Journey test for a new arc, else System; the Journey is curated and kept under 5 minutes; Use-case wired with in-memory adapters; Adapter runs shared contract; describe/it mirrors trees verbatim; inner units get their own ground-level failing test before code — journey/functional coverage is not coverage)
   - composable-testing (file naming conventions, port contract suite)
   - dual-harness-compatibility (when run under codex: SessionStart rules visible in transcript)
 
-Specific layer-shape checks:
-  - Inspect TEST_TREES.md — at least one Domain/Use-case/Port-contract tree has top-level nodes named after the unit's functions/methods/operations.
+Specific consumer-driven checks:
+  - Inspect TEST_TREES.md — Domain/Use-case/Port-contract trees describe what the outer consumer needs to observe from the unit it forced into existence.
   - Inspect the corresponding test file — describe/it mirrors the tree verbatim.
   - Journey/System/Adapter trees use consumer vocabulary, describe principles not enumerated cases.
 
