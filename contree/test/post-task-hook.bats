@@ -165,8 +165,6 @@ run_hook_with_last_text() {
   assert_output --partial "If nothing needs attention, reply 0"
 }
 
-# --- Question stop ---
-
 @test "hook exits 2 and emits the drift prompt when last assistant message ends with a question mark" {
   run_hook_with_last_text "Want me to do that?"
   [ "$status" -eq 2 ] || return 1
@@ -174,40 +172,10 @@ run_hook_with_last_text() {
   assert_output --partial "README"
 }
 
-@test "question-stop prompt replaces the drift nudges" {
-  run_hook_with_last_text "Which way?"
-  refute_output --partial "README"
-  refute_output --partial "Default is no change"
-}
-
-@test "question-stop prompt directs checking the rules, mental model, and test trees for the answer" {
-  run_hook_with_last_text "Which way?"
-  assert_output --partial "Rules"
-  assert_output --partial "mental model"
-  assert_output --partial "test trees"
-}
-
-@test "question-stop prompt directs deciding and acting rather than asking when they determine the answer" {
-  run_hook_with_last_text "Which way?"
-  assert_output --partial "decide"
-  assert_output --partial "not ask"
-}
-
-@test "question-stop prompt directs asking the user only when genuinely under-determined" {
-  run_hook_with_last_text "Which way?"
-  [[ "$output" == *"under-determined"* ]]
-}
-
 @test "hook exits 2 and emits the drift prompt when last assistant message does not end with a question mark" {
   run_hook_with_last_text "Did the tests pass? Yes! Finished."
   [ "$status" -eq 2 ] || return 1
   assert_output --partial "README"
-}
-
-@test "hook detects the question after trailing whitespace and injects the question-stop prompt" {
-  run_hook_with_last_text $'Want me to do that?\n\n'
-  [ "$status" -eq 2 ] || return 1
-  assert_output --partial "under-determined"
 }
 
 @test "hook emits the prompt when earlier text ended with ? but the most recent assistant text is a statement" {
@@ -236,22 +204,6 @@ run_hook_with_last_text() {
     bash -c 'bash -c "$CMD" < "$INPUT_FILE" 2>&1'
   [ "$status" -eq 2 ] || return 1
   [ -n "$output" ] || return 1
-}
-
-@test "hook selects the last assistant text and injects the question-stop prompt when it ends with a question" {
-  local transcript="$BATS_TEST_TMPDIR/transcript.jsonl"
-  {
-    echo '{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"Statement one."}]}}'
-    echo '{"type":"user","message":{"role":"user","content":"ok"}}'
-    echo '{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"Ready to proceed?"}]}}'
-  } > "$transcript"
-  local input_file="$BATS_TEST_TMPDIR/input.json"
-  printf '{"transcript_path":"%s"}' "$transcript" > "$input_file"
-  local cmd; cmd=$(hook_command)
-  run env CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" CMD="$cmd" INPUT_FILE="$input_file" CLAUDE_PROJECT_DIR="$BATS_TEST_TMPDIR" \
-    bash -c 'bash -c "$CMD" < "$INPUT_FILE" 2>&1'
-  [ "$status" -eq 2 ] || return 1
-  assert_output --partial "under-determined"
 }
 
 @test "no missing-file nudge is emitted when MENTAL_MODEL.md and README.md exist at the project root but the hook runs from a subdirectory" {
