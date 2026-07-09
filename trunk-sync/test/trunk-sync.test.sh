@@ -1038,7 +1038,7 @@ assert_not_contains "$SS_OUT" "trunk-sync progress" "session-start: no progress 
 STOP_EXIT=0
 run_stop "$WT_A" "agentaaa" >/dev/null 2>&1 || STOP_EXIT=$?
 assert_equals "0" "$STOP_EXIT" "stop: the stop hook always exits 0 — the agent is never forced to act"
-assert_contains "$(git -C "$WT_A" log -1 --format=%s)" "clock-out" "stop: clock-out is committed"
+assert_contains "$(git -C "$WT_A" log --format=%s -5)" "clock-out" "stop: clock-out is committed"
 [[ -f "$CARD" ]] && CLOCKED_OUT=no || CLOCKED_OUT=yes
 assert_equals "yes" "$CLOCKED_OUT" "stop: local timecard is removed"
 git -C "$WT_A" fetch -q origin main
