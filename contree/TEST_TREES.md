@@ -185,7 +185,7 @@ setup-prepares-project (src: skills/setup/SKILL.md; system: test/setup-prepares-
     and changed-test runners are configured with known gotchas addressed
     and TEST_TREES.md is created when missing
     and CLAUDE.md is updated to point at TEST_TREES.md if it does not already
-    and setup examples follow the SessionStart rules — no copied comments, no env-var behaviour switches, no config inheritance, and visible reason markers for mocks and stubs
+    and setup examples follow the SessionStart rules — no copied comments, no env-var behaviour switches, and strong preference for composition over inheritance
   when setup detects multiple viable test frameworks
     then setup chooses the test framework using the project evidence and tree-output quality
   when setup would choose the main application framework for a project
@@ -203,7 +203,7 @@ setup-prepares-project (src: skills/setup/SKILL.md; system: test/setup-prepares-
     and test artefacts are torn down afterwards
     and secrets are passed via environment variables
   when Component tests run
-    then they run in-process with an in-memory database and reason-marked stubbed outbound HTTP, needing no external services
+    then they run in-process with an in-memory database and stubbed outbound HTTP, needing no external services
 ```
 
 ## setup-installs-architectural-linter
