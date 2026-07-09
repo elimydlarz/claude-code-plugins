@@ -758,13 +758,14 @@ cargo nextest is a strict upgrade over `cargo test` — each test runs in its ow
 
 Output is flat — module paths, not nested indentation. Rust's `#[test]` model has no describe/context hierarchy. Be honest about this.
 
-**Test separation** follows Rust conventions:
-- Unit tests: `#[cfg(test)] mod tests` inside source files — access private items
-- Integration tests: `tests/` directory at crate root — separate crates, public API only
+**Normal and functional command mapping** follows Rust's package and expression filters:
+- Domain and Use-case tests stay close to the code that owns them.
+- Adapter and Component tests run from the normal command.
+- System and Journey tests run from the functional command.
 
 ```bash
 cargo nextest run --lib
-cargo nextest run -E 'kind(test)'
+cargo nextest run -E 'package(test_system) | package(test_journey)'
 ```
 
 **Mutation testing — cargo-mutants:**
@@ -849,11 +850,11 @@ end
 ```xml
 <phpunit testdox="true" colors="true">
     <testsuites>
-        <testsuite name="Unit">
-            <directory>tests/Unit</directory>
+        <testsuite name="Normal">
+            <directory>test/normal</directory>
         </testsuite>
         <testsuite name="Functional">
-            <directory>tests/Functional</directory>
+            <directory>test/functional</directory>
         </testsuite>
     </testsuites>
     <source>
@@ -867,7 +868,7 @@ end
 Testdox groups by class and converts camelCase to sentences — one level deep (class > test). No nested describe in PHPUnit.
 
 ```bash
-vendor/bin/phpunit --testsuite=Unit
+vendor/bin/phpunit --testsuite=Normal
 vendor/bin/phpunit --testsuite=Functional
 ```
 
@@ -897,7 +898,7 @@ Pest v3's built-in mutation testing is a significant advantage over managing Inf
     "minMsi": 50,
     "minCoveredMsi": 80,
     "testFramework": "phpunit",
-    "testFrameworkOptions": "--testsuite=Unit"
+    "testFrameworkOptions": "--testsuite=Normal"
 }
 ```
 
