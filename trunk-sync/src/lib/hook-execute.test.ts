@@ -1273,7 +1273,7 @@ describe("runSessionStart", () => {
     mkdirSync(timeclockDir, { recursive: true });
     const full: Timecard = {
       hostname: "remote-host", clockedInAt: new Date().toISOString(),
-      lastActiveAt: new Date().toISOString(), branch: "main", task: null,
+      lastActiveAt: new Date().toISOString(), branch: "main",
       ...card,
     };
     writeFileSync(join(timeclockDir, `${card.sessionId}.json`), JSON.stringify(full));
@@ -1285,18 +1285,18 @@ describe("runSessionStart", () => {
     assert.doesNotMatch(msg, /trunk-sync-progress/);
   });
 
-  it("appends the handover roster when another agent is clocked in", () => {
-    writeCard({ sessionId: "other-id", task: "build X" });
+  it("appends the active roster when another agent is clocked in", () => {
+    writeCard({ sessionId: "other-id" });
     const msg = runSessionStart(dir, "my-session-id")!;
-    assert.match(msg, /TRUNK-SYNC HANDOVER/);
+    assert.match(msg, /TRUNK-SYNC ACTIVE/);
     assert.match(msg, /other-id/);
-    assert.match(msg, /task: build X/);
+    assert.doesNotMatch(msg, /task:/);
   });
 
   it("prints only the own-id instruction when no other agents are clocked in", () => {
     const msg = runSessionStart(dir, "my-session-id")!;
     assert.match(msg, /my-session-id/);
-    assert.doesNotMatch(msg, /TRUNK-SYNC HANDOVER/);
+    assert.doesNotMatch(msg, /TRUNK-SYNC ACTIVE/);
   });
 
   it("still prints the own-id instruction when the timeclock directory does not exist", () => {
@@ -1306,9 +1306,9 @@ describe("runSessionStart", () => {
   });
 
   it("excludes the starting session's own timecard from the roster", () => {
-    writeCard({ sessionId: "my-session-id", task: "my own work" });
+    writeCard({ sessionId: "my-session-id" });
     const msg = runSessionStart(dir, "my-session-id")!;
-    assert.doesNotMatch(msg, /TRUNK-SYNC HANDOVER/);
+    assert.doesNotMatch(msg, /TRUNK-SYNC ACTIVE/);
   });
 
   it("returns null when there is no session id", () => {
@@ -1317,11 +1317,20 @@ describe("runSessionStart", () => {
 
   it("omits the roster when the only other card is past the reap ttl", () => {
     const reapableTime = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString();
-    writeCard({ sessionId: "ghost-id", task: "abandoned work", lastActiveAt: reapableTime });
+    writeCard({ sessionId: "ghost-id", lastActiveAt: reapableTime });
     const msg = runSessionStart(dir, "my-session-id")!;
     assert.match(msg, /my-session-id/);
-    assert.doesNotMatch(msg, /TRUNK-SYNC HANDOVER/);
+    assert.doesNotMatch(msg, /TRUNK-SYNC ACTIVE/);
     assert.doesNotMatch(msg, /ghost-id/);
+  });
+
+  it("omits stale cards because timecards are presence only", () => {
+    const staleTime = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    writeCard({ sessionId: "stale-id", lastActiveAt: staleTime });
+    const msg = runSessionStart(dir, "my-session-id")!;
+    assert.match(msg, /my-session-id/);
+    assert.doesNotMatch(msg, /TRUNK-SYNC ACTIVE/);
+    assert.doesNotMatch(msg, /stale-id/);
   });
 });
 
