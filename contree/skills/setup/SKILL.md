@@ -1518,7 +1518,6 @@ describe('UserRegistration', () => {
 **Python example:**
 ```python
 import os
-import pytest
 import httpx
 
 BASE_URL = os.environ["APP_URL"]
@@ -1541,6 +1540,7 @@ package system
 import (
     "net/http"
     "os"
+    "strings"
     "testing"
 )
 
@@ -1548,6 +1548,13 @@ func TestUserRegistration_ValidDetails_CreatesAccount(t *testing.T) {
     baseURL, ok := os.LookupEnv("APP_URL")
     if !ok {
         t.Fatal("APP_URL is required")
+    }
+    resp, err := http.Post(baseURL+"/users", "application/json", strings.NewReader(`{"email":"new@example.com","password":"secret123"}`))
+    if err != nil {
+        t.Fatal(err)
+    }
+    if resp.StatusCode != http.StatusCreated {
+        t.Fatalf("expected status 201, got %d", resp.StatusCode)
     }
 }
 ```
