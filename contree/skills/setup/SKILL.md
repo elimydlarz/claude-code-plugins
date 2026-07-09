@@ -1060,12 +1060,12 @@ dotnet test --logger "trx"
 **Test separation** — separate `.csproj` projects:
 ```
 tests/
-  MyApp.UnitTests/MyApp.UnitTests.csproj
+  MyApp.NormalTests/MyApp.NormalTests.csproj
   MyApp.FunctionalTests/MyApp.FunctionalTests.csproj
 ```
 
 ```bash
-dotnet test tests/MyApp.UnitTests/
+dotnet test tests/MyApp.NormalTests/
 dotnet test tests/MyApp.FunctionalTests/
 ```
 
@@ -1078,10 +1078,10 @@ dotnet tool install -g dotnet-stryker
 {
     "stryker-config": {
         "solution": "MyApp.sln",
-        "test-projects": ["tests/MyApp.UnitTests/MyApp.UnitTests.csproj"],
+        "test-projects": ["tests/MyApp.NormalTests/MyApp.NormalTests.csproj"],
         "mutate": ["**/*.cs", "!**/obj/**", "!**/bin/**", "!**/Migrations/**"],
         "reporters": ["html", "progress", "cleartext"],
-        "thresholds": { "high": 80, "low": 60, "break": 0 },
+        "thresholds": { "high": 80, "low": 60, "break": 50 },
         "concurrency": 4,
         "coverage-analysis": "perTest",
         "since": {
