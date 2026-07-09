@@ -89,9 +89,9 @@ Every tree starts with:
 - `Domain`
 - `Port`
 
-`<Subject>` names the behaviour-bearing thing at that layer. The subject must have observable behaviour for its consumer. The layer prefix lets readers and sync detect duplication across trees that share a subject at different layers.
+`<Subject>` names the behaviour-bearing thing at that layer. The subject must have observable behaviour for its consumer. Without the layer prefix, readers and sync cannot detect duplication across layers when trees share a subject at different layers.
 
-One tree, one test file. One tree maps to exactly one test file. If two independent behavioural units are testable separately, they need two trees.
+One tree, one test file. Write one tree per behavioural unit. One tree maps to exactly one test file. If two independent behavioural units are testable separately, they need two trees.
 
 Write paths using EARS patterns:
 
@@ -179,7 +179,7 @@ Port trees describe the outbound capability guarantees needed by the use-case th
 
 Below the slice, write separate trees only for behavioural units with substantive behaviour: Domain rules, non-trivial Use-case orchestration, non-trivial Driving-adapter translation, or Driven-adapter behaviour beyond the port contract. Trivial value objects don't earn a tree. A use-case that just delegates to a single port doesn't earn a tree. Thin adapters don't earn a tree.
 
-Cross-cutting System trees capture app-level invariants that span slices, such as auth enforcement, rate limiting, and error envelope. Write a System tree named for the policy.
+Cross-cutting System trees capture app-level invariants that span slices, such as auth enforcement, rate limiting, error envelope. Write a System tree named for the policy; write a System tree named for the policy rather than folding it into a single slice.
 
 Use-case is to Component as Journey is to System: the cheap tier doubles what it can, the real tier integrates everything affordable. Use-case and Component are always written and exhaustive; System and Journey validate the same surfaces with real everything, selectively.
 
@@ -203,7 +203,7 @@ OrderRepository
 
 The in-memory adapter is not a mock. It is a real implementation that enforces the same invariants the real adapter does. Use-case tests use the in-memory twin. System tests do not lean on the in-memory twin; they wire real driven adapters and exercise real infrastructure.
 
-The shared port contract suite is the Port tree. Both adapters must pass the shared suite. The real adapter's test file also carries adapter-specific behaviour beyond the port contract, such as timeouts, retries, schema, and constraint violations.
+The shared port contract suite is the Port tree. Both adapters must pass the shared suite; both adapters are held to the same contract. The real adapter's test file also carries adapter-specific behaviour beyond the port contract, such as timeouts, retries, schema, and constraint violations.
 
 The composition root is the only place that imports concrete adapters and wires them into use-cases. Use-case tests wire in-memory adapters through it. System tests and production wire real adapters.
 
@@ -275,6 +275,8 @@ when <trigger>
     when <next trigger made possible by the outcome>
       then <next outcome>
 ```
+
+A when-trigger that depends on a prior then-outcome is not a sibling — it is a child.
 
 ## Examples
 
