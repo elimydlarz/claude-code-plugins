@@ -167,10 +167,11 @@ run_hook_with_last_text() {
 
 # --- Question stop ---
 
-@test "hook injects the question-stop prompt and exits 2 when last assistant message ends with a question mark" {
+@test "hook exits 2 and emits the drift prompt when last assistant message ends with a question mark" {
   run_hook_with_last_text "Want me to do that?"
   [ "$status" -eq 2 ] || return 1
-  [ -n "$output" ] || return 1
+  assert_output --partial "TEST TREES"
+  assert_output --partial "README"
 }
 
 @test "question-stop prompt replaces the drift nudges" {
