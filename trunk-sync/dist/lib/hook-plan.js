@@ -232,7 +232,7 @@ export function buildClockInPlan(input, state, runtime) {
 }
 /** Recent heartbeat ⇒ the agent is active (coordinate, don't duplicate). */
 export const ACTIVE_WINDOW_MS = 60 * 60 * 1000; // 60 minutes
-/** Heartbeat older than this ⇒ the card is abandoned and swept (the transcript is the record). */
+/** Heartbeat older than this ⇒ the card is abandoned and swept. */
 export const REAP_TTL_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
 /**
  * Classify timecards purely by heartbeat age — one uniform rule for every card,
@@ -240,7 +240,7 @@ export const REAP_TTL_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
  * never the agent). Own session excluded.
  *  - within the display window        → active (recently alive)
  *  - past the window, within the TTL   → stale (possibly disrupted; surfaced to resume)
- *  - past the TTL                      → reapable (even with unfinished steps; the transcript remains)
+ *  - past the TTL                      → reapable (even with unfinished steps)
  */
 export function classifyTimecards(ownSessionId, timecards, now) {
     const active = [];
@@ -305,7 +305,7 @@ function formatAge(ms) {
  * Format the handover roster shown at session start: every other non-reaped session,
  * active and stale alike (including those with no recorded next step), so a starting
  * agent discovers work already in flight. Failing tests are the authoritative WIP
- * signal; these cards are advisory context pointing at the committed transcript.
+ * signal; these cards are advisory context from committed timecards.
  * Returns null when there is nothing to surface.
  */
 export function formatSessionStartSummary(active, stale, now) {
@@ -330,6 +330,6 @@ export function formatSessionStartSummary(active, stale, now) {
     return [
         `TRUNK-SYNC HANDOVER: ${count} other session${count > 1 ? "s have" : " has"} work in progress. Failing tests on the trunk are the authoritative signal of what is unfinished; the cards below are advisory context.`,
         ...lines,
-        "Each session's full record is in its committed transcript (.transcripts/); resume it with seance. If a card's owner is still active, coordinate rather than duplicate.",
+        "Use the committed timecards as handover summaries. If transcript commits are enabled, .transcripts/ carries the full session record for seance. If a card's owner is still active, coordinate rather than duplicate.",
     ].join("\n");
 }

@@ -2,9 +2,9 @@
   "sessionId": "019f4557-1205-7163-b751-bd35323029b0",
   "hostname": "Elis-MacBook-Pro.local",
   "clockedInAt": "2026-07-09T05:28:30.294Z",
-  "lastActiveAt": "2026-07-09T05:35:27.008Z",
+  "lastActiveAt": "2026-07-09T05:35:49.396Z",
   "branch": "main",
   "task": null,
-  "lastStep": "completed non-functional sync: build, unit/integration, and shell e2e pass",
-  "remainingSteps": "none — functional Docker tests intentionally excluded"
+  "lastStep": "aligned stop-hook docs, test trees, and SessionStart footer with commit-transcripts default-off",
+  "remainingSteps": "rebuild and rerun affected tests"
 }
