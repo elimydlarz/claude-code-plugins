@@ -225,8 +225,6 @@ export function buildClockInPlan(input, state, runtime) {
             lastActiveAt: now,
             branch: state.currentBranch || "detached",
             task: null, // enriched in execute layer from transcript
-            lastStep: null, // set by the progress recorder, preserved across clock-ins
-            remainingSteps: null, // set by the progress recorder, preserved across clock-ins
         },
     };
 }
@@ -272,12 +270,7 @@ export function formatClockInMessage(active, now, isFirstClockIn) {
         const lines = active.map((tc) => {
             const agoStr = formatAge(now.getTime() - new Date(tc.lastActiveAt).getTime());
             const taskStr = tc.task ? ` — "${tc.task}"` : "";
-            let line = `- ${tc.sessionId.slice(0, 8)} on ${tc.hostname} (branch: ${tc.branch}, ${agoStr} ago)${taskStr}`;
-            if (tc.lastStep)
-                line += `\n    last: ${tc.lastStep}`;
-            if (tc.remainingSteps)
-                line += `\n    next: ${tc.remainingSteps}`;
-            return line;
+            return `- ${tc.sessionId.slice(0, 8)} on ${tc.hostname} (branch: ${tc.branch}, ${agoStr} ago)${taskStr}`;
         });
         sections.push(`TRUNK-SYNC ACTIVE: ${active.length} other agent${active.length > 1 ? "s" : ""} active. Continue your work as planned — no action required.`, ...lines);
     }
@@ -316,10 +309,6 @@ export function formatSessionStartSummary(active, stale, now) {
         let line = `- ${tc.sessionId.slice(0, 8)} on ${tc.hostname} (branch: ${tc.branch}, ${age} ago) — ${label}`;
         if (tc.task)
             line += `\n    task: ${tc.task}`;
-        if (tc.lastStep)
-            line += `\n    last: ${tc.lastStep}`;
-        if (tc.remainingSteps)
-            line += `\n    next: ${tc.remainingSteps}`;
         return line;
     };
     const lines = [
