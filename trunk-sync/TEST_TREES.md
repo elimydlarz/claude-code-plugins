@@ -116,7 +116,7 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
 
   buildClockInPlan
     when the runtime context provides a session id and branch
-      then a clock-in plan with the timecard path is returned
+      then a clock-in plan with presence-only timecard data is returned
     if the session id is null
       then null is returned
     if the current branch is empty
@@ -142,10 +142,8 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
   formatClockInMessage
     when no other agent is active and this is not the first clock-in
       then null is returned
-    when one other agent is active without a task
+    when one other agent is active
       then a single-agent message is returned
-    when an active agent has a task
-      then the task description is included
     when multiple agents are active
       then all are listed
     when the elapsed minutes value is rounded
@@ -158,14 +156,12 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
       then both the active roster and the run-tests nudge are included
 
   formatSessionStartSummary
-    when neither an active nor a stale card is present
+    when no active card is present
       then null is returned
     when an active card is present
-      then it is listed with branch and task, labelled active — another agent is recently alive on it; coordinate, do not duplicate
+      then it is listed with branch, labelled active — another agent is recently alive on it; coordinate, do not duplicate
     when a stale card is present
       then it is omitted because timecards represent presence, not progress handover
-    when a card's heartbeat age is an hour or more
-      then its age is rendered in hours
 ```
 
 ## git
@@ -345,11 +341,10 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
 
   clockIn
     when a session id and runtime context are present
-      then the timeclock directory is created and a valid timecard is written
+      then the timeclock directory is created and a valid presence-only timecard is written
     when a timecard already exists for this session
       then clockedInAt is preserved across updates
       and lastActiveAt is bumped to now — the heartbeat that marks the agent recently alive
-      and task is re-derived from the current transcript on each update
 
   readTimecards
     when the timeclock directory does not exist
