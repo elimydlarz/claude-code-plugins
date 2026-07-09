@@ -234,9 +234,11 @@ write_verify() {
 }
 
 assert_no_hook_runner_errors() {
-  if grep -Eiq "hook .*failed|hook exited with code|command not found|exec: .*: not found" "$TRANSCRIPT_FILE"; then
+  local matches
+  matches="$(grep -Ein "hook .*failed|hook exited with code|hook.*command not found|exec: .*: not found" "$TRANSCRIPT_FILE" || true)"
+  if [ -n "$matches" ]; then
     echo "Hook runner error found in $TRANSCRIPT_FILE:" >&2
-    grep -Ein "hook .*failed|hook exited with code|command not found|exec: .*: not found" "$TRANSCRIPT_FILE" >&2
+    printf '%s\n' "$matches" >&2
     exit 1
   fi
 }
@@ -563,7 +565,7 @@ JS
     start_zai_review_stub
 
     run_agent \
-      "Run /contree:second-opinion to get an independent review of the current change."
+      "Use the contree:second-opinion skill to get an independent review of the current change. Read the skill's SKILL.md and follow its Z.AI GLM 5.2 curl recipe exactly: gather git diff plus untracked files, include TEST_TREES.md as the contract, call the chat/completions endpoint with model glm-5.2, and surface GLM 5.2's returned review. Do not perform your own local review instead."
 
     kill "$ZAI_STUB_PID" 2>/dev/null || true
 
