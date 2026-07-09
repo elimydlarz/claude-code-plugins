@@ -180,11 +180,12 @@ setup-prepares-project (src: skills/setup/SKILL.md; system: test/setup-prepares-
   when setup is run on an existing project
     then existing test config is detected and merged into, not overwritten
     and tree-shaped output is configured where the framework can produce it
-    and project test kinds are configured as separate commands where the project has that surface
+    and the fixed Contree test strategy is mapped to the project's test framework conventions
+    and the normal test command runs Unit, Port contract, Adapter, and Component tests automatically
+    and the functional test command runs System and Journey tests separately from the normal test command
     and mutation testing is configured with explicit test file exclusions for every layer's suffix
-    and changed-test runners are configured with known gotchas addressed
     and TEST_TREES.md is created when missing
-    and CLAUDE.md is updated to point at TEST_TREES.md if it does not already
+    and native project commands are created for the configured testing and linting DX
     and setup examples follow the setup rules — no copied comments, no env-var behaviour switches, and strong preference for composition over inheritance
   when setup detects multiple viable test frameworks
     then setup chooses the test framework using the project evidence and tree-output quality
@@ -206,16 +207,18 @@ setup-prepares-project (src: skills/setup/SKILL.md; system: test/setup-prepares-
     then they run in-process with an in-memory database and stubbed outbound HTTP, needing no external services
 ```
 
-## setup-installs-architectural-linter
+## setup-configures-linting
 
 ```
-setup-installs-architectural-linter (src: skills/setup/SKILL.md; system: test/setup-installs-architectural-linter.bats; journey: test/journey/docker-entrypoint.sh)
+setup-configures-linting (src: skills/setup/SKILL.md; system: test/setup-configures-linting.bats; journey: test/journey/docker-entrypoint.sh)
   when setup is run
-    then a hex-boundary linter is installed and configured
-    and the linter enforces that domain has no I/O
-    and the linter enforces that use-cases depend on ports, not concrete adapters
-    and the linter enforces no circular dependencies
-    and CI is wired to run the linter so boundary violations fail the build
+    then a normal linter is installed or configured using the project's language conventions
+    and a hex-boundary linter is installed and configured
+    and the combined lint command runs both normal lint and hex-boundary lint
+    and the hex-boundary linter enforces that domain has no I/O
+    and the hex-boundary linter enforces that use-cases depend on ports, not concrete adapters
+    and the hex-boundary linter enforces no circular dependencies
+    and CI is wired to run the combined lint command so normal and boundary violations fail the build
   if the project's language has no first-party contree linter template
     then the language-native equivalent tool is named and the rules to enforce are stated
     and the limitation — the user wires the rules themselves — is communicated honestly
