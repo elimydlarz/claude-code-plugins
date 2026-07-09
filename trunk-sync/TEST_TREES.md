@@ -161,11 +161,9 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
     when neither an active nor a stale card is present
       then null is returned
     when an active card is present
-      then it is listed with branch, task, last completed step, and remaining steps, labelled active — another agent is recently alive on it; coordinate, do not duplicate
+      then it is listed with branch and task, labelled active — another agent is recently alive on it; coordinate, do not duplicate
     when a stale card is present
-      then it is listed labelled stale — possibly disrupted; verify against the test suite before resuming, since it may already be done
-    when a card has no recorded remaining steps
-      then it is still listed, pointing at its committed timecard context rather than omitted
+      then it is omitted because timecards represent presence, not progress handover
     when a card's heartbeat age is an hour or more
       then its age is rendered in hours
 ```
@@ -387,8 +385,10 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
     when the session-start hook fires
       then the starting agent's own session id is printed to stdout for injection into context
       and every other session's timecard is read and classified by heartbeat age, the starting session excluded
-      when active or stale cards are present
-        then their labelled summary is appended — active to coordinate around, stale to verify against the tests and resume
+      when active cards are present
+        then their labelled summary is appended to coordinate around automatic clock-ins
+      when only stale cards are present
+        then only the own-id is printed because stale cards are not progress handovers
       when only reapable cards (or none) remain
         then only the own-id is printed
     if the timeclock directory does not exist
@@ -398,12 +398,10 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
 
   runStop
     when the stop hook fires and the session has a timecard
-      then its heartbeat (lastActiveAt) is bumped and the update is synced, so remote readers see it fresh through a long no-edit turn
+      then its timecard is removed and the removal is synced, automatically clocking the session out
       and it always exits 0
-    when the heartbeat was already refreshed by a recent tool-use sync
-      then no commit is made — a fresh heartbeat is not duplicated
     if the session has no timecard yet
-      then it exits 0 without creating one — a session that never edited has no timecard to keep alive
+      then it exits 0 without creating one — a session that never edited has no timecard to clock out
     if no session id is provided
       then it exits 0 without action
 ```
@@ -569,18 +567,16 @@ System: hook-sync (system: test/trunk-sync.test.sh)
   every session start
     then the starting agent is handed its own session id
     when other sessions have stale cards
-      then that possibly-disrupted work is surfaced to verify against the tests and resume
+      then they are omitted because timecards represent presence, not progress handover
     when other sessions have active cards
       then that recently-alive work is surfaced to coordinate around
     when only reapable cards remain
       then nothing is surfaced beyond the agent's own session id
   every end of task
-    then the agent's timecard heartbeat is bumped and synced, marking it recently alive for remote readers
+    then the agent's timecard is removed and synced, automatically clocking the session out for remote readers
     and the agent is never forced to act — the stop hook always exits 0
   when an agent is disrupted mid-task and a new session starts
-    then the disrupted agent's stale card is surfaced as a handover, corroborated against the failing tests before resuming
-    when the resumer finishes and the original card ages past the reap ttl
-      then it is swept on the next agent's commit
+    then the disrupted agent's stale card is omitted and failing tests remain the authoritative signal of unfinished work
   when a merge conflict arises during sync
     then exit 2 surfaces self-contained conflict-resolution instructions
     when the agent edits the conflicted file and the hook fires again
