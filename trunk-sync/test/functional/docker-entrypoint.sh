@@ -34,6 +34,43 @@ rm -rf "$PROJECT_DIR"; mkdir -p "$PROJECT_DIR"
 git -C "$PROJECT_DIR" init -q
 git -C "$PROJECT_DIR" config user.email test@test
 git -C "$PROJECT_DIR" config user.name test
+cat > "$PROJECT_DIR/README.md" <<'DOC'
+# Trunk Sync Functional Fixture
+
+This temporary project exists only for the trunk-sync functional handover test.
+DOC
+cat > "$PROJECT_DIR/MENTAL_MODEL.md" <<'DOC'
+## Core Domain Identity
+This temporary project exercises trunk-sync handover behavior.
+
+## World-to-Code Mapping
+The fixture repository is the world; notes.txt is the edited work artifact.
+
+## Ubiquitous Language
+Handover means a later agent can see another session's recorded last and next steps.
+
+## Bounded Contexts
+Only the trunk-sync functional harness owns this fixture.
+
+## Invariants
+The fixture must stay small enough for live agent runs to finish quickly.
+
+## Decision Rationale
+The fixture contains minimal docs so unrelated installed hooks have project context.
+
+## Temporal View
+Each functional run deletes and recreates the fixture repository.
+DOC
+cat > "$PROJECT_DIR/TEST_TREES.md" <<'DOC'
+## functional handover fixture
+
+```
+System: functional handover fixture
+  when a live agent records progress
+    then a later live agent can report that handover
+```
+DOC
+git -C "$PROJECT_DIR" add README.md MENTAL_MODEL.md TEST_TREES.md
 git -C "$PROJECT_DIR" commit -q --allow-empty -m seed
 
 CODEX_PRIMED=0
@@ -222,9 +259,10 @@ run_agent() { # prompt → stdout (stream-json), also appended to the transcript
 }
 
 assert_no_hook_runner_errors() {
-  if grep -Eiq "hook .*failed|hook exited with code|command not found|exec: .*: not found" "$TRANSCRIPT_FILE"; then
+  local hook_error_pattern="hook .*failed|hook exited with code|command not found|exec: .*: not found|stop-hook-error|Stop hook error occurred"
+  if grep -Eiq "$hook_error_pattern" "$TRANSCRIPT_FILE"; then
     echo "Hook runner error found in $TRANSCRIPT_FILE:" >&2
-    grep -Ein "hook .*failed|hook exited with code|command not found|exec: .*: not found" "$TRANSCRIPT_FILE" >&2
+    grep -Ein "$hook_error_pattern" "$TRANSCRIPT_FILE" >&2
     exit 1
   fi
 }
