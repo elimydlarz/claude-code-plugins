@@ -22,7 +22,7 @@ npm install -g @elimydlarz/trunk-sync
 
 Once the plugin is installed, every file edit is committed and pushed automatically.
 
-**Prerequisites:** [Claude Code](https://docs.anthropic.com/en/docs/claude-code) or [Codex CLI](https://developers.openai.com/codex), `jq`, a git repo with a remote (`origin`).
+**Prerequisites:** [Claude Code](https://docs.anthropic.com/en/docs/claude-code) or [Codex CLI](https://developers.openai.com/codex), a git repo with a remote (`origin`).
 
 ## How it works
 
@@ -53,7 +53,7 @@ trunk-sync config --unset <key>          # remove a key
 
 ```
 $ trunk-sync config
-commit-transcripts=true
+commit-transcripts=false
 target-branch=agents
 ```
 
@@ -108,7 +108,7 @@ authoritative signal of what is unfinished; the cards below are advisory context
     task: Add agent-authored progress to trunk-sync
     last: implemented the parser
     next: wire the CLI and write tests
-Each session's full record is in its committed transcript (.transcripts/); resume it with seance.
+If transcript commits are enabled, each session's full record is in `.transcripts/`; resume it with seance.
 ```
 
 So you can stop a session that's low on context — or one that crashes mid-task — and pick the work up in a fresh one without re-explaining where you were. Because liveness is a heartbeat rather than a live process, a disrupted session's work is surfaced as a resumable handover instead of being lost; abandoned cards are reaped only after 14 days, and the committed transcript remains the durable record regardless.
