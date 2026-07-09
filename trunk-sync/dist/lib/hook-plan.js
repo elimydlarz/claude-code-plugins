@@ -250,7 +250,7 @@ export function formatClockInMessage(active, now, isFirstClockIn) {
         sections.push(`TRUNK-SYNC ACTIVE: ${active.length} other agent${active.length > 1 ? "s" : ""} active. Continue your work as planned — no action required.`, ...lines);
     }
     if (isFirstClockIn) {
-        sections.push("TRUNK-SYNC WIP: Run the test suite before starting. Failing tests are the authoritative signal of unfinished work — any failing test not owned by a currently-active agent is WIP for you to resume. The active roster above is advisory context for who already holds work.");
+        sections.push("TRUNK-SYNC WIP: Run the test suite before starting. Failing tests are the authoritative signal of unfinished work — any failing test not owned by a currently-active agent is WIP for you to resume. The active roster above is advisory context for who is present.");
     }
     if (active.length > 0) {
         sections.push("If you share resources (ports, test databases, build locks), coordinate accordingly. Otherwise, ignore this message.");
