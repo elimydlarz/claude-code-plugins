@@ -126,18 +126,15 @@ export function gatherRepoState(input: HookInput): RepoState | null {
   };
 }
 
-// --- Presence: clock-in (heartbeat) and reaping ---
-
 export function getRuntimeContext(): RuntimeContext {
   return { hostname: hostname() };
 }
 
-/** Clock in: write or update this agent's timecard on the timeclock. */
-export function clockIn(repoRoot: string, plan: ClockInPlan, task: string | null): void {
+export function clockIn(repoRoot: string, plan: ClockInPlan): void {
   const dir = join(repoRoot, ".trunk-sync", "timeclock");
   mkdirSync(dir, { recursive: true });
   const filePath = join(repoRoot, plan.timecardPath);
-  let timecard = { ...plan.timecard, task };
+  let timecard = { ...plan.timecard };
   try {
     const existing = JSON.parse(readFileSync(filePath, "utf-8")) as Timecard;
     if (existing.clockedInAt) {
@@ -148,7 +145,6 @@ export function clockIn(repoRoot: string, plan: ClockInPlan, task: string | null
   writeFileSync(filePath, JSON.stringify(timecard, null, 2) + "\n");
 }
 
-/** Read all timecards from the timeclock directory. */
 export function readTimecards(repoRoot: string): Timecard[] {
   const dir = join(repoRoot, ".trunk-sync", "timeclock");
   if (!existsSync(dir)) return [];
@@ -159,65 +155,44 @@ export function readTimecards(repoRoot: string): Timecard[] {
       const content = readFileSync(join(dir, file), "utf-8");
       timecards.push(JSON.parse(content) as Timecard);
     } catch {
-      // Skip unparseable files
     }
   }
   return timecards;
 }
 
-/**
- * Build the session-start message: hand the starting agent its own session id, then append the handover roster of active + stale sessions.
- * Returns null only when no session id is available.
- */
 export function runSessionStart(repoRoot: string, ownSessionId: string | null): string | null {
   if (!ownSessionId) return null;
   const intro = `TRUNK-SYNC SESSION: your session id is ${ownSessionId}.`;
   const now = new Date();
-  const { active, stale } = classifyTimecards(ownSessionId, readTimecards(repoRoot), now);
-  const roster = formatSessionStartSummary(active, stale, now);
+  const { active } = classifyTimecards(ownSessionId, readTimecards(repoRoot), now);
+  const roster = formatSessionStartSummary(active, now);
   return roster ? `${intro}\n\n${roster}` : intro;
 }
 
-/**
- * Heartbeat-only Stop hook: if this session has a timecard, bump its heartbeat and sync it
- * so remote readers stay fresh through a long no-edit turn. Never forces the agent (no exit 2).
- * No-ops when a recent tool-use sync already refreshed the heartbeat, and creates no card for
- * a session that never edited.
- */
 export function runStop(state: RepoState, sessionId: string | null): void {
   if (!sessionId) return;
   const cardPath = join(state.repoRoot, ".trunk-sync", "timeclock", `${sessionId}.json`);
-  let card: Timecard;
   try {
-    card = JSON.parse(readFileSync(cardPath, "utf-8")) as Timecard;
+    unlinkSync(cardPath);
   } catch {
-    return; // no card — a session that never edited has no timecard to keep alive
+    return;
   }
 
-  const age = Date.now() - new Date(card.lastActiveAt).getTime();
-  if (age < HEARTBEAT_STALE_MS) return; // a recent tool-use sync already refreshed the heartbeat
-
-  card.lastActiveAt = new Date().toISOString();
   try {
-    writeFileSync(cardPath, JSON.stringify(card, null, 2) + "\n");
     execSync(`git -C "${state.repoRoot}" add -- ".trunk-sync/timeclock/${sessionId}.json"`, { stdio: "ignore" });
-    execSync(`git -C "${state.repoRoot}" commit -m "auto: heartbeat ${sessionId.slice(0, 8)}"`, {
-      stdio: "ignore",
-    });
+    execSync(`git -C "${state.repoRoot}" commit -m "auto: clock-out ${sessionId.slice(0, 8)}"`, { stdio: "ignore" });
   } catch {
-    return; // nothing to commit or write failed — best-effort
+    return;
   }
 
   if (state.hasRemote) {
     try {
       executeSync({ targetBranch: state.targetBranch, currentBranch: state.currentBranch });
     } catch {
-      // best-effort: the next tool-use sync retries; the Stop hook always exits 0
     }
   }
 }
 
-/** Reap the given (reapable) cards by removing their timecard files; returns removed paths. */
 export function reapCards(repoRoot: string, ids: string[]): string[] {
   const removed: string[] = [];
   for (const id of ids) {
@@ -226,7 +201,6 @@ export function reapCards(repoRoot: string, ids: string[]): string[] {
       unlinkSync(filePath);
       removed.push(filePath);
     } catch {
-      // Already gone
     }
   }
   return removed;
