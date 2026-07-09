@@ -2,6 +2,7 @@
 INPUT=$(cat)
 
 CLAUDE_PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$PWD}"
+export CLAUDE_PROJECT_DIR
 
 FILE_PATH=$(printf '%s' "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
 
