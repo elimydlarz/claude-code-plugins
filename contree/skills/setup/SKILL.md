@@ -110,6 +110,7 @@ Two functional layers, each its own command/config:
 - **Component** — `test/component/`, `*.component.test.*` — one capability in-process with real driving and driven adapters; needs no external services because externals are doubled at the edge, such as an in-memory database and stubbed outbound HTTP.
 - Both wire **real driven adapters** at the highest tolerable realism — never in-memory at these layers. Speed for combinatorial breadth comes from the cheap Use-case and Component layers, not from diluting these into in-memory tests.
 - Journey tests exercise real everything across the multi-capability arc at max realism.
+- Exhaustive single-capability breadth belongs at the Use-case and Component layers.
 - Tree-style output; runnable independently from the inner layers and from each other
 - Higher timeouts — they assemble the whole app; the Journey is the slowest
 - Where real infrastructure is heavy, gate the heaviest runs behind a separate command (pre-release, not per-push) — but keep them real; do not substitute in-memory wiring to make them cheap
