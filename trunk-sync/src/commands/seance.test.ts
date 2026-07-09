@@ -425,6 +425,7 @@ exit 0
   });
 
   it("uses the transcript at TranscriptPath from the commit body when there is no snapshot", () => {
+    const fakeHome = realpathSync(mkdtempSync(join(tmpdir(), "seance-home-")));
     const binDir = mkdtempSync(join(tmpdir(), "seance-bin-"));
     writeFileSync(join(binDir, "claude"), `#!/bin/sh\nexit 0\n`);
     chmodSync(join(binDir, "claude"), 0o755);
@@ -447,10 +448,11 @@ exit 0
       { cwd: dir, env: { ...process.env, GIT_COMMITTER_DATE: commitDate } },
     );
 
-    const output = runSeance(dir, `${file}:1`, binDir);
+    const output = runSeance(dir, `${file}:1`, binDir, { HOME: fakeHome });
     assert.match(output, /Rewound session to commit/);
 
     rmSync(binDir, { recursive: true, force: true });
+    rmSync(fakeHome, { recursive: true, force: true });
     rmSync(customTranscriptDir, { recursive: true, force: true });
   });
 
