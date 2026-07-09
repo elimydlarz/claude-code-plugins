@@ -2,9 +2,9 @@
   "sessionId": "019f4606-295a-7391-8812-048f6c903ca4",
   "hostname": "Elis-MacBook-Pro.local",
   "clockedInAt": "2026-07-09T08:37:50.872Z",
-  "lastActiveAt": "2026-07-09T08:41:47.892Z",
+  "lastActiveAt": "2026-07-09T08:42:06.224Z",
   "branch": "main",
   "task": null,
-  "lastStep": "removed self-care files and hit trunk-sync merge conflict",
-  "remainingSteps": "resolve conflict markers and finish website/docs cleanup"
+  "lastStep": "removed self-care references from source tests trees docs mental model and website",
+  "remainingSteps": "run Contree tests and fix any fallout"
 }
