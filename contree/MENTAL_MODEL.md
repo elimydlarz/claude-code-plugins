@@ -57,7 +57,7 @@
 - Use-case is to Component as Journey is to System: the cheap tier (Use-case in-memory twins; Component real adapters with edges doubled) is always written and exhaustive; the real tier (System, Journey; real infrastructure) is selective. Component and System cover the same single-capability surface at two realism levels.
 - Each outbound Port has an in-memory twin and a real adapter, both bound by one shared contract suite.
 - Trees are never modified silently; drift is never resolved unilaterally — both surface to the user.
-- Behaviour, not internals: a tree describes only what crosses its layer's seam.
+- Consumer-driven, not internals-driven: each tree describes what its consumer observes; outside-in tests create the consumer before the consumed unit is implemented.
 - Shared hook scripts preserve enforcement across Claude Code and Codex.
 
 ## Decision Rationale
