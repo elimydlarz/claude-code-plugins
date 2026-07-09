@@ -663,6 +663,9 @@ setup_repos
 echo "A's version" > "$WT_A/seed.txt"
 echo "B's version" > "$WT_B/seed.txt"
 
+run_session_start "$WT_A" "conf-a" >/dev/null
+run_session_start "$WT_B" "conf-b" >/dev/null
+
 cd "$WT_A"
 HOOK_EXIT_A=0
 STDERR_FILE_A="$TMPDIR_BASE/stderr-conflict-a"
@@ -697,6 +700,7 @@ CONFLICT_STDERR=""
 if [[ "$HOOK_EXIT_A" -eq 2 ]]; then CONFLICT_STDERR="$STDERR_A"; fi
 if [[ "$HOOK_EXIT_B" -eq 2 ]]; then CONFLICT_STDERR="$STDERR_B"; fi
 assert_contains "$CONFLICT_STDERR" "TRUNK-SYNC CONFLICT" "concurrent conflict: loser gets conflict message"
+assert_contains "$CONFLICT_STDERR" "TRUNK-SYNC ACTIVE" "concurrent conflict: loser sees active timecards again"
 
 # --- Git-block (PreToolUse) ---
 
