@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { parseHookInput } from "./hook-plan.js";
-import { gatherRepoState, runSessionStart } from "./hook-execute.js";
+import { gatherRepoState, getRuntimeContext, runSessionStart } from "./hook-execute.js";
 
 function main(): void {
   let rawInput = "";
@@ -16,7 +16,7 @@ function main(): void {
   // Not in a git repo — no-op
   if (!state) process.exit(0);
 
-  const message = runSessionStart(state.repoRoot, input.session_id);
+  const message = runSessionStart(state, input.session_id, getRuntimeContext());
   if (message) process.stdout.write(message + "\n");
   process.exit(0);
 }
