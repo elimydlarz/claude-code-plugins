@@ -48,6 +48,9 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "!test/**/*.system.test.ts"
   assert_output --partial "!test/**/*.journey.test.ts"
   assert_output --partial "!src/**/*.contract.ts"
+  assert_output --partial "'src/**/*.ts'"
+  assert_output --partial "'!src/**/*.test.ts'"
+  assert_output --partial "'!src/**/*.d.ts'"
 }
 
 @test "setup creates TEST_TREES.md without composing trees" {
