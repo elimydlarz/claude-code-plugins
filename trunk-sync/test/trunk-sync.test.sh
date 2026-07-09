@@ -1036,7 +1036,7 @@ LAST_SHA=$(git -C "$WT_A" rev-parse HEAD)
 SNAPSHOT_FILES=$(git -C "$WT_A" diff-tree --no-commit-id --name-only -r "$LAST_SHA" -- .transcripts/)
 assert_equals "" "$SNAPSHOT_FILES" "opt-out: no .transcripts/ created when commit-transcripts=false"
 
-# ── Timecards: presence and heartbeat ────────────────────────────────────────
+# ── Timecards: automatic clock-in and clock-out ──────────────────────────────
 
 DIST_DIR="$(cd "$(dirname "$HOOK")/.." && pwd)/dist"
 
@@ -1059,41 +1059,38 @@ assert_equals "agentaaa" "$(jq -r '.sessionId' "$CARD")" "timecard: sessionId wr
 assert_equals "trunk-sync/agent-a" "$(jq -r '.branch' "$CARD")" "timecard: branch written"
 assert_equals "no" "$(jq 'has("lastStep") or has("remainingSteps")' "$CARD" | sed 's/false/no/; s/true/yes/')" "timecard: no progress fields are written"
 
-# 32. Agent B's SessionStart surfaces A's timecard and no recorder instruction.
+# 32. Agent B's SessionStart surfaces A's active timecard and no recorder instruction.
 SS_OUT=$(run_session_start "$WT_A" "agentbbb")
-assert_contains "$SS_OUT" "TRUNK-SYNC HANDOVER" "session-start: handover roster shown"
+assert_contains "$SS_OUT" "TRUNK-SYNC ACTIVE" "session-start: active roster shown"
 assert_contains "$SS_OUT" "agentaaa" "session-start: A's timecard is surfaced"
 assert_not_contains "$SS_OUT" "trunk-sync-progress" "session-start: no progress recorder is surfaced"
 assert_not_contains "$SS_OUT" "trunk-sync progress" "session-start: no progress CLI instruction is surfaced"
 
-# 33. The Stop hook bumps and commits a stale heartbeat, then no-ops while it is fresh.
-STALE_TS=$(node -e 'console.log(new Date(Date.now()-45*60*1000).toISOString())')
-jq --arg t "$STALE_TS" '.lastActiveAt=$t' "$CARD" > "$CARD.tmp" && mv "$CARD.tmp" "$CARD"
-( cd "$WT_A" && git add -A && git commit -q -m "stale the card" )
+# 33. The Stop hook clocks the session out by removing and syncing its timecard.
 STOP_EXIT=0
 run_stop "$WT_A" "agentaaa" >/dev/null 2>&1 || STOP_EXIT=$?
 assert_equals "0" "$STOP_EXIT" "stop: the stop hook always exits 0 — the agent is never forced to act"
-assert_contains "$(git -C "$WT_A" log -1 --format=%s)" "heartbeat" "stop: stale heartbeat is committed"
-[[ "$(jq -r '.lastActiveAt' "$CARD")" != "$STALE_TS" ]] && HB_BUMPED=yes || HB_BUMPED=no
-assert_equals "yes" "$HB_BUMPED" "stop: stale heartbeat value is refreshed"
-REMOTE_HB=$(git -C "$REMOTE" show "main:.trunk-sync/timeclock/agentaaa.json" 2>/dev/null | jq -r '.lastActiveAt' 2>/dev/null || echo "")
-[[ -n "$REMOTE_HB" && "$REMOTE_HB" != "$STALE_TS" ]] && HB_PUSHED=yes || HB_PUSHED=no
-assert_equals "yes" "$HB_PUSHED" "stop: the refreshed heartbeat is synced to the remote"
-COUNT_AFTER_BUMP=$(git -C "$WT_A" rev-list --count HEAD)
-run_stop "$WT_A" "agentaaa" >/dev/null 2>&1 || true
-assert_equals "$COUNT_AFTER_BUMP" "$(git -C "$WT_A" rev-list --count HEAD)" "stop: a fresh heartbeat makes no commit"
+assert_contains "$(git -C "$WT_A" log -1 --format=%s)" "clock-out" "stop: clock-out is committed"
+[[ -f "$CARD" ]] && CLOCKED_OUT=no || CLOCKED_OUT=yes
+assert_equals "yes" "$CLOCKED_OUT" "stop: local timecard is removed"
+git -C "$WT_A" fetch -q origin main
+REMOTE_CARD=$(git -C "$WT_A" show "origin/main:.trunk-sync/timeclock/agentaaa.json" 2>/dev/null || true)
+[[ -z "$REMOTE_CARD" ]] && REMOTE_CLOCKED_OUT=yes || REMOTE_CLOCKED_OUT=no
+assert_equals "yes" "$REMOTE_CLOCKED_OUT" "stop: timecard removal is synced to the remote"
 
-# 34. A stale card is surfaced at SessionStart as a handover.
+# 34. A stale card is omitted at SessionStart because timecards are presence only.
+mkdir -p "$WT_A/.trunk-sync/timeclock"
 STALE_HB=$(node -e 'console.log(new Date(Date.now()-2*60*60*1000).toISOString())')  # 2h ago
-jq --arg t "$STALE_HB" '.lastActiveAt=$t' "$CARD" > "$CARD.tmp" && mv "$CARD.tmp" "$CARD"
+STALE_CARD="$WT_A/.trunk-sync/timeclock/staleagent.json"
+printf '{"sessionId":"staleagent","hostname":"old-host","clockedInAt":"%s","lastActiveAt":"%s","branch":"main"}' "$STALE_HB" "$STALE_HB" > "$STALE_CARD"
 SS_STALE=$(run_session_start "$WT_A" "agentccc")
-assert_contains "$SS_STALE" "possibly disrupted" "session-start: a stale card is surfaced labelled possibly-disrupted"
-assert_not_contains "$SS_STALE" "next:" "session-start: stale cards do not surface progress"
+assert_not_contains "$SS_STALE" "staleagent" "session-start: stale cards are not surfaced as progress handover"
+assert_not_contains "$SS_STALE" "possibly disrupted" "session-start: stale cards do not surface progress language"
 
 # 35. An abandoned card (heartbeat past the 14-day TTL) is swept on the next agent's commit.
 OLD_TS=$(node -e 'console.log(new Date(Date.now()-20*24*60*60*1000).toISOString())')
 GHOST="$WT_A/.trunk-sync/timeclock/ghostagent.json"
-printf '{"sessionId":"ghostagent","hostname":"old-host","clockedInAt":"%s","lastActiveAt":"%s","branch":"main","task":null}' "$OLD_TS" "$OLD_TS" > "$GHOST"
+printf '{"sessionId":"ghostagent","hostname":"old-host","clockedInAt":"%s","lastActiveAt":"%s","branch":"main"}' "$OLD_TS" "$OLD_TS" > "$GHOST"
 ( cd "$WT_A" && git add -A && git commit -q -m "add abandoned card" )
 echo "trigger reap" > "$WT_A/seed.txt"
 run_hook "$(make_input "$WT_A/seed.txt" "agentaaa" "Edit" "")"
@@ -1105,11 +1102,11 @@ setup_repos
 cd "$WT_A"
 mkdir -p "$WT_A/.trunk-sync/timeclock"
 REAP_TS=$(node -e 'console.log(new Date(Date.now()-20*24*60*60*1000).toISOString())')  # 20 days ago — past the 14-day reap ttl
-printf '{"sessionId":"reapableghost","hostname":"old-host","clockedInAt":"%s","lastActiveAt":"%s","branch":"main","task":null}' "$REAP_TS" "$REAP_TS" > "$WT_A/.trunk-sync/timeclock/reapableghost.json"
+printf '{"sessionId":"reapableghost","hostname":"old-host","clockedInAt":"%s","lastActiveAt":"%s","branch":"main"}' "$REAP_TS" "$REAP_TS" > "$WT_A/.trunk-sync/timeclock/reapableghost.json"
 SS_REAP=$(run_session_start "$WT_A" "livesession9")
 assert_contains "$SS_REAP" "your session id is livesession9" "session-start reapable-only: own session id is surfaced"
 assert_not_contains "$SS_REAP" "trunk-sync-progress" "session-start reapable-only: no progress recorder is surfaced"
-assert_not_contains "$SS_REAP" "TRUNK-SYNC HANDOVER" "session-start reapable-only: no handover roster is surfaced"
+assert_not_contains "$SS_REAP" "TRUNK-SYNC ACTIVE" "session-start reapable-only: no active roster is surfaced"
 
 # ── Summary ──────────────────────────────────────────────────────────────────
 
