@@ -104,7 +104,7 @@ describe("config command", () => {
         const { stdout } = runConfig("", dir);
         assert.match(stdout, /target-branch=main/);
         assert.doesNotMatch(stdout, /target-branch=agents/);
-        assert.match(stdout, /commit-transcripts=true/);
+        assert.match(stdout, /commit-transcripts=false/);
       });
     });
 
@@ -112,7 +112,7 @@ describe("config command", () => {
       it("shows built-in defaults for every known key when no file exists", () => {
         const { stdout } = runConfig("", dir);
         assert.match(stdout, /target-branch=agents/);
-        assert.match(stdout, /commit-transcripts=true/);
+        assert.match(stdout, /commit-transcripts=false/);
       });
     });
   });
@@ -203,7 +203,7 @@ describe("config command", () => {
   it("prints the default for a key that has one and is unset", () => {
     const commitTranscripts = runConfig("commit-transcripts", dir);
     assert.equal(commitTranscripts.exitCode, 0);
-    assert.equal(commitTranscripts.stdout, "true");
+    assert.equal(commitTranscripts.stdout, "false");
 
     const targetBranch = runConfig("target-branch", dir);
     assert.equal(targetBranch.exitCode, 0);
