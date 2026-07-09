@@ -1279,6 +1279,22 @@ describe("runSessionStart", () => {
     assert.doesNotMatch(msg, /task:/);
   });
 
+  it("pushes the starting agent's timecard when a remote is configured", () => {
+    const { remote, clone } = setupRepoWithRemote("session-start-sync");
+    process.chdir(clone);
+    const state = makeState(clone, { hasRemote: true, targetBranch: "main", currentBranch: "main" });
+
+    const msg = runSessionStart(state, "synced-session", { hostname: "local-host" })!;
+
+    assert.match(msg, /synced-session/);
+    execSync("git fetch origin main", { cwd: clone, stdio: "ignore" });
+    const remoteCard = execSync("git show origin/main:.trunk-sync/timeclock/synced-session.json", { cwd: clone, encoding: "utf-8" });
+    assert.match(remoteCard, /synced-session/);
+
+    rmSync(remote, { recursive: true, force: true });
+    rmSync(clone, { recursive: true, force: true });
+  });
+
   it("prints only the own-id instruction when no other agents are clocked in", () => {
     const msg = start("my-session-id")!;
     assert.match(msg, /my-session-id/);
