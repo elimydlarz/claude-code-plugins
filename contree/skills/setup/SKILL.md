@@ -269,7 +269,7 @@ Run each layer's test suite and confirm tree-shaped output at each layer:
 - Journey (`*.journey.test.*`) — tree-shaped
 - Mutation testing runs and produces a score report
 
-**Do NOT create test files to verify the reporter.** If no tests exist yet, the empty suite's output (no tests found, reporter-formatted) is sufficient evidence that the reporter is wired correctly. Writing smoke tests or stubs violates rule #6 and rule #3 above (No fake code). The `tdd` skill writes tests later, from the trees.
+**Do NOT create test files to verify the reporter.** If no tests exist yet, the empty suite's output (no tests found, reporter-formatted) is sufficient evidence that the reporter is wired correctly. Writing smoke tests or stubs violates the No test files rule. The `tdd` skill writes tests later, from the trees.
 
 ---
 
