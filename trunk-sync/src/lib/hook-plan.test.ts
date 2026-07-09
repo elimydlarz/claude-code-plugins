@@ -551,7 +551,7 @@ describe("formatClockInMessage", () => {
     };
   }
 
-  it("returns null when no other agents are active and this is not the first clock-in", () => {
+  it("returns null when no other agents are active", () => {
     assert.equal(formatClockInMessage([], now), null);
   });
 
