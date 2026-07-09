@@ -4,9 +4,7 @@ import type {
   HookPlan,
   CommitPlan,
   SyncPlan,
-  ClockInPlan,
   Timecard,
-  RuntimeContext,
 } from "./hook-types.js";
 
 /**
@@ -26,10 +24,9 @@ export function parseHookInput(json: string): HookInput {
  * Pure decision logic: given parsed input and repo state, decide what to do.
  * No I/O, no git commands — only data in, plan out.
  */
-export function planHook(input: HookInput, state: RepoState, runtime?: RuntimeContext): HookPlan {
+export function planHook(input: HookInput, state: RepoState): HookPlan {
   const filePath = input.tool_input.file_path ?? null;
   const sync = buildSyncPlan(state);
-  const clockIn = runtime ? buildClockInPlan(input, state, runtime) : null;
 
   // No file_path and no deleted/modified/untracked files → nothing to do
   if (
@@ -61,13 +58,12 @@ export function planHook(input: HookInput, state: RepoState, runtime?: RuntimeCo
       action: "commit-merge",
       message,
       sync,
-      clockIn,
     };
   }
 
   // Normal commit path
   const commit = buildCommitPlan(input, state);
-  return { action: "commit-and-sync", commit, sync, clockIn };
+  return { action: "commit-and-sync", commit, sync };
 }
 
 function buildSyncPlan(state: RepoState): SyncPlan | null {
@@ -224,25 +220,6 @@ export function summarizeDeletions(files: string[]): string {
   const first = files[0];
   if (files.length === 1) return first;
   return `${first} (+${files.length - 1} more)`;
-}
-
-export function buildClockInPlan(
-  input: HookInput,
-  state: RepoState,
-  runtime: RuntimeContext,
-): ClockInPlan | null {
-  if (!input.session_id) return null;
-  const now = new Date().toISOString();
-  return {
-    timecardPath: `.trunk-sync/timeclock/${input.session_id}.json`,
-    timecard: {
-      sessionId: input.session_id,
-      hostname: runtime.hostname,
-      clockedInAt: now,
-      lastActiveAt: now,
-      branch: state.currentBranch || "detached",
-    },
-  };
 }
 
 export const ACTIVE_WINDOW_MS = 60 * 60 * 1000;
