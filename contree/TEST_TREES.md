@@ -467,7 +467,7 @@ diff-images-the-change (src: skills/diff-for-humans/SKILL.md; system: test/diff-
     then it determines the change to depict from any natural-language indication the user gave
     and absent a clear indication it depicts the last non-trivial, naturally grouped changes — not a single commit, since trunk-sync commits continuously, and not only the working tree
     and the change it gathers includes new files not yet tracked by git
-    and it generates an image representing that change using OpenAI's gpt-image-2 model via the images generations API
+    and it generates an image representing that change using OpenAI's gpt-image-2 model via the images generations API, with OPENAI_BASE_URL selecting the API root
     and it chooses what the image depicts from the nature of the change, its important details, and its intended audience
     and it foregrounds the technical substance the change touches — contracts, data and databases, behaviour, and test trees — as concrete technical elements rather than only an abstract metaphor
     and it saves the returned image as a .png file
@@ -487,7 +487,7 @@ second-opinion-reviews-completed-work (src: skills/second-opinion/SKILL.md; syst
     and absent a clear indication it reviews the last non-trivial, naturally grouped changes — not a single commit, since trunk-sync commits continuously, and not only the working tree
     and the work it gathers includes new files not yet tracked by git
     and it reads the test trees as the contract the work must satisfy
-    and it sends the change and the test trees to Z.AI's GLM 5.2 via the chat completions API authenticated with ZAI_API_KEY
+    and it sends the change and the test trees to Z.AI's GLM 5.2 via the chat completions API authenticated with ZAI_API_KEY, with ZAI_BASE_URL selecting the API root
     and it surfaces GLM 5.2's review to the user attributed to GLM 5.2
   when there are no non-trivial changes to review
     then it says so and stops without calling the API
