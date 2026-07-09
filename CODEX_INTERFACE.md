@@ -74,5 +74,7 @@ inherit = "all"
 - The harness primes the plugin cache, enables hooks, and trusts both `/tmp/...` and `/private/tmp/...` project paths because macOS may surface either path in Codex transcripts.
 - Plugin-bundled `Stop` and `SessionStart` hooks are visible in Codex sessions.
 - For `PostToolUse`, the harness installs a project-local shim that invokes the plugin's real `post-update-check.sh`, because this path is directly observable and gives deterministic stdin/stdout logs for functional assertions.
-- Hook runner failures are treated as functional failures by scanning transcripts for phrases such as `hook exited with code`, `command not found`, missing executables, and `exec: ... not found`.
+- Hook runner failures are treated as functional failures by scanning transcripts for explicit hook-runner phrases such as `<HookEvent> hook (failed)`, `hook exited with code`, and `exec: ... not found`.
+- Transcript scanners must avoid broad patterns like `hook .*failed` or bare `command not found`: Codex stores command output as JSON string fields, so a single line can contain ordinary test-framework text such as `Hook timed out` plus unrelated `failed` counts.
+- When a functional journey forbids executing an expensive tool such as Stryker, state that in every phase prompt that could trigger it. Setup may configure mutation testing and still be tempted to verify by running it unless the setup prompt says not to.
 - API-backed skill journeys route deterministic stubs through explicit base URL variables such as `OPENAI_BASE_URL` and `ZAI_BASE_URL`. Do not rely on a PATH-shadowed `curl` shim for Codex subprocesses; Codex shell execution may call the real endpoint even when the parent harness prepended a shim directory.
