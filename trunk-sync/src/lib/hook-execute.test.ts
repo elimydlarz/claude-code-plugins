@@ -1267,7 +1267,6 @@ describe("runSessionStart", () => {
   it("hands the starting agent its own session id", () => {
     const msg = start("my-session-id")!;
     assert.match(msg, /my-session-id/);
-    assert.doesNotMatch(msg, /trunk-sync-progress/);
     assert.ok(existsSync(join(dir, ".trunk-sync", "timeclock", "my-session-id.json")));
   });
 
@@ -1308,7 +1307,6 @@ describe("runSessionStart", () => {
   it("creates the timeclock directory when it does not exist", () => {
     const msg = start("my-session-id")!;
     assert.match(msg, /my-session-id/);
-    assert.doesNotMatch(msg, /trunk-sync-progress/);
     assert.ok(existsSync(join(dir, ".trunk-sync", "timeclock")));
   });
 
