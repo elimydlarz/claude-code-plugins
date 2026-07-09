@@ -48,8 +48,8 @@ export interface CommitPlan {
 
 export type HookPlan =
   | { action: "skip" }
-  | { action: "commit-and-sync"; commit: CommitPlan; sync: SyncPlan | null; clockIn: ClockInPlan | null }
-  | { action: "commit-merge"; message: string; sync: SyncPlan | null; clockIn: ClockInPlan | null };
+  | { action: "commit-and-sync"; commit: CommitPlan; sync: SyncPlan | null }
+  | { action: "commit-merge"; message: string; sync: SyncPlan | null };
 
 export interface Timecard {
   sessionId: string;
@@ -57,11 +57,6 @@ export interface Timecard {
   clockedInAt: string;
   lastActiveAt: string;
   branch: string;
-}
-
-export interface ClockInPlan {
-  timecardPath: string;
-  timecard: Timecard;
 }
 
 /** Runtime context not available in RepoState (I/O-derived) */
