@@ -435,25 +435,6 @@ rules-loading (src: hooks/session-start.sh; system: test/rules-loading.bats; jou
     and hooks.json wires session-start.sh to the SessionStart hook event
 ```
 
-## self-care-20-20-20
-
-```
-self-care-20-20-20 (src: hooks/self-care-20-20-20.sh; system: test/self-care.bats; journey: test/journey/docker-entrypoint.sh)
-  when the UserPromptSubmit hook fires in any session
-    then hooks.json wires it to hooks/self-care-20-20-20.sh
-    when the heartbeat is recorded
-      then heartbeats older than one hour are pruned
-      and while heartbeats with no gap longer than 5 minutes between them have been continuous for at least 20 minutes
-        and no reminder has been issued in the last 20 minutes
-          when a reminder is recorded
-            then the hook returns additionalContext instructing Claude to open its response with the 20-20-20 reminder before addressing the request
-            and the instructed reminder names the rule and the action: look 20 feet away for 20 seconds
-          when the reminder record fails
-            then the hook exits silently
-    when the heartbeat record fails
-      then the hook exits silently
-```
-
 ## dual-harness-compatibility
 
 ```

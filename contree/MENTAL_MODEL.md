@@ -16,7 +16,7 @@
 - A tree's coverage on disk → a parenthesised label set, one per layer: `src`, `domain`, `use-case`, `adapter`, `component`, `system`, `journey`; `none` marks a declared gap.
 - An outbound dependency → a Port; each Port ships an in-memory twin plus a real adapter, both bound by one shared `*.contract.ts` suite.
 - Workflow phases → skills: `setup`, `change`, `sync`, `tdd`, `second-opinion`, `workflow`.
-- Enforcement → hooks: SessionStart (rules + trees), Stop (drift check), PostToolUse (mental-model validator), UserPromptSubmit (self-care).
+- Enforcement → hooks: SessionStart (rules + trees), Stop (drift check), PostToolUse (mental-model validator).
 - The product's theory → `MENTAL_MODEL.md` (this file); its behaviour → `## Test Trees`; its operating discipline → the rules.
 
 ## Ubiquitous Language
@@ -43,7 +43,7 @@
 - Tree language — EARS syntax, causal nesting, one-tree-one-file, leaf granularity; the grammar of the contract.
 - Test-layer taxonomy — Journey ▸ System ▸ Component ▸ Adapter ▸ Use-case ▸ Domain (+ Port contract); each layer owns its own seam.
 - Skill workflow — `setup` (configure) → `change` (set behaviour) → `sync` (find drift) → `tdd` (close gaps) → `second-opinion` (independent review from another model); `workflow` runs the arc.
-- Enforcement hooks — SessionStart, Stop drift-check, PostToolUse mental-model validator, UserPromptSubmit self-care.
+- Enforcement hooks — SessionStart, Stop drift-check, PostToolUse mental-model validator.
 - Hexagonal architecture — domain pure, I/O in adapters, dependencies inward, a boundary linter holding the line.
 - Dual-harness packaging — one source directory, parallel `.claude-plugin` / `.codex-plugin` manifests, `CLAUDE_PLUGIN_ROOT` shared by both.
 

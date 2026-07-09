@@ -17,7 +17,7 @@ SCRIPT="$PROJECT_ROOT/hooks/session-start.sh"
 }
 
 @test "session-start.sh is not wired to any per-response hook event" {
-  for event in UserPromptSubmit Stop PostToolUse PreToolUse SubagentStop; do
+  for event in Stop PostToolUse PreToolUse SubagentStop; do
     run jq -r --arg e "$event" '.hooks[$e] // [] | [.[].hooks[].command] | map(select(test("session-start.sh"))) | length' "$HOOKS_JSON"
     [ "$output" = "0" ]
   done

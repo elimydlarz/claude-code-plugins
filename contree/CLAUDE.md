@@ -22,13 +22,12 @@ Mechanisms:
 - **diff-for-humans skill** — user-invoked (`/contree:diff-for-humans`). Generates one image explaining the change to a human — determined from natural language, or absent a clear indication the last non-trivial, naturally grouped change (not a single commit; not only the working tree; new untracked files included) — via OpenAI's gpt-image-2 model (images generations API, `OPENAI_API_KEY`), choosing what to depict from the nature of the change, its technical substance (contracts, databases, behaviour, test trees), its key details, and its audience; surfaces those choices for review; fails loudly rather than fabricating an image. Not hook-triggered.
 - **Stop hook** — guard the contract. Fires after every response, detecting drift between intent and implementation. When the response ends with a question, it injects a question stop instead of the drift nudges — directing the agent to check whether the rules, mental model, and test trees already determine the answer and act on it rather than ask, putting the question to the user only when genuinely under-determined. The `stop_hook_active` guard lets a genuinely-open re-asked question reach the user on the following stop.
 - **Mental-model validator (PostToolUse)** — after any tool call that edits MENTAL_MODEL.md, `hooks/post-update-check.sh` runs `hooks/validate-mental-model.sh` and surfaces its advisory findings (missing sections, rogue headings, cap overflow) via additionalContext JSON.
-- **Self-care hook** — nudge the user. Fires on each `UserPromptSubmit` in any session; records a shared heartbeat and, after 20 minutes of continuous interaction (no gap longer than 5 minutes between heartbeats across any sessions), injects a 20-20-20 eye-break reminder into Claude's context via `additionalContext` so Claude opens its response with the nudge.
 
 ## Mental Model
 
 The mental model lives in [MENTAL_MODEL.md](./MENTAL_MODEL.md) — Core Domain Identity, World-to-Code Mapping, Ubiquitous Language, Bounded Contexts, Invariants, Decision Rationale, and Temporal View. It is where the layered-testing model (Journey → System → Component → Adapter → Use-case → Domain), the outside-in flow, and the ground-level implementation gate are defined.
 
-Flow: `setup` prepares the project for test-tree-driven development → `change` sets expected behaviour → `sync` identifies gaps and cruft → `tdd` closes gaps → `second-opinion` gets an independent review of the completed work from a different model. Or use `workflow` for the full arc without pausing. The stop hook guards the contract throughout. The self-care hook nudges the user to take eye breaks via the 20-20-20 rule. Rules apply always.
+Flow: `setup` prepares the project for test-tree-driven development → `change` sets expected behaviour → `sync` identifies gaps and cruft → `tdd` closes gaps → `second-opinion` gets an independent review of the completed work from a different model. Or use `workflow` for the full arc without pausing. The stop hook guards the contract throughout. Rules apply always.
 
 ## Repo Map
 
@@ -37,10 +36,9 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `.claude-plugin/plugin.json` — Claude Code plugin manifest (name, version, description)
 - `.codex-plugin/plugin.json` — Codex CLI plugin manifest (skills + hooks; mirrors Claude version, bumped together by `publish-contree.sh`)
 - `package.json` — dev dependencies (bats-support, bats-assert) and test scripts
-- `hooks/hooks.json` — wires SessionStart (rules), Stop (drift check), UserPromptSubmit (self-care), and PostToolUse (mental-model validator; matches Claude edit tool names and Codex `apply_patch`)
+- `hooks/hooks.json` — wires SessionStart (rules), Stop (drift check), and PostToolUse (mental-model validator; matches Claude edit tool names and Codex `apply_patch`)
 - `hooks/session-start.sh` — SessionStart hook: prints the skill Directions block and the inline rules list to stdout
 - `hooks/stop-drift-check.sh` — Stop hook: injects the drift-check prompt, or a question stop when Claude's last response ends with a question (directing it to resolve the question from the rules/mental model/test trees rather than ask)
-- `hooks/self-care-20-20-20.sh` — UserPromptSubmit hook: reminds user of the 20-20-20 rule after 20 min of keyboard time
 - `hooks/post-update-check.sh` — PostToolUse hook: when MENTAL_MODEL.md is edited, runs `validate-mental-model.sh` and surfaces findings via additionalContext JSON; accepts Claude `file_path` input and Codex `apply_patch` patch headers
 - `hooks/validate-mental-model.sh` — advisory validator: checks MENTAL_MODEL.md for the seven named sections, section caps, rogue headings, and file presence
 - `website/index.html` — self-contained explainer site (no build step) pitching contree to developers new to TDD: bridges from test-first to test-trees, living requirements, the layered architecture, the workflow, and the Claude Code hook mechanics (the four hooks, their stdout/stderr-exit-2/additionalContext injection channels, and the Stop-hook control flow). Published to GitHub Pages at https://elimydlarz.github.io/claude-code-plugins/contree/ by the repo-root `.github/workflows/pages.yml` workflow, which stages `contree/website/` into `_site/contree/` (one subdir per plugin, so other plugins can add their own pages) and deploys on push to main
@@ -56,7 +54,6 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `test/post-task-hook.bats` — Stop hook tests: loop prevention, exit codes, question-stop prompt, nudge content
 - `test/post-update-hook.bats` — PostToolUse hook tests: validator runs only on MENTAL_MODEL.md edits, findings surface via additionalContext, PostToolUse wiring
 - `test/mental-model-validator.bats` — validator tests: seven-section enforcement, cap overflow, rogue-heading flagging, missing-file flagging
-- `test/self-care.bats` — self-care hook tests: UserPromptSubmit wiring, heartbeat pruning, 20-minute continuity, reminder throttling, silent failure
 - `test/validate-skill-frontmatter.bats` — frontmatter validator tests
 - `test/dual-harness-compatibility.bats` — dual-harness contract: both manifests, version lockstep, plugin.json fields, shared hooks.json, `$CLAUDE_PLUGIN_ROOT` invocation, PostToolUse matcher, Stop hook wiring
 - `test/journey/Dockerfile` — Docker image for the journey suite (node + git + jq + curl + claude CLI + codex CLI, fixture deps pre-installed); curl is required by the `diff-for-humans` and `second-opinion` skills' API recipes and their journey stubs' curl shims
