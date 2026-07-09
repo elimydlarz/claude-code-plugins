@@ -51,19 +51,15 @@ export type HookPlan =
   | { action: "commit-and-sync"; commit: CommitPlan; sync: SyncPlan | null; clockIn: ClockInPlan | null }
   | { action: "commit-merge"; message: string; sync: SyncPlan | null; clockIn: ClockInPlan | null };
 
-/** An agent's timecard — persisted to .trunk-sync/timeclock/<session-id>.json */
 export interface Timecard {
   sessionId: string;
   hostname: string;
-  clockedInAt: string; // ISO 8601
-  lastActiveAt: string; // ISO 8601 — the heartbeat; liveness is its age, never a PID
+  clockedInAt: string;
+  lastActiveAt: string;
   branch: string;
-  task: string | null; // what the agent is working on (from transcript)
 }
 
-/** Plan for clocking in (writing/updating a timecard) */
 export interface ClockInPlan {
-  /** Relative path: .trunk-sync/timeclock/<session-id>.json */
   timecardPath: string;
   timecard: Timecard;
 }
