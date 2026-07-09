@@ -115,6 +115,14 @@ load test_helper
   assert_failure
 }
 
+@test "and the journey harness does not treat ordinary Codex apply_patch diagnostics as agent failure" {
+  run grep -F '"(message|text)":"[^"]*(usage limit|rate limit)' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
+  assert_success
+
+  run grep -F 'grep -Eq '\''"turn\.failed"|usage limit|rate limit' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
+  assert_failure
+}
+
 @test "and Claude journey runs do not require Codex auth docker arguments" {
   run grep -F 'docker_env_args=("${DOCKER_LLM_ENV[@]}")' "$PROJECT_ROOT/test/journey/docker-run.sh"
   assert_success
