@@ -929,14 +929,14 @@ testlogger {
 
 The `MOCHA` theme produces nested tree output from `@Nested` JUnit 5 test classes. Use `MOCHA_PARALLEL` when `maxParallelForks > 1`.
 
-**Separating test source sets** — JVM Test Suite Plugin (built-in since Gradle 7.3):
+**Normal and functional command mapping** — JVM Test Suite Plugin (built-in since Gradle 7.3):
 ```kotlin
 testing {
     suites {
         val test by getting(JvmTestSuite::class) {
             useJUnitJupiter()
         }
-        val systemTest by registering(JvmTestSuite::class) {
+        val functionalTest by registering(JvmTestSuite::class) {
             useJUnitJupiter()
             dependencies {
                 implementation(project())
@@ -949,13 +949,9 @@ testing {
         }
     }
 }
-
-tasks.named("check") {
-    dependsOn(testing.suites.named("systemTest"))
-}
 ```
 
-Run: `./gradlew test` (the fast colocated layers) vs `./gradlew systemTest`.
+Run: `./gradlew test` for Unit, Port contract, Adapter, and Component. Run `./gradlew functionalTest` for System and Journey.
 
 **JUnit 5 @Nested for tree structure:**
 ```java
