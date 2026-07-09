@@ -110,15 +110,26 @@ load test_helper
   assert_failure
 }
 
-@test "and Claude journey runs do not require Codex auth docker arguments" {
+@test "and both journey harnesses use DeepSeek auth from DEEPSEEK_API_KEY" {
   run grep -F 'docker_env_args=("${DOCKER_LLM_ENV[@]}")' "$PROJECT_ROOT/test/journey/docker-run.sh"
   assert_success
 
-  run grep -F 'docker_env_args+=("${DOCKER_CODEX_ENV[@]}")' "$PROJECT_ROOT/test/journey/docker-run.sh"
+  run grep -F 'DOCKER_CODEX_ENV=(-e DEEPSEEK_API_KEY)' "$PROJECT_ROOT/test/journey/docker-run.sh"
+  assert_success
+
+  run grep -F 'env_key = "DEEPSEEK_API_KEY"' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
   assert_success
 }
 
 @test "and Claude journey runs fail fast without Claude provider auth" {
   run grep -F "Claude harness requires ANTHROPIC_API_KEY or DEEPSEEK_API_KEY" "$PROJECT_ROOT/test/journey/docker-run.sh"
+  assert_success
+}
+
+@test "and Codex journey runs fail fast without DeepSeek provider auth" {
+  run grep -F "Codex harness requires DEEPSEEK_API_KEY" "$PROJECT_ROOT/test/journey/docker-run.sh"
+  assert_success
+
+  run grep -F "Codex harness requires DEEPSEEK_API_KEY" "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
   assert_success
 }
