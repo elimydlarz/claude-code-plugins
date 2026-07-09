@@ -2,9 +2,9 @@
   "sessionId": "019f4557-1205-7163-b751-bd35323029b0",
   "hostname": "Elis-MacBook-Pro.local",
   "clockedInAt": "2026-07-09T05:28:30.294Z",
-  "lastActiveAt": "2026-07-09T05:31:09.657Z",
+  "lastActiveAt": "2026-07-09T05:31:26.595Z",
   "branch": "main",
   "task": null,
-  "lastStep": "fixed stale config default assertions to match the false default contract",
-  "remainingSteps": "rebuild and rerun non-functional tests, then run shell e2e"
+  "lastStep": "made seance missing-CLI test isolate PATH deterministically",
+  "remainingSteps": "rebuild, rerun unit/integration tests, then run shell e2e"
 }
