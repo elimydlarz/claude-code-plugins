@@ -6,7 +6,7 @@ set -euo pipefail
 # the host is never asked to skip permissions. Mirrors contree/test/functional/docker-run.sh.
 #
 # Usage:
-#   ./docker-run.sh handover            # the handover System case (real claude, claude harness)
+#   ./docker-run.sh handover            # the handover System case (real Claude, Claude harness)
 #   ./docker-run.sh handover codex      # the same System case with Codex
 #   ./docker-run.sh all                 # every functional case through every supported harness
 #

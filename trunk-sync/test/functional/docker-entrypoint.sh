@@ -4,7 +4,7 @@ set -euo pipefail
 # Runs a trunk-sync functional (System-layer, real-agent) case against a harness.
 # Works inside Docker (called by docker-run.sh) or directly on the host.
 #
-# handover: drives TWO real claude sessions in one repo —
+# handover: drives TWO real agent sessions in one repo —
 #   Agent A makes an edit (hook clocks it in) and records progress via the bundled recorder;
 #   Agent B starts fresh and its SessionStart surfaces A's handover.
 # Self-verifies DETERMINISTICALLY (no AI eval): the timecard must carry A's authored
