@@ -37,10 +37,10 @@ if [ -n "${DEEPSEEK_API_KEY:-}" ]; then
     -e ANTHROPIC_BASE_URL -e ANTHROPIC_AUTH_TOKEN -e ANTHROPIC_MODEL
     -e ANTHROPIC_DEFAULT_SONNET_MODEL -e ANTHROPIC_DEFAULT_HAIKU_MODEL -e CLAUDE_CODE_SUBAGENT_MODEL
   )
-elif [ "${1:-handover}" != "all" ]; then
-  : "${ANTHROPIC_API_KEY:?Set ANTHROPIC_API_KEY (or DEEPSEEK_API_KEY) in env or test/functional/.env}"
-  DOCKER_LLM_ENV=(-e ANTHROPIC_API_KEY)
 else
+  if [ "${2:-claude}" = "claude" ] || [ "${1:-handover}" = "all" ]; then
+    : "${ANTHROPIC_API_KEY:?Set ANTHROPIC_API_KEY or DEEPSEEK_API_KEY for Claude functional runs}"
+  fi
   DOCKER_LLM_ENV=(-e "ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}")
 fi
 
