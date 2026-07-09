@@ -135,7 +135,7 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
     when a card's heartbeat is within the display window
       then it is classified active — recently alive; coordinate, do not duplicate
     when a card's heartbeat is older than the display window but within the reap ttl
-      then it is classified stale — possibly disrupted; surfaced for resume, not reaped
+      then it is classified stale — omitted from presence rosters, not reaped
     when a card's heartbeat is older than the reap ttl
       then it is classified reapable
 
@@ -150,7 +150,7 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
       then the formatting matches the elapsed wall time
     when this is the first clock-in
       then the message tells the agent to run the test suite before starting
-      and it explains failing tests are the authoritative signal of unfinished WIP to resume, with active cards as advisory context for who already holds work
+      and it explains failing tests are the authoritative signal of unfinished WIP to resume, with active cards as advisory context for who is present
       and it scopes resumable WIP to work not held by an active agent
     when this is the first clock-in and other agents are active
       then both the active roster and the run-tests nudge are included
@@ -160,8 +160,6 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
       then null is returned
     when an active card is present
       then it is listed with branch, labelled active — another agent is recently alive on it; coordinate, do not duplicate
-    when a stale card is present
-      then it is omitted because timecards represent presence, not progress handover
 ```
 
 ## git
