@@ -481,7 +481,7 @@ JS
     start_openai_image_stub
 
     run_agent \
-      "Run /contree:diff-for-humans to generate an image of the current change."
+      "Run /contree:diff-for-humans to generate an image of the current change. Use the skill's curl/OpenAI images API recipe exactly so the local mocked gpt-image-2 endpoint is exercised. Do not use any built-in image-generation tool or generated_images mechanism."
 
     kill "$OPENAI_STUB_PID" 2>/dev/null || true
 
