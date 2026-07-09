@@ -78,7 +78,7 @@ Default naming when the ecosystem does not force another convention:
 - System tests live under `test/system/` as `*.system.test.*`.
 - Journey tests live under `test/journey/` as `*.journey.test.*`.
 
-Journey tests exercise real everything across the multi-capability arc at max realism. Component tests exercise one capability in-process with real driving and driven adapters, an in-memory database, and stubbed outbound HTTP. Exhaustive single-capability breadth belongs at the Use-case and Component layers.
+Journey tests exercise real everything across the multi-capability arc at max realism. Component tests exercise one capability in-process with real driving and driven adapters, an in-memory database, and stubbed outbound HTTP. exhaustive single-capability breadth belongs at the Use-case and Component layers.
 
 ### 5. CONFIGURE TEST COMMANDS
 
