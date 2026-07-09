@@ -9,20 +9,10 @@ Prepares the project for ongoing test-tree-driven development. Configures the te
 
 ## Critical Rules
 
-1. **Read before write.** Always read existing config files before modifying them. Never overwrite — merge surgically.
-2. **Tree output is non-negotiable.** If a framework can produce nested output, configure it. If it can only produce flat output, use it and be honest.
-3. **SessionStart test kinds, always.** Configure the kinds named by the SessionStart hook where the project has that surface:
-   - **Journey** — broad, production-like test of a curated user arc across capabilities. `test/journey/`. `*.journey.test.*`.
-   - **System** — deep, production-like test of one capability through the whole app. `test/system/`. `*.system.test.*`.
-   - **Component** — deep in-process test of one capability through the whole app, with external services replaced by test doubles such as stubbed outbound HTTP. `test/component/`. `*.component.test.*`.
-   - **Adapter** — one concrete boundary implementation against the real boundary it adapts. Colocated. `*.adapter.test.*`.
-   - **Port contract** — shared contract suite for an application interface; every implementation passes it. Colocated with the port. `*.contract.ts`.
-   - **Unit** — one public surface on one subject. Domain units use `*.domain.test.*`; Use-case units use `*.use-case.test.*`.
-
-   See `skills/tdd/SKILL.md` for the full mapping, the in-memory adapter pattern, and the shared port contract suite.
-4. **CI dual reporters.** Configure tree output for local dev AND structured output (JUnit XML) for CI. Both, not either/or.
-5. **Verify after configuring.** Run the tests and confirm tree-shaped output before moving on.
-6. **No test files.** Setup configures the framework and creates the test-tree home. Do NOT create any test files (`*.test.*`, `*.spec.*`). Trees and tests happen after setup.
+1. **Tree output is non-negotiable.** If a framework can produce nested output, configure it. If it can only produce flat output, use it and be honest.
+2. **Configure the project's test surfaces.** Where the project has the surface, configure independently runnable commands for Unit, Port contract, Adapter, Component, System, and Journey tests using the project's language conventions.
+3. **Verify after configuring.** Run the tests and confirm tree-shaped output before moving on.
+4. **No test files.** Setup configures the framework and creates the test-tree home. Do NOT create any test files (`*.test.*`, `*.spec.*`). Trees and tests happen after setup.
 
 ## Process
 
@@ -246,7 +236,7 @@ Add or update the following sections:
   - Outside-in TDD workflow summary
   - Example tree structure for this project
 
-Configured examples must follow the SessionStart rules: no copied comments, no env-var behaviour switches, and strong preference for composition over inheritance. Environment variables remain appropriate for secrets and external connection details because they configure boundaries rather than changing test/runtime behaviour.
+Configured examples must follow the setup rules: no copied comments, no env-var behaviour switches, and strong preference for composition over inheritance. Environment variables remain appropriate for secrets and external connection details because they configure boundaries rather than changing test/runtime behaviour.
 
 ### 12. SCAFFOLD MENTAL_MODEL.md
 
