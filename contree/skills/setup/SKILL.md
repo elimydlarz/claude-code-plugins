@@ -379,40 +379,44 @@ extension:
   - js
 ```
 
-**Separating test suites** — use separate config files:
+**Normal and functional test suites** — use separate config files:
 
-`.mocharc.domain.yml`:
+`.mocharc.yml`:
 ```yaml
 require: [tsx]
-spec: 'src/**/*.domain.test.{ts,js}'
+spec:
+  - 'src/**/*.unit.test.{ts,js}'
+  - 'src/**/*.domain.test.{ts,js}'
+  - 'src/**/*.use-case.test.{ts,js}'
+  - 'src/**/*.adapter.test.{ts,js}'
+  - 'test/component/**/*.component.test.{ts,js}'
 reporter: spec
 parallel: true
 jobs: 4
 timeout: 5000
 ```
 
-`.mocharc.system.yml`:
+`.mocharc.functional.yml`:
 ```yaml
 require: [tsx]
-spec: 'test/system/**/*.system.test.{ts,js}'
+spec:
+  - 'test/system/**/*.system.test.{ts,js}'
+  - 'test/journey/**/*.journey.test.{ts,js}'
 reporter: spec
 parallel: false
-timeout: 30000
+timeout: 60000
 ```
 
 **Scripts:**
 ```json
 {
-  "test:domain": "mocha --config .mocharc.domain.yml",
-  "test:system": "mocha --config .mocharc.system.yml",
+  "test": "mocha --config .mocharc.yml",
+  "test:functional": "mocha --config .mocharc.functional.yml",
   "test:mutate": "stryker run"
 }
 ```
 
-Add one project per layer — domain, use-case, component, adapter, system, journey — as shown for Vitest above.
-
 **Gotchas:**
-- No built-in `--changed` flag — use file watcher or script: `mocha $(git diff --name-only -- '*.test.ts')`
 - Parallel mode: root hooks from one test file are NOT available in another worker — use `--require` with a root hook plugin file
 - `spec` reporter works correctly in parallel mode
 
