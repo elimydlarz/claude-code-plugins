@@ -150,14 +150,12 @@ module.exports = {
   forbidden: [
     {
       name: 'domain-pure',
-      comment: 'Domain has no I/O. It must not reach adapters or application code.',
       severity: 'error',
       from: { path: 'src/.+/domain/' },
       to: { path: 'src/.+/(adapters|application)/' },
     },
     {
       name: 'use-case-no-adapter',
-      comment: 'Use-cases depend on ports (interfaces), not concrete adapters.',
       severity: 'error',
       from: { path: 'src/.+/application/' },
       to: { path: 'src/.+/adapters/' },
