@@ -1,6 +1,6 @@
 ---
 name: second-opinion
-description: "Get an independent review of completed work from a different model — sends the change and the test-tree contract to Z.AI's GLM 5.2 and surfaces its critique. TRIGGER when: sync has just finished, the user asks for a second opinion, an independent review, or a sanity check on completed work before a PR or release."
+description: "Get an independent review of completed work from a different model — sends the change and the test-tree contract to Z.AI's GLM 5.2 using ZAI_API_KEY or DEEPSEEK_API_KEY and surfaces its critique. TRIGGER when: sync has just finished, the user asks for a second opinion, an independent review, or a sanity check on completed work before a PR or release."
 ---
 
 # Second Opinion
@@ -32,15 +32,17 @@ For a wider grouping spanning several trunk-sync commits, diff the appropriate r
 
 ### 2. Ask GLM 5.2 to review against the contract
 
-Call Z.AI's chat completions API with the `glm-5.2` model, authenticated with `ZAI_API_KEY`. Send the change and the test trees, and ask GLM 5.2 to review the work as an independent critic: does the change satisfy the test-tree contract, are there bugs or drift, does it honour the rules (KISS, YAGNI, no fake code, fail-fast, no comments), and what would it change?
+Call Z.AI's chat completions API with the `glm-5.2` model, authenticated with `ZAI_API_KEY`, or `DEEPSEEK_API_KEY` when `ZAI_API_KEY` is absent. Send the change and the test trees, and ask GLM 5.2 to review the work as an independent critic: does the change satisfy the test-tree contract, are there bugs or drift, does it honour the rules (KISS, YAGNI, no fake code, fail-fast, no comments), and what would it change?
 
 ```bash
 REVIEW_INPUT=$(printf 'TEST TREES (the contract):\n\n%s\n\nCHANGE (the work to review):\n\n%s\n' \
   "$(cat TEST_TREES.md)" "$CHANGE")
 ZAI_BASE_URL="${ZAI_BASE_URL:-https://api.z.ai/api/paas/v4}"
+REVIEW_API_KEY="${ZAI_API_KEY:-${DEEPSEEK_API_KEY:-}}"
+: "${REVIEW_API_KEY:?missing both ZAI_API_KEY and DEEPSEEK_API_KEY}"
 
 curl -sS -f -X POST "$ZAI_BASE_URL/chat/completions" \
-  -H "Authorization: Bearer $ZAI_API_KEY" \
+  -H "Authorization: Bearer $REVIEW_API_KEY" \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg input "$REVIEW_INPUT" '{
         model: "glm-5.2",
@@ -58,4 +60,4 @@ Present GLM 5.2's review to the user verbatim, attributed to GLM 5.2 so it is cl
 
 ## Failure is loud
 
-If the review request fails — missing `ZAI_API_KEY`, an API error, a non-2xx response (`curl -f`), or empty content — surface the failure as an error and stop. Never fabricate a review, summarise the diff yourself and pass it off as GLM 5.2's, or report a second opinion you did not get. A missing review is an honest outcome; a fake one is not.
+If the review request fails — missing both `ZAI_API_KEY` and `DEEPSEEK_API_KEY`, an API error, a non-2xx response (`curl -f`), or empty content — surface the failure as an error and stop. Never fabricate a review, summarise the diff yourself and pass it off as GLM 5.2's, or report a second opinion you did not get. A missing review is an honest outcome; a fake one is not.
