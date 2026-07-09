@@ -321,17 +321,26 @@ const config: Config = {
   ],
   projects: [
     {
-      displayName: 'domain',
-      testMatch: ['<rootDir>/src/**/*.domain.test.{ts,js}'],
+      displayName: 'normal',
+      testMatch: [
+        '<rootDir>/src/**/*.unit.test.{ts,js}',
+        '<rootDir>/src/**/*.domain.test.{ts,js}',
+        '<rootDir>/src/**/*.use-case.test.{ts,js}',
+        '<rootDir>/src/**/*.adapter.test.{ts,js}',
+        '<rootDir>/test/component/**/*.component.test.{ts,js}',
+      ],
       transform: { '^.+\\.tsx?$': 'ts-jest' },
       testEnvironment: 'node',
     },
     {
-      displayName: 'system',
-      testMatch: ['<rootDir>/test/system/**/*.system.test.{ts,js}'],
+      displayName: 'functional',
+      testMatch: [
+        '<rootDir>/test/system/**/*.system.test.{ts,js}',
+        '<rootDir>/test/journey/**/*.journey.test.{ts,js}',
+      ],
       transform: { '^.+\\.tsx?$': 'ts-jest' },
       testEnvironment: 'node',
-      testTimeout: 30_000,
+      testTimeout: 60_000,
     },
   ],
 }
@@ -342,21 +351,15 @@ export default config
 **Scripts:**
 ```json
 {
-  "test": "jest",
-  "test:domain": "jest --selectProjects domain",
-  "test:system": "jest --selectProjects system",
-  "test:changed": "jest --changedSince=origin/main",
+  "test": "jest --selectProjects normal",
+  "test:functional": "jest --selectProjects functional",
   "test:mutate": "stryker run"
 }
 ```
 
-Add one project per layer — domain, use-case, component, adapter, system, journey — as shown for Vitest above.
-
 **Gotchas:**
 - `verbose` and `reporters` are shared across all projects — you cannot set them per-project
 - `displayName` is required for `--selectProjects` and `--ignoreProjects` to work
-- `--onlyChanged` uses `git status` — after committing, zero tests run; use `--changedSince=origin/main` for CI
-- `--changedSince` requires the base branch to be fetchable — in CI run `git fetch --no-tags --depth=1 origin main` first, then use `origin/main` (not `main`)
 - Stryker's Jest runner crashes when Jest `projects` is configured — if using Stryker with Jest projects, you may need a separate jest.config for Stryker that targets Domain + Use-case tests only without the projects array
 - Do NOT install `ts-jest` if the project uses Vitest (which handles TypeScript natively)
 
