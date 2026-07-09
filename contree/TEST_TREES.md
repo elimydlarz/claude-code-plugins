@@ -482,6 +482,7 @@ dual-harness-compatibility (src: .claude-plugin/plugin.json, .codex-plugin/plugi
     and the automated journey matrix runs the existing functional cases under Codex
     and the PostToolUse hook accepts Codex apply_patch stdin, where touched files are listed in patch headers
     and the Codex journey harness installs a project-local PostToolUse shim that invokes the plugin's real post-update script
+    and the journey harness distinguishes hook runner failures from ordinary agent command failures
 ```
 
 ## diff-images-the-change
