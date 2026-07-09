@@ -89,7 +89,7 @@ unfinished work — any failing test not owned by a currently-active agent is WI
 The active roster above is advisory context for who already holds work.
 ```
 
-Failing tests — not the timecard — are the authoritative signal of unfinished work. Cross-referencing them against who is still active tells a fresh agent which unfinished work is orphaned and safe to pick up; the cards are advisory context.
+Failing tests — not the timecard — are the authoritative signal of unfinished work. Timecards are advisory presence context for coordinating around currently active sessions.
 
 ## Session Start — see active sessions
 
