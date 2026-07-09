@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import type { HookInput, RepoState, Timecard, RuntimeContext } from "./hook-types.js";
+import type { HookInput, RepoState, Timecard } from "./hook-types.js";
 import {
   parseHookInput,
   planHook,
@@ -9,7 +9,6 @@ import {
   buildCommitBody,
   extractTaskFromTranscript,
   summarizeDeletions,
-  buildClockInPlan,
   classifyTimecards,
   formatClockInMessage,
   formatSessionStartSummary,
@@ -479,66 +478,6 @@ describe("summarizeDeletions", () => {
   });
 });
 
-// ── buildClockInPlan ─────────────────────────────────────────────────
-
-const runtime: RuntimeContext = { hostname: "my-macbook" };
-
-describe("buildClockInPlan", () => {
-  it("returns clock-in plan with timecard path", () => {
-    const input = makeInput();
-    const state = makeState();
-    const plan = buildClockInPlan(input, state, runtime);
-    assert.notEqual(plan, null);
-    assert.equal(plan!.timecardPath, ".trunk-sync/timeclock/abcdef12-3456-7890-abcd-ef1234567890.json");
-    assert.equal(plan!.timecard.sessionId, "abcdef12-3456-7890-abcd-ef1234567890");
-    assert.equal(plan!.timecard.hostname, "my-macbook");
-    assert.equal(plan!.timecard.branch, "main");
-    assert.equal("task" in plan!.timecard, false);
-  });
-
-  it("returns null when session_id is null", () => {
-    const input = makeInput({ session_id: null });
-    const state = makeState();
-    assert.equal(buildClockInPlan(input, state, runtime), null);
-  });
-
-  it("uses 'detached' when currentBranch is empty", () => {
-    const input = makeInput();
-    const state = makeState({ currentBranch: "" });
-    const plan = buildClockInPlan(input, state, runtime);
-    assert.equal(plan!.timecard.branch, "detached");
-  });
-});
-
-// ── planHook clock-in plan ───────────────────────────────────────────
-
-describe("planHook clock-in plan", () => {
-  it("includes clock-in plan when runtime context provided", () => {
-    const input = makeInput();
-    const state = makeState();
-    const plan = planHook(input, state, runtime);
-    if (plan.action !== "commit-and-sync") return;
-    assert.notEqual(plan.clockIn, null);
-    assert.equal(plan.clockIn!.timecard.hostname, "my-macbook");
-  });
-
-  it("clockIn is null without runtime context", () => {
-    const input = makeInput();
-    const state = makeState();
-    const plan = planHook(input, state);
-    if (plan.action !== "commit-and-sync") return;
-    assert.equal(plan.clockIn, null);
-  });
-
-  it("includes clock-in plan on commit-merge", () => {
-    const input = makeInput();
-    const state = makeState({ inMerge: true });
-    const plan = planHook(input, state, runtime);
-    if (plan.action !== "commit-merge") return;
-    assert.notEqual(plan.clockIn, null);
-  });
-});
-
 // ── classifyTimecards ───────────────────────────────────────────────────
 
 describe("classifyTimecards", () => {
@@ -613,11 +552,11 @@ describe("formatClockInMessage", () => {
   }
 
   it("returns null when no other agents are active and this is not the first clock-in", () => {
-    assert.equal(formatClockInMessage([], now, false), null);
+    assert.equal(formatClockInMessage([], now), null);
   });
 
   it("formats a single active agent", () => {
-    const msg = formatClockInMessage([card()], now, false)!;
+    const msg = formatClockInMessage([card()], now)!;
     assert.match(msg, /1 other agent active/);
     assert.match(msg, /abcdef12 on my-macbook/);
     assert.match(msg, /branch: main/);
@@ -630,31 +569,15 @@ describe("formatClockInMessage", () => {
     const msg = formatClockInMessage([
       card({ sessionId: "aaaa0000-0000-0000-0000-000000000000", hostname: "mac-1", lastActiveAt: "2026-03-27T10:04:00.000Z" }),
       card({ sessionId: "bbbb0000-0000-0000-0000-000000000000", hostname: "mac-2", branch: "feature", lastActiveAt: "2026-03-27T10:02:00.000Z" }),
-    ], now, false)!;
+    ], now)!;
     assert.match(msg, /2 other agents active/);
     assert.match(msg, /aaaa0000 on mac-1/);
     assert.match(msg, /bbbb0000 on mac-2/);
   });
 
   it("rounds the elapsed minutes to match wall time", () => {
-    const msg = formatClockInMessage([card({ lastActiveAt: "2026-03-27T10:02:00.000Z" })], now, false)!;
+    const msg = formatClockInMessage([card({ lastActiveAt: "2026-03-27T10:02:00.000Z" })], now)!;
     assert.match(msg, /3m ago/);
-  });
-
-  it("nudges running the tests and frames failing tests as authoritative WIP on the first clock-in", () => {
-    const msg = formatClockInMessage([], now, true)!;
-    assert.match(msg, /TRUNK-SYNC WIP/);
-    assert.match(msg, /Run the test suite/);
-    assert.match(msg, /authoritative/);
-    assert.match(msg, /resume/);
-    assert.match(msg, /currently-active agent/);
-  });
-
-  it("includes both the active roster and the run-tests nudge on the first clock-in with others present", () => {
-    const msg = formatClockInMessage([card()], now, true)!;
-    assert.match(msg, /1 other agent active/);
-    assert.match(msg, /TRUNK-SYNC WIP/);
-    assert.match(msg, /Run the test suite/);
   });
 });
 
