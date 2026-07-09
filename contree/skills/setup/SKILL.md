@@ -245,7 +245,7 @@ Add or update the following sections:
   - Outside-in TDD workflow summary
   - Example tree structure for this project
 
-Configured examples must follow the SessionStart rules: no copied comments, no env-var behaviour switches, no config inheritance, and visible reason markers for mocks and stubs. Environment variables remain appropriate for secrets and external connection details because they configure boundaries rather than changing test/runtime behaviour.
+Configured examples must follow the SessionStart rules: no copied comments, no env-var behaviour switches, no config inheritance, and visible reason markers for mocks and stubs. Treat those test doubles as reason-marked. Environment variables remain appropriate for secrets and external connection details because they configure boundaries rather than changing test/runtime behaviour.
 
 ### 12. SCAFFOLD MENTAL_MODEL.md
 
