@@ -124,6 +124,7 @@ CONFIG
     curl -fsS "http://127.0.0.1:$CODEX_DEEPSEEK_PROXY_PORT/health" >/dev/null 2>&1 && break
     sleep 0.1
   done
+  curl -fsS "http://127.0.0.1:$CODEX_DEEPSEEK_PROXY_PORT/health" >/dev/null
 }
 
 AGENT_CALL_COUNT=0
