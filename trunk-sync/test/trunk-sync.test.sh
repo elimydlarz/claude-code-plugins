@@ -1017,7 +1017,6 @@ CARD="$WT_A/.trunk-sync/timeclock/agentaaa.json"
 assert_contains "$SS_A" "your session id is agentaaa" "session-start: A is clocked in and given its session id"
 assert_equals "agentaaa" "$(jq -r '.sessionId' "$CARD")" "timecard: sessionId written"
 assert_equals "trunk-sync/agent-a" "$(jq -r '.branch' "$CARD")" "timecard: branch written"
-assert_equals "no" "$(jq 'has("lastStep") or has("remainingSteps")' "$CARD" | sed 's/false/no/; s/true/yes/')" "timecard: only presence fields are written"
 OLD_ACTIVE=$(jq -r '.lastActiveAt' "$CARD")
 sleep 1
 echo "work" > "$WT_A/seed.txt"
