@@ -583,6 +583,7 @@ System: hook-sync (system: test/trunk-sync.test.sh; journey: test/functional/doc
     when the handover case is run with the Claude harness
       then the shared fixture and verifier are used
       and the shared fixture carries minimal project docs so unrelated installed hooks have context
+      and Docker runs use the DeepSeek provider configured by `DEEPSEEK_API_KEY` from `.env`
       and the real Claude CLI edits, records progress, and receives the handover
     when the handover case is run with the Codex harness
       then the shared fixture and verifier are used
