@@ -325,7 +325,7 @@ case "$TEST_NAME" in
     echo ""
     echo "=== Phase 1: setup ==="
     run_agent \
-      "This project has no code yet — read CLAUDE.md for the Mental Model, then run /contree:setup to configure the test framework and generate test trees. This project has HTTP endpoints and a persistence port, so expect trees at multiple layers. Configure mutation testing if setup calls for it, but do not execute Stryker in this run."
+      "This project has no code yet — read CLAUDE.md for the Mental Model, then run /contree:setup to configure the test framework and create TEST_TREES.md when needed. Leave tree composition to change. This project has HTTP endpoints and a persistence port, so expect trees at multiple layers once change runs. Configure mutation testing if setup calls for it, but do not execute Stryker in this run."
 
     echo ""
     echo "=== Phase 2: workflow (change → sync → tdd) ==="

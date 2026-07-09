@@ -43,11 +43,11 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "!src/**/*.adapter.test.*"
 }
 
-@test "setup generates trees from existing code into TEST_TREES.md" {
+@test "setup creates TEST_TREES.md and delegates tree composition to change" {
   run cat "$SKILL"
   assert_output --partial "TEST_TREES.md"
-  assert_output --partial "source code"
-  assert_output --partial "behaviours the system implements today"
+  assert_output --partial "change"
+  assert_output --partial "Do not compose the trees yourself"
 }
 
 @test "setup updates CLAUDE.md to point at TEST_TREES.md when the pointer is missing" {
@@ -57,9 +57,10 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "CLAUDE.md"
 }
 
-@test "setup for a new project generates trees from user-described plans without implementing tests" {
+@test "setup for a new project creates the tree home without implementing tests" {
   run cat "$SKILL"
   assert_output --partial "new project"
+  assert_output --partial "TEST_TREES.md"
   assert_output --partial "No test files"
   assert_output --partial "Do NOT create any test files"
 }

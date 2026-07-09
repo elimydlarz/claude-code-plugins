@@ -173,21 +173,22 @@ post-task-hook (src: hooks/stop-drift-check.sh; system: test/post-task-hook.bats
     and emits the normal drift prompt instead of failing
 ```
 
-## setup-generates-trees
+## setup-prepares-project
 
 ```
-setup-generates-trees (src: skills/setup/SKILL.md; system: test/setup-generates-trees.bats; journey: test/journey/docker-entrypoint.sh)
+setup-prepares-project (src: skills/setup/SKILL.md; system: test/setup-prepares-project.bats; journey: test/journey/docker-entrypoint.sh)
   when setup is run on an existing project
     then existing test config is detected and merged into, not overwritten
     and tree reporters are configured for both local dev and CI (dual reporters)
     and the six test layers (Domain, Use-case, Component, Adapter, System, Journey) are configured as separate commands
     and mutation testing is configured with explicit test file exclusions for every layer's suffix
     and changed-test runners are configured with known gotchas addressed
-    and test trees are generated from existing code
-    and trees are written to TEST_TREES.md
+    and TEST_TREES.md is created when missing
+    and tree composition is handed to the change skill
     and CLAUDE.md is updated to point at TEST_TREES.md if it does not already
   when setup is run on a new project
-    then test trees are generated from user-described plans
+    then TEST_TREES.md is created when missing
+    and tree composition is handed to the change skill
     and tests are NOT implemented yet
   when the language only supports flat test output
     then the best available option is configured
