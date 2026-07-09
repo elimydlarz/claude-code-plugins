@@ -4,33 +4,46 @@ load test_helper
 
 SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
 
-@test "setup installs a hex-boundary linter" {
+@test "setup configures a normal linter" {
+  run cat "$SKILL"
+  assert_output --partial "normal linter"
+  assert_output --partial "project's language conventions"
+}
+
+@test "setup configures a hex-boundary linter" {
   run cat "$SKILL"
   [[ "$output" == *"dependency-cruiser"* || "$output" == *"hex-boundary"* || "$output" == *"architectural linter"* ]]
 }
 
-@test "setup configures the linter to enforce Domain has no I/O" {
+@test "setup configures one combined lint command" {
+  run cat "$SKILL"
+  assert_output --partial "combined lint command"
+  assert_output --partial "normal lint"
+  assert_output --partial "hex-boundary lint"
+}
+
+@test "setup configures the hex-boundary linter to enforce Domain has no I/O" {
   run cat "$SKILL"
   assert_output --partial "Domain"
   assert_output --regexp 'no I/O|not reach adapters'
 }
 
-@test "setup configures the linter to enforce use-cases depend on ports, not concrete adapters" {
+@test "setup configures the hex-boundary linter to enforce use-cases depend on ports, not concrete adapters" {
   run cat "$SKILL"
   assert_output --partial "ports"
   assert_output --regexp 'not concrete adapters|interfaces'
 }
 
-@test "setup configures the linter to enforce no circular dependencies" {
+@test "setup configures the hex-boundary linter to enforce no circular dependencies" {
   run cat "$SKILL"
   assert_output --partial "no-circular"
   assert_output --partial "circular: true"
 }
 
-@test "setup wires CI to run the linter so boundary violations fail the build" {
+@test "setup wires CI to run the combined lint command so normal and boundary violations fail the build" {
   run cat "$SKILL"
   assert_output --partial "Ensure CI runs"
-  assert_output --partial "architectural violations fail builds"
+  assert_output --partial "normal and boundary violations fail the build"
 }
 
 @test "setup names the language-native equivalent tool and states the rules to enforce when no first-party template exists" {

@@ -15,14 +15,24 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --regexp "(tree reporters|tree-shaped)"
 }
 
-@test "setup configures project test kinds as separate commands" {
+@test "setup maps the fixed Contree strategy to normal and functional test commands" {
   run cat "$SKILL"
+  assert_output --partial "fixed Contree test strategy"
+  assert_output --partial "normal test command"
+  assert_output --partial "functional test command"
   assert_output --partial "Unit"
   assert_output --partial "Port contract"
   assert_output --partial "Component"
   assert_output --partial "Adapter"
   assert_output --partial "System"
   assert_output --partial "Journey"
+  assert_output --partial "test:functional"
+  refute_output --partial "\"test:domain\""
+  refute_output --partial "\"test:use-case\""
+  refute_output --partial "\"test:adapter\""
+  refute_output --partial "\"test:component\""
+  refute_output --partial "\"test:system\""
+  refute_output --partial "\"test:journey\""
   refute_output --partial "SessionStart hook"
 }
 
@@ -79,11 +89,14 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "Ask before choosing the main application framework"
 }
 
-@test "setup updates CLAUDE.md to point at TEST_TREES.md when the pointer is missing" {
+@test "setup creates native project commands for configured DX" {
   run cat "$SKILL"
-  assert_output --partial "pointer"
-  assert_output --partial "TEST_TREES.md"
-  assert_output --partial "CLAUDE.md"
+  assert_output --partial "native project commands"
+  assert_output --partial "package.json scripts"
+  assert_output --partial "Makefile targets"
+  assert_output --partial "\"test\""
+  assert_output --partial "\"test:functional\""
+  assert_output --partial "\"lint\""
 }
 
 @test "setup for a new project creates the tree home without implementing tests" {
@@ -110,14 +123,6 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
 @test "setup passes secrets via environment variables" {
   run cat "$SKILL"
   [[ "$output" == *"environment variable"* || "$output" == *"env"* ]]
-}
-
-@test "setup configures changed-test runners with known gotchas addressed" {
-  run cat "$SKILL"
-  assert_output --partial "gotchas"
-  assert_output --partial "--onlyChanged"
-  assert_output --partial "git status"
-  assert_output --partial "NOT changed test files"
 }
 
 @test "setup communicates flat-output limitations honestly" {
