@@ -348,64 +348,50 @@ Choose the pattern that fits: a system constraint is ubiquitous; a precondition 
 
 **Tree reporter:**
 ```ts
-// vitest.config.ts
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   test: {
-    // 'tree' gives nested describe/it output.
-    // CRITICAL: Do NOT use 'verbose' — in Vitest v3+ it switched to flat output.
-    // 'tree' is the correct reporter for nested indentation.
-    reporters: [
-      'tree',
-      // Add JUnit XML for CI alongside tree for local dev:
-      ...(process.env.CI ? ['junit'] : []),
-    ],
-    outputFile: process.env.CI ? { junit: './reports/junit.xml' } : undefined,
+    reporters: ['tree', 'junit'],
+    outputFile: { junit: './reports/junit.xml' },
   },
 })
 ```
 
 **Separating the six test layers** — use Vitest projects (replaces deprecated `vitest.workspace.ts` in v3.2+). One project per layer: `domain`, `use-case`, `component`, `adapter`, `system`, `journey`. Same pattern shown below — adjust `include` globs and timeouts per layer. Adapter (driven), System, and Journey (real infra) may need much higher timeouts than Domain/Use-case/Component:
 ```ts
-// vitest.config.ts
 export default defineConfig({
   test: {
-    reporters: ['tree'],  // reporters are root-level only — silently ignored inside projects
+    reporters: ['tree', 'junit'],
+    outputFile: { junit: './reports/junit.xml' },
     projects: [
       {
-        extends: true,  // inherit root config (plugins, resolve.alias, etc.)
         test: {
           name: 'domain',
           include: ['src/**/*.domain.test.{ts,js}'],
         },
       },
       {
-        extends: true,
         test: {
           name: 'use-case',
           include: ['src/**/*.use-case.test.{ts,js}'],
         },
       },
       {
-        extends: true,
         test: {
           name: 'adapter',
           include: ['src/**/*.adapter.test.{ts,js}'],
-          testTimeout: 30_000,  // driven adapters hit real infra
+          testTimeout: 30_000,
           hookTimeout: 30_000,
         },
       },
       {
-        extends: true,
         test: {
           name: 'component',
           include: ['test/component/**/*.component.test.{ts,js}'],
-          // runs in-process (in-memory DB + stubbed HTTP) — no real-infra timeout needed
         },
       },
       {
-        extends: true,
         test: {
           name: 'system',
           include: ['test/system/**/*.system.test.{ts,js}'],
@@ -414,11 +400,10 @@ export default defineConfig({
         },
       },
       {
-        extends: true,
         test: {
           name: 'journey',
           include: ['test/journey/**/*.journey.test.{ts,js}'],
-          testTimeout: 60_000,  // the full arc across capabilities — slowest
+          testTimeout: 60_000,
           hookTimeout: 60_000,
         },
       },
@@ -445,7 +430,6 @@ export default defineConfig({
 
 **Gotchas:**
 - `reporters` is root-level only — setting it inside a `projects[*].test` block is silently ignored
-- `extends: true` in a project block is required to inherit root-level config — without it you get a bare Vite config
 - `--changed` uses the import graph but only tracks changed source files, not changed test files — use `--watch` for local TDD
 - `vitest.workspace.ts` is deprecated since v3.2 — use the `projects` array inside `vitest.config.ts`
 
@@ -455,27 +439,20 @@ export default defineConfig({
 
 **Tree reporter:**
 ```ts
-// jest.config.ts
 import type { Config } from 'jest'
 
 const config: Config = {
-  // verbose: true IS Jest's tree output — it nests test names under describe blocks.
-  // There is no separate 'tree' reporter in Jest.
   verbose: true,
-
-  // Add JUnit XML for CI:
   reporters: [
     'default',
-    ...(process.env.CI ? [['jest-junit', {
+    ['jest-junit', {
       outputDirectory: 'reports',
       outputName: 'junit.xml',
-    }]] : []),
+    }],
   ],
-
-  // Separate fast colocated layers from real-infra suites via projects:
   projects: [
     {
-      displayName: 'domain',  // required for --selectProjects to work
+      displayName: 'domain',
       testMatch: ['<rootDir>/src/**/*.domain.test.{ts,js}'],
       transform: { '^.+\\.tsx?$': 'ts-jest' },
       testEnvironment: 'node',
@@ -520,11 +497,9 @@ Add one project per layer — domain, use-case, component, adapter, system, jour
 
 **Tree reporter:**
 ```yaml
-# .mocharc.yml
-# 'spec' is the tree-style reporter (nested describe/it). It is also the default.
 reporter: spec
 require:
-  - tsx  # TypeScript support
+  - tsx
 recursive: true
 timeout: 5000
 extension:
@@ -549,7 +524,7 @@ timeout: 5000
 require: [tsx]
 spec: 'test/system/**/*.system.test.{ts,js}'
 reporter: spec
-parallel: false  # system and journey tests often need serial execution
+parallel: false
 timeout: 30000
 ```
 
@@ -576,27 +551,23 @@ Add one project per layer — domain, use-case, component, adapter, system, jour
 **Install** (pick the runner matching your test framework):
 ```bash
 pnpm add -D @stryker-mutator/core @stryker-mutator/vitest-runner
-# OR: @stryker-mutator/jest-runner
-# OR: @stryker-mutator/mocha-runner
-# Optional: @stryker-mutator/typescript-checker
+pnpm add -D @stryker-mutator/jest-runner
+pnpm add -D @stryker-mutator/mocha-runner
+pnpm add -D @stryker-mutator/typescript-checker
 ```
 
 **Vitest runner config:**
 ```js
-// stryker.config.mjs
-/** @type {import('@stryker-mutator/api/core').PartialStrykerOptions} */
 export default {
   testRunner: 'vitest',
   vitest: {
     configFile: 'vitest.config.ts',
     dir: '.',
-    // Only run tests related to mutated files — MUCH faster:
     related: true,
   },
 
   mutate: [
     'src/**/*.ts',
-    // Exclude test files — critical when tests are colocated with source:
     '!src/**/*.test.ts',
     '!src/**/*.spec.ts',
     '!src/**/*.domain.test.ts',
@@ -612,26 +583,23 @@ export default {
     '!src/**/*.d.ts',
   ],
 
-  coverageAnalysis: 'perTest',  // most efficient — always use this
+  coverageAnalysis: 'perTest',
 
   reporters: ['clear-text', 'progress', 'html'],
   htmlReporter: { fileName: 'reports/mutation/index.html' },
 
   thresholds: { high: 80, low: 60, break: 50 },
 
-  // Incremental mode — stores state between runs for speed.
-  // Commit the file or store as CI artifact for cross-run benefits.
   incremental: true,
   incrementalFile: 'reports/stryker-incremental.json',
 
-  // TypeScript checker prunes non-compiling mutants early (faster):
   checkers: ['typescript'],
   tsconfigFile: 'tsconfig.json',
 
   concurrency: 4,
   timeoutMS: 10_000,
   timeoutFactor: 1.5,
-  ignoreStatic: true,  // skip mutants in static initializers (low value, slow)
+  ignoreStatic: true,
 }
 ```
 
@@ -641,7 +609,7 @@ export default {
   jest: {
     projectType: 'custom',
     configFile: 'jest.config.ts',
-    enableFindRelatedTests: true,  // equivalent of vitest.related
+    enableFindRelatedTests: true,
   },
 ```
 
