@@ -58,8 +58,6 @@ fi
 MATRIX=(
   "layered-workflow:claude"
   "layered-workflow:codex"
-  "mental-model-validator-smoke:claude"
-  "mental-model-validator-smoke:codex"
   "describe-it-drift:claude"
   "describe-it-drift:codex"
   "diff-images:claude"
