@@ -9,30 +9,31 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   [[ "$output" == *"Talk it through with the user"* || "$output" == *"discuss"* ]]
 }
 
-@test "change scopes consumer vocabulary to Journey, System, and Adapter layers" {
+@test "change teaches that every layer is consumer-driven" {
   run cat "$SKILL"
-  assert_output --partial "consumer"
-  assert_output --partial "vocabulary"
-  assert_output --partial "Journey, System, and Adapter"
+  assert_output --partial "every layer is consumer-driven"
+  assert_output --partial "consumer is created before the thing it consumes is implemented"
 }
 
-@test "change scopes principles-not-cases to Journey, System, and Adapter layers" {
+@test "change scopes principles-not-cases to Journey, System, Component, and Adapter layers" {
   run cat "$SKILL"
   assert_output --partial "principles, not cases"
-  assert_output --partial "Journey, System, and Adapter"
+  assert_output --partial "Journey, System, Component, and Adapter"
 }
 
-@test "change writes Domain, Use-case, and Port-contract trees with top-level nodes naming exported functions, methods, or port operations" {
+@test "change writes Domain, Use-case, and Port trees from the outer consumer's need" {
   run cat "$SKILL"
   assert_output --partial "Domain"
   assert_output --partial "Use-case"
-  assert_output --regexp "Port-contract|port contract"
-  assert_output --regexp "exported functions|functions/methods"
+  assert_output --partial "Port"
+  assert_output --partial "outer consumer"
+  assert_output --partial "forced into existence"
 }
 
-@test "change writes Domain, Use-case, and Port-contract tree paths as observable branches" {
+@test "change treats pure functions as consumer-driven" {
   run cat "$SKILL"
-  [[ "$output" == *"observable branch"* ]]
+  assert_output --partial "Pure functions are still consumer-driven"
+  assert_output --partial "observe its result or error"
 }
 
 @test "change enforces that every tree's describe/it hierarchy mirrors the tree verbatim" {
@@ -101,10 +102,10 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   assert_output --regexp "omitted|omission"
 }
 
-@test "change treats awkward path naming as design feedback, not a reason to strip paths" {
+@test "change treats path and file-boundary mismatch as design feedback" {
   run cat "$SKILL"
-  assert_output --partial "awkward"
-  assert_output --regexp "reshape|reshaped"
+  assert_output --partial "mismatch between the consumer need and the file boundaries"
+  assert_output --partial "design feedback"
 }
 
 @test "change reads the actual tests and source of the area it is changing before drafting the tree edit" {
