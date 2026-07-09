@@ -121,20 +121,20 @@ export function gatherRepoState(input) {
 export function getRuntimeContext() {
     return { hostname: hostname() };
 }
-export function clockIn(repoRoot, plan) {
+export function clockIn(repoRoot, timecard) {
     const dir = join(repoRoot, ".trunk-sync", "timeclock");
     mkdirSync(dir, { recursive: true });
-    const filePath = join(repoRoot, plan.timecardPath);
-    let timecard = { ...plan.timecard };
+    const filePath = join(dir, `${timecard.sessionId}.json`);
+    let nextTimecard = { ...timecard };
     try {
         const existing = JSON.parse(readFileSync(filePath, "utf-8"));
         if (existing.clockedInAt) {
-            timecard = { ...timecard, clockedInAt: existing.clockedInAt };
+            nextTimecard = { ...nextTimecard, clockedInAt: existing.clockedInAt };
         }
     }
     catch {
     }
-    writeFileSync(filePath, JSON.stringify(timecard, null, 2) + "\n");
+    writeFileSync(filePath, JSON.stringify(nextTimecard, null, 2) + "\n");
 }
 export function readTimecards(repoRoot) {
     const dir = join(repoRoot, ".trunk-sync", "timeclock");
@@ -152,12 +152,15 @@ export function readTimecards(repoRoot) {
     }
     return timecards;
 }
-export function runSessionStart(repoRoot, ownSessionId) {
+export function runSessionStart(state, ownSessionId, runtime) {
     if (!ownSessionId)
         return null;
+    clockIn(state.repoRoot, buildTimecard(ownSessionId, state, runtime));
+    commitTimecardChange(state, `auto: clock-in ${ownSessionId.slice(0, 8)}`);
+    syncBestEffort(state);
     const intro = `TRUNK-SYNC SESSION: your session id is ${ownSessionId}.`;
     const now = new Date();
-    const { active } = classifyTimecards(ownSessionId, readTimecards(repoRoot), now);
+    const { active } = classifyTimecards(ownSessionId, readTimecards(state.repoRoot), now);
     const roster = formatSessionStartSummary(active, now);
     return roster ? `${intro}\n\n${roster}` : intro;
 }
@@ -171,20 +174,8 @@ export function runStop(state, sessionId) {
     catch {
         return;
     }
-    try {
-        execSync(`git -C "${state.repoRoot}" add -- ".trunk-sync/timeclock/${sessionId}.json"`, { stdio: "ignore" });
-        execSync(`git -C "${state.repoRoot}" commit -m "auto: clock-out ${sessionId.slice(0, 8)}"`, { stdio: "ignore" });
-    }
-    catch {
-        return;
-    }
-    if (state.hasRemote) {
-        try {
-            executeSync({ targetBranch: state.targetBranch, currentBranch: state.currentBranch });
-        }
-        catch {
-        }
-    }
+    commitTimecardChange(state, `auto: clock-out ${sessionId.slice(0, 8)}`);
+    syncBestEffort(state);
 }
 export function reapCards(repoRoot, ids) {
     const removed = [];
@@ -199,55 +190,60 @@ export function reapCards(repoRoot, ids) {
     }
     return removed;
 }
-function readThrottleTimestamp(sessionId) {
-    const path = join(tmpdir(), `trunk-sync-clockin-${sessionId}`);
+function buildTimecard(sessionId, state, runtime) {
+    const now = new Date().toISOString();
+    return {
+        sessionId,
+        hostname: runtime.hostname,
+        clockedInAt: now,
+        lastActiveAt: now,
+        branch: state.currentBranch || "detached",
+    };
+}
+function touchTimecard(state, sessionId) {
+    if (!sessionId)
+        return;
+    const cardPath = join(state.repoRoot, ".trunk-sync", "timeclock", `${sessionId}.json`);
+    let card;
     try {
-        return parseInt(readFileSync(path, "utf-8"), 10);
+        card = JSON.parse(readFileSync(cardPath, "utf-8"));
     }
     catch {
-        return null;
+        return;
     }
+    card.lastActiveAt = new Date().toISOString();
+    card.branch = state.currentBranch || "detached";
+    writeFileSync(cardPath, JSON.stringify(card, null, 2) + "\n");
+    execSync(`git -C "${state.repoRoot}" add -- ".trunk-sync/timeclock/${sessionId}.json"`, { stdio: "ignore" });
 }
-function writeThrottleTimestamp(sessionId, now) {
-    const path = join(tmpdir(), `trunk-sync-clockin-${sessionId}`);
-    writeFileSync(path, String(now));
+function reapOldTimecards(state, ownSessionId) {
+    const { reapable } = classifyTimecards(ownSessionId, readTimecards(state.repoRoot), new Date());
+    if (reapable.length === 0)
+        return;
+    reapCards(state.repoRoot, reapable.map((tc) => tc.sessionId));
+    execSync(`git add -- "${join(state.repoRoot, ".trunk-sync", "timeclock")}"`, { cwd: state.repoRoot, stdio: "ignore" });
 }
-function tmpdir() {
-    return process.env.TMPDIR || "/tmp";
-}
-const THROTTLE_MS = 5 * 60 * 1000;
-/**
- * Clock in, reap abandoned cards (heartbeat past the TTL), and check who else is active.
- * Returns a message if other agents are active and throttle allows.
- */
-function executeClockIn(plan, _input, state) {
+function commitTimecardChange(state, message) {
     try {
-        clockIn(state.repoRoot, plan);
-        const allTimecards = readTimecards(state.repoRoot);
-        const now = new Date();
-        const { active, reapable } = classifyTimecards(plan.timecard.sessionId, allTimecards, now);
-        if (reapable.length > 0) {
-            reapCards(state.repoRoot, reapable.map((tc) => tc.sessionId));
-        }
-        const timeclockDir = join(state.repoRoot, ".trunk-sync", "timeclock");
-        try {
-            execSync(`git add -- "${timeclockDir}"`, { cwd: state.repoRoot, stdio: "ignore" });
-        }
-        catch {
-        }
-        const lastWarning = readThrottleTimestamp(plan.timecard.sessionId);
-        const nowMs = now.getTime();
-        const isFirstClockIn = lastWarning === null;
-        const throttleElapsed = isFirstClockIn || (nowMs - lastWarning) >= THROTTLE_MS;
-        if (isFirstClockIn || (active.length > 0 && throttleElapsed)) {
-            writeThrottleTimestamp(plan.timecard.sessionId, nowMs);
-            return formatClockInMessage(active, now, isFirstClockIn);
-        }
-        return null;
+        execSync(`git add -- "${join(state.repoRoot, ".trunk-sync", "timeclock")}"`, { cwd: state.repoRoot, stdio: "ignore" });
+        execSync(`git -C "${state.repoRoot}" commit -m "${escapeForShell(message)}"`, { stdio: "ignore" });
     }
     catch {
-        return null;
     }
+}
+function syncBestEffort(state) {
+    if (!state.hasRemote)
+        return;
+    try {
+        executeSync({ targetBranch: state.targetBranch, currentBranch: state.currentBranch });
+    }
+    catch {
+    }
+}
+function formatConflictRoster(state, ownSessionId) {
+    const now = new Date();
+    const { active } = classifyTimecards(ownSessionId, readTimecards(state.repoRoot), now);
+    return formatClockInMessage(active, now);
 }
 /**
  * Execute a hook plan: stage files, commit, sync.
@@ -257,13 +253,12 @@ export function executePlan(plan, input, state) {
     if (plan.action === "skip")
         return { exitCode: 0 };
     if (plan.action === "commit-merge") {
-        // Clock in and check who else is working
-        const clockInMsg = plan.clockIn ? executeClockIn(plan.clockIn, input, state) : null;
         // Stage the file if provided
         const filePath = input.tool_input.file_path;
         if (filePath) {
             execSync(`git add -- "${filePath}"`, { cwd: state.repoRoot });
         }
+        touchTimecard(state, input.session_id);
         try {
             execSync(`git commit -m "${escapeForShell(plan.message)}"`, { cwd: state.repoRoot });
         }
@@ -275,17 +270,13 @@ export function executePlan(plan, input, state) {
         if (plan.sync) {
             const syncResult = executeSync(plan.sync);
             if (syncResult.exitCode !== 0)
-                return syncResult;
-            if (clockInMsg)
-                return { exitCode: 2, stderr: clockInMsg };
+                return appendConflictRoster(syncResult, state, input.session_id);
             return syncResult;
         }
-        if (clockInMsg)
-            return { exitCode: 2, stderr: clockInMsg };
         return { exitCode: 0 };
     }
     // commit-and-sync
-    const { commit, sync, clockIn: clockInPlan } = plan;
+    const { commit, sync } = plan;
     // Stage deletions
     for (const file of commit.filesToRemove) {
         try {
@@ -301,8 +292,6 @@ export function executePlan(plan, input, state) {
     for (const file of commit.filesToStage) {
         execSync(`git add -- "${file}"`, { cwd: state.repoRoot });
     }
-    // Clock in and check who else is working
-    const clockInMsg = clockInPlan ? executeClockIn(clockInPlan, input, state) : null;
     // Check if there's anything staged (may have been a no-op)
     try {
         execSync("git diff --cached --quiet", { cwd: state.repoRoot, stdio: "ignore" });
@@ -311,6 +300,8 @@ export function executePlan(plan, input, state) {
     catch {
         // has staged changes — continue
     }
+    touchTimecard(state, input.session_id);
+    reapOldTimecards(state, input.session_id);
     // Try to enrich commit message with task from transcript
     let finalCommit = commit;
     if (input.transcript_path) {
@@ -338,14 +329,19 @@ export function executePlan(plan, input, state) {
     if (sync) {
         const syncResult = executeSync(sync);
         if (syncResult.exitCode !== 0)
-            return syncResult;
-        if (clockInMsg)
-            return { exitCode: 2, stderr: clockInMsg };
+            return appendConflictRoster(syncResult, state, input.session_id);
         return syncResult;
     }
-    if (clockInMsg)
-        return { exitCode: 2, stderr: clockInMsg };
     return { exitCode: 0 };
+}
+function appendConflictRoster(result, state, ownSessionId) {
+    const roster = formatConflictRoster(state, ownSessionId);
+    if (!roster)
+        return result;
+    return {
+        exitCode: result.exitCode,
+        stderr: result.stderr ? `${result.stderr}\n\n${roster}` : roster,
+    };
 }
 function amendWithTranscriptSnapshot(input, state) {
     try {

@@ -14,10 +14,9 @@ export function parseHookInput(json) {
  * Pure decision logic: given parsed input and repo state, decide what to do.
  * No I/O, no git commands — only data in, plan out.
  */
-export function planHook(input, state, runtime) {
+export function planHook(input, state) {
     const filePath = input.tool_input.file_path ?? null;
     const sync = buildSyncPlan(state);
-    const clockIn = runtime ? buildClockInPlan(input, state, runtime) : null;
     // No file_path and no deleted/modified/untracked files → nothing to do
     if (!filePath &&
         state.deletedFiles.length === 0 &&
@@ -43,12 +42,11 @@ export function planHook(input, state, runtime) {
             action: "commit-merge",
             message,
             sync,
-            clockIn,
         };
     }
     // Normal commit path
     const commit = buildCommitPlan(input, state);
-    return { action: "commit-and-sync", commit, sync, clockIn };
+    return { action: "commit-and-sync", commit, sync };
 }
 function buildSyncPlan(state) {
     if (!state.hasRemote)
@@ -206,21 +204,6 @@ export function summarizeDeletions(files) {
         return first;
     return `${first} (+${files.length - 1} more)`;
 }
-export function buildClockInPlan(input, state, runtime) {
-    if (!input.session_id)
-        return null;
-    const now = new Date().toISOString();
-    return {
-        timecardPath: `.trunk-sync/timeclock/${input.session_id}.json`,
-        timecard: {
-            sessionId: input.session_id,
-            hostname: runtime.hostname,
-            clockedInAt: now,
-            lastActiveAt: now,
-            branch: state.currentBranch || "detached",
-        },
-    };
-}
 export const ACTIVE_WINDOW_MS = 60 * 60 * 1000;
 export const REAP_TTL_MS = 14 * 24 * 60 * 60 * 1000;
 export function classifyTimecards(ownSessionId, timecards, now) {
@@ -240,7 +223,7 @@ export function classifyTimecards(ownSessionId, timecards, now) {
     }
     return { active, stale, reapable };
 }
-export function formatClockInMessage(active, now, isFirstClockIn) {
+export function formatClockInMessage(active, now) {
     const sections = [];
     if (active.length > 0) {
         const lines = active.map((tc) => {
@@ -248,9 +231,6 @@ export function formatClockInMessage(active, now, isFirstClockIn) {
             return `- ${tc.sessionId.slice(0, 8)} on ${tc.hostname} (branch: ${tc.branch}, ${agoStr} ago)`;
         });
         sections.push(`TRUNK-SYNC ACTIVE: ${active.length} other agent${active.length > 1 ? "s" : ""} active. Continue your work as planned — no action required.`, ...lines);
-    }
-    if (isFirstClockIn) {
-        sections.push("TRUNK-SYNC WIP: Run the test suite before starting. Failing tests are the authoritative signal of unfinished work — any failing test not owned by a currently-active agent is WIP for you to resume. The active roster above is advisory context for who is present.");
     }
     if (active.length > 0) {
         sections.push("If you share resources (ports, test databases, build locks), coordinate accordingly. Otherwise, ignore this message.");
