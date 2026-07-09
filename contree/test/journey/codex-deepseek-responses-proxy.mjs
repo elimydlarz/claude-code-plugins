@@ -90,22 +90,11 @@ function toChatMessages(input) {
     }
 
     if (item.type === 'function_call_output') {
-      return [{ role: 'tool', tool_call_id: item.call_id, content: item.output || '' }]
+      return [{ role: 'user', content: `Tool output ${item.call_id}:\n${item.output || ''}` }]
     }
 
     if (item.type === 'function_call') {
-      return [{
-        role: 'assistant',
-        content: '',
-        tool_calls: [{
-          id: item.call_id,
-          type: 'function',
-          function: {
-            name: item.name,
-            arguments: item.arguments || '{}'
-          }
-        }]
-      }]
+      return []
     }
 
     if (typeof item.content === 'string') {
@@ -186,7 +175,7 @@ function writeResponsesEventStream(res, chat) {
     status: 'completed',
     model: chat.model || 'deepseek-chat',
     output,
-    usage: chat.usage || null
+    usage: responsesUsage(chat.usage)
   }
 
   res.writeHead(200, {
@@ -209,6 +198,16 @@ function writeResponsesEventStream(res, chat) {
   })
   sendEvent(res, 'response.completed', { type: 'response.completed', response })
   res.end()
+}
+
+function responsesUsage(usage) {
+  return {
+    input_tokens: usage?.prompt_tokens || 0,
+    cached_input_tokens: usage?.prompt_cache_hit_tokens || 0,
+    output_tokens: usage?.completion_tokens || 0,
+    reasoning_output_tokens: usage?.completion_tokens_details?.reasoning_tokens || 0,
+    total_tokens: usage?.total_tokens || 0
+  }
 }
 
 function toResponseOutput(message) {
