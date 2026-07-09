@@ -646,23 +646,17 @@ mutmut browse
 
 The `documentation` formatter prints nested `describe`/`context`/`it` blocks as indented text.
 
-**Separating spec directories:**
+**Normal and functional command mapping:**
 ```ruby
 RSpec.configure do |config|
-  config.define_derived_metadata(file_path: %r{/spec/system/}) do |metadata|
-    metadata[:system] = true
-  end
-  config.define_derived_metadata(file_path: %r{/spec/domain/}) do |metadata|
-    metadata[:domain] = true
-  end
   config.example_status_persistence_file_path = "spec/examples.txt"
 end
 ```
 
-Run by tag:
+Configure the project commands:
 ```bash
-rspec --tag domain
-rspec --tag system
+rspec spec src test/component
+rspec test/system test/journey
 rspec --only-failures
 rspec --next-failure
 ```
