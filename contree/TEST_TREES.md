@@ -480,7 +480,7 @@ dual-harness-compatibility (src: .claude-plugin/plugin.json, .codex-plugin/plugi
   when the Stop hook fires
     then hooks.json wires it to hooks/stop-drift-check.sh
   when Codex is the harness
-    then Codex installations require [features].plugin_hooks to be true so hooks/hooks.json is loaded
+    then Codex installations require [features].hooks and [features].plugin_hooks to be true so hooks/hooks.json is loaded
     and the automated journey matrix runs the existing functional cases under Codex
     and the PostToolUse hook accepts Codex apply_patch stdin, where touched files are listed in patch headers
     and the Codex journey harness installs a project-local PostToolUse shim that invokes the plugin's real post-update script

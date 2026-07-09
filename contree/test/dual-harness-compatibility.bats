@@ -22,8 +22,14 @@ load test_helper
   assert_output "./hooks/hooks.json"
 }
 
-@test "and Codex installations require plugin_hooks so hooks/hooks.json is loaded" {
-  run grep -F "[features] plugin_hooks = true" "$PROJECT_ROOT/CLAUDE.md"
+@test "and Codex installations enable hooks and plugin_hooks so hooks/hooks.json is loaded" {
+  run grep -F "[features].hooks = true" "$PROJECT_ROOT/CLAUDE.md"
+  assert_success
+
+  run grep -F "[features].plugin_hooks = true" "$PROJECT_ROOT/CLAUDE.md"
+  assert_success
+
+  run grep -F "hooks = true" "$PROJECT_ROOT/README.md"
   assert_success
 
   run grep -F "plugin_hooks = true" "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
