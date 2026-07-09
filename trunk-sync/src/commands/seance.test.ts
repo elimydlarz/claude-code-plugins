@@ -9,14 +9,14 @@ function gitIn(dir: string, cmd: string): string {
   return execSync(`git ${cmd}`, { cwd: dir, encoding: "utf-8" }).trim();
 }
 
-function runSeance(dir: string, args: string, extraPath?: string): string {
+function runSeance(dir: string, args: string, extraPath?: string, extraEnv: NodeJS.ProcessEnv = {}): string {
   const cliPath = join(process.cwd(), "dist", "cli.js");
   const pathEnv = extraPath ? `${extraPath}:${process.env.PATH}` : process.env.PATH;
   try {
     return execSync(`node "${cliPath}" seance ${args}`, {
       cwd: dir,
       encoding: "utf-8",
-      env: { ...process.env, PATH: pathEnv },
+      env: { ...process.env, ...extraEnv, PATH: pathEnv },
     }).trim();
   } catch (e: unknown) {
     const err = e as { stderr?: string; stdout?: string };
@@ -26,14 +26,19 @@ function runSeance(dir: string, args: string, extraPath?: string): string {
 
 // Like runSeance, but also surfaces the process's actual exit code — needed by
 // tests that must assert "exits 1" literally, not just infer it from message content.
-function runSeanceWithStatus(dir: string, args: string, extraPath?: string): { output: string; status: number | null } {
+function runSeanceWithStatus(
+  dir: string,
+  args: string,
+  extraPath?: string,
+  extraEnv: NodeJS.ProcessEnv = {},
+): { output: string; status: number | null } {
   const cliPath = join(process.cwd(), "dist", "cli.js");
   const pathEnv = extraPath ? `${extraPath}:${process.env.PATH}` : process.env.PATH;
   try {
     const output = execSync(`node "${cliPath}" seance ${args}`, {
       cwd: dir,
       encoding: "utf-8",
-      env: { ...process.env, PATH: pathEnv },
+      env: { ...process.env, ...extraEnv, PATH: pathEnv },
     }).trim();
     return { output, status: 0 };
   } catch (e: unknown) {
