@@ -149,8 +149,9 @@ pre-task-hook (src: hooks/session-start.sh; system: test/pre-task-hook.bats; jou
 
 ```
 post-task-hook (src: hooks/stop-drift-check.sh; system: test/post-task-hook.bats; journey: test/journey/docker-entrypoint.sh)
-  when Claude stops after a response that does not end with a question
+  when Claude stops after a response
     then a mental-model nudge prompts consideration of whether the task revealed any knowledge not already described in documentation, tests, and code, defaulting to no change
+      and directs creation of MENTAL_MODEL.md with the seven named H2 sections in order when it is missing at the project root
       when a change is warranted
         then the edit declares which of the seven sections it belongs to
         and an edit fitting no section is not added to the mental model
@@ -160,19 +161,11 @@ post-task-hook (src: hooks/stop-drift-check.sh; system: test/post-task-hook.bats
     and a test-trees nudge prompts detection of drift between trees and implementation
     and a claude-md nudge prompts detection of drift between CLAUDE.md content and reality
     and a readme nudge prompts detection of readme staleness against what the project is, how consumers install it, configure it, and use it
-  when Claude stops after a response that ends with a question
-    then the hook injects a question-stop prompt in place of the drift nudges
-    and the prompt directs the agent to check whether the rules, mental model, and test trees already determine the answer
-    and the prompt directs the agent to decide and act on that answer rather than ask the user when they determine it
-    and the prompt directs the agent to put the question to the user only when the answer is genuinely under-determined by all of them
+      and directs creation of README.md with those consumer-facing details when it is missing at the project root
   when stop_hook_active is true
     then the hook exits silently to prevent infinite loops
   when no nudge reports anything
     then Claude replies with 0
-  if MENTAL_MODEL.md is missing at the project root
-    then the mental-model nudge instead directs creation of MENTAL_MODEL.md with the seven named H2 sections in order
-  if README.md is missing at the project root
-    then the readme nudge instead directs creation of README.md describing what the project is, how consumers install it, configure it, and use it
   if MENTAL_MODEL.md and README.md exist at the project root but the hook runs from a subdirectory
     then no missing-file nudge is emitted, because presence is judged at the project root rather than the hook's working directory
   when Codex runs the Stop hook without CLAUDE_PROJECT_DIR
