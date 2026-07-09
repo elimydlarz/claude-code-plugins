@@ -26,7 +26,9 @@ inherit = "all"
 
 - `shell_environment_policy.inherit = "all"` is required when hook scripts need the same PATH and toolchain that the interactive shell has. This fixed the original `node` not found / hook exit 127 class of failures.
 - Dockerized Codex journeys use `DEEPSEEK_API_KEY` from `.env` as the shared functional-test credential.
-- The harness writes an isolated `CODEX_HOME/config.toml` with a custom `deepseek` model provider, `base_url = "https://api.deepseek.com/v1"`, and `env_key = "DEEPSEEK_API_KEY"`.
+- The harness writes an isolated `CODEX_HOME/config.toml` with a custom `deepseek` model provider, `wire_api = "responses"`, `env_key = "DEEPSEEK_API_KEY"`, and `base_url` pointing at the harness-local Responses boundary.
+- Current Codex rejects `wire_api = "chat"` and requires `wire_api = "responses"` for custom providers. DeepSeek does not expose `/v1/responses`, so Contree's functional harness starts `test/journey/codex-deepseek-responses-proxy.mjs` and points Codex at `http://127.0.0.1:<port>/v1`.
+- The local boundary forwards model calls to `https://api.deepseek.com/v1/chat/completions` with the same `DEEPSEEK_API_KEY` and maps the chat-completions message/tool-call shape back to the Responses event stream Codex expects.
 - The harness fails fast when `DEEPSEEK_API_KEY` is missing instead of falling back to a Codex app/session account, `CODEX_API_KEY`, `OPENAI_API_KEY`, or copied `~/.codex/auth.json`.
 
 ## Hook Environment
@@ -69,7 +71,7 @@ inherit = "all"
 ## Functional Harness Notes
 
 - Contree's Codex journey harness uses an isolated `CODEX_HOME` under the fixture project so tests do not overwrite the user's real `~/.codex/config.toml`.
-- The harness does not copy account auth from `~/.codex/auth.json`; all Codex functional runs use the isolated DeepSeek provider config.
+- The harness does not copy account auth from `~/.codex/auth.json`; all Codex functional runs use the isolated DeepSeek provider config plus the harness-local Responses boundary.
 - The harness primes the plugin cache, enables hooks, and trusts both `/tmp/...` and `/private/tmp/...` project paths because macOS may surface either path in Codex transcripts.
 - Plugin-bundled `Stop` and `SessionStart` hooks are visible in Codex sessions.
 - For `PostToolUse`, the harness installs a project-local shim that invokes the plugin's real `post-update-check.sh`, because this path is directly observable and gives deterministic stdin/stdout logs for functional assertions.
