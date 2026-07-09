@@ -7,6 +7,7 @@ set -euo pipefail
 
 HOOK="$(cd "$(dirname "$0")/../scripts" && pwd)/trunk-sync.sh"
 HOOKS_JSON="$(cd "$(dirname "$0")/../hooks" && pwd)/hooks.json"
+DIST_DIR="$(cd "$(dirname "$HOOK")/.." && pwd)/dist"
 PASS=0
 FAIL=0
 TEST_NUM=0
@@ -35,6 +36,16 @@ run_hook() {
   local stderr_file="$TMPDIR_BASE/stderr"
   printf '%s' "$input" | bash "$HOOK" >/dev/null 2>"$stderr_file" || HOOK_EXIT=$?
   HOOK_STDERR=$(cat "$stderr_file")
+}
+
+run_session_start() { # cwd session_id
+  printf '{"session_id":"%s","cwd":"%s","hook_event_name":"SessionStart","transcript_path":""}' "$2" "$1" \
+    | node "$DIST_DIR/lib/session-start-entry.js"
+}
+
+run_stop() { # cwd session_id
+  ( cd "$1" && printf '{"session_id":"%s","hook_event_name":"Stop","stop_hook_active":false,"transcript_path":""}' "$2" \
+    | node "$DIST_DIR/lib/stop-entry.js" )
 }
 
 assert_exit() {
