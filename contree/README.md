@@ -34,6 +34,7 @@ Plus a **stop hook** that prompts Claude to keep test trees, mental model, CLAUD
 1. **Enable hooks** — contree ships with hook scripts (session-start, stop-drift-check, etc.) that only fire if you opt in. Add to `~/.codex/config.toml`:
    ```toml
    [features]
+   hooks = true
    plugin_hooks = true
 
    [shell_environment_policy]
@@ -49,7 +50,7 @@ Plus a **stop hook** that prompts Claude to keep test trees, mental model, CLAUD
    rsync -a --exclude='.git' contree/ ~/.codex/plugins/cache/local-marketplace/contree/$VERSION/
    ```
 
-Skills run automatically once installed. Hooks require the `plugin_hooks` flag above. Codex sets `CLAUDE_PLUGIN_ROOT` in hook command environment so shared scripts run in the same plugin root as Claude Code. Codex file edits reach PostToolUse hooks as `apply_patch` payloads, so Contree matches that tool explicitly.
+Skills run automatically once installed. Hooks require the feature flags above. Codex sets `CLAUDE_PLUGIN_ROOT` in hook command environment so shared scripts run in the same plugin root as Claude Code. Codex file edits reach PostToolUse hooks as `apply_patch` payloads, so Contree matches that tool explicitly.
 
 ## How it works
 
