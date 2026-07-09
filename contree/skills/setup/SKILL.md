@@ -10,7 +10,7 @@ Prepares the project for ongoing test-tree-driven development. Configures the te
 ## Critical Rules
 
 1. **Tree output is non-negotiable.** If a framework can produce nested output, configure it. If it can only produce flat output, use it and be honest.
-2. **Configure the project's test surfaces.** Where the project has the surface, configure independently runnable commands for Unit, Port contract, Adapter, Component, System, and Journey tests using the project's language conventions.
+2. **Use the fixed Contree test strategy.** The normal test command runs Unit, Port contract, Adapter, and Component tests. The functional test command runs System and Journey tests. System and Journey do not run automatically from the normal command.
 3. **Verify after configuring.** Run the tests and confirm tree-shaped output before moving on.
 4. **No test files.** Setup configures the framework and creates the test-tree home. Do NOT create any test files (`*.test.*`, `*.spec.*`). Trees and tests happen after setup.
 
