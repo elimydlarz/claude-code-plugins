@@ -164,24 +164,36 @@ run_agent() {
 
   prime_codex_plugin
   if [ "$AGENT_CALL_COUNT" -eq 1 ]; then
-    (cd "$PROJECT_DIR" && codex exec \
+    if ! (cd "$PROJECT_DIR" && codex exec \
       --dangerously-bypass-approvals-and-sandbox \
       --dangerously-bypass-hook-trust \
       --skip-git-repo-check \
       --json \
       -m gpt-5.4-mini \
       -C "$PROJECT_DIR" \
-      "$prompt" 2>&1) | tee -a "$TRANSCRIPT_FILE" || true
+      "$prompt" 2>&1) | tee -a "$TRANSCRIPT_FILE"; then
+      append_codex_artifacts
+      exit 1
+    fi
     append_codex_artifacts
   else
-    (cd "$PROJECT_DIR" && codex exec resume --last \
+    if ! (cd "$PROJECT_DIR" && codex exec resume --last \
       --dangerously-bypass-approvals-and-sandbox \
       --dangerously-bypass-hook-trust \
       --skip-git-repo-check \
       --json \
       -m gpt-5.4-mini \
-      "$prompt" 2>&1) | tee -a "$TRANSCRIPT_FILE" || true
+      "$prompt" 2>&1) | tee -a "$TRANSCRIPT_FILE"; then
+      append_codex_artifacts
+      exit 1
+    fi
     append_codex_artifacts
+  fi
+
+  if grep -Eq '"turn\.failed"|usage limit|rate limit' "$TRANSCRIPT_FILE"; then
+    echo "Codex agent failure found in $TRANSCRIPT_FILE:" >&2
+    grep -En '"turn\.failed"|usage limit|rate limit' "$TRANSCRIPT_FILE" >&2
+    exit 1
   fi
 }
 
