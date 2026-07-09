@@ -1056,7 +1056,7 @@ echo "work" > "$WT_A/seed.txt"
 run_hook "$(make_input "$WT_A/seed.txt" "agentaaa" "Edit" "")"   # clock A in, commit timecard
 CARD="$WT_A/.trunk-sync/timeclock/agentaaa.json"
 assert_equals "agentaaa" "$(jq -r '.sessionId' "$CARD")" "timecard: sessionId written"
-assert_equals "main" "$(jq -r '.branch' "$CARD")" "timecard: branch written"
+assert_equals "trunk-sync/agent-a" "$(jq -r '.branch' "$CARD")" "timecard: branch written"
 assert_equals "no" "$(jq 'has("lastStep") or has("remainingSteps")' "$CARD" | sed 's/false/no/; s/true/yes/')" "timecard: no progress fields are written"
 
 # 32. Agent B's SessionStart surfaces A's timecard and no recorder instruction.
