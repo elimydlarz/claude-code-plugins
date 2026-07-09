@@ -54,12 +54,14 @@ describe("parseHookInput", () => {
       tool_input: { file_path: "/repo/file.ts" },
       session_id: "abc-123",
       transcript_path: "/path/to/transcript",
+      cwd: "/repo",
     });
     const result = parseHookInput(json);
     assert.equal(result.tool_name, "Edit");
     assert.equal(result.tool_input.file_path, "/repo/file.ts");
     assert.equal(result.session_id, "abc-123");
     assert.equal(result.transcript_path, "/path/to/transcript");
+    assert.equal(result.cwd, "/repo");
   });
 
   it("defaults missing fields to null", () => {
@@ -68,6 +70,7 @@ describe("parseHookInput", () => {
     assert.deepEqual(result.tool_input, {});
     assert.equal(result.session_id, null);
     assert.equal(result.transcript_path, null);
+    assert.equal(result.cwd, null);
   });
 
   it("throws on invalid JSON", () => {
