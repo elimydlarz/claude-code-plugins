@@ -494,8 +494,6 @@ describe("buildClockInPlan", () => {
     assert.equal(plan!.timecard.hostname, "my-macbook");
     assert.equal(plan!.timecard.branch, "main");
     assert.equal(plan!.timecard.task, null);
-    assert.equal(plan!.timecard.lastStep, null);
-    assert.equal(plan!.timecard.remainingSteps, null);
   });
 
   it("returns null when session_id is null", () => {
@@ -554,8 +552,6 @@ describe("classifyTimecards", () => {
       lastActiveAt: "2026-03-27T10:04:00.000Z",
       branch: "main",
       task: null,
-      lastStep: null,
-      remainingSteps: null,
       ...overrides,
     };
   }
@@ -589,10 +585,10 @@ describe("classifyTimecards", () => {
     assert.equal(result.reapable.length, 0);
   });
 
-  it("classifies a card past the reap ttl as reapable, even with unfinished remaining steps", () => {
+  it("classifies a card past the reap ttl as reapable", () => {
     const result = classifyTimecards(
       "my-session",
-      [makeTimecard({ lastActiveAt: "2026-03-10T10:00:00.000Z", remainingSteps: "still has work left" })], // 17 days ago
+      [makeTimecard({ lastActiveAt: "2026-03-10T10:00:00.000Z" })], // 17 days ago
       now,
     );
     assert.equal(result.reapable.length, 1);
@@ -612,7 +608,7 @@ describe("formatClockInMessage", () => {
       hostname: "my-macbook",
       clockedInAt: "2026-03-27T10:00:00.000Z",
       lastActiveAt: "2026-03-27T10:04:30.000Z",
-      branch: "main", task: null, lastStep: null, remainingSteps: null,
+      branch: "main", task: null,
       ...overrides,
     };
   }
@@ -634,16 +630,6 @@ describe("formatClockInMessage", () => {
   it("includes the task description when present", () => {
     const msg = formatClockInMessage([card({ task: "Fix the login bug" })], now, false)!;
     assert.match(msg, /"Fix the login bug"/);
-  });
-
-  it("includes the last and remaining steps on an active agent's line when recorded", () => {
-    const msg = formatClockInMessage(
-      [card({ lastStep: "wired the CLI", remainingSteps: "add the test" })],
-      now,
-      false,
-    )!;
-    assert.match(msg, /last: wired the CLI/);
-    assert.match(msg, /next: add the test/);
   });
 
   it("lists all active agents when multiple are present", () => {
@@ -689,7 +675,7 @@ describe("formatSessionStartSummary", () => {
       hostname: "mac-1",
       clockedInAt: "2026-03-27T10:00:00.000Z",
       lastActiveAt: "2026-03-27T10:04:00.000Z",
-      branch: "main", task: null, lastStep: null, remainingSteps: null,
+      branch: "main", task: null,
       ...overrides,
     };
   }
@@ -698,22 +684,18 @@ describe("formatSessionStartSummary", () => {
     assert.equal(formatSessionStartSummary([], [], now), null);
   });
 
-  it("lists an active card with branch, task, last step, and remaining steps, labelled to coordinate", () => {
-    const msg = formatSessionStartSummary([card({
-      task: "Add handover", lastStep: "wired the CLI", remainingSteps: "add the functional test",
-    })], [], now)!;
+  it("lists an active card with branch and task, labelled to coordinate", () => {
+    const msg = formatSessionStartSummary([card({ task: "Add handover" })], [], now)!;
     assert.match(msg, /aaaa0000 on mac-1/);
     assert.match(msg, /branch: main/);
     assert.match(msg, /active: coordinate/);
     assert.match(msg, /task: Add handover/);
-    assert.match(msg, /last: wired the CLI/);
-    assert.match(msg, /next: add the functional test/);
   });
 
   it("lists a stale card labelled possibly-disrupted with a verify-against-tests warning", () => {
     const msg = formatSessionStartSummary(
       [],
-      [card({ task: "Half-done refactor", remainingSteps: "finish it" })],
+      [card({ task: "Half-done refactor" })],
       now,
     )!;
     assert.match(msg, /stale, possibly disrupted/);
