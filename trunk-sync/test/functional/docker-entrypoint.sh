@@ -245,7 +245,7 @@ LAST="implemented the parser"
 NEXT="wire the CLI and write tests"
 
 echo "=== Agent A: edit + record progress (real $HARNESS) ==="
-A_PROMPT="This project uses trunk-sync. At session start you were given your trunk-sync session id and the exact command to record progress. Do exactly: (1) create a file notes.txt containing the word hello using the Write tool; (2) then record your progress by running that exact command for YOUR session id with --last \"$LAST\" and --next \"$NEXT\". Finally print the exact command you ran."
+A_PROMPT="This project uses trunk-sync. At session start you were given your trunk-sync session id and the exact command to record progress. Do exactly: (1) create a file notes.txt containing the word hello using your normal file editing tool; (2) then record your progress by running that exact command for YOUR session id with --last \"$LAST\" and --next \"$NEXT\". Finally print the exact command you ran."
 run_agent "$A_PROMPT" >/dev/null
 
 CARD="$(ls "$PROJECT_DIR"/.trunk-sync/timeclock/*.json 2>/dev/null | head -1 || true)"
