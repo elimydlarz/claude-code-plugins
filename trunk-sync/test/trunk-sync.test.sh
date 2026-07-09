@@ -1036,13 +1036,10 @@ LAST_SHA=$(git -C "$WT_A" rev-parse HEAD)
 SNAPSHOT_FILES=$(git -C "$WT_A" diff-tree --no-commit-id --name-only -r "$LAST_SHA" -- .transcripts/)
 assert_equals "" "$SNAPSHOT_FILES" "opt-out: no .transcripts/ created when commit-transcripts=false"
 
-# ── Handover: agent-authored progress in timecards ───────────────────────────
+# ── Timecards: presence and heartbeat ────────────────────────────────────────
 
 DIST_DIR="$(cd "$(dirname "$HOOK")/.." && pwd)/dist"
 
-record_progress() { # cwd id last next
-  ( cd "$1" && "$DIST_DIR/../scripts/trunk-sync-progress.sh" "$2" --last "$3" --next "$4" )
-}
 run_session_start() { # cwd session_id
   printf '{"session_id":"%s","cwd":"%s","hook_event_name":"SessionStart","transcript_path":""}' "$2" "$1" \
     | node "$DIST_DIR/lib/session-start-entry.js"
@@ -1052,40 +1049,24 @@ run_stop() { # cwd session_id
     | node "$DIST_DIR/lib/stop-entry.js" )
 }
 
-# 31. Agent A clocks in (hook), then records progress via the bundled recorder.
+# 31. Agent A clocks in and writes a timecard.
 setup_repos
 cd "$WT_A"
 echo "work" > "$WT_A/seed.txt"
 run_hook "$(make_input "$WT_A/seed.txt" "agentaaa" "Edit" "")"   # clock A in, commit timecard
-record_progress "$WT_A" "agentaaa" "wrote the parser" "wire the CLI and add tests"
 CARD="$WT_A/.trunk-sync/timeclock/agentaaa.json"
-assert_equals "wrote the parser" "$(jq -r '.lastStep' "$CARD")" "progress: lastStep written to timecard"
-assert_equals "wire the CLI and add tests" "$(jq -r '.remainingSteps' "$CARD")" "progress: remainingSteps written to timecard"
-assert_equals "agentaaa" "$(jq -r '.sessionId' "$CARD")" "progress: sessionId preserved"
+assert_equals "agentaaa" "$(jq -r '.sessionId' "$CARD")" "timecard: sessionId written"
+assert_equals "main" "$(jq -r '.branch' "$CARD")" "timecard: branch written"
+assert_equals "no" "$(jq 'has("lastStep") or has("remainingSteps")' "$CARD" | sed 's/false/no/; s/true/yes/')" "timecard: no progress fields are written"
 
-# 32. The HOOK ALONE commits and pushes the progress-updated timecard (no manual push —
-#     this proves the hook propagates the handover to the remote on its own).
-echo "more" > "$WT_A/seed.txt"
-run_hook "$(make_input "$WT_A/seed.txt" "agentaaa" "Edit" "")"   # next fire commits + pushes the updated timecard
-REMOTE_CARD=$(git -C "$REMOTE" show "main:.trunk-sync/timeclock/agentaaa.json" 2>/dev/null || echo "")
-assert_contains "$REMOTE_CARD" "wrote the parser" "propagation: hook alone pushes the handover to the remote"
-
-# 33. Agent B's SessionStart surfaces A's handover and B's own record instruction.
+# 32. Agent B's SessionStart surfaces A's timecard and no recorder instruction.
 SS_OUT=$(run_session_start "$WT_A" "agentbbb")
 assert_contains "$SS_OUT" "TRUNK-SYNC HANDOVER" "session-start: handover roster shown"
-assert_contains "$SS_OUT" "wrote the parser" "session-start: A's last step surfaced"
-assert_contains "$SS_OUT" "wire the CLI and add tests" "session-start: A's remaining steps surfaced"
-assert_contains "$SS_OUT" "scripts/trunk-sync-progress.sh' agentbbb" "session-start: B told how to record its own progress"
-assert_not_contains "$SS_OUT" "trunk-sync progress agentbbb" "session-start: B is not told to use the CLI"
+assert_contains "$SS_OUT" "agentaaa" "session-start: A's timecard is surfaced"
+assert_not_contains "$SS_OUT" "trunk-sync-progress" "session-start: no progress recorder is surfaced"
+assert_not_contains "$SS_OUT" "trunk-sync progress" "session-start: no progress CLI instruction is surfaced"
 
-# 34. A clock-in re-fire preserves the agent-authored progress (does not wipe it).
-record_progress "$WT_A" "agentaaa" "all tests green" "ship it"
-echo "again" > "$WT_A/seed.txt"
-run_hook "$(make_input "$WT_A/seed.txt" "agentaaa" "Edit" "")"
-assert_equals "all tests green" "$(jq -r '.lastStep' "$CARD")" "preservation: clock-in keeps lastStep"
-assert_equals "ship it" "$(jq -r '.remainingSteps' "$CARD")" "preservation: clock-in keeps remainingSteps"
-
-# 35. The Stop hook bumps and commits a stale heartbeat, then no-ops while it is fresh.
+# 33. The Stop hook bumps and commits a stale heartbeat, then no-ops while it is fresh.
 STALE_TS=$(node -e 'console.log(new Date(Date.now()-45*60*1000).toISOString())')
 jq --arg t "$STALE_TS" '.lastActiveAt=$t' "$CARD" > "$CARD.tmp" && mv "$CARD.tmp" "$CARD"
 ( cd "$WT_A" && git add -A && git commit -q -m "stale the card" )
@@ -1102,36 +1083,33 @@ COUNT_AFTER_BUMP=$(git -C "$WT_A" rev-list --count HEAD)
 run_stop "$WT_A" "agentaaa" >/dev/null 2>&1 || true
 assert_equals "$COUNT_AFTER_BUMP" "$(git -C "$WT_A" rev-list --count HEAD)" "stop: a fresh heartbeat makes no commit"
 
-# 36. A disrupted card (stale heartbeat, unfinished steps) is surfaced at SessionStart as a handover.
+# 34. A stale card is surfaced at SessionStart as a handover.
 STALE_HB=$(node -e 'console.log(new Date(Date.now()-2*60*60*1000).toISOString())')  # 2h ago
 jq --arg t "$STALE_HB" '.lastActiveAt=$t' "$CARD" > "$CARD.tmp" && mv "$CARD.tmp" "$CARD"
 SS_STALE=$(run_session_start "$WT_A" "agentccc")
 assert_contains "$SS_STALE" "possibly disrupted" "session-start: a stale card is surfaced labelled possibly-disrupted"
-assert_contains "$SS_STALE" "ship it" "session-start: the disrupted card's remaining steps are still surfaced"
+assert_not_contains "$SS_STALE" "next:" "session-start: stale cards do not surface progress"
 
-# 37. An abandoned card (heartbeat past the 14-day TTL) is swept on the next agent's commit.
+# 35. An abandoned card (heartbeat past the 14-day TTL) is swept on the next agent's commit.
 OLD_TS=$(node -e 'console.log(new Date(Date.now()-20*24*60*60*1000).toISOString())')
 GHOST="$WT_A/.trunk-sync/timeclock/ghostagent.json"
-printf '{"sessionId":"ghostagent","hostname":"old-host","clockedInAt":"%s","lastActiveAt":"%s","branch":"main","task":null,"lastStep":null,"remainingSteps":"never finished"}' "$OLD_TS" "$OLD_TS" > "$GHOST"
+printf '{"sessionId":"ghostagent","hostname":"old-host","clockedInAt":"%s","lastActiveAt":"%s","branch":"main","task":null}' "$OLD_TS" "$OLD_TS" > "$GHOST"
 ( cd "$WT_A" && git add -A && git commit -q -m "add abandoned card" )
 echo "trigger reap" > "$WT_A/seed.txt"
 run_hook "$(make_input "$WT_A/seed.txt" "agentaaa" "Edit" "")"
 [[ -f "$GHOST" ]] && REAPED=no || REAPED=yes
 assert_equals "yes" "$REAPED" "reap: an abandoned card past the TTL is swept on the next commit"
 
-# 38. SessionStart with ONLY a reapable card surfaces nothing beyond the agent's own
-#     record-progress instruction — a card past the reap TTL is neither active nor stale,
-#     so no handover roster is appended.
+# 36. SessionStart with ONLY a reapable card surfaces nothing beyond the agent's own session id.
 setup_repos
 cd "$WT_A"
 mkdir -p "$WT_A/.trunk-sync/timeclock"
 REAP_TS=$(node -e 'console.log(new Date(Date.now()-20*24*60*60*1000).toISOString())')  # 20 days ago — past the 14-day reap ttl
-printf '{"sessionId":"reapableghost","hostname":"old-host","clockedInAt":"%s","lastActiveAt":"%s","branch":"main","task":null,"lastStep":"wrote half the parser","remainingSteps":"finish the parser"}' "$REAP_TS" "$REAP_TS" > "$WT_A/.trunk-sync/timeclock/reapableghost.json"
+printf '{"sessionId":"reapableghost","hostname":"old-host","clockedInAt":"%s","lastActiveAt":"%s","branch":"main","task":null}' "$REAP_TS" "$REAP_TS" > "$WT_A/.trunk-sync/timeclock/reapableghost.json"
 SS_REAP=$(run_session_start "$WT_A" "livesession9")
 assert_contains "$SS_REAP" "your session id is livesession9" "session-start reapable-only: own session id is surfaced"
-assert_contains "$SS_REAP" "scripts/trunk-sync-progress.sh' livesession9" "session-start reapable-only: own record-progress instruction is surfaced"
+assert_not_contains "$SS_REAP" "trunk-sync-progress" "session-start reapable-only: no progress recorder is surfaced"
 assert_not_contains "$SS_REAP" "TRUNK-SYNC HANDOVER" "session-start reapable-only: no handover roster is surfaced"
-assert_not_contains "$SS_REAP" "finish the parser" "session-start reapable-only: the reapable card's remaining steps are NOT surfaced"
 
 # ── Summary ──────────────────────────────────────────────────────────────────
 
