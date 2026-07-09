@@ -553,7 +553,7 @@
     <p class="eyebrow">Under the hood</p>
     <h2>How it actually runs inside Claude Code</h2>
     <p class="lede" style="max-width:66ch">
-      contree isn't prompt-engineering you have to remember to apply. It's <strong>four hooks</strong> wired into
+      contree isn't prompt-engineering you have to remember to apply. It's <strong>three hooks</strong> wired into
       Claude Code's lifecycle. Hooks are shell commands the harness runs at fixed events; contree's are plain
       <code>bash</code> scripts that read the event on <span class="chan chan-in">stdin</span> and reply over three
       channels the model can see. Here's the entire wiring — one file:
@@ -564,7 +564,6 @@
   "hooks": {
     "SessionStart":    [{ "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/session-start.sh" }],
     "Stop":            [{ "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/stop-drift-check.sh" }],
-    "UserPromptSubmit":[{ "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/self-care-20-20-20.sh" }],
     "PostToolUse": [{ "matcher": "Edit|Write|MultiEdit",
                       "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/post-update-check.sh" }]
   }
@@ -582,7 +581,7 @@
 
     <h3 style="margin-top:44px">One session, stage by stage</h3>
     <p class="muted" style="max-width:66ch">
-      Claude Code emits a named event at each point in a turn. Walk the turn top to bottom: at every event one
+      Claude Code emits named events across the session and turn. Walk the lifecycle top to bottom: at each wired event one
       contree hook fires — see what it runs, why, and what it changes — then move to the next. Expand
       <em>“The exact text injected into the agent”</em> under any stage to read the real, verbatim context it receives.
     </p>
@@ -654,35 +653,8 @@ Eagerly use these skills to fulfil operator requests, where applicable:
         </details>
       </div>
 
-      <div class="stage usr">
-        <span class="stagenum">2</span>
-        <div class="stagewhen">You send a prompt</div>
-        <div class="stagemeta"><span class="hookbadge">UserPromptSubmit</span><span class="scr">self-care-20-20-20.sh</span><span class="chan chan-json">additionalContext</span></div>
-        <p class="sub">The moment you hit enter, before the model sees your message, <code>UserPromptSubmit</code> fires. No model, no network — just heartbeat files on disk, so the “how long have you been at it” signal is shared across every concurrent session.</p>
-<pre><span class="fn">touch</span> $HEARTBEAT_DIR/$now              <span class="co"># stamp this moment</span>
-<span class="fn">rm</span> heartbeats older than 1h           <span class="co"># keep the dir bounded</span>
-
-stretch=$(newest_run_without_gap 5min) <span class="co"># unbroken keyboard time</span>
-[ "$stretch" -lt 20min ] &amp;&amp; <span class="fn">exit</span> 0     <span class="co"># not at the 20-min mark yet → stay silent</span>
-[ nudged_within 20min ]  &amp;&amp; <span class="fn">exit</span> 0     <span class="co"># throttle: one nudge per window</span>
-
-emit_additionalContext "look 20ft away for 20s — the 20-20-20 rule"</pre>
-        <div class="impact">
-          <p><span class="lbl">Why</span> The discipline is about sustainable practice, not just clean code. State lives in files rather than memory, so the timer stays honest even when you're driving several agents at once.</p>
-          <p><span class="lbl">Impact</span> Almost always a no-op. Once every 20 minutes of continuous work, Claude opens its reply with a brief eye-break nudge, then carries on with your request.</p>
-        </div>
-        <details class="real">
-          <summary>The exact text injected into the agent <span class="what">— the nudge, when it fires</span></summary>
-<pre class="injected">Before addressing the user's request, mention the 20-20-20 rule: they have
-been at the keyboard for a while. Say something like: "Quick eye break: look
-at something 20 feet away for 20 seconds (20-20-20 rule)." Keep it brief,
-then continue with their request.</pre>
-          <div class="cap">delivered as additionalContext, so the model weaves it in rather than being interrupted.</div>
-        </details>
-      </div>
-
       <div class="stage">
-        <span class="stagenum">3</span>
+        <span class="stagenum">2</span>
         <div class="stagewhen">Claude works — and edits a file</div>
         <div class="stagemeta"><span class="hookbadge">PostToolUse</span><span class="scr">post-update-check.sh</span><span class="chan chan-json">additionalContext</span></div>
         <p class="sub">As the model reasons and calls tools, <code>PostToolUse</code> fires after each one — but this hook is bound to the <code>Edit|Write|MultiEdit</code> matcher, so it only runs when a file actually changed. It guards exactly one file.</p>
@@ -709,7 +681,7 @@ findings=$(validate-mental-model.sh)             <span class="co"># 7 named sect
       </div>
 
       <div class="stage">
-        <span class="stagenum">4</span>
+        <span class="stagenum">3</span>
         <div class="stagewhen">Claude finishes its reply</div>
         <div class="stagemeta"><span class="hookbadge">Stop</span><span class="scr">stop-drift-check.sh</span><span class="chan chan-err">stderr · exit 2</span></div>
         <p class="sub">As the model goes to hand the turn back to you, <code>Stop</code> fires. A loop guard runs first — it's what makes a hook that re-prompts on <em>every</em> turn safe. Then, if my reply ended in a question, a <em>question stop</em> re-prompts me to check it against the rules before it reaches you; otherwise the drift check runs.</p>
