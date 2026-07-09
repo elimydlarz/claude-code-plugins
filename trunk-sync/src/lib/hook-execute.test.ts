@@ -1186,8 +1186,6 @@ describe("clockIn", () => {
         lastActiveAt: "2026-03-27T10:05:00.000Z",
         branch: "main",
         task: null,
-        lastStep: null,
-        remainingSteps: null,
       },
     };
     clockIn(dir, plan, "Fix the login bug");
@@ -1208,8 +1206,6 @@ describe("clockIn", () => {
         lastActiveAt: "2026-03-27T10:05:00.000Z",
         branch: "main",
         task: null,
-        lastStep: null,
-        remainingSteps: null,
       },
     };
     // Write first timecard
@@ -1229,38 +1225,6 @@ describe("clockIn", () => {
     assert.equal(content.lastActiveAt, "2026-03-27T10:05:00.000Z");
   });
 
-  it("preserves agent-authored lastStep and remainingSteps across updates", () => {
-    const plan: ClockInPlan = {
-      timecardPath: ".trunk-sync/timeclock/test-session.json",
-      timecard: {
-        sessionId: "test-session", hostname: "test-host",
-        clockedInAt: "2026-03-27T10:05:00.000Z",
-        lastActiveAt: "2026-03-27T10:05:00.000Z",
-        branch: "main",
-        task: null,
-        lastStep: null,
-        remainingSteps: null,
-      },
-    };
-    const timeclockDir = join(dir, ".trunk-sync", "timeclock");
-    mkdirSync(timeclockDir, { recursive: true });
-    // Agent recorded progress on a prior call.
-    writeFileSync(join(timeclockDir, "test-session.json"), JSON.stringify({
-      sessionId: "test-session", hostname: "test-host",
-      clockedInAt: "2026-03-27T10:00:00.000Z",
-      lastActiveAt: "2026-03-27T10:00:00.000Z",
-      branch: "main",
-      task: null,
-      lastStep: "wired the CLI",
-      remainingSteps: "add the functional test",
-    }));
-    // The hook fires again and re-clocks-in — progress must survive
-    clockIn(dir, plan, "Some freshly-derived task");
-    const content = JSON.parse(readFileSync(join(timeclockDir, "test-session.json"), "utf-8")) as Timecard;
-    assert.equal(content.lastStep, "wired the CLI");
-    assert.equal(content.remainingSteps, "add the functional test");
-    assert.equal(content.task, "Some freshly-derived task");
-  });
 });
 
 describe("readTimecards", () => {
@@ -1300,7 +1264,6 @@ describe("readTimecards", () => {
 
 describe("runSessionStart", () => {
   let dir: string;
-  const progressCommand = "/plugin/scripts/trunk-sync-progress.sh";
 
   beforeEach(() => {
     dir = realpathSync(mkdtempSync(join(tmpdir(), "ts-sessionstart-")));
@@ -1316,52 +1279,51 @@ describe("runSessionStart", () => {
     const full: Timecard = {
       hostname: "remote-host", clockedInAt: new Date().toISOString(),
       lastActiveAt: new Date().toISOString(), branch: "main", task: null,
-      lastStep: null, remainingSteps: null, ...card,
+      ...card,
     };
     writeFileSync(join(timeclockDir, `${card.sessionId}.json`), JSON.stringify(full));
   }
 
-  it("hands the starting agent its own session id and the record-progress instruction", () => {
-    const msg = runSessionStart(dir, "my-session-id", progressCommand)!;
+  it("hands the starting agent its own session id", () => {
+    const msg = runSessionStart(dir, "my-session-id")!;
     assert.match(msg, /my-session-id/);
-    assert.match(msg, /\/plugin\/scripts\/trunk-sync-progress\.sh my-session-id --last/);
-    assert.doesNotMatch(msg, /trunk-sync progress/);
+    assert.doesNotMatch(msg, /trunk-sync-progress/);
   });
 
   it("appends the handover roster when another agent is clocked in", () => {
-    writeCard({ sessionId: "other-id", task: "build X", lastStep: "did A", remainingSteps: "do B" });
-    const msg = runSessionStart(dir, "my-session-id", progressCommand)!;
+    writeCard({ sessionId: "other-id", task: "build X" });
+    const msg = runSessionStart(dir, "my-session-id")!;
     assert.match(msg, /TRUNK-SYNC HANDOVER/);
     assert.match(msg, /other-id/);
-    assert.match(msg, /last: did A/);
-    assert.match(msg, /next: do B/);
+    assert.match(msg, /task: build X/);
   });
 
   it("prints only the own-id instruction when no other agents are clocked in", () => {
-    const msg = runSessionStart(dir, "my-session-id", progressCommand)!;
+    const msg = runSessionStart(dir, "my-session-id")!;
     assert.match(msg, /my-session-id/);
     assert.doesNotMatch(msg, /TRUNK-SYNC HANDOVER/);
   });
 
   it("still prints the own-id instruction when the timeclock directory does not exist", () => {
-    const msg = runSessionStart(dir, "my-session-id", progressCommand)!;
-    assert.match(msg, /\/plugin\/scripts\/trunk-sync-progress\.sh my-session-id/);
+    const msg = runSessionStart(dir, "my-session-id")!;
+    assert.match(msg, /my-session-id/);
+    assert.doesNotMatch(msg, /trunk-sync-progress/);
   });
 
   it("excludes the starting session's own timecard from the roster", () => {
     writeCard({ sessionId: "my-session-id", task: "my own work" });
-    const msg = runSessionStart(dir, "my-session-id", progressCommand)!;
+    const msg = runSessionStart(dir, "my-session-id")!;
     assert.doesNotMatch(msg, /TRUNK-SYNC HANDOVER/);
   });
 
   it("returns null when there is no session id", () => {
-    assert.equal(runSessionStart(dir, null, progressCommand), null);
+    assert.equal(runSessionStart(dir, null), null);
   });
 
   it("omits the roster when the only other card is past the reap ttl", () => {
     const reapableTime = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString();
     writeCard({ sessionId: "ghost-id", task: "abandoned work", lastActiveAt: reapableTime });
-    const msg = runSessionStart(dir, "my-session-id", progressCommand)!;
+    const msg = runSessionStart(dir, "my-session-id")!;
     assert.match(msg, /my-session-id/);
     assert.doesNotMatch(msg, /TRUNK-SYNC HANDOVER/);
     assert.doesNotMatch(msg, /ghost-id/);
