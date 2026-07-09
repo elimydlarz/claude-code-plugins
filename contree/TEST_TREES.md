@@ -179,13 +179,13 @@ post-task-hook (src: hooks/stop-drift-check.sh; system: test/post-task-hook.bats
 setup-prepares-project (src: skills/setup/SKILL.md; system: test/setup-prepares-project.bats; journey: test/journey/docker-entrypoint.sh)
   when setup is run on an existing project
     then existing test config is detected and merged into, not overwritten
-    and tree reporters are configured for both local dev and CI (dual reporters)
-    and the SessionStart test kinds are configured as separate commands where the project has that surface
+    and tree-shaped output is configured where the framework can produce it
+    and project test kinds are configured as separate commands where the project has that surface
     and mutation testing is configured with explicit test file exclusions for every layer's suffix
     and changed-test runners are configured with known gotchas addressed
     and TEST_TREES.md is created when missing
     and CLAUDE.md is updated to point at TEST_TREES.md if it does not already
-    and setup examples follow the SessionStart rules — no copied comments, no env-var behaviour switches, and strong preference for composition over inheritance
+    and setup examples follow the setup rules — no copied comments, no env-var behaviour switches, and strong preference for composition over inheritance
   when setup detects multiple viable test frameworks
     then setup chooses the test framework using the project evidence and tree-output quality
   when setup would choose the main application framework for a project
