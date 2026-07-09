@@ -231,12 +231,12 @@ change-writes-trees (src: skills/change/SKILL.md; system: test/change-writes-tre
     then paths use the consumer's vocabulary, not implementation internals
     and paths describe principles, not enumerated cases
   when a Domain, Use-case, or Port-contract tree is written
-    then top-level nodes name the unit's exported functions, methods, or port operations
-    and each path corresponds to an observable branch in the unit
+    then the tree describes what the outer consumer needs to observe from the unit it forced into existence
+    and pure functions are still described from the caller's need to observe their result or error
   when a tree is written
     then its coverage is named in parenthesised semicolon-separated pairs at the end of the tree-name line, labelled src / domain / use-case / adapter / component / system / journey
     and gaps are declared explicitly — "none" for expected-but-uncovered categories, omission for not-applicable ones
-    and if naming a (sub)tree's paths reveals an awkward shape, the tree or implementation is reshaped rather than the paths being stripped
+    and if naming a tree's paths reveals a mismatch between the consumer need and the file boundaries, the tree or implementation is adjusted until the mapping is honest
   when planning a change to an area that already has a tree and implementation
     then the current tree and its paths are compared against the actual tests and file locations before drafting the change
     and any pre-existing tree-code drift in that area is reconciled as part of the change so the new tree is coherent with post-change reality
@@ -272,8 +272,8 @@ change-decomposes-across-layers (src: skills/change/SKILL.md; system: test/chang
     and trees are named for the subject with observable behaviour at their layer
     and every tree reifies exactly one test file
   when decomposing a capability across the test layers
-    then the layers pair two orientations across two realism tiers — behaviour-oriented (Use-case, Journey) and system-oriented (Component, System)
-    and Use-case is to Component as Journey is to System — the cheap tier doubles what it can, the real tier integrates everything affordable
+    then every layer is consumer-driven
+    and the higher-level tree and failing test create the demand for the next inner unit
     and Use-case and Component are always written and carry exhaustive coverage; System and Journey are selective, validating the same surfaces with real everything
   when an inner-layer tree is added
     then it exists because the failing journey/functional test at max realism cannot be satisfied without it
