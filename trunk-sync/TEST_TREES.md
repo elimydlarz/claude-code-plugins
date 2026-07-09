@@ -347,8 +347,6 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
       then it is reaped as part of the same commit
     when another agent's card is within the reap ttl
       then it is preserved, not reaped
-    if `.trunk-sync` is unwritable
-      then the hook still exits 0 (clock-in is best-effort)
 
   runSessionStart
     when the session-start hook fires
