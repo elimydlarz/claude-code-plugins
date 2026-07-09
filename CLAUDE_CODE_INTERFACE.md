@@ -48,7 +48,7 @@ claude plugin marketplace add elimydlarz/claude-code-plugins
 
 ## Functional Harness Notes
 
-- Claude functional journeys require provider authentication in the container. `docker-run.sh` passes DeepSeek as Anthropic-compatible env vars when `DEEPSEEK_API_KEY` is set, otherwise it passes `ANTHROPIC_API_KEY`. Without either one, the harness fails fast instead of letting `claude -p` return `Not logged in`.
+- Claude functional journeys require `DEEPSEEK_API_KEY` from `.env`. `docker-run.sh` passes DeepSeek as Anthropic-compatible env vars and fails fast without the key instead of letting `claude -p` return `Not logged in`.
 - Contree's Claude functional journeys call `claude -p` with:
   - `--plugin-dir "$CONTREE_ROOT"`
   - `--dangerously-skip-permissions`
