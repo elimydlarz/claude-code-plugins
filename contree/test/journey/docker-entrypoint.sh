@@ -75,6 +75,13 @@ prime_codex_plugin() {
   cp -r "$CONTREE_ROOT" "$cache_dir"
 
   mkdir -p "$PROJECT_DIR/.codex"
+  cat > "$PROJECT_DIR/.codex/post-tool-use-contree.sh" <<CONFIG
+#!/usr/bin/env bash
+export CLAUDE_PLUGIN_ROOT="$cache_dir"
+exec bash "$cache_dir/hooks/post-update-check.sh"
+CONFIG
+  chmod +x "$PROJECT_DIR/.codex/post-tool-use-contree.sh"
+
   cat > "$PROJECT_DIR/.codex/hooks.json" <<CONFIG
 {
   "hooks": {
@@ -84,7 +91,7 @@ prime_codex_plugin() {
         "hooks": [
           {
             "type": "command",
-            "command": "CLAUDE_PLUGIN_ROOT=\"$cache_dir\" bash \"$cache_dir/hooks/post-update-check.sh\""
+            "command": "bash \"$PROJECT_DIR/.codex/post-tool-use-contree.sh\""
           }
         ]
       }
