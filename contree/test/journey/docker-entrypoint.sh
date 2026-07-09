@@ -644,7 +644,7 @@ VERIFY
     seed_project "describe-it-drift"
 
     run_agent \
-      "Check this project for drift between the test trees and the test files."
+      "Check this project for drift between the test trees and the test files. When you find describe/it drift, present both sides and ask which side is authoritative. Do not silently choose a side, and do not modify files."
 
     write_verify << 'VERIFY'
 Evaluate the transcript against the `sync-audits-and-resolves` tree,
