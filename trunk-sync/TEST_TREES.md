@@ -579,6 +579,16 @@ Use-case: progress (src: src/lib/progress.ts; use-case: src/commands/progress.te
 ```
 System: hook-sync (system: test/trunk-sync.test.sh; journey: test/functional/docker-entrypoint.sh)
 
+  functional handover harness
+    when the handover case is run with the Claude harness
+      then the shared fixture and verifier are used
+      and the real Claude CLI edits, records progress, and receives the handover
+    when the handover case is run with the Codex harness
+      then the shared fixture and verifier are used
+      and the real Codex CLI edits, records progress, and receives the handover
+      and Codex session and hook logs are appended to the transcript for hook evidence
+    then hook runner failures are rejected without matching ordinary command stderr
+
   every Edit/Write/Bash/apply_patch/local_shell tool use
     then the changed file is staged and committed
     when a remote is configured
