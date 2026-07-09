@@ -553,7 +553,7 @@
     <p class="eyebrow">Under the hood</p>
     <h2>How it actually runs inside Claude Code</h2>
     <p class="lede" style="max-width:66ch">
-      contree isn't prompt-engineering you have to remember to apply. It's <strong>three hooks</strong> wired into
+      contree isn't prompt-engineering you have to remember to apply. It's <strong>two hooks</strong> wired into
       Claude Code's lifecycle. Hooks are shell commands the harness runs at fixed events; contree's are plain
       <code>bash</code> scripts that read the event on <span class="chan chan-in">stdin</span> and reply over three
       channels the model can see. Here's the entire wiring — one file:
@@ -562,10 +562,8 @@
     <pre><span class="muted">// contree/hooks/hooks.json — runs identically under Claude Code and Codex</span>
 {
   "hooks": {
-    "SessionStart":    [{ "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/session-start.sh" }],
-    "Stop":            [{ "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/stop-drift-check.sh" }],
-    "PostToolUse": [{ "matcher": "Edit|Write|MultiEdit|apply_patch",
-                      "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/post-update-check.sh" }]
+    "SessionStart": [{ "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/session-start.sh" }],
+    "Stop":         [{ "command": "bash $CLAUDE_PLUGIN_ROOT/hooks/stop-drift-check.sh" }]
   }
 }</pre>
 
@@ -655,33 +653,6 @@ Eagerly use these skills to fulfil operator requests, where applicable:
 
       <div class="stage">
         <span class="stagenum">2</span>
-        <div class="stagewhen">Claude works — and edits a file</div>
-        <div class="stagemeta"><span class="hookbadge">PostToolUse</span><span class="scr">post-update-check.sh</span><span class="chan chan-json">additionalContext</span></div>
-        <p class="sub">As the model reasons and calls tools, <code>PostToolUse</code> fires after each one — but this hook is bound to the <code>Edit|Write|MultiEdit</code> matcher, so it only runs when a file actually changed. It guards exactly one file.</p>
-<pre>file=$(<span class="fn">jq</span> -r .tool_input.file_path &lt;&lt;&lt;"$(<span class="fn">cat</span>)")    <span class="co"># what did the edit touch?</span>
-
-[ "$(<span class="fn">basename</span> "$file")" != MENTAL_MODEL.md ] &amp;&amp; <span class="fn">exit</span> 0  <span class="co"># not the mental model → done</span>
-
-findings=$(validate-mental-model.sh)             <span class="co"># 7 named sections? caps? rogue headings?</span>
-[ -n "$findings" ] &amp;&amp; emit_additionalContext "$findings"  <span class="co"># surface only if something's off</span>
-
-<span class="fn">exit</span> 0</pre>
-        <div class="impact">
-          <p><span class="lbl">Why</span> The mental model is a deliberately constrained artifact — seven sections, capped, no stray headings — so it stays a theory, not a junk drawer.</p>
-          <p><span class="lbl">Impact</span> The instant <code>MENTAL_MODEL.md</code> is edited, any structural breakage is fed straight back to the model to fix — no human reviewer required.</p>
-        </div>
-        <details class="real">
-          <summary>The exact text injected into the agent <span class="what">— example findings</span></summary>
-<pre class="injected"><span class="nm">MENTAL_MODEL.md validator findings:</span>
-- Missing required section: "Temporal View"
-- Section "Invariants" exceeds its cap (12 bullets; max 10)
-- Rogue heading not in the seven-section set: "Open Questions"</pre>
-          <div class="cap">injected only when the validator finds something; a clean file injects nothing.</div>
-        </details>
-      </div>
-
-      <div class="stage">
-        <span class="stagenum">3</span>
         <div class="stagewhen">Claude finishes its reply</div>
         <div class="stagemeta"><span class="hookbadge">Stop</span><span class="scr">stop-drift-check.sh</span><span class="chan chan-err">stderr · exit 2</span></div>
         <p class="sub">As the model goes to hand the turn back to you, <code>Stop</code> fires. A loop guard runs first — it's what makes a hook that re-prompts on <em>every</em> turn safe. Then the drift check pushes the four reconciliation prompts back into the model before the turn completes.</p>
