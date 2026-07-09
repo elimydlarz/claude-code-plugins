@@ -408,7 +408,7 @@ rules-loading (src: hooks/session-start.sh; system: test/rules-loading.bats; jou
 ## dual-harness-compatibility
 
 ```
-dual-harness-compatibility (src: .claude-plugin/plugin.json, .codex-plugin/plugin.json, hooks/hooks.json; system: test/dual-harness-compatibility.bats; journey: test/journey/docker-entrypoint.sh)
+dual-harness-compatibility (src: .claude-plugin/plugin.json, .codex-plugin/plugin.json, hooks/hooks.json, test/journey/codex-deepseek-responses-proxy.mjs; system: test/dual-harness-compatibility.bats; journey: test/journey/docker-entrypoint.sh)
   when contree is installed under either Claude Code or Codex
     then a manifest exists at .claude-plugin/plugin.json
     and a manifest exists at .codex-plugin/plugin.json declaring skills as ./skills/ and hooks as ./hooks/hooks.json
@@ -423,6 +423,7 @@ dual-harness-compatibility (src: .claude-plugin/plugin.json, .codex-plugin/plugi
     then Codex installations require [features].hooks and [features].plugin_hooks to be true so hooks/hooks.json is loaded
     and the automated journey matrix runs the existing functional cases under Codex
     and both journey harnesses use DeepSeek auth from DEEPSEEK_API_KEY
+    and Codex journey model calls reach DeepSeek through a Responses-compatible local boundary
     and Claude journey runs fail fast without Claude provider auth
     and Codex journey runs fail fast without DeepSeek provider auth
     and the journey harness distinguishes hook runner failures from ordinary agent command failures and test framework hook timeout output
