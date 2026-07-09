@@ -86,7 +86,7 @@ A slice is described by a few small trees, one per hexagonal seam. For a bookmar
 ```markdown
 ### canonicaliseUrl (Domain)
 
-canonicaliseUrl (src: src/features/bookmarks/domain/canonicalise-url.ts; domain: src/features/bookmarks/domain/canonicalise-url.domain.test.ts)
+Domain: canonicaliseUrl (src: src/features/bookmarks/domain/canonicalise-url.ts; domain: src/features/bookmarks/domain/canonicalise-url.domain.test.ts)
   canonicaliseUrl
     when the host contains mixed case
       then the host is lower-cased
@@ -99,7 +99,7 @@ canonicaliseUrl (src: src/features/bookmarks/domain/canonicalise-url.ts; domain:
 
 ### createBookmark (Use-case)
 
-createBookmark (src: src/features/bookmarks/use-cases/create-bookmark.ts; use-case: src/features/bookmarks/use-cases/create-bookmark.usecase.test.ts)
+Use-case: createBookmark (src: src/features/bookmarks/use-cases/create-bookmark.ts; use-case: src/features/bookmarks/use-cases/create-bookmark.usecase.test.ts)
   createBookmark
     when called with a valid URL for an authenticated user
       then the URL is canonicalised via the Domain
@@ -113,7 +113,7 @@ createBookmark (src: src/features/bookmarks/use-cases/create-bookmark.ts; use-ca
 
 ### CreateBookmark (System)
 
-CreateBookmark (src: src/features/bookmarks/system/create-bookmark.ts; system: test/system/create-bookmark.system.test.ts)
+System: CreateBookmark (src: src/features/bookmarks/system/create-bookmark.ts; system: test/system/create-bookmark.system.test.ts)
   when an authenticated user submits a bookmark with a valid URL
     then the bookmark is persisted against their library
     and the canonicalised URL is returned to the caller
@@ -121,9 +121,9 @@ CreateBookmark (src: src/features/bookmarks/system/create-bookmark.ts; system: t
     then the request is rejected before the store is touched
 ```
 
-Domain and Use-case trees are code-shaped — the top-level describe is the function itself, and every path is an observable branch. System trees describe the slice at its outer seam in consumer vocabulary. Causal nesting (the duplicate-URL case under successful persistence) keeps dependent behaviour attached to the outcome it depends on.
+Every tree is consumer-driven. Outer trees describe what users, API clients, hooks, queues, or other boundary callers observe. Inner trees describe what the outer consumer needs from the unit it forced into existence; even a pure function is introduced because a caller needs to invoke it and observe its result or error. Causal nesting (the duplicate-URL case under successful persistence) keeps dependent behaviour attached to the outcome it depends on.
 
-Each behavioural unit gets its own tree — arc (Journey), slice (System), use-case, port contract, adapter, domain object. Every tree names its coverage in parenthesised semicolon-separated labelled pairs on the tree-name line. The categories are `src`, `domain`, `use-case`, `adapter`, `component`, `system`, `journey`. Gaps are declared explicitly: `none` for a category that is expected but uncovered (so readers and `sync` spot it); categories that are genuinely not applicable are omitted. At Domain, Use-case, and Port-contract, trees are code-shaped: top-level describes are the unit's functions/methods and every path is an observable branch. At Journey, System, and Adapter, trees describe observable behaviour at the seam using consumer vocabulary — principles, not enumerated cases. Every test file's describe/it hierarchy mirrors its tree verbatim.
+Each behavioural unit gets its own tree — arc (Journey), slice (System), use-case, port contract, adapter, domain object. Every tree name starts with `<Layer>: <Subject>` and names coverage in parenthesised semicolon-separated labelled pairs on the same line. The categories are `src`, `domain`, `use-case`, `adapter`, `component`, `system`, `journey`. Gaps are declared explicitly: `none` for a category that is expected but uncovered (so readers and `sync` spot it); categories that are genuinely not applicable are omitted. At Journey, System, Component, and Adapter layers, trees describe principles rather than enumerated cases. At Use-case, Domain, and Port layers, trees describe what the outer consumer needs to observe from the unit it has forced into existence. Every test file's describe/it hierarchy mirrors its tree verbatim.
 
 ## Supported languages
 
