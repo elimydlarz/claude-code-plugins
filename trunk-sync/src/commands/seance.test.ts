@@ -197,6 +197,7 @@ describe("seance", () => {
   });
 
   it("exits 1 when the transcript cannot be rewound to the commit timestamp", () => {
+    const fakeHome = realpathSync(mkdtempSync(join(tmpdir(), "seance-home-")));
     const binDir = mkdtempSync(join(tmpdir(), "seance-bin-"));
     writeFileSync(join(binDir, "claude"), `#!/bin/sh\nexit 0\n`);
     chmodSync(join(binDir, "claude"), 0o755);
@@ -204,7 +205,7 @@ describe("seance", () => {
     const originalSessionId = "no-rewind-session";
     const realDir = realpathSync(dir);
     const repoSlug = realDir.replace(/[/.]/g, "-");
-    const transcriptDir = join(process.env.HOME || "", ".claude", "projects", repoSlug);
+    const transcriptDir = join(fakeHome, ".claude", "projects", repoSlug);
     mkdirSync(transcriptDir, { recursive: true });
     const transcriptFile = join(transcriptDir, `${originalSessionId}.jsonl`);
     // Every transcript entry postdates the commit — nothing to rewind to.
@@ -222,12 +223,12 @@ describe("seance", () => {
       { cwd: dir, env: { ...process.env, GIT_COMMITTER_DATE: commitDate } },
     );
 
-    const { output, status } = runSeanceWithStatus(dir, `${file}:1`, binDir);
+    const { output, status } = runSeanceWithStatus(dir, `${file}:1`, binDir, { HOME: fakeHome });
     assert.match(output, /Could not rewind transcript/);
     assert.equal(status, 1);
 
     rmSync(binDir, { recursive: true, force: true });
-    rmSync(transcriptDir, { recursive: true, force: true });
+    rmSync(fakeHome, { recursive: true, force: true });
   });
 
   });
@@ -283,6 +284,7 @@ describe("seance", () => {
   });
 
   it("succeeds when stale worktree exists from previous seance", () => {
+    const fakeHome = realpathSync(mkdtempSync(join(tmpdir(), "seance-home-")));
     const binDir = mkdtempSync(join(tmpdir(), "seance-bin-"));
     writeFileSync(
       join(binDir, "claude"),
@@ -293,7 +295,7 @@ describe("seance", () => {
     const originalSessionId = "stale-worktree-session";
     const realDir = realpathSync(dir);
     const repoSlug = realDir.replace(/[/.]/g, "-");
-    const transcriptDir = join(process.env.HOME || "", ".claude", "projects", repoSlug);
+    const transcriptDir = join(fakeHome, ".claude", "projects", repoSlug);
     mkdirSync(transcriptDir, { recursive: true });
     const transcriptFile = join(transcriptDir, `${originalSessionId}.jsonl`);
     const transcriptLines = [
@@ -318,14 +320,15 @@ describe("seance", () => {
     assert.ok(existsSync(worktreePath), "stale worktree should exist before seance");
 
     // Seance should succeed despite the existing worktree
-    const output = runSeance(dir, `${file}:1`, binDir);
+    const output = runSeance(dir, `${file}:1`, binDir, { HOME: fakeHome });
     assert.match(output, /Rewound session to commit/, "seance should succeed with stale worktree");
 
     rmSync(binDir, { recursive: true, force: true });
-    rmSync(transcriptDir, { recursive: true, force: true });
+    rmSync(fakeHome, { recursive: true, force: true });
   });
 
   it("default mode with .transcripts/ snapshot uses snapshot for rewind", () => {
+    const fakeHome = realpathSync(mkdtempSync(join(tmpdir(), "seance-home-")));
     const binDir = mkdtempSync(join(tmpdir(), "seance-bin-"));
     const logFile = join(binDir, "claude.log");
     const captureFile = join(binDir, "captured-transcript.jsonl");
@@ -388,14 +391,14 @@ exit 0
     // assertion below can tell which source actually won if the snapshot were ignored.
     const realDir = realpathSync(dir);
     const repoSlug = realDir.replace(/[/.]/g, "-");
-    const derivedDir = join(process.env.HOME || "", ".claude", "projects", repoSlug);
+    const derivedDir = join(fakeHome, ".claude", "projects", repoSlug);
     mkdirSync(derivedDir, { recursive: true });
     writeFileSync(
       join(derivedDir, `${originalSessionId}.jsonl`),
       JSON.stringify({ type: "user", timestamp: "2026-03-01T10:00:00.000Z", sessionId: originalSessionId, cwd: "/derived/rival", message: { role: "user", content: "rival task" } }) + "\n",
     );
 
-    const output = runSeance(dir, `${file}:1`, binDir);
+    const output = runSeance(dir, `${file}:1`, binDir, { HOME: fakeHome });
 
     // Should rewind using the snapshot (no Transcript: field needed)
     assert.match(output, /Rewound session to commit/);
@@ -405,8 +408,6 @@ exit 0
     assert.ok(existsSync(captureFile), "mock claude should have captured the rewound transcript");
     const capturedLines = readFileSync(captureFile, "utf-8").split("\n").filter(Boolean);
     assert.equal(capturedLines.length, 3, "should have all 3 snapshot lines (timestamps <= commit time), not the rival's 1");
-
-    rmSync(derivedDir, { recursive: true, force: true });
 
     // seance-read-only: claude is launched with restrictive flags
     const loggedArgs = readFileSync(logFile, "utf-8");
@@ -420,6 +421,7 @@ exit 0
     assert.match(loggedArgs, /first response must be a direct explanation with ZERO tool calls/);
 
     rmSync(binDir, { recursive: true, force: true });
+    rmSync(fakeHome, { recursive: true, force: true });
   });
 
   it("uses the transcript at TranscriptPath from the commit body when there is no snapshot", () => {
@@ -453,6 +455,7 @@ exit 0
   });
 
   it("prompt uses original line number from blamed commit, not current line", () => {
+    const fakeHome = realpathSync(mkdtempSync(join(tmpdir(), "seance-home-")));
     const binDir = mkdtempSync(join(tmpdir(), "seance-bin-"));
     const logFile = join(binDir, "claude.log");
     writeFileSync(
@@ -469,7 +472,7 @@ exit 0
     const originalSessionId = "orig-line-test-session";
     const realDir = realpathSync(dir);
     const repoSlug = realDir.replace(/[/.]/g, "-");
-    const transcriptDir = join(process.env.HOME || "", ".claude", "projects", repoSlug);
+    const transcriptDir = join(fakeHome, ".claude", "projects", repoSlug);
     mkdirSync(transcriptDir, { recursive: true });
     const transcriptFile = join(transcriptDir, `${originalSessionId}.jsonl`);
 
@@ -496,7 +499,7 @@ exit 0
     writeFileSync(transcriptFile, transcriptLines.join("\n") + "\n");
 
     // Seance line 4 in current file — should blame back to commit 1 where it was line 1
-    const output = runSeance(dir, `${file}:4`, binDir);
+    const output = runSeance(dir, `${file}:4`, binDir, { HOME: fakeHome });
     assert.match(output, /Rewound session to commit/);
 
     // The prompt passed to claude should reference line 1, not line 4
@@ -506,7 +509,7 @@ exit 0
     assert.match(log, /const target = true;/, "prompt should include the blamed line's code content");
 
     rmSync(binDir, { recursive: true, force: true });
-    rmSync(transcriptDir, { recursive: true, force: true });
+    rmSync(fakeHome, { recursive: true, force: true });
   });
 
   });
@@ -514,6 +517,7 @@ exit 0
   describe("seance default mode (Claude commit)", () => {
 
   it("default mode with transcript rewinds session to commit point", () => {
+    const fakeHome = realpathSync(mkdtempSync(join(tmpdir(), "seance-home-")));
     const binDir = mkdtempSync(join(tmpdir(), "seance-bin-"));
     const logFile = join(binDir, "claude.log");
     // Mock claude binary that captures the rewound transcript before exiting
@@ -551,7 +555,7 @@ exit 0
     const originalSessionId = "aaaa-bbbb-cccc-dddd";
     const realDir = realpathSync(dir);
     const repoSlug = realDir.replace(/[/.]/g, "-");
-    const transcriptDir = join(process.env.HOME || "", ".claude", "projects", repoSlug);
+    const transcriptDir = join(fakeHome, ".claude", "projects", repoSlug);
     mkdirSync(transcriptDir, { recursive: true });
     const transcriptFile = join(transcriptDir, `${originalSessionId}.jsonl`);
     const transcriptLines = [
@@ -578,7 +582,7 @@ exit 0
     const commitSha = gitIn(dir, "rev-parse HEAD");
     const short = commitSha.slice(0, 8);
 
-    const output = runSeance(dir, `${file}:1`, binDir);
+    const output = runSeance(dir, `${file}:1`, binDir, { HOME: fakeHome });
 
     // Verify rewind happened
     assert.match(output, /Rewound session to commit/);
@@ -619,7 +623,7 @@ exit 0
 
     // Verify rewound transcript was cleaned up (it's in the project dir, not transcriptDir)
     const slug = worktreePath.replace(/[/.]/g, "-");
-    const projectDir = join(process.env.HOME || "", ".claude", "projects", slug);
+    const projectDir = join(fakeHome, ".claude", "projects", slug);
     const rewoundFile = join(projectDir, `${newSessionId}.jsonl`);
     assert.ok(!existsSync(rewoundFile), "rewound transcript should be cleaned up after claude exits");
 
@@ -628,9 +632,7 @@ exit 0
     assert.equal(originalLines.length, 6, "original transcript should be untouched");
 
     rmSync(binDir, { recursive: true, force: true });
-    rmSync(transcriptDir, { recursive: true, force: true });
-    // Clean up project dir if empty
-    try { rmSync(projectDir, { recursive: true, force: true }); } catch { /* ok */ }
+    rmSync(fakeHome, { recursive: true, force: true });
   });
 
   });
