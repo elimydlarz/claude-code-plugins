@@ -119,7 +119,7 @@ exit "\$status"
 CONFIG
   chmod +x "$PROJECT_DIR/.codex/run-hook.sh"
 
-  cat > "$PROJECT_DIR/.codex/hooks.json" <<CONFIG
+  cat > "$cache_dir/hooks/hooks.json" <<CONFIG
 {
   "hooks": {
     "PostToolUse": [
@@ -210,25 +210,13 @@ run_agent() { # prompt → stdout (stream-json), also appended to the transcript
   fi
 
   prime_codex_plugin
-  if [ "$AGENT_CALL_COUNT" -eq 1 ]; then
-    ( cd "$PROJECT_DIR" && codex exec \
-      --dangerously-bypass-approvals-and-sandbox \
-      --dangerously-bypass-hook-trust \
-      --skip-git-repo-check \
-      --json \
-      -m gpt-5.4-mini \
-      -C "$PROJECT_DIR" \
-      "$prompt" 2>&1 ) | tee -a "$TRANSCRIPT_FILE"
-    append_codex_artifacts
-    return
-  fi
-
-  ( cd "$PROJECT_DIR" && codex exec resume --last \
+  ( cd "$PROJECT_DIR" && codex exec \
     --dangerously-bypass-approvals-and-sandbox \
     --dangerously-bypass-hook-trust \
     --skip-git-repo-check \
     --json \
     -m gpt-5.4-mini \
+    -C "$PROJECT_DIR" \
     "$prompt" 2>&1 ) | tee -a "$TRANSCRIPT_FILE"
   append_codex_artifacts
 }
