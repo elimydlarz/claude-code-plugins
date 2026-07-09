@@ -18,14 +18,14 @@ scripts/trunk-sync-session-start.sh — SessionStart wrapper: exec node dist/lib
 scripts/trunk-sync-stop.sh    — Stop wrapper: exec node dist/lib/stop-entry.js
 scripts/sync-plugin-version.js — npm version hook: syncs plugin.json version from package.json
 
-src/lib/hook-types.ts         — types (HookInput, RepoState, HookPlan, Timecard: heartbeat lastActiveAt, branch, task, no pid)
+src/lib/hook-types.ts         — types (HookInput, RepoState, HookPlan, Timecard: session, host, clockedInAt, lastActiveAt, branch, no pid)
 src/lib/hook-plan.ts          — pure decision logic (no I/O, no git); incl. classifyTimecards (heartbeat-age), formatSessionStartSummary
 src/lib/hook-plan.test.ts     — unit tests for pure logic (fast, no repos)
-src/lib/hook-execute.ts       — gathers git state, executes the plan; incl. runSessionStart, runStop (heartbeat), reapCards
+src/lib/hook-execute.ts       — gathers git state, executes the plan; incl. runSessionStart, runStop (clock-out), reapCards
 src/lib/hook-execute.test.ts  — integration tests (temp repos)
 src/lib/hook-entry.ts         — PostToolUse entry point: reads stdin, wires layers, exits
-src/lib/session-start-entry.ts — SessionStart entry point: prints own-id + handover roster to stdout
-src/lib/stop-entry.ts         — Stop entry point: heartbeat-only (bumps lastActiveAt + syncs; never forces)
+src/lib/session-start-entry.ts — SessionStart entry point: prints own-id + active roster to stdout
+src/lib/stop-entry.ts         — Stop entry point: removes the session timecard + syncs; never forces
 
 src/cli.ts                    — CLI entry point, argv dispatch
 src/commands/seance.ts        — trunk-sync seance (default/--inspect/--list modes)
