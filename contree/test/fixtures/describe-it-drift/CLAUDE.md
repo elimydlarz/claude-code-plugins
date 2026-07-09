@@ -12,6 +12,8 @@ tree.
 - `src/bookmark.js` — the module
 - `src/bookmark.domain.test.js` — tests for the module (describe/it hierarchy drifts from the tree)
 - `TEST_TREES.md` — behaviour contract
+- `MENTAL_MODEL.md` — project mental model
+- `README.md` — consumer documentation
 - `CLAUDE.md` — this file
 
 ## Test Trees
