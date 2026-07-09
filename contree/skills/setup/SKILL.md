@@ -137,6 +137,8 @@ Install appropriate mutation testing tool (see Mutation Testing Reference below)
 
 Contree prescribes hexagonal architecture: domain is pure, I/O lives in adapters, dependencies point inward. Install a linter that enforces this so boundary violations break the build rather than the review.
 
+The enforced rules are: Domain has no I/O, use-cases depend on ports/interfaces and not concrete adapters, and circular dependencies are rejected.
+
 **For JS/TS projects** — install dependency-cruiser:
 
 ```bash
