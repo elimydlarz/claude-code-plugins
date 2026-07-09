@@ -1496,7 +1496,6 @@ describe("executePlan with clock-in", () => {
         clockedInAt: new Date().toISOString(),
         lastActiveAt: new Date().toISOString(),
         branch: "main",
-        task: null,
       },
     };
     const plan: HookPlan = {
@@ -1513,14 +1512,12 @@ describe("executePlan with clock-in", () => {
     const input = makeInput({ tool_input: { file_path: filePath } });
     const state = makeState(dir);
 
-    // Suppress the first-clock-in nudge so this test stays focused on the commit
     const throttlePath = join(process.env.TMPDIR || "/tmp", "trunk-sync-clockin-my-session");
     writeFileSync(throttlePath, String(Date.now()));
 
     const result = executePlan(plan, input, state);
     assert.equal(result.exitCode, 0);
 
-    // Timecard should be in the commit
     const files = execSync("git diff-tree --no-commit-id --name-only -r HEAD", { cwd: dir, encoding: "utf-8" }).trim();
     assert.ok(files.includes(".trunk-sync/timeclock/my-session.json"));
     assert.ok(files.includes("code.txt"));
@@ -1538,7 +1535,6 @@ describe("executePlan with clock-in", () => {
         clockedInAt: new Date().toISOString(),
         lastActiveAt: new Date().toISOString(),
         branch: "main",
-        task: null,
       },
     };
     const plan: HookPlan = {
@@ -1555,9 +1551,8 @@ describe("executePlan with clock-in", () => {
     const input = makeInput({ tool_input: { file_path: filePath } });
     const state = makeState(dir);
 
-    // No throttle file → this is the session's first clock-in
     const throttlePath = join(process.env.TMPDIR || "/tmp", "trunk-sync-clockin-my-session");
-    try { unlinkSync(throttlePath); } catch { /* ignore */ }
+    try { unlinkSync(throttlePath); } catch { }
 
     const result = executePlan(plan, input, state);
     assert.equal(result.exitCode, 2, `expected exit 2, got ${result.exitCode}. stderr: ${result.stderr}`);
@@ -1570,7 +1565,6 @@ describe("executePlan with clock-in", () => {
   });
 
   it("returns exit 2 with clock-in message when other agents clocked in", () => {
-    // Create another agent's timecard
     const timeclockDir = join(dir, ".trunk-sync", "timeclock");
     mkdirSync(timeclockDir, { recursive: true });
     writeFileSync(join(timeclockDir, "other-session.json"), JSON.stringify({
@@ -1578,7 +1572,6 @@ describe("executePlan with clock-in", () => {
       clockedInAt: new Date().toISOString(),
       lastActiveAt: new Date().toISOString(),
       branch: "feature",
-      task: "Refactoring auth",
     }));
     execSync("git add . && git commit -m 'add other agent'", { cwd: dir, stdio: "ignore" });
 
@@ -1591,7 +1584,6 @@ describe("executePlan with clock-in", () => {
         clockedInAt: new Date().toISOString(),
         lastActiveAt: new Date().toISOString(),
         branch: "main",
-        task: null,
       },
     };
     const plan: HookPlan = {
@@ -1608,15 +1600,14 @@ describe("executePlan with clock-in", () => {
     const input = makeInput({ tool_input: { file_path: filePath } });
     const state = makeState(dir);
 
-    // Clear any existing throttle
     const throttlePath = join(process.env.TMPDIR || "/tmp", "trunk-sync-clockin-my-session");
-    try { unlinkSync(throttlePath); } catch { /* ignore */ }
+    try { unlinkSync(throttlePath); } catch { }
 
     const result = executePlan(plan, input, state);
     assert.equal(result.exitCode, 2, `expected exit 2, got ${result.exitCode}. stderr: ${result.stderr}`);
     assert.ok(result.stderr?.includes("TRUNK-SYNC ACTIVE"), `expected TRUNK-SYNC ACTIVE in: ${result.stderr}`);
     assert.ok(result.stderr?.includes("other-se"), `expected other-se in: ${result.stderr}`);
-    assert.ok(result.stderr?.includes("Refactoring auth"));
+    assert.ok(!result.stderr?.includes("Refactoring auth"));
     assert.ok(result.stderr?.includes("no action required"));
   });
 
@@ -1628,7 +1619,6 @@ describe("executePlan with clock-in", () => {
       clockedInAt: new Date().toISOString(),
       lastActiveAt: new Date().toISOString(),
       branch: "feature",
-      task: "Some task",
     }));
     execSync("git add . && git commit -m 'add other agent'", { cwd: dir, stdio: "ignore" });
 
@@ -1641,7 +1631,6 @@ describe("executePlan with clock-in", () => {
         clockedInAt: new Date().toISOString(),
         lastActiveAt: new Date().toISOString(),
         branch: "main",
-        task: null,
       },
     };
     const plan: HookPlan = {
@@ -1658,7 +1647,6 @@ describe("executePlan with clock-in", () => {
     const input = makeInput({ tool_input: { file_path: filePath } });
     const state = makeState(dir);
 
-    // Write a fresh throttle file (just now)
     const throttlePath = join(process.env.TMPDIR || "/tmp", "trunk-sync-clockin-my-session");
     writeFileSync(throttlePath, String(Date.now()));
 
@@ -1680,7 +1668,6 @@ describe("executePlan with clock-in", () => {
         clockedInAt: new Date().toISOString(),
         lastActiveAt: new Date().toISOString(),
         branch: "main",
-        task: null,
       },
     };
     const plan: HookPlan = {
@@ -1699,7 +1686,7 @@ describe("executePlan with clock-in", () => {
     writeFileSync(join(timeclockDir, "abandoned.json"), JSON.stringify({
       sessionId: "abandoned", hostname: "other-host",
       clockedInAt: twentyDaysAgo, lastActiveAt: twentyDaysAgo,
-      branch: "main", task: null,
+      branch: "main",
     }));
     execSync("git add . && git commit -m 'add abandoned agent'", { cwd: dir, stdio: "ignore" });
 
@@ -1717,7 +1704,7 @@ describe("executePlan with clock-in", () => {
     writeFileSync(join(timeclockDir, "stale-but-kept.json"), JSON.stringify({
       sessionId: "stale-but-kept", hostname: "other-host",
       clockedInAt: twoDaysAgo, lastActiveAt: twoDaysAgo,
-      branch: "main", task: null,
+      branch: "main",
     }));
     execSync("git add . && git commit -m 'add stale agent'", { cwd: dir, stdio: "ignore" });
 
@@ -1728,8 +1715,6 @@ describe("executePlan with clock-in", () => {
   });
 
   it("hook still exits 0 when clock-in fails (.trunk-sync unwritable)", () => {
-    // Block timeclock dir creation by making .trunk-sync a regular file —
-    // mkdirSync(".trunk-sync/timeclock", { recursive: true }) will throw ENOTDIR
     writeFileSync(join(dir, ".trunk-sync"), "not a directory\n");
 
     const filePath = join(dir, "code.txt");
@@ -1741,7 +1726,6 @@ describe("executePlan with clock-in", () => {
         clockedInAt: new Date().toISOString(),
         lastActiveAt: new Date().toISOString(),
         branch: "main",
-        task: null,
       },
     };
     const plan: HookPlan = {
@@ -1761,7 +1745,6 @@ describe("executePlan with clock-in", () => {
     const result = executePlan(plan, input, state);
     assert.equal(result.exitCode, 0, `clock-in failure must not fail the hook; got ${result.exitCode} stderr=${result.stderr}`);
 
-    // Code change still committed
     const subject = execSync("git log -1 --format=%s", { cwd: dir, encoding: "utf-8" }).trim();
     assert.equal(subject, "auto: write code.txt");
   });
