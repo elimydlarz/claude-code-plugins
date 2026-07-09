@@ -122,7 +122,7 @@ load test_helper
 }
 
 @test "and Claude journey runs fail fast without Claude provider auth" {
-  run grep -F "Claude harness requires ANTHROPIC_API_KEY or DEEPSEEK_API_KEY" "$PROJECT_ROOT/test/journey/docker-run.sh"
+  run grep -F "Claude harness requires DEEPSEEK_API_KEY" "$PROJECT_ROOT/test/journey/docker-run.sh"
   assert_success
 }
 
