@@ -25,6 +25,7 @@ inherit = "all"
 ```
 
 - `shell_environment_policy.inherit = "all"` is required when hook scripts need the same PATH and toolchain that the interactive shell has. This fixed the original `node` not found / hook exit 127 class of failures.
+- A Codex app/session account is not automatically available to child `codex exec` processes launched by tests. Functional journeys need authentication material visible to the CLI through `CODEX_HOME` or `CODEX_API_KEY`.
 - Account-backed Codex runs can use `~/.codex/auth.json`. Do not set a dummy `CODEX_API_KEY`; Codex treats it as a real API key and fails authentication.
 - Dockerized Codex journeys either pass `CODEX_API_KEY` when `OPENAI_API_KEY` is set, or mount the host `~/.codex/auth.json` read-only into `/home/testuser/.codex/auth.json` for account-backed auth.
 
