@@ -14,7 +14,7 @@ Prepares the project for ongoing test-tree-driven development. Configures the te
 3. **SessionStart test kinds, always.** Configure the kinds named by the SessionStart hook where the project has that surface:
    - **Journey** — broad, production-like test of a curated user arc across capabilities. `test/journey/`. `*.journey.test.*`.
    - **System** — deep, production-like test of one capability through the whole app. `test/system/`. `*.system.test.*`.
-   - **Component** — deep in-process test of one capability through the whole app, with external services replaced by reason-marked test doubles such as stubbed outbound HTTP. `test/component/`. `*.component.test.*`.
+   - **Component** — deep in-process test of one capability through the whole app, with external services replaced by test doubles such as stubbed outbound HTTP. `test/component/`. `*.component.test.*`.
    - **Adapter** — one concrete boundary implementation against the real boundary it adapts. Colocated. `*.adapter.test.*`.
    - **Port contract** — shared contract suite for an application interface; every implementation passes it. Colocated with the port. `*.contract.ts`.
    - **Unit** — one public surface on one subject. Domain units use `*.domain.test.*`; Use-case units use `*.use-case.test.*`.
@@ -91,7 +91,7 @@ Confirm how conventions apply to this project:
 - System tests: at monorepo root `test/system/` if they exercise cross-package behaviour, or per-package if they test a single package
 - Journey tests: at monorepo root `test/journey/` — they span packages and capabilities by nature
 - Never create a single root-level test config that reaches into all packages — follow the monorepo tool's conventions (Turborepo tasks, Nx project graph, pnpm workspace scripts)
-- Prefer direct per-package config over config inheritance.
+- Prefer composed, direct per-package config over inherited base config.
 
 ### 5. CONFIGURE INNER TEST RUNNERS
 
@@ -244,7 +244,7 @@ Add or update the following sections:
   - Outside-in TDD workflow summary
   - Example tree structure for this project
 
-Configured examples must follow the SessionStart rules: no copied comments, no env-var behaviour switches, no config inheritance, and reason-marked mocks and stubs. Environment variables remain appropriate for secrets and external connection details because they configure boundaries rather than changing test/runtime behaviour.
+Configured examples must follow the SessionStart rules: no copied comments, no env-var behaviour switches, and strong preference for composition over inheritance. Environment variables remain appropriate for secrets and external connection details because they configure boundaries rather than changing test/runtime behaviour.
 
 ### 12. SCAFFOLD MENTAL_MODEL.md
 
@@ -1602,8 +1602,8 @@ Usually no Docker needed. Functional tests:
 #### Mobile/desktop app backend
 
 Same as Web API, but also consider:
-1. Use reason-marked recorded fixtures for the mobile client's requests
-2. Test push notification delivery to a reason-marked fake push service (add it to compose)
+1. Use recorded fixtures for the mobile client's requests
+2. Test push notification delivery to a fake push service (add it to compose)
 
 ---
 
