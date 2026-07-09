@@ -46,7 +46,6 @@ Eagerly use these skills to fulfil operator requests, where applicable:
 - **Debugging means a test gap** — if you're debugging, the tests weren't good enough. Before fixing, find the tree path that should have caught the bug (add it if it's missing), write the failing test, then fix the code.
 - **Behaviour, not internals** — every tree describes what crosses its level's interface (inputs, outputs, side-effects). Never the implementation inside. Journey/System/Adapter speak the consumer's vocabulary; Domain/Use-case/Port-contract speak the unit's own functions, types, and errors — both only as observable at the seam.
 - **No env-var behaviour switches** — do not use environment variables to vary behaviour between test and runtime
-- **Shared port contract** — one `*.contract.ts` suite per port, imported by both in-memory-adapter and real-adapter test files
 EOF
 
 if [ -f MENTAL_MODEL.md ]; then
