@@ -7,6 +7,8 @@ description: "Set expected behaviour by writing or modifying test trees before c
 
 Defines expected behaviour as test trees before implementation begins.
 
+Before implementation: trees first, code second.
+
 The change skill is responsible for understanding the requested behaviour, choosing the right outer layer, and writing clear trees in `TEST_TREES.md`. It does not write test files or implementation examples. The `tdd` skill owns turning trees into tests and code.
 
 ## When to Use
@@ -25,7 +27,7 @@ A completed change pass leaves `TEST_TREES.md` with the smallest tree edit that 
 
 ### 1. Understand the Change
 
-Identify the behaviour being added, modified, or removed. Discuss the change with the user before modifying trees.
+Identify the behaviour being added, modified, or removed. Discuss the change with the user before modifying trees; discuss scope before touching `TEST_TREES.md`.
 
 Read the actual tests and source of the area being changed before drafting the tree edit. The tree is a claim about the system; the implementation is the current reality. If they disagree in the area being changed, reconcile pre-existing tree-code drift as part of the change so the new tree is coherent with post-change reality. If reconciliation is non-trivial, surface it before continuing.
 
@@ -59,9 +61,9 @@ If the change affects one capability, start with a System tree.
 
 If the change is only observable inside an existing capability and no outer tree is missing, update the tree at the layer where the behaviour is observed by its consumer.
 
-Do not pre-design inner trees. Inner Use-case, Domain, Port, and Adapter trees are added by `tdd` when a failing journey/functional test pulls the need into view. Naming an inner tree before its need has surfaced is speculation and YAGNI failure.
+Do not pre-design inner trees. Inner Use-case, Domain, Port, and Adapter trees are added by `tdd` when a failing journey/functional test pulls the need into view. They are not designed ahead of time. Naming an inner tree before its need has surfaced is speculation and YAGNI failure.
 
-Pure libraries are the exception. If a library has no driving adapter, no use-case, and no driven port, write the tree at the layer where its exported behaviour is consumed. If multiple exported functions form an observable invariant together, a System tree may describe that invariant, such as `ShortCode` where `generate()` produces a code that `isValid()` accepts. If no cross-function invariant exists, omit System altogether and document the omission rather than leaving a System test file without a corresponding tree.
+Pure libraries (no vertical slice) are the exception. If a library has no driving adapter, no use-case, and no driven port, write the tree at the layer where its exported behaviour is consumed. If multiple exported functions form an observable invariant together, a System tree may describe that invariant, such as `ShortCode` where `generate()` produces a code that `isValid()` accepts. If no cross-function invariant exists, omit System altogether and document the omission rather than leaving a System test file without a corresponding tree.
 
 ### 4. Write or Modify the Tree
 
@@ -87,9 +89,9 @@ Every tree starts with:
 - `Domain`
 - `Port`
 
-`<Subject>` names the behaviour-bearing thing at that layer. The subject must have observable behaviour for its consumer.
+`<Subject>` names the behaviour-bearing thing at that layer. The subject must have observable behaviour for its consumer. The layer prefix lets readers and sync detect duplication across trees that share a subject at different layers.
 
-One tree maps to exactly one test file. If two independent behavioural units are testable separately, they need two trees.
+One tree, one test file. One tree maps to exactly one test file. If two independent behavioural units are testable separately, they need two trees.
 
 Write paths using EARS patterns:
 
@@ -155,7 +157,7 @@ Outside-in means a consumer is created before the thing it consumes is implement
 | --- | --- | --- | --- | --- |
 | Journey | User or operator crossing capabilities | Real driving and driven adapters, real infrastructure, real boundaries | The user-visible arc and outcomes | Curated max-realism proof of the highest-impact user path |
 | System | Consumer of one capability | Real driven adapters and real infrastructure | Capability behaviour and side effects | Selective real-everything proof of a capability |
-| Component | In-process consumer of one capability | Real app wiring, with externals doubled at the edge | Capability behaviour with external services doubled | Exhaustive capability coverage without external services |
+| Component | In-process consumer of one capability | Real app wiring, with externals doubled at the edge; `*.component.test.*` | Capability behaviour with external services doubled | Exhaustive capability coverage without external services |
 | Adapter | Boundary caller or boundary dependency | Real boundary for driven adapters; mocked use-case for driving adapters | Protocol inputs, outputs, errors, and boundary side effects | Boundary translation and adapter-local behaviour |
 | Use-case | Driving adapter or higher application flow | In-memory implementations of outbound ports | Application behaviour needed by that consumer | Exhaustive orchestration coverage |
 | Domain | Use-case or domain caller that forced the rule into existence | No collaborators, no I/O, no async | Inputs, outputs, errors, and pure rules needed by that caller | Exhaustive pure rule coverage |
@@ -174,6 +176,10 @@ Use-case trees describe the application behaviour needed by the driving adapter 
 Domain trees describe the pure rules needed by the use-case or domain caller that forced the domain subject into existence. Pure functions are still consumer-driven. A pure function is introduced only because a use-case, domain service, or other caller needs to invoke it and observe its result or error.
 
 Port trees describe the outbound capability guarantees needed by the use-case that depends on the port.
+
+Below the slice, write separate trees only for behavioural units with substantive behaviour: Domain rules, non-trivial Use-case orchestration, non-trivial Driving-adapter translation, or Driven-adapter behaviour beyond the port contract. Trivial value objects don't earn a tree. A use-case that just delegates to a single port doesn't earn a tree. Thin adapters don't earn a tree.
+
+Cross-cutting System trees capture app-level invariants that span slices, such as auth enforcement, rate limiting, and error envelope. Write a System tree named for the policy.
 
 Use-case is to Component as Journey is to System: the cheap tier doubles what it can, the real tier integrates everything affordable. Use-case and Component are always written and exhaustive; System and Journey validate the same surfaces with real everything, selectively.
 
@@ -197,7 +203,7 @@ OrderRepository
 
 The in-memory adapter is not a mock. It is a real implementation that enforces the same invariants the real adapter does. Use-case tests use the in-memory twin. System tests do not lean on the in-memory twin; they wire real driven adapters and exercise real infrastructure.
 
-The shared port contract suite is the Port tree. Both adapters must pass the shared suite. The real adapter's test file also carries adapter-local behaviour beyond the shared contract, such as timeouts, retries, schema, and constraint violations.
+The shared port contract suite is the Port tree. Both adapters must pass the shared suite. The real adapter's test file also carries adapter-specific behaviour beyond the port contract, such as timeouts, retries, schema, and constraint violations.
 
 The composition root is the only place that imports concrete adapters and wires them into use-cases. Use-case tests wire in-memory adapters through it. System tests and production wire real adapters.
 
@@ -213,7 +219,7 @@ The composition root is the only place that imports concrete adapters and wires 
 - **Name the layer and subject** — every tree's first line is `<Layer>: <Subject>`. The layer disambiguates trees that share a subject across layers; the subject is what is being tested.
 - **Every leaf stands alone** — a `then` clause states its assertion inline. Do not use cross-leaf references such as `see above`, `as before`, or `the existing X branch holds`.
 - **"Just like X" duplicates, then maybe collapses** — when the user describes new behaviour as `just like` or `the same as` an existing tree's behaviour, duplicate that tree's paths under the new subject in full rather than cross-referencing. If the duplication reveals the two subjects are the same concept, collapse them under one tree named for the shared concept and make the implementation generic to serve both.
-- **Causal triggers nest under their enabling outcome** — a `when` trigger that can only occur as a consequence of a prior `then` outcome is nested as a child of that outcome.
+- **Causal triggers nest under their enabling outcome** — a when-trigger that can only occur as a consequence of a prior then-outcome is nested as a child of that outcome, not a sibling.
 
 ## EARS Patterns
 
