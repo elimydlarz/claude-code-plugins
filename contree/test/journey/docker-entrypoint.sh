@@ -5,7 +5,7 @@ set -euo pipefail
 # Works both inside Docker (called by docker-run.sh) and directly on the host.
 #
 # Expects:
-#   - For claude: ANTHROPIC_API_KEY or DEEPSEEK_API_KEY (via docker-run.sh DeepSeek env vars)
+#   - For claude: DEEPSEEK_API_KEY (via docker-run.sh DeepSeek env vars)
 #   - For codex:  DEEPSEEK_API_KEY
 #   - $1 is the test name (layered-workflow | describe-it-drift | diff-images | second-opinion | second-opinion-live)
 #   - $2 is the harness  (claude | codex), default claude
