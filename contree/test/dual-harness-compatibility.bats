@@ -114,3 +114,11 @@ load test_helper
   run grep -F "|command not found|" "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
   assert_failure
 }
+
+@test "and Claude journey runs do not require Codex auth docker arguments" {
+  run grep -F 'docker_env_args=("${DOCKER_LLM_ENV[@]}")' "$PROJECT_ROOT/test/journey/docker-run.sh"
+  assert_success
+
+  run grep -F 'docker_env_args+=("${DOCKER_CODEX_ENV[@]}")' "$PROJECT_ROOT/test/journey/docker-run.sh"
+  assert_success
+}
