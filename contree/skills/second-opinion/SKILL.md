@@ -37,8 +37,9 @@ Call Z.AI's chat completions API with the `glm-5.2` model, authenticated with `Z
 ```bash
 REVIEW_INPUT=$(printf 'TEST TREES (the contract):\n\n%s\n\nCHANGE (the work to review):\n\n%s\n' \
   "$(cat TEST_TREES.md)" "$CHANGE")
+ZAI_BASE_URL="${ZAI_BASE_URL:-https://api.z.ai/api/paas/v4}"
 
-curl -sS -f -X POST "https://api.z.ai/api/paas/v4/chat/completions" \
+curl -sS -f -X POST "$ZAI_BASE_URL/chat/completions" \
   -H "Authorization: Bearer $ZAI_API_KEY" \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg input "$REVIEW_INPUT" '{

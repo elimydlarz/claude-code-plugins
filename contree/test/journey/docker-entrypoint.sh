@@ -268,8 +268,8 @@ OPENAI_STUB_PID=0
 start_openai_image_stub() {
   # Mock OpenAI's images generations endpoint so /diff can run without a real
   # (billable, non-deterministic) gpt-image-2 call. Serves a canned b64_json
-  # image. Both the OpenAI SDK (via OPENAI_BASE_URL) and the skill's curl recipe
-  # (via a URL-rewriting curl shim) are pointed at this local stub.
+  # image. The skill's curl recipe honours OPENAI_BASE_URL, so the journey points
+  # it at this local stub.
   local port=8771
   local stub="/tmp/openai-image-stub.js"
   STUB_MARKER="CONTREE-MOCK-IMAGE-BYTES"
@@ -302,8 +302,6 @@ JS
   STUB_PORT="$port" STUB_MARKER="$STUB_MARKER" STUB_HITS="$STUB_HITS" node "$stub" &
   OPENAI_STUB_PID=$!
 
-  install_curl_shim 'https:\/\/api.openai.com\/v1' "http://127.0.0.1:$port/v1"
-
   export OPENAI_API_KEY="test-key-mock"
   export OPENAI_BASE_URL="http://127.0.0.1:$port/v1"
 }
@@ -313,8 +311,8 @@ ZAI_STUB_PID=0
 start_zai_review_stub() {
   # Mock Z.AI's chat completions endpoint so /contree:second-opinion can run
   # without a real (billable, non-deterministic) GLM 5.2 call. Serves a canned
-  # review carrying a recognisable marker. The skill's curl recipe is pointed at
-  # this local stub via a URL-rewriting curl shim.
+  # review carrying a recognisable marker. The skill's curl recipe honours
+  # ZAI_BASE_URL, so the journey points it at this local stub.
   local port=8772
   local stub="/tmp/zai-review-stub.js"
   ZAI_MARKER="CONTREE-MOCK-GLM-REVIEW"
@@ -342,9 +340,8 @@ JS
   ZAI_PORT="$port" ZAI_MARKER="$ZAI_MARKER" ZAI_HITS="$ZAI_HITS" node "$stub" &
   ZAI_STUB_PID=$!
 
-  install_curl_shim 'https:\/\/api.z.ai' "http://127.0.0.1:$port"
-
   export ZAI_API_KEY="test-key-mock"
+  export ZAI_BASE_URL="http://127.0.0.1:$port/api/paas/v4"
 }
 
 # --- Test cases ---

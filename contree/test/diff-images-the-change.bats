@@ -28,6 +28,7 @@ SKILL="$PROJECT_ROOT/skills/diff-for-humans/SKILL.md"
   run cat "$SKILL"
   assert_output --partial "gpt-image-2"
   assert_output --partial "images generations"
+  assert_output --partial "OPENAI_BASE_URL"
 }
 
 @test "diff-for-humans skill chooses what the image depicts from the nature of the change, its important details, and its audience" {

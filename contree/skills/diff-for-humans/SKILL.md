@@ -43,7 +43,9 @@ The image is an editorial choice, not a transcription of the diff. Decide what t
 Call OpenAI's images generations API with the `gpt-image-2` model (pinned id `gpt-image-2-2026-04-21`), authenticated with `OPENAI_API_KEY`. Write a prompt that captures your step-2 decisions. gpt-image-2 always returns base64 in `data[0].b64_json` — do not send a `response_format` parameter, the API rejects it. Decode the base64 and save the returned image as a `.png` file in the project.
 
 ```bash
-curl -sS -X POST "https://api.openai.com/v1/images/generations" \
+OPENAI_BASE_URL="${OPENAI_BASE_URL:-https://api.openai.com/v1}"
+
+curl -sS -X POST "$OPENAI_BASE_URL/images/generations" \
   -H "Authorization: Bearer $OPENAI_API_KEY" \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg prompt "$PROMPT" '{

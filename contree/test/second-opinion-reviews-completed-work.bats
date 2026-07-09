@@ -36,6 +36,7 @@ SKILL="$PROJECT_ROOT/skills/second-opinion/SKILL.md"
   assert_output --partial "api.z.ai"
   assert_output --partial "chat/completions"
   assert_output --partial "ZAI_API_KEY"
+  assert_output --partial "ZAI_BASE_URL"
 }
 
 @test "second-opinion skill surfaces GLM 5.2's review attributed to GLM 5.2" {
