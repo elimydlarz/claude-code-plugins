@@ -180,11 +180,16 @@ setup-prepares-project (src: skills/setup/SKILL.md; system: test/setup-prepares-
   when setup is run on an existing project
     then existing test config is detected and merged into, not overwritten
     and tree reporters are configured for both local dev and CI (dual reporters)
-    and the six test layers (Domain, Use-case, Component, Adapter, System, Journey) are configured as separate commands
+    and the SessionStart test kinds are configured as separate commands where the project has that surface
     and mutation testing is configured with explicit test file exclusions for every layer's suffix
     and changed-test runners are configured with known gotchas addressed
     and TEST_TREES.md is created when missing
     and CLAUDE.md is updated to point at TEST_TREES.md if it does not already
+    and setup examples follow the SessionStart rules — no copied comments, no env-var behaviour switches, no config inheritance, and visible reason markers for mocks and stubs
+  when setup detects multiple viable test frameworks
+    then setup chooses the test framework using the project evidence and tree-output quality
+  when setup would choose the main application framework for a project
+    then setup asks the user before proceeding
   when setup is run on a new project
     then TEST_TREES.md is created when missing
     and tests are NOT implemented yet
@@ -198,7 +203,7 @@ setup-prepares-project (src: skills/setup/SKILL.md; system: test/setup-prepares-
     and test artefacts are torn down afterwards
     and secrets are passed via environment variables
   when Component tests run
-    then they run in-process with an in-memory database and stubbed outbound HTTP, needing no external services
+    then they run in-process with an in-memory database and reason-marked stubbed outbound HTTP, needing no external services
 ```
 
 ## setup-installs-architectural-linter

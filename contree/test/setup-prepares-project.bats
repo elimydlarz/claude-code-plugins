@@ -17,10 +17,10 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "JUnit"
 }
 
-@test "setup configures the six test layers as separate commands" {
+@test "setup configures the SessionStart test kinds as separate commands" {
   run cat "$SKILL"
-  assert_output --partial "Domain"
-  assert_output --partial "Use-case"
+  assert_output --partial "Unit"
+  assert_output --partial "Port contract"
   assert_output --partial "Component"
   assert_output --partial "Adapter"
   assert_output --partial "System"
@@ -54,6 +54,21 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   run cat "$SKILL"
   assert_output --partial "TEST_TREES.md"
   assert_output --partial "Do not compose the trees yourself"
+}
+
+@test "setup examples follow SessionStart rules" {
+  run cat "$SKILL"
+  assert_output --partial "SessionStart rules"
+  assert_output --partial "no copied comments"
+  assert_output --partial "no env-var behaviour switches"
+  assert_output --partial "no config inheritance"
+  assert_output --partial "reason-marked"
+}
+
+@test "setup chooses test frameworks but asks before choosing the application framework" {
+  run cat "$SKILL"
+  assert_output --partial "Choose the test framework"
+  assert_output --partial "Ask before choosing the main application framework"
 }
 
 @test "setup updates CLAUDE.md to point at TEST_TREES.md when the pointer is missing" {
