@@ -478,8 +478,8 @@ VERIFY
 
   diff-images)
     # Verifies the user-invoked /contree:diff-for-humans skill end to end against a mocked
-    # gpt-image-2 endpoint. Codex model calls use CODEX_API_KEY, so the skill can
-    # still override OPENAI_API_KEY for the image-generation stub.
+    # gpt-image-2 endpoint. Codex model calls use CODEX_HOME auth or CODEX_API_KEY,
+    # so the skill can still override OPENAI_API_KEY for the image-generation stub.
     seed_project "greenfield"
 
     # Introduce an uncommitted, staged change for /diff to depict.
