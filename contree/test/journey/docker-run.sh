@@ -20,32 +20,24 @@ for env_file in "$SCRIPT_DIR/.env" "$REPO_ROOT/.env"; do
   [ -f "$env_file" ] && set -a && . "$env_file" && set +a
 done
 
-# Provider selection: DeepSeek (preferred) or Anthropic.
-# When DEEPSEEK_API_KEY is set, configure Claude Code to use the DeepSeek
-# Anthropic-compatible endpoint per https://api-docs.deepseek.com/quick_start/agent_integrations/claude_code
-if [ -n "${DEEPSEEK_API_KEY:-}" ]; then
-  # docker run -e VAR only forwards exported vars, so export every provider var.
-  export ANTHROPIC_BASE_URL="https://api.deepseek.com/anthropic"
-  export ANTHROPIC_AUTH_TOKEN="$DEEPSEEK_API_KEY"
-  export ANTHROPIC_MODEL="deepseek-v4-pro[1m]"
-  export ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-v4-pro[1m]"
-  export ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-v4-pro[1m]"
-  export ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-v4-flash"
-  export CLAUDE_CODE_SUBAGENT_MODEL="deepseek-v4-flash"
-  export CLAUDE_CODE_EFFORT_LEVEL="max"
-  DOCKER_LLM_ENV=(
-    -e ANTHROPIC_BASE_URL
-    -e ANTHROPIC_AUTH_TOKEN
-    -e ANTHROPIC_MODEL
-    -e ANTHROPIC_DEFAULT_OPUS_MODEL
-    -e ANTHROPIC_DEFAULT_SONNET_MODEL
-    -e ANTHROPIC_DEFAULT_HAIKU_MODEL
-    -e CLAUDE_CODE_SUBAGENT_MODEL
-    -e CLAUDE_CODE_EFFORT_LEVEL
-  )
-else
-  DOCKER_LLM_ENV=(-e ANTHROPIC_API_KEY)
-fi
+export ANTHROPIC_BASE_URL="https://api.deepseek.com/anthropic"
+export ANTHROPIC_AUTH_TOKEN="${DEEPSEEK_API_KEY:-}"
+export ANTHROPIC_MODEL="deepseek-v4-pro[1m]"
+export ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-v4-pro[1m]"
+export ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-v4-pro[1m]"
+export ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-v4-flash"
+export CLAUDE_CODE_SUBAGENT_MODEL="deepseek-v4-flash"
+export CLAUDE_CODE_EFFORT_LEVEL="max"
+DOCKER_LLM_ENV=(
+  -e ANTHROPIC_BASE_URL
+  -e ANTHROPIC_AUTH_TOKEN
+  -e ANTHROPIC_MODEL
+  -e ANTHROPIC_DEFAULT_OPUS_MODEL
+  -e ANTHROPIC_DEFAULT_SONNET_MODEL
+  -e ANTHROPIC_DEFAULT_HAIKU_MODEL
+  -e CLAUDE_CODE_SUBAGENT_MODEL
+  -e CLAUDE_CODE_EFFORT_LEVEL
+)
 
 DOCKER_CODEX_ENV=(-e DEEPSEEK_API_KEY)
 
@@ -74,8 +66,8 @@ docker build -q -t "$IMAGE_NAME" -f "$SCRIPT_DIR/Dockerfile" "$TEST_DIR"
 run_pair() {
   local name="$1"
   local harness="$2"
-  if [ "$harness" = "claude" ] && [ -z "${ANTHROPIC_API_KEY:-}" ] && [ -z "${ANTHROPIC_AUTH_TOKEN:-}" ]; then
-    echo "Claude harness requires ANTHROPIC_API_KEY or DEEPSEEK_API_KEY" >&2
+  if [ "$harness" = "claude" ] && [ -z "${DEEPSEEK_API_KEY:-}" ]; then
+    echo "Claude harness requires DEEPSEEK_API_KEY" >&2
     return 1
   fi
   if [ "$harness" = "codex" ] && [ -z "${DEEPSEEK_API_KEY:-}" ]; then
