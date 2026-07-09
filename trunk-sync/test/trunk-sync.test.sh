@@ -315,22 +315,6 @@ assert_exit 0 "commit without session_id exits 0"
 SUBJECT=$(last_subject "$WT_A")
 assert_equals "auto: edit seed.txt" "$SUBJECT" "subject without session_id"
 
-# 9b. First clock-in of a session → exit 2 nudging the agent to run the tests and resume WIP
-setup_repos
-echo "modified" > "$WT_A/seed.txt"
-cd "$WT_A"
-run_hook_first_clockin "$(make_input "$WT_A/seed.txt" "firstclockin1" "Edit" "")"
-assert_exit 2 "first clock-in exits 2 with WIP nudge"
-assert_contains "$HOOK_STDERR" "TRUNK-SYNC WIP" "first clock-in mentions WIP"
-assert_contains "$HOOK_STDERR" "Run the test suite" "first clock-in tells agent to run the tests"
-assert_contains "$HOOK_STDERR" "resume" "first clock-in tells agent to resume WIP"
-
-# 9c. Second edit of the same session → throttled, no WIP nudge, exit 0
-echo "again" > "$WT_A/seed.txt"
-run_hook "$(make_input "$WT_A/seed.txt" "firstclockin1" "Edit" "")"
-assert_exit 0 "subsequent clock-in exits 0"
-assert_not_contains "$HOOK_STDERR" "TRUNK-SYNC WIP" "subsequent clock-in omits the WIP nudge"
-
 # 10. Tool name lowercased
 setup_repos
 echo "modified" > "$WT_A/seed.txt"
@@ -620,10 +604,6 @@ setup_repos
 echo "A's content" > "$WT_A/a-file.txt"
 echo "B's content" > "$WT_B/b-file.txt"
 
-# Returning agents — isolate this test from the first-clock-in WIP nudge
-seed_clockin race-a
-seed_clockin race-b
-
 # Run both hooks concurrently — they race to push to origin/main
 cd "$WT_A"
 HOOK_EXIT_A=0
@@ -682,10 +662,6 @@ setup_repos
 
 echo "A's version" > "$WT_A/seed.txt"
 echo "B's version" > "$WT_B/seed.txt"
-
-# Returning agents — isolate this test from the first-clock-in WIP nudge
-seed_clockin conf-a
-seed_clockin conf-b
 
 cd "$WT_A"
 HOOK_EXIT_A=0
