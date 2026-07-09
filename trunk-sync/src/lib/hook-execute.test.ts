@@ -13,7 +13,7 @@ import {
 import { join } from "node:path";
 import { tmpdir, hostname } from "node:os";
 import { execSync } from "node:child_process";
-import type { HookInput, RepoState, HookPlan, SyncPlan, ClockInPlan, Timecard } from "./hook-types.js";
+import type { HookInput, RepoState, HookPlan, SyncPlan, Timecard } from "./hook-types.js";
 import { gatherRepoState, getRuntimeContext, findWorktreeForBranch, executePlan, executeSync, clockIn, readTimecards, reapCards, runSessionStart, runStop } from "./hook-execute.js";
 
 // ── Helpers ──────────────────────────────────────────────────────────
@@ -1178,16 +1178,13 @@ describe("clockIn", () => {
   });
 
   it("creates timeclock directory and writes valid timecard", () => {
-    const plan: ClockInPlan = {
-      timecardPath: ".trunk-sync/timeclock/test-session.json",
-      timecard: {
-        sessionId: "test-session", hostname: "test-host",
-        clockedInAt: "2026-03-27T10:00:00.000Z",
-        lastActiveAt: "2026-03-27T10:05:00.000Z",
-        branch: "main",
-      },
+    const timecard: Timecard = {
+      sessionId: "test-session", hostname: "test-host",
+      clockedInAt: "2026-03-27T10:00:00.000Z",
+      lastActiveAt: "2026-03-27T10:05:00.000Z",
+      branch: "main",
     };
-    clockIn(dir, plan);
+    clockIn(dir, timecard);
     const filePath = join(dir, ".trunk-sync", "timeclock", "test-session.json");
     assert.ok(existsSync(filePath));
     const content = JSON.parse(readFileSync(filePath, "utf-8")) as Timecard;
@@ -1197,14 +1194,11 @@ describe("clockIn", () => {
   });
 
   it("preserves clockedInAt from existing timecard", () => {
-    const plan: ClockInPlan = {
-      timecardPath: ".trunk-sync/timeclock/test-session.json",
-      timecard: {
-        sessionId: "test-session", hostname: "test-host",
-        clockedInAt: "2026-03-27T10:05:00.000Z",
-        lastActiveAt: "2026-03-27T10:05:00.000Z",
-        branch: "main",
-      },
+    const timecard: Timecard = {
+      sessionId: "test-session", hostname: "test-host",
+      clockedInAt: "2026-03-27T10:05:00.000Z",
+      lastActiveAt: "2026-03-27T10:05:00.000Z",
+      branch: "main",
     };
     const timeclockDir = join(dir, ".trunk-sync", "timeclock");
     mkdirSync(timeclockDir, { recursive: true });
@@ -1214,7 +1208,7 @@ describe("clockIn", () => {
       lastActiveAt: "2026-03-27T10:00:00.000Z",
       branch: "main",
     }));
-    clockIn(dir, plan);
+    clockIn(dir, timecard);
     const content = JSON.parse(readFileSync(join(timeclockDir, "test-session.json"), "utf-8")) as Timecard;
     assert.equal(content.clockedInAt, "2026-03-27T10:00:00.000Z");
     assert.equal(content.lastActiveAt, "2026-03-27T10:05:00.000Z");
