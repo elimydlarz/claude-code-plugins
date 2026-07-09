@@ -117,7 +117,6 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
   buildClockInPlan
     when the runtime context provides a session id and branch
       then a clock-in plan with the timecard path is returned
-      and the timecard initializes lastStep and remainingSteps to null
     if the session id is null
       then null is returned
     if the current branch is empty
@@ -138,7 +137,7 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
     when a card's heartbeat is older than the display window but within the reap ttl
       then it is classified stale — possibly disrupted; surfaced for resume, not reaped
     when a card's heartbeat is older than the reap ttl
-      then it is classified reapable even with unfinished remaining steps — abandoned
+      then it is classified reapable
 
   formatClockInMessage
     when no other agent is active and this is not the first clock-in
@@ -147,8 +146,6 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
       then a single-agent message is returned
     when an active agent has a task
       then the task description is included
-    when an active agent has recorded progress
-      then its last completed step and remaining steps are included on that agent's line
     when multiple agents are active
       then all are listed
     when the elapsed minutes value is rounded
@@ -355,7 +352,6 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
       then clockedInAt is preserved across updates
       and lastActiveAt is bumped to now — the heartbeat that marks the agent recently alive
       and task is re-derived from the current transcript on each update
-      and lastStep and remainingSteps are preserved across updates, since only the progress recorder sets them
 
   readTimecards
     when the timeclock directory does not exist
@@ -381,33 +377,33 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
     when the throttle file is fresh
       then the roster message is suppressed
     when another agent's card is older than the reap ttl
-      then it is reaped as part of the same commit, regardless of remaining steps
+      then it is reaped as part of the same commit
     when another agent's card is within the reap ttl
-      then it is preserved, not reaped — active or stale, the handover survives for someone to resume
+      then it is preserved, not reaped
     if `.trunk-sync` is unwritable
       then the hook still exits 0 (clock-in is best-effort)
 
   runSessionStart
     when the session-start hook fires
-      then the starting agent's own session id and the instruction to record progress with the plugin-bundled progress recorder are printed to stdout for injection into context
+      then the starting agent's own session id is printed to stdout for injection into context
       and every other session's timecard is read and classified by heartbeat age, the starting session excluded
       when active or stale cards are present
         then their labelled summary is appended — active to coordinate around, stale to verify against the tests and resume
       when only reapable cards (or none) remain
-        then only the own-id and record-progress instruction are printed
+        then only the own-id is printed
     if the timeclock directory does not exist
-      then the own-id and record-progress instruction are still printed and the hook exits 0
+      then the own-id is still printed and the hook exits 0
     if no session id is provided
       then nothing is printed
 
   runStop
     when the stop hook fires and the session has a timecard
       then its heartbeat (lastActiveAt) is bumped and the update is synced, so remote readers see it fresh through a long no-edit turn
-      and it always exits 0 — progress is never forced
+      and it always exits 0
     when the heartbeat was already refreshed by a recent tool-use sync
       then no commit is made — a fresh heartbeat is not duplicated
     if the session has no timecard yet
-      then it exits 0 without creating one — a session that never edited has no handover to keep alive
+      then it exits 0 without creating one — a session that never edited has no timecard to keep alive
     if no session id is provided
       then it exits 0 without action
 ```
@@ -551,47 +547,10 @@ Use-case: config (src: src/commands/config.ts; use-case: src/commands/config.tes
       then they are preserved on read
 ```
 
-## progress
-
-```
-Use-case: progress (src: src/lib/progress.ts; use-case: src/commands/progress.test.ts; system: test/trunk-sync.test.sh)
-
-  progress recorder
-    then `--help` prints usage
-    when called with a session id, a last step, and remaining steps
-      then the matching timecard's lastStep and remainingSteps are both set
-      and its heartbeat (lastActiveAt) is refreshed
-      and clockedInAt, task, and branch are preserved
-    when called with `--last` only
-      then lastStep is set and remainingSteps is left untouched — a partial update never destroys the handover
-    when called with `--next` only
-      then remainingSteps is set and lastStep is left untouched
-    when called with `--next ""`
-      then remainingSteps is cleared, marking the work done
-    when no timecard yet exists for the session id
-      then a timecard is created carrying the recorded progress
-    if the session id is missing
-      then it exits 1 with a usage message
-```
-
 ## hook-sync
 
 ```
-System: hook-sync (system: test/trunk-sync.test.sh; journey: test/functional/docker-entrypoint.sh)
-
-  functional handover harness
-    when the handover case is run with the Claude harness
-      then the shared fixture and verifier are used
-      and the shared fixture carries minimal project docs so unrelated installed hooks have context
-      and Docker runs use the DeepSeek provider configured by `DEEPSEEK_API_KEY` from `.env`
-      and the real Claude CLI edits, records progress, and receives the handover
-    when the handover case is run with the Codex harness
-      then the shared fixture and verifier are used
-      and the shared fixture carries minimal project docs so unrelated installed hooks have context
-      and the real Codex CLI edits, records progress, and receives the handover
-      and Codex session and hook logs are appended to the transcript for hook evidence
-      and Docker runs can use host Codex auth when `OPENAI_API_KEY` is absent
-    then hook runner failures are rejected without matching ordinary command stderr
+System: hook-sync (system: test/trunk-sync.test.sh)
 
   every Edit/Write/Bash/apply_patch/local_shell tool use
     then the changed file is staged and committed
@@ -608,13 +567,13 @@ System: hook-sync (system: test/trunk-sync.test.sh; journey: test/functional/doc
     when the git command is in the read-only allowlist
       then it is allowed through
   every session start
-    then the starting agent is handed its own session id and the command to record progress
+    then the starting agent is handed its own session id
     when other sessions have stale cards
       then that possibly-disrupted work is surfaced to verify against the tests and resume
     when other sessions have active cards
       then that recently-alive work is surfaced to coordinate around
     when only reapable cards remain
-      then nothing is surfaced beyond the agent's own record-progress instruction
+      then nothing is surfaced beyond the agent's own session id
   every end of task
     then the agent's timecard heartbeat is bumped and synced, marking it recently alive for remote readers
     and the agent is never forced to act — the stop hook always exits 0
@@ -622,8 +581,6 @@ System: hook-sync (system: test/trunk-sync.test.sh; journey: test/functional/doc
     then the disrupted agent's stale card is surfaced as a handover, corroborated against the failing tests before resuming
     when the resumer finishes and the original card ages past the reap ttl
       then it is swept on the next agent's commit
-  when an agent records progress and the hook later fires
-    then the progress-bearing timecard is committed and pushed, propagating the handover to other machines
   when a merge conflict arises during sync
     then exit 2 surfaces self-contained conflict-resolution instructions
     when the agent edits the conflicted file and the hook fires again
