@@ -24,6 +24,11 @@ SKILL="$PROJECT_ROOT/skills/second-opinion/SKILL.md"
   [[ "$output" == *"untracked"* ]]
 }
 
+@test "second-opinion skill keeps untracked file diffs without treating git diff --no-index differences as recipe failure" {
+  run cat "$SKILL"
+  assert_output --partial 'git diff --no-index -- /dev/null "$f" || true'
+}
+
 @test "second-opinion skill reads the test trees as the contract the work must satisfy" {
   run cat "$SKILL"
   assert_output --regexp 'Test Trees|TEST_TREES\.md'

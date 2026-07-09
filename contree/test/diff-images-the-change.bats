@@ -24,6 +24,11 @@ SKILL="$PROJECT_ROOT/skills/diff-for-humans/SKILL.md"
   [[ "$output" == *"untracked"* ]]
 }
 
+@test "diff-for-humans skill keeps untracked file diffs without treating git diff --no-index differences as recipe failure" {
+  run cat "$SKILL"
+  assert_output --partial 'git diff --no-index -- /dev/null "$f" || true'
+}
+
 @test "diff-for-humans skill generates an image of the change using OpenAI gpt-image-2 via the images generations API" {
   run cat "$SKILL"
   assert_output --partial "gpt-image-2"
