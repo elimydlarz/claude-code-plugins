@@ -1354,7 +1354,7 @@ describe("runStop", () => {
     const cardPath = join(timeclockDir, `${sessionId}.json`);
     writeFileSync(cardPath, JSON.stringify({
       sessionId, hostname: "h", clockedInAt: lastActiveAt, lastActiveAt,
-      branch: "main", task: null, lastStep: null, remainingSteps: null,
+      branch: "main", task: null,
     }));
     execSync("git add . && git commit -m 'add card'", { cwd: dir, stdio: "ignore" });
     return cardPath;
@@ -1403,7 +1403,7 @@ describe("runStop", () => {
     mkdirSync(timeclockDir, { recursive: true });
     writeFileSync(join(timeclockDir, "remote-session.json"), JSON.stringify({
       sessionId: "remote-session", hostname: "h", clockedInAt: staleTime, lastActiveAt: staleTime,
-      branch: "main", task: null, lastStep: null, remainingSteps: null,
+      branch: "main", task: null,
     }));
     execSync("git add . && git commit -m 'add card'", { cwd: clone, stdio: "ignore" });
 
@@ -1430,7 +1430,7 @@ describe("runStop", () => {
     mkdirSync(timeclockDir, { recursive: true });
     writeFileSync(join(timeclockDir, "flaky-session.json"), JSON.stringify({
       sessionId: "flaky-session", hostname: "h", clockedInAt: staleTime, lastActiveAt: staleTime,
-      branch: "main", task: null, lastStep: null, remainingSteps: null,
+      branch: "main", task: null,
     }));
     execSync("git add . && git commit -m 'add card'", { cwd: clone, stdio: "ignore" });
 
@@ -1511,8 +1511,6 @@ describe("executePlan with clock-in", () => {
         lastActiveAt: new Date().toISOString(),
         branch: "main",
         task: null,
-        lastStep: null,
-        remainingSteps: null,
       },
     };
     const plan: HookPlan = {
@@ -1555,8 +1553,6 @@ describe("executePlan with clock-in", () => {
         lastActiveAt: new Date().toISOString(),
         branch: "main",
         task: null,
-        lastStep: null,
-        remainingSteps: null,
       },
     };
     const plan: HookPlan = {
@@ -1610,8 +1606,6 @@ describe("executePlan with clock-in", () => {
         lastActiveAt: new Date().toISOString(),
         branch: "main",
         task: null,
-        lastStep: null,
-        remainingSteps: null,
       },
     };
     const plan: HookPlan = {
@@ -1662,8 +1656,6 @@ describe("executePlan with clock-in", () => {
         lastActiveAt: new Date().toISOString(),
         branch: "main",
         task: null,
-        lastStep: null,
-        remainingSteps: null,
       },
     };
     const plan: HookPlan = {
@@ -1703,8 +1695,6 @@ describe("executePlan with clock-in", () => {
         lastActiveAt: new Date().toISOString(),
         branch: "main",
         task: null,
-        lastStep: null,
-        remainingSteps: null,
       },
     };
     const plan: HookPlan = {
@@ -1723,14 +1713,14 @@ describe("executePlan with clock-in", () => {
     writeFileSync(join(timeclockDir, "abandoned.json"), JSON.stringify({
       sessionId: "abandoned", hostname: "other-host",
       clockedInAt: twentyDaysAgo, lastActiveAt: twentyDaysAgo,
-      branch: "main", task: null, lastStep: null, remainingSteps: "left unfinished work",
+      branch: "main", task: null,
     }));
     execSync("git add . && git commit -m 'add abandoned agent'", { cwd: dir, stdio: "ignore" });
 
     const { plan, input, state } = commitAndSyncPlan();
     executePlan(plan, input, state);
 
-    assert.ok(!existsSync(join(timeclockDir, "abandoned.json")), "card past the TTL should be reaped even with remaining steps");
+    assert.ok(!existsSync(join(timeclockDir, "abandoned.json")), "card past the TTL should be reaped");
     assert.ok(existsSync(join(timeclockDir, "my-session.json")));
   });
 
@@ -1741,14 +1731,14 @@ describe("executePlan with clock-in", () => {
     writeFileSync(join(timeclockDir, "stale-but-kept.json"), JSON.stringify({
       sessionId: "stale-but-kept", hostname: "other-host",
       clockedInAt: twoDaysAgo, lastActiveAt: twoDaysAgo,
-      branch: "main", task: null, lastStep: null, remainingSteps: "resume me",
+      branch: "main", task: null,
     }));
     execSync("git add . && git commit -m 'add stale agent'", { cwd: dir, stdio: "ignore" });
 
     const { plan, input, state } = commitAndSyncPlan();
     executePlan(plan, input, state);
 
-    assert.ok(existsSync(join(timeclockDir, "stale-but-kept.json")), "card within the TTL is preserved as a handover");
+    assert.ok(existsSync(join(timeclockDir, "stale-but-kept.json")), "card within the TTL is preserved");
   });
 
   it("hook still exits 0 when clock-in fails (.trunk-sync unwritable)", () => {
@@ -1766,8 +1756,6 @@ describe("executePlan with clock-in", () => {
         lastActiveAt: new Date().toISOString(),
         branch: "main",
         task: null,
-        lastStep: null,
-        remainingSteps: null,
       },
     };
     const plan: HookPlan = {
