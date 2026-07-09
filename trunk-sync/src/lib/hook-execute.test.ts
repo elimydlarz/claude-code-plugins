@@ -1281,18 +1281,22 @@ describe("runSessionStart", () => {
 
   it("pushes the starting agent's timecard when a remote is configured", () => {
     const { remote, clone } = setupRepoWithRemote("session-start-sync");
-    process.chdir(clone);
-    const state = makeState(clone, { hasRemote: true, targetBranch: "main", currentBranch: "main" });
+    const previousDir = process.cwd();
+    try {
+      process.chdir(clone);
+      const state = makeState(clone, { hasRemote: true, targetBranch: "main", currentBranch: "main" });
 
-    const msg = runSessionStart(state, "synced-session", { hostname: "local-host" })!;
+      const msg = runSessionStart(state, "synced-session", { hostname: "local-host" })!;
 
-    assert.match(msg, /synced-session/);
-    execSync("git fetch origin main", { cwd: clone, stdio: "ignore" });
-    const remoteCard = execSync("git show origin/main:.trunk-sync/timeclock/synced-session.json", { cwd: clone, encoding: "utf-8" });
-    assert.match(remoteCard, /synced-session/);
-
-    rmSync(remote, { recursive: true, force: true });
-    rmSync(clone, { recursive: true, force: true });
+      assert.match(msg, /synced-session/);
+      execSync("git fetch origin main", { cwd: clone, stdio: "ignore" });
+      const remoteCard = execSync("git show origin/main:.trunk-sync/timeclock/synced-session.json", { cwd: clone, encoding: "utf-8" });
+      assert.match(remoteCard, /synced-session/);
+    } finally {
+      process.chdir(previousDir);
+      rmSync(remote, { recursive: true, force: true });
+      rmSync(clone, { recursive: true, force: true });
+    }
   });
 
   it("prints only the own-id instruction when no other agents are clocked in", () => {
@@ -1390,49 +1394,57 @@ describe("runStop", () => {
 
   it("pushes the removed timecard to the remote when a remote is configured", () => {
     const { remote, clone } = setupRepoWithRemote("stop-sync");
-    process.chdir(clone);
+    const previousDir = process.cwd();
+    try {
+      process.chdir(clone);
 
-    const staleTime = new Date(Date.now() - 45 * 60 * 1000).toISOString();
-    const timeclockDir = join(clone, ".trunk-sync", "timeclock");
-    mkdirSync(timeclockDir, { recursive: true });
-    writeFileSync(join(timeclockDir, "remote-session.json"), JSON.stringify({
-      sessionId: "remote-session", hostname: "h", clockedInAt: staleTime, lastActiveAt: staleTime,
-      branch: "main",
-    }));
-    execSync("git add . && git commit -m 'add card'", { cwd: clone, stdio: "ignore" });
+      const staleTime = new Date(Date.now() - 45 * 60 * 1000).toISOString();
+      const timeclockDir = join(clone, ".trunk-sync", "timeclock");
+      mkdirSync(timeclockDir, { recursive: true });
+      writeFileSync(join(timeclockDir, "remote-session.json"), JSON.stringify({
+        sessionId: "remote-session", hostname: "h", clockedInAt: staleTime, lastActiveAt: staleTime,
+        branch: "main",
+      }));
+      execSync("git add . && git commit -m 'add card'", { cwd: clone, stdio: "ignore" });
 
-    const state = makeState(clone, { hasRemote: true, targetBranch: "main", currentBranch: "main" });
-    runStop(state, "remote-session");
+      const state = makeState(clone, { hasRemote: true, targetBranch: "main", currentBranch: "main" });
+      runStop(state, "remote-session");
 
-    execSync("git fetch origin main", { cwd: clone, stdio: "ignore" });
-    assert.throws(() => execSync("git show origin/main:.trunk-sync/timeclock/remote-session.json", { cwd: clone, stdio: "ignore" }));
-
-    rmSync(remote, { recursive: true, force: true });
-    rmSync(clone, { recursive: true, force: true });
+      execSync("git fetch origin main", { cwd: clone, stdio: "ignore" });
+      assert.throws(() => execSync("git show origin/main:.trunk-sync/timeclock/remote-session.json", { cwd: clone, stdio: "ignore" }));
+    } finally {
+      process.chdir(previousDir);
+      rmSync(remote, { recursive: true, force: true });
+      rmSync(clone, { recursive: true, force: true });
+    }
   });
 
   it("never throws even when the post-clock-out sync fails — the stop hook always exits 0", () => {
     const { remote, clone } = setupRepoWithRemote("stop-sync-fail");
-    process.chdir(clone);
+    const previousDir = process.cwd();
+    try {
+      process.chdir(clone);
 
-    execSync(`git remote set-url origin "/nonexistent/path/to/remote.git"`, { cwd: clone });
+      execSync(`git remote set-url origin "/nonexistent/path/to/remote.git"`, { cwd: clone });
 
-    const staleTime = new Date(Date.now() - 45 * 60 * 1000).toISOString();
-    const timeclockDir = join(clone, ".trunk-sync", "timeclock");
-    mkdirSync(timeclockDir, { recursive: true });
-    writeFileSync(join(timeclockDir, "flaky-session.json"), JSON.stringify({
-      sessionId: "flaky-session", hostname: "h", clockedInAt: staleTime, lastActiveAt: staleTime,
-      branch: "main",
-    }));
-    execSync("git add . && git commit -m 'add card'", { cwd: clone, stdio: "ignore" });
+      const staleTime = new Date(Date.now() - 45 * 60 * 1000).toISOString();
+      const timeclockDir = join(clone, ".trunk-sync", "timeclock");
+      mkdirSync(timeclockDir, { recursive: true });
+      writeFileSync(join(timeclockDir, "flaky-session.json"), JSON.stringify({
+        sessionId: "flaky-session", hostname: "h", clockedInAt: staleTime, lastActiveAt: staleTime,
+        branch: "main",
+      }));
+      execSync("git add . && git commit -m 'add card'", { cwd: clone, stdio: "ignore" });
 
-    const state = makeState(clone, { hasRemote: true, targetBranch: "main", currentBranch: "main" });
-    assert.doesNotThrow(() => runStop(state, "flaky-session"));
+      const state = makeState(clone, { hasRemote: true, targetBranch: "main", currentBranch: "main" });
+      assert.doesNotThrow(() => runStop(state, "flaky-session"));
 
-    assert.ok(!existsSync(join(timeclockDir, "flaky-session.json")));
-
-    rmSync(remote, { recursive: true, force: true });
-    rmSync(clone, { recursive: true, force: true });
+      assert.ok(!existsSync(join(timeclockDir, "flaky-session.json")));
+    } finally {
+      process.chdir(previousDir);
+      rmSync(remote, { recursive: true, force: true });
+      rmSync(clone, { recursive: true, force: true });
+    }
   });
 });
 
