@@ -109,10 +109,10 @@ export function buildCommitPlanWithTask(
   const sessionPrefix = buildSessionPrefix(input.session_id);
   const subject = `${sessionPrefix}${task}`;
 
-  let body = `File: ${relPath}`;
-  if (input.session_id) body += `\nSession: ${input.session_id}`;
+  const provenance = buildCommitBody(input, relPath);
+  const body = provenance ? `File: ${relPath}\n${provenance}` : `File: ${relPath}`;
 
-  return { ...base, subject, body: body || null };
+  return { ...base, subject, body };
 }
 
 export function buildSessionPrefix(sessionId: string | null): string {
