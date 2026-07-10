@@ -26,8 +26,6 @@ export interface RepoState {
   currentBranch: string;
   /** true when MERGE_HEAD exists */
   inMerge: boolean;
-  /** true when staging area has changes */
-  hasStagedChanges: boolean;
   /** tracked files that have been deleted from the working tree */
   deletedFiles: string[];
   /** tracked files with modifications (content or permissions) in the working tree */

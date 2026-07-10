@@ -47,7 +47,6 @@ function makeState(dir: string, overrides: Partial<RepoState> = {}): RepoState {
     targetBranch: "main",
     currentBranch: "main",
     inMerge: false,
-    hasStagedChanges: false,
     deletedFiles: [],
     modifiedFiles: [],
     untrackedFiles: [],
@@ -277,25 +276,6 @@ describe("gatherRepoState", () => {
     assert.equal(state.inMerge, false);
   });
 
-  it("reports staged changes", () => {
-    writeFileSync(join(dir, "file.txt"), "staged change\n");
-    execSync("git add file.txt", { cwd: dir });
-    const origDir = process.cwd();
-    process.chdir(dir);
-    const state = gatherRepoState(makeInput());
-    process.chdir(origDir);
-    assert.ok(state);
-    assert.equal(state.hasStagedChanges, true);
-  });
-
-  it("reports no staged changes when the index is clean", () => {
-    const origDir = process.cwd();
-    process.chdir(dir);
-    const state = gatherRepoState(makeInput());
-    process.chdir(origDir);
-    assert.ok(state);
-    assert.equal(state.hasStagedChanges, false);
-  });
 });
 
 // ── getRuntimeContext ────────────────────────────────────────────────

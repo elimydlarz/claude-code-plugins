@@ -38,7 +38,6 @@ function makeState(overrides: Partial<RepoState> = {}): RepoState {
     targetBranch: "main",
     currentBranch: "main",
     inMerge: false,
-    hasStagedChanges: false,
     deletedFiles: [],
     modifiedFiles: [],
     untrackedFiles: [],
