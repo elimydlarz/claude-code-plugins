@@ -220,6 +220,12 @@ module.exports = {
       },
     },
     {
+      name: 'adapters-only-from-composition-root',
+      severity: 'error',
+      from: { pathNot: '^src/composition-root\\.[cm]?[jt]sx?$' },
+      to: { path: '(^|/)(adapters?|infrastructure)/' },
+    },
+    {
       name: 'no-circular',
       severity: 'error',
       from: {},
@@ -231,6 +237,8 @@ module.exports = {
   },
 };
 ```
+
+Identify the project's single composition root during REVIEW and replace the example composition-root path with the exact project path before writing `.dependency-cruiser.cjs`.
 
 Add a script and wire it into the project's lint command:
 
