@@ -1,0 +1,22 @@
+{
+  "name": "shortcode",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:functional": "vitest run --config vitest.functional.config.js",
+    "test:mutate": "stryker run",
+    "lint:code": "eslint .",
+    "lint:code:fix": "eslint . --fix",
+    "lint:arch": "bash .contree/scripts/lint-architecture.sh",
+    "lint": "npm run lint:code && npm run lint:arch"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@stryker-mutator/core": "^9.6.1",
+    "@stryker-mutator/vitest-runner": "^9.6.1",
+    "dependency-cruiser": "^18.0.0",
+    "eslint": "^10.6.0",
+    "vitest": "^4.1.10"
+  }
+}
