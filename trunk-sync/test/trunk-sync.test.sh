@@ -947,7 +947,7 @@ setup_repos
 cd "$WT_A"
 SS_A=$(run_session_start "$WT_A" "agentaaa")
 CARD="$WT_A/.trunk-sync/timeclock/agentaaa.json"
-assert_contains "$SS_A" "your session id is agentaaa" "session-start: A is clocked in and given its session id"
+assert_equals "" "$SS_A" "session-start: A is clocked in without own session context"
 assert_equals "agentaaa" "$(jq -r '.sessionId' "$CARD")" "timecard: sessionId written"
 assert_equals "trunk-sync/agent-a" "$(jq -r '.branch' "$CARD")" "timecard: branch written"
 OLD_ACTIVE=$(jq -r '.lastActiveAt' "$CARD")
@@ -995,14 +995,14 @@ run_hook "$(make_input "$WT_A/seed.txt" "agentaaa" "Edit" "")"
 [[ -f "$GHOST" ]] && REAPED=no || REAPED=yes
 assert_equals "yes" "$REAPED" "reap: an abandoned card past the TTL is swept on the next commit"
 
-# 36. SessionStart with ONLY a reapable card surfaces nothing beyond the agent's own session id.
+# 36. SessionStart with ONLY a reapable card surfaces no context.
 setup_repos
 cd "$WT_A"
 mkdir -p "$WT_A/.trunk-sync/timeclock"
 REAP_TS=$(node -e 'console.log(new Date(Date.now()-20*24*60*60*1000).toISOString())')  # 20 days ago — past the 14-day reap ttl
 printf '{"sessionId":"reapableghost","hostname":"old-host","clockedInAt":"%s","lastActiveAt":"%s","branch":"main"}' "$REAP_TS" "$REAP_TS" > "$WT_A/.trunk-sync/timeclock/reapableghost.json"
 SS_REAP=$(run_session_start "$WT_A" "livesession9")
-assert_contains "$SS_REAP" "your session id is livesession9" "session-start reapable-only: own session id is surfaced"
+assert_equals "" "$SS_REAP" "session-start reapable-only: no context is surfaced"
 assert_not_contains "$SS_REAP" "TRUNK-SYNC ACTIVE" "session-start reapable-only: no active roster is surfaced"
 
 # ── Summary ──────────────────────────────────────────────────────────────────
