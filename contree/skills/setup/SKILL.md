@@ -108,7 +108,7 @@ When configuring Docker:
 Install appropriate mutation testing tool (see Mutation Testing Reference below). Configure with:
 
 - Mutator targeting source files, **explicitly excluding test files** — if tests are colocated, the exclusion globs must match the naming convention exactly (e.g., `!src/**/*.domain.test.*`, `!src/**/*.use-case.test.*`, `!src/**/*.adapter.test.*`, `!src/**/*.contract.ts`). For TypeScript projects, include the precise layer suffixes: `!src/**/*.domain.test.ts`, `!src/**/*.use-case.test.ts`, `!src/**/*.adapter.test.ts`, `!src/**/*.component.test.ts`, `!src/**/*.system.test.ts`, `!src/**/*.journey.test.ts`, `!test/**/*.component.test.ts`, `!test/**/*.system.test.ts`, `!test/**/*.journey.test.ts`, and `!src/**/*.contract.ts`.
-- Unit-level test runners only, using Domain and Use-case suffixes where the project already names those tests separately. Adapter, Component, System, and Journey tests are too slow for mutation testing.
+- Mutation test runners select only Domain and Use-case tests when the framework supports test selection. Adapter, Component, System, and Journey tests are too slow for mutation testing.
 - Thresholds: `high: 80, low: 60, break: 50`
 - Incremental mode where available (stores state between runs for speed)
 - Add script/command (e.g., `npm run test:mutate`)
@@ -976,7 +976,7 @@ pitest {
     pitestVersion.set("1.19.1")
     junit5PluginVersion.set("1.2.3")
     targetClasses.set(setOf("com.example.*"))
-    targetTests.set(setOf("com.example.*Test"))
+    targetTests.set(setOf("com.example.*DomainTest*", "com.example.*UseCaseTest*"))
     threads.set(4)
     outputFormats.set(setOf("HTML", "XML"))
     timestampedReports.set(false)
@@ -1036,7 +1036,10 @@ Use `maven-failsafe-plugin` (same config pattern) for functional/integration tes
     </dependencies>
     <configuration>
         <targetClasses><param>com.example.*</param></targetClasses>
-        <targetTests><param>com.example.*Test</param></targetTests>
+        <targetTests>
+            <param>com.example.*DomainTest*</param>
+            <param>com.example.*UseCaseTest*</param>
+        </targetTests>
         <threads>4</threads>
         <mutationThreshold>50</mutationThreshold>
         <timestampedReports>false</timestampedReports>
