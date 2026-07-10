@@ -231,7 +231,7 @@ System: setup-configures-linting (src: skills/setup/SKILL.md; system: test/setup
     and a project-level hook is created for coding-agent file saves
     and a project-level Stop hook is merged with the project's existing hooks
   when a coding agent writes or edits a project file
-    then the project-level hook runs the normal linter's fix mode against the saved file
+    then the project-level hook runs the normal lint autofix command from the project root after every save
     and automatic fixes are written to the file before the coding agent continues
   if lint violations remain after automatic fixes
     then the project-level hook reports the violations and fails visibly

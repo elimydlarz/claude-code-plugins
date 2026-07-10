@@ -27,7 +27,7 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "Merge into existing project hook configuration"
 }
 
-@test "when a coding agent writes or edits a project file then the project-level hook runs the normal linter's fix mode against the saved file" {
+@test "when a coding agent writes or edits a project file then the project-level hook runs the normal lint autofix command from the project root after every save" {
   run cat "$SKILL"
   assert_output --partial ".contree/hooks/lint-on-save.sh"
   assert_output --partial "pnpm lint:code:fix"
