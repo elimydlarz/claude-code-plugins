@@ -19,14 +19,27 @@ export ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-v4-flash"
 
 IMAGE_NAME="trunk-sync-journey-test"
 docker build -q -t "$IMAGE_NAME" -f "$SCRIPT_DIR/Dockerfile" "$SCRIPT_DIR"
-docker run --rm \
-  -e ANTHROPIC_BASE_URL \
-  -e ANTHROPIC_AUTH_TOKEN \
-  -e ANTHROPIC_MODEL \
-  -e ANTHROPIC_DEFAULT_OPUS_MODEL \
-  -e ANTHROPIC_DEFAULT_SONNET_MODEL \
-  -e ANTHROPIC_DEFAULT_HAIKU_MODEL \
-  -v "$REPO_ROOT:/repo:ro" \
-  -v "$SCRIPT_DIR:/output" \
-  "$IMAGE_NAME" \
-  bash /repo/trunk-sync/test/journey/agent-hook-compatibility.journey.test.sh claude
+
+run_harness() {
+  local harness="$1"
+  docker run --rm \
+    -e ANTHROPIC_BASE_URL \
+    -e ANTHROPIC_AUTH_TOKEN \
+    -e ANTHROPIC_MODEL \
+    -e ANTHROPIC_DEFAULT_OPUS_MODEL \
+    -e ANTHROPIC_DEFAULT_SONNET_MODEL \
+    -e ANTHROPIC_DEFAULT_HAIKU_MODEL \
+    -e DEEPSEEK_API_KEY \
+    -v "$REPO_ROOT:/repo:ro" \
+    -v "$SCRIPT_DIR:/output" \
+    "$IMAGE_NAME" \
+    bash /repo/trunk-sync/test/journey/agent-hook-compatibility.journey.test.sh "$harness"
+}
+
+HARNESS="${1:-all}"
+if [ "$HARNESS" = "all" ]; then
+  run_harness claude
+  run_harness codex
+else
+  run_harness "$HARNESS"
+fi
