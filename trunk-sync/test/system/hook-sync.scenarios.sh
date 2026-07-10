@@ -916,6 +916,7 @@ assert_contains "$HEAD_FILES" "seed.txt" "codex local_shell: modified file is in
 LAST_BODY=$(last_body "$WT_A")
 # The previous commit was from codex03s; assert P3's session id is in its body
 assert_contains "$LAST_BODY" "codex03s-cccc-cccc-cccc-cccccccccccc" "codex local_shell: Session: trailer in body"
+assert_contains "$LAST_BODY" "Agent: codex" "codex local_shell: Agent provenance in body"
 
 # Codex P5. apply_patch with a no-op patch (no actual file change) is a no-op
 setup_repos

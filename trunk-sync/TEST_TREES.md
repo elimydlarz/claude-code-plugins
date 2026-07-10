@@ -1,7 +1,7 @@
 ## Domain: hook-plan
 
 ```
-Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.domain.test.ts; system: test/system/hook-sync.system.test.sh)
+Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.domain.test.ts; system: test/system/hook-sync.system.test.mjs)
 
   parseHookInput
     when called with complete input
@@ -144,7 +144,7 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.domain.t
 ## Adapter: hook-execute
 
 ```
-Adapter: hook-execute (src: src/lib/hook-execute.ts; adapter: src/lib/hook-execute.adapter.test.ts; system: test/system/hook-sync.system.test.sh)
+Adapter: hook-execute (src: src/lib/hook-execute.ts; adapter: src/lib/hook-execute.adapter.test.ts; system: test/system/hook-sync.system.test.mjs)
 
   gatherRepoState
     when called outside a git repo
@@ -276,7 +276,7 @@ Adapter: hook-execute (src: src/lib/hook-execute.ts; adapter: src/lib/hook-execu
 ## Adapter: command-guard
 
 ```
-Adapter: command-guard (src: src/lib/pre-tool-entry.ts; adapter: src/lib/pre-tool-entry.adapter.test.ts; system: test/system/hook-sync.system.test.sh; journey: test/journey/agent-hook-compatibility.journey.test.sh)
+Adapter: command-guard (src: src/lib/pre-tool-entry.ts; adapter: src/lib/pre-tool-entry.adapter.test.ts; system: test/system/hook-sync.system.test.mjs; journey: test/journey/agent-hook-compatibility.journey.test.sh)
 
   when Claude Code sends a Bash command as a string
     then the command is classified and its decision is returned as the hook exit
@@ -291,7 +291,7 @@ Adapter: command-guard (src: src/lib/pre-tool-entry.ts; adapter: src/lib/pre-too
 ## Domain: command-guard
 
 ```
-Domain: command-guard (src: src/lib/command-guard.ts; domain: src/lib/command-guard.domain.test.ts; adapter: src/lib/pre-tool-entry.adapter.test.ts; system: test/system/hook-sync.system.test.sh; journey: test/journey/agent-hook-compatibility.journey.test.sh)
+Domain: command-guard (src: src/lib/command-guard.ts; domain: src/lib/command-guard.domain.test.ts; adapter: src/lib/pre-tool-entry.adapter.test.ts; system: test/system/hook-sync.system.test.mjs; journey: test/journey/agent-hook-compatibility.journey.test.sh)
 
   classifyCommand
     when a command does not start with git
@@ -305,7 +305,7 @@ Domain: command-guard (src: src/lib/command-guard.ts; domain: src/lib/command-gu
 ## System: hook-sync
 
 ```
-System: hook-sync (src: hooks/hooks.json, src/lib/hook-entry.ts, src/lib/session-start-entry.ts, src/lib/stop-entry.ts; system: test/system/hook-sync.system.test.sh; journey: test/journey/agent-hook-compatibility.journey.test.sh)
+System: hook-sync (src: hooks/hooks.json, src/lib/hook-entry.ts, src/lib/session-start-entry.ts, src/lib/stop-entry.ts; system: test/system/hook-sync.system.test.mjs; journey: test/journey/agent-hook-compatibility.journey.test.sh)
 
   every Edit/Write/Bash/apply_patch/local_shell tool use
     then the changed file is staged and committed
@@ -334,7 +334,7 @@ System: hook-sync (src: hooks/hooks.json, src/lib/hook-entry.ts, src/lib/session
     then the agent's timecard is removed and synced, automatically clocking the session out for remote readers
     and the agent is never forced to act — the stop hook always exits 0
   when an agent is disrupted mid-task and a new session starts
-    then the disrupted agent's stale card is omitted and failing tests remain the authoritative signal of unfinished work
+    then the disrupted agent's stale card is omitted
   when a merge conflict arises during sync
     then exit 2 surfaces self-contained conflict-resolution instructions
     and active timecards are surfaced again to coordinate around ongoing sessions

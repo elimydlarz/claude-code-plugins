@@ -34,7 +34,7 @@ src/lib/stop-entry.ts         — Stop entry point: removes the session timecard
 src/lib/git.ts                — shared git utilities
 src/lib/git.test.ts           — unit tests (node:test)
 
-test/system/hook-sync.system.test.sh — hook System suite (TAP, temp repos + bare remote); simulates hook stdin
+test/system/hook-sync.system.test.mjs — hook System contract over real shell scenarios with temp repos and a bare remote
 test/journey/                 — Dockerized real-agent Journey for Claude Code and Codex
 test/local-setup.sh           — manual test setup
 test/local-cleanup.sh         — manual test teardown
