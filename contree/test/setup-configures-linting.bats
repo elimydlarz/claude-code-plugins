@@ -4,6 +4,19 @@ load test_helper
 
 SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
 
+extract_js_lint_hook() {
+  local target="$1"
+  sed -n '/^JS\/TS:$/,/^```$/p' "$SKILL" | sed '1,3d;$d' > "$target"
+  chmod +x "$target"
+}
+
+create_js_hook_project() {
+  local project="$1"
+  mkdir -p "$project/bin"
+  git -C "$project" init -q
+  extract_js_lint_hook "$project/lint-on-save.sh"
+}
+
 @test "setup configures a normal linter" {
   run cat "$SKILL"
   assert_output --partial "normal linter"
@@ -42,6 +55,19 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "synchronous PostToolUse command"
   assert_output --partial "before the coding agent continues"
   refute_output --partial '"async": true'
+
+  local project="$BATS_TEST_TMPDIR/autofix-project"
+  create_js_hook_project "$project"
+  printf '%s\n' '#!/usr/bin/env bash' 'printf "%s\\n" "const fixed = true" > saved.js' > "$project/bin/pnpm"
+  chmod +x "$project/bin/pnpm"
+  printf '%s\n' 'const  broken=true' > "$project/saved.js"
+
+  cd "$project"
+  run env PATH="$project/bin:$PATH" bash "$project/lint-on-save.sh"
+
+  assert_success
+  run cat "$project/saved.js"
+  assert_output "const fixed = true"
 }
 
 @test "if lint violations remain after automatic fixes then the project-level hook reports the violations and fails visibly" {
@@ -51,6 +77,17 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial 'if output=$(pnpm lint:code:fix 2>&1); then'
   assert_output --partial "printf '%s\\n' \"\$output\" >&2"
   assert_output --partial "exit 2"
+
+  local project="$BATS_TEST_TMPDIR/failing-project"
+  create_js_hook_project "$project"
+  printf '%s\n' '#!/usr/bin/env bash' 'printf "%s\\n" "saved.js:1:1 unfixable lint violation" >&2' 'exit 1' > "$project/bin/pnpm"
+  chmod +x "$project/bin/pnpm"
+
+  cd "$project"
+  run env PATH="$project/bin:$PATH" bash "$project/lint-on-save.sh"
+
+  assert_equal "$status" 2
+  assert_output --partial "saved.js:1:1 unfixable lint violation"
 }
 
 @test "setup configures a hex-boundary linter" {
