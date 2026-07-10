@@ -156,14 +156,14 @@ module.exports = {
     {
       name: 'domain-pure',
       severity: 'error',
-      from: { path: 'src/.+/domain/' },
-      to: { path: 'src/.+/(adapters|application)/' },
+      from: { path: '(^|/)domain/' },
+      to: { path: '(^|/)(application|use-cases?|adapters?|infrastructure)/' },
     },
     {
       name: 'use-case-no-adapter',
       severity: 'error',
-      from: { path: 'src/.+/application/' },
-      to: { path: 'src/.+/adapters/' },
+      from: { path: '(^|/)(application|use-cases?)/' },
+      to: { path: '(^|/)(adapters?|infrastructure)/' },
     },
     {
       name: 'no-circular',
