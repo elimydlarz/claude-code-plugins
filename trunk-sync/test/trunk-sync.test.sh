@@ -8,6 +8,7 @@ set -euo pipefail
 HOOK="$(cd "$(dirname "$0")/../scripts" && pwd)/trunk-sync.sh"
 HOOKS_JSON="$(cd "$(dirname "$0")/../hooks" && pwd)/hooks.json"
 DIST_DIR="$(cd "$(dirname "$HOOK")/.." && pwd)/dist"
+export CLAUDE_PLUGIN_ROOT="$(cd "$(dirname "$HOOK")/.." && pwd)"
 PASS=0
 FAIL=0
 TEST_NUM=0
