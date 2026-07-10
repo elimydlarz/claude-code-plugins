@@ -4,6 +4,12 @@ import { classifyCommand } from "./command-guard.js";
 
 describe("Domain: command-guard", () => {
   describe("classifyCommand", () => {
+    describe("when a command does not start with git", () => {
+      it("then it is allowed", () => {
+        assert.deepEqual(classifyCommand("pnpm test"), { exitCode: 0 });
+      });
+    });
+
     describe("when any other git command is received", () => {
       it("then it is rejected with file-editing guidance", () => {
         assert.deepEqual(classifyCommand("git commit -m forbidden"), {
