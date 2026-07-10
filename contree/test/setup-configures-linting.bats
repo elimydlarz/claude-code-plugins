@@ -18,6 +18,15 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "golangci-lint run"
 }
 
+@test "when setup is run then a project-level hook is created for coding-agent file saves" {
+  run cat "$SKILL"
+  assert_output --partial ".claude/settings.json"
+  assert_output --partial ".codex/hooks.json"
+  assert_output --partial "PostToolUse"
+  assert_output --partial '"matcher": "Edit|Write"'
+  assert_output --partial "merge into existing project hook configuration"
+}
+
 @test "setup configures a hex-boundary linter" {
   run cat "$SKILL"
   [[ "$output" == *"dependency-cruiser"* || "$output" == *"hex-boundary"* || "$output" == *"architectural linter"* ]]
