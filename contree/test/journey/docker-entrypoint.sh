@@ -320,7 +320,7 @@ case "$TEST_NAME" in
     seed_project "greenfield"
 
     run_agent \
-      "Run /contree:setup and fully prepare this pure in-process JavaScript project. Complete every setup verification step, including the native test-changed baseline and impact-selection behaviour, configure project hooks for both Claude Code and Codex, and do not create test files or Docker configuration."
+      "Run /contree:setup and fully prepare this pure in-process JavaScript project. Complete every setup verification step, including the native test-changed baseline and impact-selection behaviour, configure project hooks for both Claude Code and Codex, and do not create test files or Docker configuration. Configure mutation testing but do not execute mutation tests in this run."
 
     mkdir -p "$PROJECT_DIR/src" "$PROJECT_DIR/test/system"
     printf '%s\n' "export const alpha = () => 'alpha'" > "$PROJECT_DIR/src/alpha.js"
