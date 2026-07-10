@@ -36,6 +36,13 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   refute_output --partial "SessionStart hook"
 }
 
+@test "setup creates a native test-changed command that runs only normal tests impacted since the last completed normal test run" {
+  run cat "$SKILL"
+  assert_output --partial "test-changed"
+  assert_output --partial "last completed normal test run"
+  assert_output --partial "runs only the normal tests impacted by those files"
+}
+
 @test "setup notes Component tests run in-process needing no external services" {
   run cat "$SKILL"
   assert_output --partial "Component"
