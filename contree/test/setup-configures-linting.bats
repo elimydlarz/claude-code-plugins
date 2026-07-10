@@ -28,6 +28,17 @@ extract_architecture_stop_hook() {
   chmod +x "$target"
 }
 
+extract_architecture_linter() {
+  local target="$1"
+  awk '
+    /Create executable `.contree\/scripts\/lint-architecture.sh`/ { found = 1; next }
+    found && /^```bash$/ { body = 1; next }
+    body && /^```$/ { exit }
+    body { print }
+  ' "$SKILL" > "$target"
+  chmod +x "$target"
+}
+
 create_architecture_hook_project() {
   local project="$1"
   mkdir -p "$project/bin"
@@ -77,6 +88,21 @@ create_architecture_hook_project() {
   assert_output --partial "--output-type err-long"
   assert_output --partial '"lint:arch": "bash .contree/scripts/lint-architecture.sh"'
   refute_output --partial '"lint:arch": "depcruise'
+
+  local project="$BATS_TEST_TMPDIR/all-architecture-rules"
+  mkdir -p "$project/bin"
+  git -C "$project" init -q
+  extract_architecture_linter "$project/lint-architecture.sh"
+  printf '%s\n' '#!/usr/bin/env bash' 'printf "%s\n" "$*" >> "$INVOCATIONS"' 'if [ "$2" = "eslint" ]; then exit 1; fi' 'exit 0' > "$project/bin/pnpm"
+  chmod +x "$project/bin/pnpm"
+
+  cd "$project"
+  run env PATH="$project/bin:$PATH" INVOCATIONS="$project/invocations" bash "$project/lint-architecture.sh"
+
+  assert_equal "$status" 1
+  run cat "$project/invocations"
+  assert_output --partial "exec eslint"
+  assert_output --partial "exec depcruise"
 }
 
 @test "if architecture violations are found during a Stop task then the project-level Stop hook reports every violation with its rule, source, and forbidden dependency and the Stop task fails" {
