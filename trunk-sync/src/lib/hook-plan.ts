@@ -127,12 +127,12 @@ export function buildCommitBody(
 ): string | null {
   if (!input.session_id) return null;
   let body = `Session: ${input.session_id}`;
-  body += `\nAgent: ${agentForTool(input.tool_name)}`;
+  body += `\nAgent: ${agentForInput(input)}`;
   return body;
 }
 
-function agentForTool(toolName: string | null): "claude" | "codex" {
-  if (toolName === "apply_patch" || toolName === "local_shell") return "codex";
+function agentForInput(input: HookInput): "claude" | "codex" {
+  if (input.turn_id || input.tool_name === "apply_patch" || input.tool_name === "local_shell") return "codex";
   return "claude";
 }
 
