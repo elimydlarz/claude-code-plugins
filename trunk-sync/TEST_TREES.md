@@ -158,7 +158,9 @@ Adapter: hook-execute (src: src/lib/hook-execute.ts; adapter: src/lib/hook-execu
       and a merge in progress is reported when MERGE_HEAD is present
       and the absence of a merge reports no merge in progress
       and the absence of a remote is reported
-      and a configured remote uses "agents" as targetBranch
+      and a configured remote with no `target-branch` override defaults targetBranch to "agents"
+    while `target-branch` is set in `.trunk-sync/config`
+      then targetBranch reads the configured value instead of the "agents" default
     when no file_path is provided
       then deleted tracked files are detected
       and modified tracked files are detected
