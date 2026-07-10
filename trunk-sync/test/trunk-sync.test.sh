@@ -423,7 +423,7 @@ assert_contains "$REMOTE_LOG" "auto:" "remote has agent commits"
 CONTENT_A=$(cat "$WT_A/other.txt")
 assert_equals "B's file" "$CONTENT_A" "agent A has agent B's file content after sync"
 
-# --- Local target-branch sync ---
+# --- Local target branch sync ---
 
 # 19. Local target branch is fast-forwarded after worktree push
 setup_repos
