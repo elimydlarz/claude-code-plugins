@@ -223,6 +223,8 @@ Run the autofix command from the project root. This covers multi-file edits with
 
 Keep the handler as a synchronous PostToolUse command. Do not set `async`; the autofix process must finish and write its changes before the coding agent continues.
 
+Capture the autofix command's output. If remaining lint violations make the command fail, write the linter output to stderr and exit 2 so the coding harness reports the violations visibly. Do not swallow the failure or return success.
+
 **For non-JS/TS hex-boundary lint** — recommend the language-native equivalent. Don't attempt to install without a template; tell the user the rules they need to enforce (no imports from domain into adapters; no imports from application into adapters) and name the tool:
 
 | Language | Tool |
