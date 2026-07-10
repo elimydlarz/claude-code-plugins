@@ -2,26 +2,13 @@
   "name": "@elimydlarz/trunk-sync",
   "version": "3.9.4",
   "type": "module",
-  "publishConfig": {
-    "access": "public"
-  },
   "description": "Maximum continuous integration for multi-agent coding — every edit is committed and pushed to trunk immediately",
   "scripts": {
     "build": "tsc",
     "test": "node --test --test-reporter spec 'dist/**/*.test.js'",
     "test:e2e": "bash test/trunk-sync.test.sh",
-    "version": "node scripts/sync-plugin-version.js && git add .claude-plugin/plugin.json",
-    "prepublishOnly": "pnpm run build"
+    "version": "node scripts/sync-plugin-version.js && git add .claude-plugin/plugin.json"
   },
-  "files": [
-    "dist/**/*.js",
-    "dist/**/*.d.ts",
-    "!dist/**/*.test.*",
-    "scripts/",
-    "hooks/",
-    "rules/",
-    ".claude-plugin/"
-  ],
   "devDependencies": {
     "@types/node": "^22",
     "tsx": "^4",
