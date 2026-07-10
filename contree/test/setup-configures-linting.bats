@@ -42,7 +42,7 @@ create_js_hook_project() {
 
 @test "when setup is run then a project-level Stop hook is merged with the project's existing hooks" {
   run cat "$SKILL"
-  assert_output --partial "Add the same Stop matcher group to `.claude/settings.json` and `.codex/hooks.json`"
+  assert_output --partial 'Add the same Stop matcher group to `.claude/settings.json` and `.codex/hooks.json`'
   assert_output --partial '"Stop"'
   assert_output --partial ".contree/hooks/architecture-on-stop.sh"
   assert_output --partial "Merge the Stop matcher group without replacing existing settings or hooks"
