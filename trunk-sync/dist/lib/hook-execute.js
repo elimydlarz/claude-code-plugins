@@ -1,11 +1,9 @@
 import { execSync } from "node:child_process";
-import { existsSync, readFileSync, realpathSync, mkdirSync, copyFileSync, writeFileSync, readdirSync, unlinkSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync, mkdirSync, writeFileSync, readdirSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { homedir, hostname } from "node:os";
-import { readConfig } from "../commands/config.js";
 import { HOOK_EXPLAINER } from "./hook-types.js";
 import { extractTaskFromTranscript, buildCommitPlanWithTask, classifyTimecards, formatClockInMessage, formatSessionStartSummary } from "./hook-plan.js";
-/** Absent a `target-branch` override in `.trunk-sync/config`, agents sync to a dedicated branch — not the repo's actual default branch — so auto-commits never land directly on it. */
 const DEFAULT_TARGET_BRANCH = "agents";
 /**
  * Gather the current git repo state needed for planning.
@@ -51,7 +49,7 @@ export function gatherRepoState(input) {
     }
     let targetBranch = "";
     if (hasRemote) {
-        targetBranch = readConfig(repoRoot).get("target-branch") ?? DEFAULT_TARGET_BRANCH;
+        targetBranch = DEFAULT_TARGET_BRANCH;
     }
     let currentBranch = "";
     const headContent = readFileSync(join(gitDir, "HEAD"), "utf-8").trim();
@@ -324,8 +322,6 @@ export function executePlan(plan, input, state) {
     else {
         execSync(`git commit -m "${escapeForShell(finalCommit.subject)}"`, { cwd: state.repoRoot });
     }
-    // Snapshot transcript into the commit (opt-in via config)
-    amendWithTranscriptSnapshot(input, state);
     if (sync) {
         const syncResult = executeSync(sync);
         if (syncResult.exitCode !== 0)
@@ -342,29 +338,6 @@ function appendConflictRoster(result, state, ownSessionId) {
         exitCode: result.exitCode,
         stderr: result.stderr ? `${result.stderr}\n\n${roster}` : roster,
     };
-}
-function amendWithTranscriptSnapshot(input, state) {
-    try {
-        const config = readConfig(state.repoRoot);
-        if (config.get("commit-transcripts") !== "true")
-            return;
-        if (!input.transcript_path || !input.session_id)
-            return;
-        const expanded = input.transcript_path.replace(/^~/, homedir());
-        if (!existsSync(expanded))
-            return;
-        const snapshotDir = join(state.repoRoot, ".transcripts");
-        mkdirSync(snapshotDir, { recursive: true });
-        const shortSession = input.session_id.slice(0, 8);
-        const epoch = Math.floor(Date.now() / 1000);
-        const snapshotName = `${shortSession}-${epoch}.jsonl`;
-        copyFileSync(expanded, join(snapshotDir, snapshotName));
-        execSync(`git add -- "${snapshotDir}"`, { cwd: state.repoRoot });
-        execSync(`git commit --amend --no-edit`, { cwd: state.repoRoot });
-    }
-    catch {
-        // best-effort — don't fail the hook if snapshot fails
-    }
 }
 export function executeSync(sync) {
     const { targetBranch, currentBranch } = sync;

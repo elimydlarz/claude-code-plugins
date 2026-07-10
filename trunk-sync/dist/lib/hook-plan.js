@@ -1,6 +1,3 @@
-/**
- * Parse the raw JSON string from hook stdin into a typed HookInput.
- */
 export function parseHookInput(json) {
     const raw = JSON.parse(json);
     return {
@@ -11,29 +8,21 @@ export function parseHookInput(json) {
         cwd: raw.cwd ?? null,
     };
 }
-/**
- * Pure decision logic: given parsed input and repo state, decide what to do.
- * No I/O, no git commands — only data in, plan out.
- */
 export function planHook(input, state) {
     const filePath = input.tool_input.file_path ?? null;
     const sync = buildSyncPlan(state);
-    // No file_path and no deleted/modified/untracked files → nothing to do
     if (!filePath &&
         state.deletedFiles.length === 0 &&
         state.modifiedFiles.length === 0 &&
         state.untrackedFiles.length === 0) {
         return { action: "skip" };
     }
-    // File path provided but outside the repo → skip
     if (filePath && !state.insideRepo) {
         return { action: "skip" };
     }
-    // File path provided but gitignored → skip
     if (filePath && state.gitignored) {
         return { action: "skip" };
     }
-    // In merge state → complete the merge
     if (state.inMerge) {
         const relPath = filePath ? state.relPath : summarizeDeletions(state.deletedFiles);
         const sessionPrefix = buildSessionPrefix(input.session_id);
@@ -45,7 +34,6 @@ export function planHook(input, state) {
             sync,
         };
     }
-    // Normal commit path
     const commit = buildCommitPlan(input, state);
     return { action: "commit-and-sync", commit, sync };
 }
@@ -59,8 +47,6 @@ function buildSyncPlan(state) {
 }
 function buildCommitPlan(input, state) {
     const filePath = input.tool_input.file_path ?? null;
-    // Without a file_path, stage every non-deleted change git surfaces: modified
-    // tracked files and untracked new files alike (both go through `git add`).
     const changed = [...state.modifiedFiles, ...state.untrackedFiles];
     const filesToStage = filePath ? [filePath] : changed;
     const filesToRemove = filePath ? [] : state.deletedFiles;
@@ -87,9 +73,6 @@ function buildCommitPlan(input, state) {
     const body = buildCommitBody(input, filePath ? relPath : null);
     return { filesToStage, filesToRemove, subject, body };
 }
-/**
- * Build a commit plan with a task-based subject (when transcript extraction succeeds).
- */
 export function buildCommitPlanWithTask(input, state, task) {
     const base = buildCommitPlan(input, state);
     if (!task)
@@ -100,12 +83,9 @@ export function buildCommitPlanWithTask(input, state, task) {
         : summarizeDeletions([...state.modifiedFiles, ...state.untrackedFiles, ...state.deletedFiles]);
     const sessionPrefix = buildSessionPrefix(input.session_id);
     const subject = `${sessionPrefix}${task}`;
-    // When task is present, include File: line in body
     let body = `File: ${relPath}`;
     if (input.session_id)
         body += `\nSession: ${input.session_id}`;
-    if (input.transcript_path)
-        body += `\nTranscriptPath: ${input.transcript_path}`;
     return { ...base, subject, body: body || null };
 }
 export function buildSessionPrefix(sessionId) {
@@ -118,8 +98,6 @@ export function buildCommitBody(input, _relPath) {
         return null;
     let body = `Session: ${input.session_id}`;
     body += `\nAgent: ${agentForTool(input.tool_name)}`;
-    if (input.transcript_path)
-        body += `\nTranscriptPath: ${input.transcript_path}`;
     return body;
 }
 function agentForTool(toolName) {
@@ -127,11 +105,6 @@ function agentForTool(toolName) {
         return "codex";
     return "claude";
 }
-/**
- * Extract the first user message from a JSONL transcript.
- * Filters out hook feedback, plan headers, XML tags, and empty lines.
- * Returns first 72 chars or null.
- */
 export function extractTaskFromTranscript(content) {
     const lines = content.split("\n");
     for (const line of lines) {
@@ -187,16 +160,12 @@ function filterTaskLine(text) {
             continue;
         if (trimmed.startsWith("<"))
             continue;
-        // Strip leading markdown headers
         const stripped = trimmed.replace(/^#{1,}\s+/, "");
         if (stripped)
             return stripped;
     }
     return null;
 }
-/**
- * Summarize a list of deleted files: "file.txt (+2 more)"
- */
 export function summarizeDeletions(files) {
     if (files.length === 0)
         return "";
