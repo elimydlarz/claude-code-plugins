@@ -281,6 +281,22 @@ Add this matcher group under `hooks.PostToolUse` in both files:
 
 The `Edit|Write` matcher covers Claude Code's file tools and Codex `apply_patch`. After creating or changing the project hook, require the coding harness to trust it, then verify it through an actual file edit. A hook that is only present on disk is not configured until the harness loads and trusts it.
 
+Add the same Stop matcher group to `.claude/settings.json` and `.codex/hooks.json`:
+
+```json
+{
+  "hooks": [
+    {
+      "type": "command",
+      "command": "bash \"$(git rev-parse --show-toplevel)/.contree/hooks/architecture-on-stop.sh\"",
+      "statusMessage": "Checking architecture"
+    }
+  ]
+}
+```
+
+Merge the Stop matcher group without replacing existing settings or hooks. When a Stop matcher group already exists, append this command hook to its `hooks` array.
+
 Create executable `.contree/hooks/lint-on-save.sh` with `set -euo pipefail`. It changes to the project root returned by `git rev-parse --show-toplevel`, then runs the ecosystem's exact normal lint autofix command after every matched save:
 
 | Ecosystem | Hook command |
