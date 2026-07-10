@@ -156,7 +156,7 @@ describe("planHook normal commit", () => {
     assert.equal(plan.commit.subject, "auto(abcdef12): write src/main.ts");
     assert.equal(
       plan.commit.body,
-      "Session: abcdef12-3456-7890-abcd-ef1234567890\nAgent: claude\nTranscriptPath: ~/.claude/projects/proj/session.jsonl",
+      "Session: abcdef12-3456-7890-abcd-ef1234567890\nAgent: claude",
     );
   });
 
@@ -293,27 +293,6 @@ describe("planHook normal commit", () => {
     assert.deepEqual(plan.commit.filesToStage, ["foo.ts"]);
   });
 
-  it("includes TranscriptPath in body when transcript_path is in payload", () => {
-    const input = makeInput({
-      tool_name: "apply_patch",
-      tool_input: {} as { file_path?: string },
-      session_id: "abc12345-6789-0abc-def0-123456789abc",
-      transcript_path: "/codex/sessions/abc12345.jsonl",
-    });
-    const state = makeState({ modifiedFiles: ["foo.ts"], relPath: null });
-    const plan = planHook(input, state);
-    if (plan.action !== "commit-and-sync") return;
-    assert.match(plan.commit.body ?? "", /Session: abc12345-6789-0abc-def0-123456789abc/);
-    assert.match(plan.commit.body ?? "", /TranscriptPath: \/codex\/sessions\/abc12345\.jsonl/);
-  });
-
-  it("omits TranscriptPath when transcript_path is absent", () => {
-    const input = makeInput({ transcript_path: null });
-    const state = makeState();
-    const plan = planHook(input, state);
-    if (plan.action !== "commit-and-sync") return;
-    assert.doesNotMatch(plan.commit.body ?? "", /TranscriptPath:/);
-  });
 });
 
 // ── buildCommitPlanWithTask ──────────────────────────────────────────
@@ -326,7 +305,7 @@ describe("buildCommitPlanWithTask", () => {
     assert.equal(commit.subject, "auto(abcdef12): Fix the broken tests");
     assert.match(commit.body!, /^File: src\/main\.ts/);
     assert.match(commit.body!, /Session: abcdef12/);
-    assert.match(commit.body!, /TranscriptPath: ~\/\.claude\/projects\/proj\/session\.jsonl/);
+    assert.doesNotMatch(commit.body!, /TranscriptPath:/);
   });
 
   it("falls back to default plan when task is null", () => {
@@ -352,19 +331,13 @@ describe("buildSessionPrefix", () => {
 // ── buildCommitBody ──────────────────────────────────────────────────
 
 describe("buildCommitBody", () => {
-  it("includes session and transcript path", () => {
+  it("includes session and agent", () => {
     const input = makeInput();
     const body = buildCommitBody(input, "src/main.ts");
     assert.equal(
       body,
-      "Session: abcdef12-3456-7890-abcd-ef1234567890\nAgent: claude\nTranscriptPath: ~/.claude/projects/proj/session.jsonl",
+      "Session: abcdef12-3456-7890-abcd-ef1234567890\nAgent: claude",
     );
-  });
-
-  it("includes session only when transcript_path is absent", () => {
-    const input = makeInput({ transcript_path: null });
-    const body = buildCommitBody(input, "src/main.ts");
-    assert.equal(body, "Session: abcdef12-3456-7890-abcd-ef1234567890\nAgent: claude");
   });
 
   it("returns null when no session", () => {
