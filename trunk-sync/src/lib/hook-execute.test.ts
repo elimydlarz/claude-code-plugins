@@ -1077,6 +1077,11 @@ describe("runSessionStart", () => {
     assert.ok(existsSync(join(dir, ".trunk-sync", "timeclock", "my-session-id.json")));
   });
 
+  it("emits no session-start context when only the starting session is present", () => {
+    assert.equal(start("my-session-id"), null);
+    assert.ok(existsSync(join(dir, ".trunk-sync", "timeclock", "my-session-id.json")));
+  });
+
   it("appends the active roster when another agent is clocked in", () => {
     writeCard({ sessionId: "other-id" });
     const msg = start("my-session-id")!;
