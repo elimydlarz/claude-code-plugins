@@ -8,6 +8,27 @@ import { extractTaskFromTranscript, buildCommitPlanWithTask, classifyTimecards, 
 
 const DEFAULT_TARGET_BRANCH = "agents";
 
+function readTargetBranch(repoRoot: string): string | null {
+  let content: string;
+  try {
+    content = readFileSync(join(repoRoot, ".trunk-sync", "config"), "utf-8");
+  } catch {
+    return null;
+  }
+
+  for (const line of content.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const separator = trimmed.indexOf("=");
+    if (separator === -1) continue;
+    if (trimmed.slice(0, separator) === "target-branch") {
+      return trimmed.slice(separator + 1) || null;
+    }
+  }
+
+  return null;
+}
+
 /**
  * Gather the current git repo state needed for planning.
  * Runs git commands — this is the I/O boundary.
@@ -54,7 +75,7 @@ export function gatherRepoState(input: HookInput): RepoState | null {
 
   let targetBranch = "";
   if (hasRemote) {
-    targetBranch = DEFAULT_TARGET_BRANCH;
+    targetBranch = readTargetBranch(repoRoot) ?? DEFAULT_TARGET_BRANCH;
   }
 
   let currentBranch = "";
