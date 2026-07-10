@@ -414,7 +414,7 @@ export function findWorktreeForBranch(porcelainOutput, branch) {
     }
     return null;
 }
-function conflictExit(output, targetBranch) {
+function conflictExit(output, _targetBranch) {
     return {
         exitCode: 2,
         stderr: `TRUNK-SYNC CONFLICT: ${HOOK_EXPLAINER} Another agent changed the same file, creating a merge conflict. The file now contains git conflict markers (<<<<<<< / ======= / >>>>>>>).\n\ngit output:\n${output}\n\nTo resolve:\n1. Read the conflicting file\n2. Edit it to the correct content (remove the <<<<<<< / ======= / >>>>>>> markers)\n3. Done — this hook will detect the merge state and complete the sync automatically on your next edit\n\nDo NOT run any git commands. The hook handles all git operations — your only job is to fix the file contents using Edit.`,
