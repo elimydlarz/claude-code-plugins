@@ -17,6 +17,24 @@ create_js_hook_project() {
   extract_js_lint_hook "$project/lint-on-save.sh"
 }
 
+extract_architecture_stop_hook() {
+  local target="$1"
+  awk '
+    /Create executable `.contree\/hooks\/architecture-on-stop.sh`/ { found = 1; next }
+    found && /^```bash$/ { body = 1; next }
+    body && /^```$/ { exit }
+    body { print }
+  ' "$SKILL" > "$target"
+  chmod +x "$target"
+}
+
+create_architecture_hook_project() {
+  local project="$1"
+  mkdir -p "$project/bin"
+  git -C "$project" init -q
+  extract_architecture_stop_hook "$project/architecture-on-stop.sh"
+}
+
 @test "setup configures a normal linter" {
   run cat "$SKILL"
   assert_output --partial "normal linter"
@@ -59,6 +77,20 @@ create_js_hook_project() {
   assert_output --partial "--output-type err-long"
   assert_output --partial '"lint:arch": "bash .contree/scripts/lint-architecture.sh"'
   refute_output --partial '"lint:arch": "depcruise'
+}
+
+@test "if architecture violations are found during a Stop task then the project-level Stop hook reports every violation with its rule, source, and forbidden dependency and the Stop task fails" {
+  local project="$BATS_TEST_TMPDIR/architecture-violations"
+  create_architecture_hook_project "$project"
+  printf '%s\n' '#!/usr/bin/env bash' 'printf "%s\n" "error domain-pure: src/domain/order.ts -> node:fs" >&2' 'printf "%s\n" "error no-circular: src/a.ts -> src/b.ts -> src/a.ts" >&2' 'exit 1' > "$project/bin/pnpm"
+  chmod +x "$project/bin/pnpm"
+
+  cd "$project"
+  run env PATH="$project/bin:$PATH" bash -c 'printf "%s" "{\"stop_hook_active\":false}" | bash "$1"' _ "$project/architecture-on-stop.sh"
+
+  assert_equal "$status" 2
+  assert_output --partial "error domain-pure: src/domain/order.ts -> node:fs"
+  assert_output --partial "error no-circular: src/a.ts -> src/b.ts -> src/a.ts"
 }
 
 @test "when a coding agent writes or edits a project file then the project-level hook runs the normal lint autofix command from the project root after every save" {
