@@ -269,7 +269,7 @@ Add a script and wire it into the project's lint command:
   "scripts": {
     "lint:code": "eslint .",
     "lint:code:fix": "eslint . --fix",
-    "lint:arch": "depcruise src --config .dependency-cruiser.cjs",
+    "lint:arch": "depcruise src --config .dependency-cruiser.cjs --output-type err-long",
     "lint": "pnpm lint:code && pnpm lint:arch"
   }
 }
@@ -320,6 +320,25 @@ Add the same Stop matcher group to `.claude/settings.json` and `.codex/hooks.jso
 ```
 
 Merge the Stop matcher group without replacing existing settings or hooks. When a Stop matcher group already exists, append this command hook to its `hooks` array.
+
+Create executable `.contree/hooks/architecture-on-stop.sh` with this complete body:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+input=$(cat)
+if printf '%s' "$input" | jq -e '.stop_hook_active == true' >/dev/null 2>&1; then
+  printf '{}\n'
+  exit 0
+fi
+cd "$(git rev-parse --show-toplevel)"
+if output=$(pnpm lint:arch 2>&1); then
+  printf '{}\n'
+  exit 0
+fi
+printf '%s\n' "$output" >&2
+exit 2
+```
 
 Create executable `.contree/hooks/lint-on-save.sh` with `set -euo pipefail`. It changes to the project root returned by `git rev-parse --show-toplevel`, then runs the ecosystem's exact normal lint autofix command after every matched save:
 
