@@ -217,24 +217,37 @@ setup-prepares-project (src: skills/setup/SKILL.md; system: test/setup-prepares-
 ## setup-configures-linting
 
 ```
-setup-configures-linting (src: skills/setup/SKILL.md; system: test/setup-configures-linting.bats; journey: test/journey/docker-entrypoint.sh)
+System: setup-configures-linting (src: skills/setup/SKILL.md; system: test/setup-configures-linting.bats; journey: test/journey/docker-entrypoint.sh)
   when setup is run
     then a conventional normal linter is installed and configured with the ecosystem's strong recommended rules
-    and a hex-boundary linter is installed and configured
+    and an architecture linter is installed and configured for every project source layout
     and the combined lint command runs both normal lint and hex-boundary lint
-    and the hex-boundary linter enforces that domain has no I/O
-    and the hex-boundary linter enforces that use-cases depend on ports, not concrete adapters
-    and the hex-boundary linter enforces no circular dependencies
+    and the architecture linter rejects domain dependencies on frameworks, I/O, asynchronous work, application code, and adapters
+    and the architecture linter restricts use-cases to domain code, plain data, and ports rather than frameworks, I/O, or concrete adapters
+    and the architecture linter permits concrete adapters to be imported only by the composition root
+    and the architecture linter rejects dependencies that point outward across hexagonal boundaries
+    and the architecture linter rejects circular dependencies
     and CI is wired to run the combined lint command so normal and boundary violations fail the build
     and a project-level hook is created for coding-agent file saves
+    and a project-level Stop hook is merged with the project's existing hooks
   when a coding agent writes or edits a project file
     then the project-level hook runs the normal linter's fix mode against the saved file
     and automatic fixes are written to the file before the coding agent continues
   if lint violations remain after automatic fixes
     then the project-level hook reports the violations and fails visibly
-  if the project's language has no first-party contree linter template
-    then the language-native equivalent tool is named and the rules to enforce are stated
-    and the limitation — the user wires the rules themselves — is communicated honestly
+  when a coding agent Stop task runs
+    then the project-level Stop hook runs every architecture rule from the project root
+  if architecture violations are found during a Stop task
+    then the project-level Stop hook reports every violation with its rule, source, and forbidden dependency
+    and the Stop task fails so the coding agent receives the architecture feedback before finishing
+  if the architecture linter cannot run during a Stop task
+    then the project-level Stop hook reports the execution error and the Stop task fails
+  if every architecture rule passes during a Stop task
+    then the project-level Stop hook exits successfully without architecture feedback
+  when the project-level Stop hook receives its own follow-up Stop task
+    then it exits silently to prevent a feedback loop
+  if the project's ecosystem cannot enforce every architecture rule
+    then setup fails visibly without claiming that the project is prepared
 ```
 
 ## change-writes-trees
