@@ -83,7 +83,7 @@ CONFIG
       --skip-git-repo-check \
       --json \
       -C "$PROJECT_DIR" \
-      "Create agent-note.txt containing exactly codex. Use apply_patch. Do not run any git command."
+      "Run exactly one shell command: printf 'codex\\n' > agent-note.txt. After that command succeeds, use no more tools and reply with the single word DONE."
   ) > "$TRANSCRIPT_FILE"
 fi
 
