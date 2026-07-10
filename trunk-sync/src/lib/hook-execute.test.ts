@@ -1072,12 +1072,6 @@ describe("runSessionStart", () => {
     return runSessionStart(makeState(dir), sessionId, { hostname: "local-host" });
   }
 
-  it("hands the starting agent its own session id", () => {
-    const msg = start("my-session-id")!;
-    assert.match(msg, /my-session-id/);
-    assert.ok(existsSync(join(dir, ".trunk-sync", "timeclock", "my-session-id.json")));
-  });
-
   it("emits no session-start context when only the starting session is present", () => {
     assert.equal(start("my-session-id"), null);
     assert.ok(existsSync(join(dir, ".trunk-sync", "timeclock", "my-session-id.json")));
@@ -1098,9 +1092,9 @@ describe("runSessionStart", () => {
       process.chdir(clone);
       const state = makeState(clone, { hasRemote: true, targetBranch: "main", currentBranch: "main" });
 
-      const msg = runSessionStart(state, "synced-session", { hostname: "local-host" })!;
+      const msg = runSessionStart(state, "synced-session", { hostname: "local-host" });
 
-      assert.match(msg, /synced-session/);
+      assert.equal(msg, null);
       execSync("git fetch origin main", { cwd: clone, stdio: "ignore" });
       const remoteCard = execSync("git show origin/main:.trunk-sync/timeclock/synced-session.json", { cwd: clone, encoding: "utf-8" });
       assert.match(remoteCard, /synced-session/);
@@ -1111,22 +1105,14 @@ describe("runSessionStart", () => {
     }
   });
 
-  it("prints only the own-id instruction when no other agents are clocked in", () => {
-    const msg = start("my-session-id")!;
-    assert.match(msg, /my-session-id/);
-    assert.doesNotMatch(msg, /TRUNK-SYNC ACTIVE/);
-  });
-
   it("creates the timeclock directory when it does not exist", () => {
-    const msg = start("my-session-id")!;
-    assert.match(msg, /my-session-id/);
+    assert.equal(start("my-session-id"), null);
     assert.ok(existsSync(join(dir, ".trunk-sync", "timeclock")));
   });
 
   it("excludes the starting session's own timecard from the roster", () => {
     writeCard({ sessionId: "my-session-id" });
-    const msg = start("my-session-id")!;
-    assert.doesNotMatch(msg, /TRUNK-SYNC ACTIVE/);
+    assert.equal(start("my-session-id"), null);
   });
 
   it("returns null when there is no session id", () => {
@@ -1137,19 +1123,13 @@ describe("runSessionStart", () => {
   it("omits the roster when the only other card is past the reap ttl", () => {
     const reapableTime = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString();
     writeCard({ sessionId: "ghost-id", lastActiveAt: reapableTime });
-    const msg = start("my-session-id")!;
-    assert.match(msg, /my-session-id/);
-    assert.doesNotMatch(msg, /TRUNK-SYNC ACTIVE/);
-    assert.doesNotMatch(msg, /ghost-id/);
+    assert.equal(start("my-session-id"), null);
   });
 
   it("omits stale cards because timecards are presence only", () => {
     const staleTime = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
     writeCard({ sessionId: "stale-id", lastActiveAt: staleTime });
-    const msg = start("my-session-id")!;
-    assert.match(msg, /my-session-id/);
-    assert.doesNotMatch(msg, /TRUNK-SYNC ACTIVE/);
-    assert.doesNotMatch(msg, /stale-id/);
+    assert.equal(start("my-session-id"), null);
   });
 });
 
