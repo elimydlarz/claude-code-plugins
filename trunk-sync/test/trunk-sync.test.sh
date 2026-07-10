@@ -910,7 +910,7 @@ assert_equals "$AFTER" "$((BEFORE + 1))" "codex local_shell: one new commit"
 HEAD_FILES=$(git -C "$WT_A" diff-tree --no-commit-id --name-only -r HEAD)
 assert_contains "$HEAD_FILES" "seed.txt" "codex local_shell: modified file is in the commit"
 
-# Codex P4. apply_patch: commit body carries Session: <uuid> for seance
+# Codex P4. apply_patch: commit body carries Session: <uuid>
 LAST_BODY=$(last_body "$WT_A")
 # The previous commit was from codex03s; assert P3's session id is in its body
 assert_contains "$LAST_BODY" "codex03s-cccc-cccc-cccc-cccccccccccc" "codex local_shell: Session: trailer in body"
@@ -937,70 +937,6 @@ HEAD_FILES=$(git -C "$WT_A" diff-tree --no-commit-id --name-only -r HEAD)
 assert_contains "$HEAD_FILES" "added-by-codex.txt" "codex apply_patch add: new file is in the commit"
 REMOTE_FILES=$(git -C "$REMOTE" ls-tree --name-only -r "$SYNC_BRANCH")
 assert_contains "$REMOTE_FILES" "added-by-codex.txt" "codex apply_patch add: new file reached the remote"
-
-# --- Transcript snapshots ---
-
-# 28. Default: .transcripts/ is NOT created (commit-transcripts defaults off)
-setup_repos
-echo "default snapshot" > "$WT_A/seed.txt"
-TRANSCRIPT="$TMPDIR_BASE/transcript-defaultsnapshot.jsonl"
-create_transcript "$TRANSCRIPT" "Default snapshot task"
-cd "$WT_A"
-run_hook "$(make_input "$WT_A/seed.txt" "dfsn1234" "Edit" "$TRANSCRIPT")"
-assert_exit 0 "default: commit succeeds"
-LAST_SHA=$(git -C "$WT_A" rev-parse HEAD)
-SNAPSHOT_FILES=$(git -C "$WT_A" diff-tree --no-commit-id --name-only -r "$LAST_SHA" -- .transcripts/)
-assert_equals "" "$SNAPSHOT_FILES" "default: no .transcripts/ created without opt-in"
-
-# 29. Enabled: snapshot in same commit as code change
-setup_repos
-mkdir -p "$WT_A/.trunk-sync"
-echo "commit-transcripts=true" > "$WT_A/.trunk-sync/config"
-TRANSCRIPT="$TMPDIR_BASE/transcript-snap.jsonl"
-create_transcript "$TRANSCRIPT" "Snapshot task"
-echo "with snapshot" > "$WT_A/seed.txt"
-cd "$WT_A"
-run_hook "$(make_input "$WT_A/seed.txt" "snap1234" "Edit" "$TRANSCRIPT")"
-assert_exit 0 "snapshot: commit succeeds"
-
-# Verify snapshot is in the same commit as the code change
-LAST_SHA=$(git -C "$WT_A" rev-parse HEAD)
-SNAPSHOT_FILES=$(git -C "$WT_A" diff-tree --no-commit-id --name-only -r "$LAST_SHA" -- .transcripts/)
-TEST_NUM=$((TEST_NUM + 1))
-if [[ -n "$SNAPSHOT_FILES" ]]; then
-  echo "ok $TEST_NUM - snapshot: .transcripts/ file in same commit as code change"
-  PASS=$((PASS + 1))
-else
-  echo "not ok $TEST_NUM - snapshot: .transcripts/ file in same commit as code change"
-  FAIL=$((FAIL + 1))
-fi
-assert_contains "$SNAPSHOT_FILES" "snap1234" "snapshot: filename contains session short ID"
-
-# 30. Enabled but no transcript_path: graceful no-op
-setup_repos
-mkdir -p "$WT_A/.trunk-sync"
-echo "commit-transcripts=true" > "$WT_A/.trunk-sync/config"
-echo "no transcript path" > "$WT_A/seed.txt"
-cd "$WT_A"
-run_hook "$(make_input "$WT_A/seed.txt" "notp1234" "Edit" "")"
-assert_exit 0 "snapshot with no transcript_path: exits 0"
-LAST_SHA=$(git -C "$WT_A" rev-parse HEAD)
-SNAPSHOT_FILES=$(git -C "$WT_A" diff-tree --no-commit-id --name-only -r "$LAST_SHA" -- .transcripts/)
-assert_equals "" "$SNAPSHOT_FILES" "snapshot with no transcript_path: no .transcripts/ created"
-
-# 30b. Opt-out: commit-transcripts=false → no snapshot
-setup_repos
-mkdir -p "$WT_A/.trunk-sync"
-echo "commit-transcripts=false" > "$WT_A/.trunk-sync/config"
-echo "opt out" > "$WT_A/seed.txt"
-TRANSCRIPT="$TMPDIR_BASE/transcript-optout.jsonl"
-create_transcript "$TRANSCRIPT" "Opt-out task"
-cd "$WT_A"
-run_hook "$(make_input "$WT_A/seed.txt" "opto1234" "Edit" "$TRANSCRIPT")"
-assert_exit 0 "opt-out: commit succeeds"
-LAST_SHA=$(git -C "$WT_A" rev-parse HEAD)
-SNAPSHOT_FILES=$(git -C "$WT_A" diff-tree --no-commit-id --name-only -r "$LAST_SHA" -- .transcripts/)
-assert_equals "" "$SNAPSHOT_FILES" "opt-out: no .transcripts/ created when commit-transcripts=false"
 
 # ── Timecards: automatic clock-in and clock-out ──────────────────────────────
 
