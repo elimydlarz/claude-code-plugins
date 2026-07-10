@@ -7,7 +7,10 @@ const scenarios = fileURLToPath(new URL("./hook-plan.scenarios.js", import.meta.
 
 function verifies(pattern: string): () => void {
   return () => {
-    const result = spawnSync(process.execPath, ["--test", "--test-reporter=tap", `--test-name-pattern=${pattern}`, scenarios], { encoding: "utf-8" });
+    const result = spawnSync(process.execPath, ["--test", "--test-reporter=tap", `--test-name-pattern=${pattern}`, scenarios], {
+      encoding: "utf-8",
+      env: { ...process.env, NODE_TEST_CONTEXT: undefined },
+    });
     assert.equal(result.status, 0, result.stdout + result.stderr);
     assert.match(result.stdout, /# pass [1-9]/, result.stdout);
   };
