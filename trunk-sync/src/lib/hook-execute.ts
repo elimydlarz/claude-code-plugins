@@ -341,9 +341,6 @@ export function executePlan(
     execSync(`git commit -m "${escapeForShell(finalCommit.subject)}"`, { cwd: state.repoRoot });
   }
 
-  // Snapshot transcript into the commit (opt-in via config)
-  amendWithTranscriptSnapshot(input, state);
-
   if (sync) {
     const syncResult = executeSync(sync);
     if (syncResult.exitCode !== 0) return appendConflictRoster(syncResult, state, input.session_id);
@@ -363,29 +360,6 @@ function appendConflictRoster(
     exitCode: result.exitCode,
     stderr: result.stderr ? `${result.stderr}\n\n${roster}` : roster,
   };
-}
-
-function amendWithTranscriptSnapshot(input: HookInput, state: RepoState): void {
-  try {
-    const config = readConfig(state.repoRoot);
-    if (config.get("commit-transcripts") !== "true") return;
-    if (!input.transcript_path || !input.session_id) return;
-
-    const expanded = input.transcript_path.replace(/^~/, homedir());
-    if (!existsSync(expanded)) return;
-
-    const snapshotDir = join(state.repoRoot, ".transcripts");
-    mkdirSync(snapshotDir, { recursive: true });
-    const shortSession = input.session_id.slice(0, 8);
-    const epoch = Math.floor(Date.now() / 1000);
-    const snapshotName = `${shortSession}-${epoch}.jsonl`;
-    copyFileSync(expanded, join(snapshotDir, snapshotName));
-
-    execSync(`git add -- "${snapshotDir}"`, { cwd: state.repoRoot });
-    execSync(`git commit --amend --no-edit`, { cwd: state.repoRoot });
-  } catch {
-    // best-effort — don't fail the hook if snapshot fails
-  }
 }
 
 export function executeSync(sync: SyncPlan): { exitCode: number; stderr?: string } {
