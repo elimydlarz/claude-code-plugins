@@ -35,21 +35,26 @@ SKILL="$PROJECT_ROOT/skills/second-opinion/SKILL.md"
   assert_output --partial "contract"
 }
 
-@test "second-opinion skill sends the change and the test trees to Z.AI's GLM 5.2 chat completions API authenticated with ZAI_API_KEY or DEEPSEEK_API_KEY" {
+@test "second-opinion skill sends the change and the test trees to the provider matching the configured review key" {
   run cat "$SKILL"
   assert_output --partial "glm-5.2"
   assert_output --partial "api.z.ai"
+  assert_output --partial "deepseek-chat"
+  assert_output --partial "api.deepseek.com"
   assert_output --partial "chat/completions"
   assert_output --partial "ZAI_API_KEY"
   assert_output --partial "DEEPSEEK_API_KEY"
   assert_output --partial "ZAI_BASE_URL"
-  assert_output --partial 'REVIEW_API_KEY="${ZAI_API_KEY:-${DEEPSEEK_API_KEY:-}}"'
+  assert_output --partial "DEEPSEEK_BASE_URL"
+  assert_output --partial 'REVIEW_BASE_URL="${DEEPSEEK_BASE_URL:-https://api.deepseek.com/v1}"'
+  refute_output --partial 'REVIEW_API_KEY="${ZAI_API_KEY:-${DEEPSEEK_API_KEY:-}}"'
 }
 
-@test "second-opinion skill surfaces GLM 5.2's review attributed to GLM 5.2" {
+@test "second-opinion skill surfaces the independent review attributed to the model that reviewed it" {
   run cat "$SKILL"
   assert_output --regexp 'surface|Surface'
   assert_output --partial "attribut"
+  assert_output --partial "REVIEW_MODEL"
 }
 
 @test "second-opinion skill says so and stops without calling the API when there are no non-trivial changes to review" {
