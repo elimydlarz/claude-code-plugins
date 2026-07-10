@@ -28,7 +28,7 @@ src/lib/hook-execute.adapter.test.ts — adapter tests against real temp git rep
 src/lib/pre-tool-entry.ts     — PreToolUse command-guard adapter
 src/lib/pre-tool-entry.adapter.test.ts — command-guard protocol tests
 src/lib/hook-entry.ts         — PostToolUse entry point: reads stdin, wires layers, exits
-src/lib/session-start-entry.ts — SessionStart entry point: creates/syncs own timecard, prints own-id + active roster to stdout
+src/lib/session-start-entry.ts — SessionStart entry point: creates/syncs own timecard and prints active peers to stdout
 src/lib/stop-entry.ts         — Stop entry point: removes the session timecard + syncs; never forces
 
 src/lib/git.ts                — shared git utilities

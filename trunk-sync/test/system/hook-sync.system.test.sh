@@ -5,8 +5,8 @@ set -euo pipefail
 # Uses git worktrees (not separate clones) to simulate multi-agent scenarios.
 # Output: TAP (Test Anything Protocol)
 
-HOOK="$(cd "$(dirname "$0")/../scripts" && pwd)/trunk-sync.sh"
-HOOKS_JSON="$(cd "$(dirname "$0")/../hooks" && pwd)/hooks.json"
+HOOK="$(cd "$(dirname "$0")/../../scripts" && pwd)/trunk-sync.sh"
+HOOKS_JSON="$(cd "$(dirname "$0")/../../hooks" && pwd)/hooks.json"
 DIST_DIR="$(cd "$(dirname "$HOOK")/.." && pwd)/dist"
 export CLAUDE_PLUGIN_ROOT="$(cd "$(dirname "$HOOK")/.." && pwd)"
 PASS=0

@@ -20,7 +20,7 @@ export interface RepoState {
   gitignored: boolean;
   /** true when origin remote exists */
   hasRemote: boolean;
-  /** default branch on origin (e.g. "main"), empty when no remote */
+  /** shared agents branch, empty when no remote */
   targetBranch: string;
   /** current branch name */
   currentBranch: string;
