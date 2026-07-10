@@ -58,6 +58,11 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "after the turn's file changes"
 }
 
+@test "setup makes the project-level hook fail visibly with the impacted test output" {
+  run cat "$SKILL"
+  assert_output --partial 'If an impacted test fails, `.contree/hooks/test-changed.sh` writes the complete test output to stderr and exits 2'
+}
+
 @test "setup notes Component tests run in-process needing no external services" {
   run cat "$SKILL"
   assert_output --partial "Component"
