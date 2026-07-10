@@ -55,10 +55,6 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
       then dirty tracked files are staged
     when the tool is Codex's local_shell and no file_path is given
       then dirty tracked files are staged
-    when transcript_path is in the payload
-      then the body includes `TranscriptPath: <path>`
-    when transcript_path is absent
-      then the body omits TranscriptPath
 
   buildCommitPlanWithTask
     when a task is provided
@@ -73,10 +69,8 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
       then the prefix is plain `auto:`
 
   buildCommitBody
-    when both session id and transcript path are present
-      then the body includes Session and TranscriptPath
-    when only the session id is present
-      then the body includes Session only
+    when a session id is present
+      then the body includes Session and Agent
     when no session id is present
       then the body is null
     when the input tool is Claude's Edit/Write/Bash
@@ -151,81 +145,6 @@ Domain: git (src: src/lib/git.ts; domain: src/lib/git.test.ts; system: none)
     if not inside a git repository
       then null is returned
 
-  parseFileRef
-    when called with `path:line`
-      then file and line are returned
-    if no colon is present
-      then it throws
-    if the line is non-numeric
-      then it throws
-    if the line is negative
-      then it throws
-    if the line is zero
-      then it throws
-    if the file does not exist
-      then it throws
-
-  extractSessionId
-    when the body contains `Session: <uuid>`
-      then the uuid is returned
-    when there is no Session line
-      then null is returned
-    when the body is empty
-      then null is returned
-
-  extractTranscriptPath
-    when the body contains `TranscriptPath: <path>`
-      then the path is returned
-    when there is no TranscriptPath line
-      then null is returned
-
-  extractAgent
-    when the body contains `Agent: <name>`
-      then `<name>` is returned
-    if there is no Agent line and TranscriptPath is under `~/.codex/`
-      then "codex" is returned
-    if there is no Agent line and TranscriptPath is absent or under `~/.claude/`
-      then "claude" is returned
-
-  blame and getCommitBody
-    when called on a committed line
-      then the commit SHA is returned
-    when called on an uncommitted line
-      then the SHA is all zeros
-    when lines have been added above the blamed line
-      then the original line number from the blamed commit is returned
-    when called on a newly added line
-      then the original line number matches the line in the blamed commit
-    when a later commit inserts a line above
-      then the original line number reflects the older commit's numbering
-
-  getCommitSubject
-    when called with a commit sha
-      then the commit's subject line is returned
-
-  getCommitDate
-    when called with a commit sha
-      then the commit's human-readable date is returned
-
-  getCommitTimestamp
-    when called on a commit
-      then the commit's ISO timestamp is returned
-
-  commandExists
-    when called for a binary on PATH
-      then true is returned
-    when called for a non-existent command
-      then false is returned
-
-  shortSha
-    when called with a full SHA
-      then the first 8 characters are returned
-
-  findSnapshotInCommit
-    when the commit contains a `.transcripts/` file
-      then the filename is returned
-    when the commit contains no `.transcripts/` file
-      then null is returned
 ```
 
 ## hook-execute
@@ -245,9 +164,7 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
       and a merge in progress is reported when MERGE_HEAD is present
       and the presence of staged changes is reported
       and the absence of a remote is reported
-      and a configured remote with no `target-branch` override defaults targetBranch to "agents"
-    while `target-branch` is set in `.trunk-sync/config`
-      then targetBranch reads the configured value instead of the "agents" default
+      and a configured remote uses "agents" as targetBranch
     when no file_path is provided
       then deleted tracked files are detected
       and modified tracked files are detected
@@ -301,19 +218,6 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
       then the local target branch is updated to match origin
     when the local target branch is checked out in another worktree
       then it is fast-forwarded in that worktree instead of by fetch
-
-  amendWithTranscriptSnapshot
-    while `commit-transcripts=true` — the explicit opt-in
-      when the hook fires with a transcript path
-        then the transcript is snapshotted into `.transcripts/` and the code commit is amended to include it
-      if the snapshot operation fails
-        then the hook continues without aborting
-    while `commit-transcripts` is unset or any value other than `true` — the default-off behaviour
-      then no snapshot is created
-    if no transcript_path is provided
-      then no snapshot is created
-    if no session id is provided
-      then no snapshot is created
 
   clockIn
     when timecard data is provided
@@ -374,145 +278,6 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
       then it exits 0 without action
 ```
 
-## seance
-
-```
-Use-case: seance (src: src/commands/seance.ts; use-case: src/commands/seance.test.ts; system: none)
-
-  seance usage
-    when `--help` or `-h` is passed
-      then usage is printed without launching a CLI
-    when no file:line argument is given
-      then usage is printed
-
-  seance --inspect
-    when the blamed commit is a trunk-sync commit
-      then the SHA, subject, session id, and queried line are printed without launching a CLI
-    when the blamed line has shifted from its original position
-      then the reported line also includes the blamed commit's original line number
-
-  seance preconditions
-    if the blamed line has uncommitted changes
-      then it exits 1 with a message naming the line
-    if the blamed commit was not made by trunk-sync
-      then it exits 1 with a message identifying the commit
-
-  seance launch failures
-    if the resolved agent's CLI is not on PATH
-      then it exits 1 naming the missing CLI
-    if creating the worktree at the blamed commit fails
-      then it exits 1
-    if the transcript cannot be rewound to the commit timestamp
-      then it exits 1
-
-  seance --list
-    when the repository contains trunk-sync commits
-      then deduplicated sessions are printed in a table
-    when the repository contains no trunk-sync commits
-      then nothing is listed
-
-  seance default mode
-    if the blamed commit has no transcript snapshot and no derivable transcript
-      then it exits 1 with an error
-    when a stale worktree exists from a previous seance
-      then it is removed and recreated cleanly
-    when a `.transcripts/` snapshot is committed in the code commit
-      then the snapshot is preferred over the derived transcript path
-    when there is no snapshot but the commit body records a TranscriptPath
-      then the transcript at that path is used
-    when the blamed line has shifted in the current file
-      then the prompt uses the original line number from the blamed commit
-      and the prompt includes the blamed line's code content
-
-  seance default mode (Claude commit)
-    when the blamed commit's `Agent:` is `claude` (or absent)
-      then the transcript is rewound by RFC3339 timestamp into a new sessionId
-      and the rewound transcript is written under `~/.claude/projects/<worktree-slug>/`
-      and `claude --resume <newId> --allowedTools <readonly> --permission-mode plan --append-system-prompt <seance>` is spawned in the worktree
-      when claude exits
-        then the rewound transcript file is deleted
-        and the worktree is removed
-
-  seance default mode (Codex commit)
-    when the blamed commit's `Agent:` is `codex`
-      then the rollout is rewound by RFC3339 timestamp into a new conversation UUID
-      and the rewound rollout's `SessionMeta.payload.id` and `payload.cwd` are rewritten
-      and the rollout is written to `~/.codex/sessions/<Y>/<M>/<D>/rollout-<ts>-<newuuid>.jsonl`
-      and `codex exec --sandbox read-only --ask-for-approval never --skip-git-repo-check -C <worktree> resume <newuuid> <seance-prompt>` is spawned
-      when codex exits
-        then the rewound rollout file is deleted
-        and the worktree is removed
-```
-
-## rewind-codex-rollout
-
-```
-Domain: rewindCodexRollout (src: src/commands/seance-codex.ts; domain: src/commands/seance-codex.test.ts; system: none)
-
-  rewindCodexRollout
-    when called with rollout lines, a commit timestamp, and a worktree path
-      then lines whose RFC3339 timestamp is later than the commit timestamp are dropped
-      and the SessionMeta line's `payload.id` is replaced with a new UUID
-      and the SessionMeta line's `payload.cwd` is replaced with the worktree path
-      and a target rollout path under `~/.codex/sessions/<Y>/<M>/<D>/rollout-<ts>-<newuuid>.jsonl` is returned
-    if no line's timestamp is at or before the commit timestamp
-      then null is returned
-    if a rollout line is not valid JSON
-      then it is skipped
-    if a rollout line has no timestamp
-      then it is skipped
-    if a `session_meta` line has no payload
-      then it is passed through with id and cwd unchanged
-```
-
-## config
-
-```
-Use-case: config (src: src/commands/config.ts; use-case: src/commands/config.test.ts; system: none)
-
-  config command
-    then `--help` or `-h` prints usage
-    if run outside a git repo
-      then `git init` is run first, establishing a repo to store config in
-    when `config` is called with no key
-      then every key is printed
-        when a key is set in `.trunk-sync/config`
-          then its explicit value is shown
-        when a key is not set in `.trunk-sync/config`
-          then its built-in default value is shown
-    when a key is set
-      then it is persisted to `.trunk-sync/config` in the repo
-      and the change is staged and committed
-      while a remote is configured
-        then the commit is pushed
-      if the push fails
-        then the command still succeeds — the commit stands locally for the next sync to pick up
-      and a subsequent `config` call shows the value
-      if the key already holds that value
-        then no new commit is created and the command still reports success
-      if the value contains shell metacharacters (`$()`, backticks, quotes, spaces)
-        then it is persisted and committed verbatim, never interpreted by a shell (no injected command runs, the commit message is intact)
-    when `config <key>` is called
-      then the single value is printed
-    when `config <key>` is called for a key that has a built-in default and is unset
-      then the default is printed (e.g. `commit-transcripts` defaults to `false`, so session records are not committed by default; `target-branch` defaults to `agents`)
-    if `config <key>` is called for an unknown key
-      then it exits 1 with `Unknown key`
-    when `config unset <key>` is called
-      then the key is removed from `.trunk-sync/config`
-      and the change is staged and committed
-      while a remote is configured
-        then the commit is pushed
-      if the push fails
-        then the command still succeeds — the commit stands locally for the next sync to pick up
-    if `config unset <key>` is called for a key that does not exist
-      then it exits 1
-    if `config --unset` is called with no key
-      then it exits 1 with a usage message
-    when the config file contains comments and blank lines
-      then they are preserved on read
-```
-
 ## hook-sync
 
 ```
@@ -552,7 +317,4 @@ System: hook-sync (system: test/trunk-sync.test.sh)
       then the merge is completed
   when a push is rejected
     then a single pull-and-push retry is attempted
-  while `commit-transcripts=true`
-    when the hook commits a code change with a transcript path
-      then the transcript is snapshotted into `.transcripts/` and the commit is amended to include it
 ```
