@@ -90,11 +90,26 @@ function toChatMessages(input) {
     }
 
     if (item.type === 'function_call_output') {
-      return [{ role: 'user', content: `Tool output ${item.call_id}:\n${item.output || ''}` }]
+      return [{
+        role: 'tool',
+        tool_call_id: item.call_id,
+        content: item.output || ''
+      }]
     }
 
     if (item.type === 'function_call') {
-      return []
+      return [{
+        role: 'assistant',
+        content: null,
+        tool_calls: [{
+          id: item.call_id,
+          type: 'function',
+          function: {
+            name: item.name,
+            arguments: item.arguments || '{}'
+          }
+        }]
+      }]
     }
 
     if (typeof item.content === 'string') {
