@@ -56,7 +56,7 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
 
 @test "setup names the language-native equivalent tool and states the rules to enforce when no first-party template exists" {
   run cat "$SKILL"
-  assert_output --partial "For non-JS/TS projects"
+  assert_output --partial "For non-JS/TS hex-boundary lint"
   assert_output --partial "recommend the language-native equivalent"
   assert_output --partial "ArchUnit"
   assert_output --partial "depguard"
