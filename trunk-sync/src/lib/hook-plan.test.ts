@@ -309,6 +309,18 @@ describe("buildCommitPlanWithTask", () => {
     );
   });
 
+  it("the commit body retains its file, session, and agent provenance", () => {
+    const input = makeInput();
+    const state = makeState();
+
+    const commit = buildCommitPlanWithTask(input, state, "Fix the broken tests");
+
+    assert.equal(
+      commit.body,
+      "File: src/main.ts\nSession: abcdef12-3456-7890-abcd-ef1234567890\nAgent: claude",
+    );
+  });
+
   it("falls back to default plan when task is null", () => {
     const input = makeInput();
     const state = makeState();
