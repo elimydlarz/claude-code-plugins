@@ -30,20 +30,6 @@ if [ ! -f "$NOTES_FILE" ]; then
   exit 1
 fi
 
-if [ ! -f "$REPO_ROOT/.env" ]; then
-  echo ".env not found at repo root — create it with TRUNK_SYNC_PUBLISHER=..." >&2
-  exit 1
-fi
-set -a
-# shellcheck disable=SC1091
-source "$REPO_ROOT/.env"
-set +a
-
-if [ -z "${TRUNK_SYNC_PUBLISHER:-}" ]; then
-  echo "TRUNK_SYNC_PUBLISHER is not set in $REPO_ROOT/.env" >&2
-  exit 1
-fi
-
 cd "$REPO_ROOT/trunk-sync"
 
 # Source changes must be committed — dist/ staleness is handled below
@@ -81,13 +67,6 @@ git -C "$REPO_ROOT" add trunk-sync/package.json trunk-sync/.claude-plugin/plugin
 git -C "$REPO_ROOT" commit -m "v$VERSION"
 git -C "$REPO_ROOT" tag -a "v$VERSION" -m "trunk-sync v$VERSION"
 
-# Publish to npm — auth via TRUNK_SYNC_PUBLISHER, no OTP
-echo "==> Publish to npm"
-NPMRC="$REPO_ROOT/trunk-sync/.npmrc"
-trap 'rm -f "$NPMRC"' EXIT
-printf '//registry.npmjs.org/:_authToken=%s\n' "$TRUNK_SYNC_PUBLISHER" > "$NPMRC"
-pnpm publish --no-git-checks
-
 # Push commits + tag to GitHub
 echo "==> Push to GitHub"
 git -C "$REPO_ROOT" push origin main --follow-tags
@@ -96,6 +75,5 @@ echo "==> Create GitHub release"
 gh release create "v$VERSION" --title "trunk-sync v$VERSION" --notes-file "$NOTES_FILE"
 
 echo ""
-echo "published @elimydlarz/trunk-sync v$VERSION"
-echo "  npm: https://www.npmjs.com/package/@elimydlarz/trunk-sync"
+echo "published trunk-sync v$VERSION"
 echo "  git: https://github.com/elimydlarz/claude-code-plugins"
