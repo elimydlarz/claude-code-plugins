@@ -184,6 +184,7 @@ setup-prepares-project (src: skills/setup/SKILL.md; system: test/setup-prepares-
     and the normal test command runs Unit, Port contract, Adapter, and Component tests automatically
     and the functional test command runs System and Journey tests separately from the normal test command
     and mutation testing is configured with explicit test file exclusions for every layer's suffix
+    and mutation test runners select only Domain and Use-case tests when the framework supports test selection
     and TEST_TREES.md is created when missing
     and native project commands are created for the configured testing and linting DX
     and setup examples follow the setup rules — no copied comments, no env-var behaviour switches, and strong preference for composition over inheritance
