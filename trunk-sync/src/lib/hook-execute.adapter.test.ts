@@ -30,7 +30,10 @@ describe("Adapter: hook-execute", () => {
       it("and a merge in progress is reported when MERGE_HEAD is present", verifies("reports a merge in progress via MERGE_HEAD"));
       it("and the absence of a merge reports no merge in progress", verifies("reports no merge in progress when MERGE_HEAD is absent"));
       it("and the absence of a remote is reported", verifies("detects no remote"));
-      it("and a configured remote uses \"agents\" as targetBranch", verifies("uses agents as targetBranch when a remote is configured"));
+      it("and a configured remote with no `target-branch` override defaults targetBranch to \"agents\"", verifies("defaults targetBranch to agents when no target-branch override is configured"));
+    });
+    describe("while `target-branch` is set in `.trunk-sync/config`", () => {
+      it("then targetBranch reads the configured value instead of the \"agents\" default", verifies("reads targetBranch from .trunk-sync/config"));
     });
     describe("when no file_path is provided", () => {
       it("then deleted tracked files are detected", verifies("detects deleted files"));
