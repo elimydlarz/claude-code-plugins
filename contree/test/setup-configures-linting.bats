@@ -141,6 +141,14 @@ create_js_hook_project() {
   assert_output --partial "domain|ports?|data|types"
 }
 
+@test "when setup is run then the architecture linter permits concrete adapters to be imported only by the composition root" {
+  run sed -n "/name: 'adapters-only-from-composition-root'/,/^    },/p" "$SKILL"
+  assert_output --partial "pathNot: '^src/composition-root"
+  assert_output --partial "to: { path: '(^|/)(adapters?|infrastructure)/' }"
+  run cat "$SKILL"
+  assert_output --partial "replace the example composition-root path with the exact project path"
+}
+
 @test "setup configures the hex-boundary linter to enforce no circular dependencies" {
   run cat "$SKILL"
   assert_output --partial "no-circular"
