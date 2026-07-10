@@ -37,6 +37,13 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "from the project root"
 }
 
+@test "when a coding agent writes or edits a project file then automatic fixes are written to the file before the coding agent continues" {
+  run cat "$SKILL"
+  assert_output --partial "synchronous PostToolUse command"
+  assert_output --partial "before the coding agent continues"
+  refute_output --partial '"async": true'
+}
+
 @test "setup configures a hex-boundary linter" {
   run cat "$SKILL"
   [[ "$output" == *"dependency-cruiser"* || "$output" == *"hex-boundary"* || "$output" == *"architectural linter"* ]]
