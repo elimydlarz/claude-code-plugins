@@ -213,13 +213,19 @@ setup-prepares-project (src: skills/setup/SKILL.md; system: test/setup-prepares-
 ```
 setup-configures-linting (src: skills/setup/SKILL.md; system: test/setup-configures-linting.bats; journey: test/journey/docker-entrypoint.sh)
   when setup is run
-    then a normal linter is installed or configured using the project's language conventions
+    then a conventional normal linter is installed and configured with the ecosystem's strong recommended rules
     and a hex-boundary linter is installed and configured
     and the combined lint command runs both normal lint and hex-boundary lint
     and the hex-boundary linter enforces that domain has no I/O
     and the hex-boundary linter enforces that use-cases depend on ports, not concrete adapters
     and the hex-boundary linter enforces no circular dependencies
     and CI is wired to run the combined lint command so normal and boundary violations fail the build
+    and a project-level hook is created for coding-agent file saves
+  when a coding agent writes or edits a project file
+    then the project-level hook runs the normal linter's fix mode against the saved file
+    and automatic fixes are written to the file before the coding agent continues
+  if lint violations remain after automatic fixes
+    then the project-level hook reports the violations and fails visibly
   if the project's language has no first-party contree linter template
     then the language-native equivalent tool is named and the rules to enforce are stated
     and the limitation — the user wires the rules themselves — is communicated honestly
