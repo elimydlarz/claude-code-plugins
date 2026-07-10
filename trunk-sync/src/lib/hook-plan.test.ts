@@ -303,9 +303,10 @@ describe("buildCommitPlanWithTask", () => {
     const state = makeState();
     const commit = buildCommitPlanWithTask(input, state, "Fix the broken tests");
     assert.equal(commit.subject, "auto(abcdef12): Fix the broken tests");
-    assert.match(commit.body!, /^File: src\/main\.ts/);
-    assert.match(commit.body!, /Session: abcdef12/);
-    assert.doesNotMatch(commit.body!, /TranscriptPath:/);
+    assert.equal(
+      commit.body,
+      "File: src/main.ts\nSession: abcdef12-3456-7890-abcd-ef1234567890",
+    );
   });
 
   it("falls back to default plan when task is null", () => {
