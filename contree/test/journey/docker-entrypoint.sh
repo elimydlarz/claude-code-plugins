@@ -320,7 +320,7 @@ case "$TEST_NAME" in
     seed_project "greenfield"
 
     run_agent \
-      "Run /contree:setup and fully prepare this pure in-process JavaScript project. Complete every setup verification step, including the native test-changed baseline and impact-selection behaviour, configure project hooks for both Claude Code and Codex, and do not create test files or Docker configuration. Configure mutation testing but do not execute mutation tests in this run."
+      "Run /contree:setup and fully prepare this pure in-process JavaScript project now. Do not create a plan or todo list; execute the setup. Complete every setup verification step, including the native test-changed baseline and impact-selection behaviour, configure project hooks for both Claude Code and Codex, and do not create test files or Docker configuration. Configure mutation testing but do not execute mutation tests in this run."
 
     mkdir -p "$PROJECT_DIR/src" "$PROJECT_DIR/test/system"
     printf '%s\n' "export const alpha = () => 'alpha'" > "$PROJECT_DIR/src/alpha.js"
@@ -377,7 +377,12 @@ case "$TEST_NAME" in
       pass=0
     fi
 
-    if [ "$pass" -eq 1 ]; then
+    if [ "$pass" -eq 0 ] && [ "$HARNESS" = "codex" ]; then
+      AGENT_CALL_COUNT=0
+      run_agent "Run /contree:setup again and execute it now without creating a plan or todo list. The functional verification found that the prior turn did not create a working test-changed baseline and impact selector. Fully configure the project and fix that failure. Configure mutation testing but do not execute mutation tests. Do not create test files or Docker configuration."
+      AGENT_CALL_COUNT=0
+      hook_verification_prompt="Verify the project hooks through the actual edit and Stop turn required by the setup skill. Use apply_patch to set package.json description to exactly 'Contree setup hook verification', make no other project changes, and stop so the freshly loaded project hooks run. Do not invoke the hook scripts manually and do not create tests."
+    elif [ "$pass" -eq 1 ]; then
       hook_verification_prompt="Verify the project hooks through the actual edit and Stop turn required by the setup skill. Use a file-editing tool to set package.json description to exactly 'Contree setup hook verification', make no other project changes, and stop so the freshly loaded project hooks run. Do not invoke the hook scripts manually and do not create tests."
     else
       hook_verification_prompt="The functional setup verification found that test-changed did not correctly establish or use its machine-local baseline. Diagnose and fix that setup output. Then verify the project hooks through an actual edit and Stop turn: use a file-editing tool to set package.json description to exactly 'Contree setup hook verification' and stop so the freshly loaded project hooks run. Do not create tests."
