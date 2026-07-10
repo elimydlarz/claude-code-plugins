@@ -117,6 +117,15 @@ create_js_hook_project() {
   assert_output --regexp 'no I/O|not reach adapters'
 }
 
+@test "when setup is run then the architecture linter rejects domain dependencies on frameworks, I/O, asynchronous work, application code, and adapters" {
+  run cat "$SKILL"
+  assert_output --partial "domain-no-external-dependencies"
+  assert_output --partial "'core', 'npm', 'npm-dev', 'npm-optional', 'npm-peer', 'npm-bundled', 'npm-no-pkg', 'npm-unknown'"
+  assert_output --partial "domain-no-async"
+  assert_output --partial "[async=true]"
+  assert_output --partial "(^|/)(application|use-cases?|adapters?|infrastructure)/"
+}
+
 @test "setup configures the hex-boundary linter to enforce use-cases depend on ports, not concrete adapters" {
   run cat "$SKILL"
   assert_output --partial "ports"
