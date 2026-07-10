@@ -320,12 +320,67 @@ case "$TEST_NAME" in
     seed_project "greenfield"
 
     run_agent \
-      "Run /contree:setup and fully prepare this pure in-process JavaScript project. Complete every setup verification step, configure project hooks for both Claude Code and Codex, and do not create test files or Docker configuration."
+      "Run /contree:setup and fully prepare this pure in-process JavaScript project. Complete every setup verification step, including the native test-changed baseline and impact-selection behaviour, configure project hooks for both Claude Code and Codex, and do not create test files or Docker configuration."
+
+    mkdir -p "$PROJECT_DIR/src" "$PROJECT_DIR/test/system"
+    printf '%s\n' "export const alpha = () => 'alpha'" > "$PROJECT_DIR/src/alpha.js"
+    printf '%s\n' "export const beta = () => 'beta'" > "$PROJECT_DIR/src/beta.js"
+    printf '%s\n' \
+      "import { describe, expect, it } from 'vitest'" \
+      "import { alpha } from './alpha.js'" \
+      "describe('alpha impact probe', () => {" \
+      "  it('returns alpha', () => {" \
+      "    expect(alpha()).toBe('alpha')" \
+      "  })" \
+      "})" > "$PROJECT_DIR/src/alpha.unit.test.js"
+    printf '%s\n' \
+      "import { describe, expect, it } from 'vitest'" \
+      "import { beta } from './beta.js'" \
+      "describe('beta impact probe', () => {" \
+      "  it('returns beta', () => {" \
+      "    expect(beta()).toBe('beta')" \
+      "  })" \
+      "})" > "$PROJECT_DIR/src/beta.unit.test.js"
+    printf '%s\n' \
+      "import { describe, expect, it } from 'vitest'" \
+      "describe('functional exclusion probe', () => {" \
+      "  it('stays outside changed normal tests', () => {" \
+      "    expect(true).toBe(true)" \
+      "  })" \
+      "})" > "$PROJECT_DIR/test/system/excluded.system.test.js"
+
+    changed_test_script="$(jq -r 'if .scripts["test-changed"] then "test-changed" elif .scripts["test:changed"] then "test:changed" else "" end' "$PROJECT_DIR/package.json")"
+    baseline_output="$PROJECT_DIR/test-changed-baseline.txt"
+    impact_output="$PROJECT_DIR/test-changed-impact.txt"
+    pass=1
+
+    if [ -z "$changed_test_script" ] || ! (cd "$PROJECT_DIR" && npm run "$changed_test_script") > "$baseline_output" 2>&1; then
+      echo "test-changed did not establish its baseline through the normal test command" >&2
+      [ -f "$baseline_output" ] && cat "$baseline_output" >&2
+      pass=0
+    elif ! grep -q 'alpha impact probe' "$baseline_output" || ! grep -q 'beta impact probe' "$baseline_output" || grep -q 'functional exclusion probe' "$baseline_output"; then
+      echo "test-changed baseline did not run exactly the normal tests" >&2
+      cat "$baseline_output" >&2
+      pass=0
+    fi
+
+    printf '%s\n' "export const alpha = () => ['alpha'].join('')" > "$PROJECT_DIR/src/alpha.js"
+    if [ -n "$changed_test_script" ] && (cd "$PROJECT_DIR" && npm run "$changed_test_script") > "$impact_output" 2>&1; then
+      if ! grep -q 'alpha impact probe' "$impact_output" || grep -q 'beta impact probe' "$impact_output" || grep -q 'functional exclusion probe' "$impact_output"; then
+        echo "test-changed did not select only the impacted normal test since its baseline" >&2
+        cat "$impact_output" >&2
+        pass=0
+      fi
+    else
+      echo "test-changed failed after one source file changed" >&2
+      [ -f "$impact_output" ] && cat "$impact_output" >&2
+      pass=0
+    fi
 
     run_agent \
       "Verify the project hooks through the actual edit and Stop turn required by the setup skill. Use a file-editing tool to set package.json description to exactly 'Contree setup hook verification', make no other project changes, and stop so the freshly loaded project hooks run. Do not invoke the hook scripts manually and do not create tests."
 
-    pass=1
+    rm -rf "$PROJECT_DIR/src" "$PROJECT_DIR/test" "$baseline_output" "$impact_output"
 
     for path in TEST_TREES.md MENTAL_MODEL.md .claude/settings.json .codex/hooks.json .contree/hooks/test-changed.sh .contree/hooks/lint-on-save.sh .contree/hooks/architecture-on-stop.sh; do
       if [ ! -f "$PROJECT_DIR/$path" ]; then
@@ -392,6 +447,7 @@ case "$TEST_NAME" in
 setup — deterministic functional verification under $HARNESS:
 
   project preparation: $([ "$pass" -eq 1 ] && echo PASS || echo FAIL)
+  test-changed baseline and impact selection: $([ "$pass" -eq 1 ] && echo PASS || echo FAIL)
   actual edit after loading project hooks: $(jq -r '.description' "$PROJECT_DIR/package.json" 2>/dev/null || echo FAIL)
   normal command: $(jq -r '.scripts.test // "FAIL"' "$PROJECT_DIR/package.json" 2>/dev/null)
   functional command: $(jq -r '.scripts["test:functional"] // "FAIL"' "$PROJECT_DIR/package.json" 2>/dev/null)
