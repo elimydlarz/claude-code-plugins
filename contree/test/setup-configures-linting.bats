@@ -132,6 +132,15 @@ create_js_hook_project() {
   assert_output --regexp 'not concrete adapters|interfaces'
 }
 
+@test "when setup is run then the architecture linter restricts use-cases to domain code, plain data, and ports rather than frameworks, I/O, or concrete adapters" {
+  run sed -n "/name: 'use-case-no-external-dependencies'/,/^    },/p" "$SKILL"
+  assert_output --partial "from: { path: '(^|/)(application|use-cases?)/' }"
+  assert_output --partial "dependencyTypes: ['core', 'npm', 'npm-dev', 'npm-optional', 'npm-peer', 'npm-bundled', 'npm-no-pkg', 'npm-unknown']"
+  run sed -n "/name: 'use-case-only-domain-data-and-ports'/,/^    },/p" "$SKILL"
+  assert_output --partial "dependencyTypes: ['local', 'localmodule']"
+  assert_output --partial "domain|ports?|data|types"
+}
+
 @test "setup configures the hex-boundary linter to enforce no circular dependencies" {
   run cat "$SKILL"
   assert_output --partial "no-circular"
