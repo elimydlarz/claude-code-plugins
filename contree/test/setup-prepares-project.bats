@@ -43,6 +43,12 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "runs only the normal tests impacted by those files"
 }
 
+@test "setup establishes the test-changed baseline with the normal test command when no completed normal test run exists" {
+  run cat "$SKILL"
+  assert_output --partial "no completed normal test run exists"
+  assert_output --partial "runs the normal test command to establish its baseline"
+}
+
 @test "setup notes Component tests run in-process needing no external services" {
   run cat "$SKILL"
   assert_output --partial "Component"
