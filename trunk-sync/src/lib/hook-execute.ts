@@ -1,13 +1,11 @@
 import { execSync } from "node:child_process";
-import { existsSync, readFileSync, realpathSync, mkdirSync, copyFileSync, writeFileSync, readdirSync, unlinkSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync, mkdirSync, writeFileSync, readdirSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { homedir, hostname } from "node:os";
-import { readConfig } from "../commands/config.js";
 import type { HookInput, RepoState, HookPlan, SyncPlan, Timecard, RuntimeContext } from "./hook-types.js";
 import { HOOK_EXPLAINER } from "./hook-types.js";
 import { extractTaskFromTranscript, buildCommitPlanWithTask, classifyTimecards, formatClockInMessage, formatSessionStartSummary } from "./hook-plan.js";
 
-/** Absent a `target-branch` override in `.trunk-sync/config`, agents sync to a dedicated branch — not the repo's actual default branch — so auto-commits never land directly on it. */
 const DEFAULT_TARGET_BRANCH = "agents";
 
 /**
@@ -56,7 +54,7 @@ export function gatherRepoState(input: HookInput): RepoState | null {
 
   let targetBranch = "";
   if (hasRemote) {
-    targetBranch = readConfig(repoRoot).get("target-branch") ?? DEFAULT_TARGET_BRANCH;
+    targetBranch = DEFAULT_TARGET_BRANCH;
   }
 
   let currentBranch = "";
