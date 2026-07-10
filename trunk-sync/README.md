@@ -32,7 +32,17 @@ claude -w    # each invocation gets its own worktree
 
 If two agents edit the same file, trunk-sync surfaces the conflict as feedback. The agent resolves it by editing the file — then the hook completes the merge and pushes. No human intervention.
 
-Agents sync to a dedicated `agents` branch, not directly to your repo's actual default branch, so merging agent work into `main` stays a deliberate step.
+Agents sync to a dedicated `agents` branch by default, not directly to your repo's actual default branch, so merging agent work into `main` stays a deliberate step.
+
+## Configuration
+
+Repository configuration lives in `.trunk-sync/config` as `key=value` pairs. To sync directly to `main` instead of the default `agents` branch:
+
+```ini
+target-branch=main
+```
+
+Commit this file when every agent and machine working on the repository should use the same target branch.
 
 ## Clocking In — agents that know about each other
 

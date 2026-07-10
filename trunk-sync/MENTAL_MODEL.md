@@ -10,12 +10,12 @@
 
 - Pure decision logic → `hook-plan.ts`; git/fs execution → `hook-execute.ts`; PostToolUse wiring → `hook-entry.ts`; SessionStart wiring → `session-start-entry.ts`; bash wrappers → `scripts/trunk-sync*.sh`.
 - "Who is active" → `.trunk-sync/timeclock/<session-id>.json` (heartbeat `lastActiveAt`, branch), committed and pushed; surfaced at SessionStart while active.
-- Trunk → `origin/agents`; worktree → optional isolation for multi-agent (`claude -w`).
+- Trunk → `origin/agents` by default, overridden per repository by `.trunk-sync/config`'s `target-branch`; worktree → optional isolation for multi-agent (`claude -w`).
 - Distribution → `dist/` tracked in git because marketplace installs from compiled hook files.
 
 ## Ubiquitous Language
 
-- Trunk — `origin/agents`, the shared integration branch kept separate from the repo's actual default branch.
+- Trunk — `origin/agents` by default, the shared integration branch kept separate from the repo's actual default branch; `.trunk-sync/config`'s `target-branch` can opt a repository into another branch.
 - Hook layer — fires on SessionStart (create/sync own timecard + surface active timecards), Edit/Write/Bash (stage, commit, pull, push), and Stop (remove/sync own timecard).
 - Session ID — links a commit to a Claude/Codex conversation.
 - Provenance fields — `Session:` and `Agent:` in the commit body.
@@ -45,7 +45,7 @@
 - The hook handles git so agents stay focused on content and never corrupt the shared branch with ad-hoc git.
 - The functional-core / imperative-shell split keeps decision logic pure and fast to unit-test.
 - Timecards are committed, not local-only, so presence is visible across every machine and agent working on the repo. Liveness is the heartbeat's age, not a PID — the hook runs as an ephemeral process, so a stored PID is never the agent's; remote liveness can only ever be presumed from the heartbeat, and failing tests are the authoritative unfinished-work signal.
-- Agents sync to a dedicated `agents` branch, not the repo's actual default branch, so per-edit auto-commits never land directly on it — merging agent work into the real default branch stays a deliberate, separate step.
+- Agents default to a dedicated `agents` branch so per-edit auto-commits do not land directly on the repo's actual default branch; repositories can deliberately choose another target with `.trunk-sync/config`.
 - Timecards stay limited to presence; handover belongs in tests, transcripts, or conversation, not the timeclock.
 - `dist/` is tracked because marketplace installs have no build step.
 - Both plugin manifests are bumped together to avoid version skew between agent harnesses.
@@ -53,7 +53,7 @@
 ## Temporal View
 
 - At session start: the SessionStart hook creates and syncs the agent's timecard and surfaces other active sessions' timecards so the agent can coordinate around shared resources.
-- Per edit: stage → commit (provenance + refreshed timecard when one exists) → pull `origin/agents` → push; on conflict, exit 2 with active timecards included → agent edits → next fire completes the merge.
+- Per edit: stage → commit (provenance + refreshed timecard when one exists) → pull the configured target branch (`origin/agents` by default) → push; on conflict, exit 2 with active timecards included → agent edits → next fire completes the merge.
 - End of session: the Stop hook removes and syncs the session's timecard, automatically clocking the agent out; it never forces the agent.
 - Reaping: any card whose heartbeat is older than the 14-day TTL, swept on the next agent's commit.
 - Release: build and test → commit compiled output → bump both plugin manifests → tag → push to GitHub → create the GitHub release.

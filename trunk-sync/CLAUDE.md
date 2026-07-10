@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Mental Model
 
-The mental model lives in [MENTAL_MODEL.md](./MENTAL_MODEL.md) — Core Domain Identity, World-to-Code Mapping, Ubiquitous Language, Bounded Contexts, Invariants, Decision Rationale, and Temporal View. It covers the hook, fixed `agents` target branch, and the timeclock.
+The mental model lives in [MENTAL_MODEL.md](./MENTAL_MODEL.md) — Core Domain Identity, World-to-Code Mapping, Ubiquitous Language, Bounded Contexts, Invariants, Decision Rationale, and Temporal View. It covers the hook, configurable target branch (`agents` by default), and the timeclock.
 
 ## Repo Map
 
@@ -72,7 +72,7 @@ pnpm run build        # compile TypeScript → dist/
 
 ### Manual testing
 
-Scripts for testing the hook live against origin with real worktrees. The hook targets `agents`.
+Scripts for testing the hook live against origin with real worktrees. The hook targets `agents` by default; repositories can override it with `.trunk-sync/config`'s `target-branch`.
 
 ```bash
 # 1. Setup
