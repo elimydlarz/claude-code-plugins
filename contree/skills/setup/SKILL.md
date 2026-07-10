@@ -105,6 +105,26 @@ Create one project-level `Stop` hook for each supported coding harness and merge
 - Claude Code: `.claude/settings.json`
 - Codex: `.codex/hooks.json`
 
+Merge this handler into `hooks.Stop` in both files:
+
+```json
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.contree/hooks/test-changed.sh\"",
+            "statusMessage": "Testing impacted changes"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
 The project-level `Stop` hook runs `test-changed` through executable `.contree/hooks/test-changed.sh` after the turn's file changes and after synchronous `PostToolUse` save hooks have completed. Generate that script with `set -euo pipefail`, change to the project root returned by `git rev-parse --show-toplevel`, and invoke the ecosystem's exact native `test-changed` command. Keep the hook synchronous so its result reaches the coding agent before the turn finishes.
 
 Require the coding harness to load and trust the project hook, then verify it with an actual file edit and Stop turn. Presence on disk alone is not verification.
