@@ -84,40 +84,58 @@ function toChatMessages(input) {
     return [{ role: 'user', content: input }]
   }
 
-  return input.flatMap(item => {
+  const messages = []
+  let pendingToolCalls = []
+
+  const flushToolCalls = () => {
+    if (pendingToolCalls.length === 0) {
+      return
+    }
+
+    messages.push({
+      role: 'assistant',
+      content: null,
+      tool_calls: pendingToolCalls
+    })
+    pendingToolCalls = []
+  }
+
+  for (const item of input) {
+    if (item.type === 'function_call') {
+      pendingToolCalls.push({
+        id: item.call_id,
+        type: 'function',
+        function: {
+          name: item.name,
+          arguments: item.arguments || '{}'
+        }
+      })
+      continue
+    }
+
+    flushToolCalls()
+
     if (item.type === 'message') {
-      return [{ role: chatRole(item.role), content: textFromContent(item.content) }]
+      messages.push({ role: chatRole(item.role), content: textFromContent(item.content) })
+      continue
     }
 
     if (item.type === 'function_call_output') {
-      return [{
+      messages.push({
         role: 'tool',
         tool_call_id: item.call_id,
         content: item.output || ''
-      }]
-    }
-
-    if (item.type === 'function_call') {
-      return [{
-        role: 'assistant',
-        content: null,
-        tool_calls: [{
-          id: item.call_id,
-          type: 'function',
-          function: {
-            name: item.name,
-            arguments: item.arguments || '{}'
-          }
-        }]
-      }]
+      })
+      continue
     }
 
     if (typeof item.content === 'string') {
-      return [{ role: chatRole(item.role), content: item.content }]
+      messages.push({ role: chatRole(item.role), content: item.content })
     }
+  }
 
-    return []
-  })
+  flushToolCalls()
+  return messages
 }
 
 function chatRole(role) {
