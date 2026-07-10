@@ -421,16 +421,7 @@ Keep the handler as a synchronous PostToolUse command. Do not set `async`; the a
 
 Capture the autofix command's output. If remaining lint violations make the command fail, write the linter output to stderr and exit 2 so the coding harness reports the violations visibly. Do not swallow the failure or return success.
 
-**For non-JS/TS hex-boundary lint** — recommend the language-native equivalent. Don't attempt to install without a template; tell the user the rules they need to enforce (no imports from domain into adapters; no imports from application into adapters) and name the tool:
-
-| Language | Tool |
-|---|---|
-| Java / Kotlin | ArchUnit |
-| Go | `go list` + `depguard` |
-| Python | `import-linter` |
-| Rust | `cargo-modules` with CI assertions |
-
-State the limitation honestly: without contree-provided config, the user wires the rules themselves.
+If the project's ecosystem cannot enforce every architecture rule, fail setup visibly. Name the unsupported ecosystem and the missing enforceable rules. Do not claim that the project is prepared and do not leave architecture enforcement for the user to wire later.
 
 ### 8. CREATE TEST_TREES.md
 
