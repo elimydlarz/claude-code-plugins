@@ -278,6 +278,7 @@ System: hook-sync (src: hooks/hooks.json, src/lib/hook-entry.ts, src/lib/session
 
   every Edit/Write/Bash/apply_patch/local_shell tool use
     then the changed file is staged and committed
+    and commits with a session record the session and originating agent provenance
     when a remote is configured
       then HEAD is pushed to the consumer repository's shared `agents` branch after the commit
     when no remote is configured
