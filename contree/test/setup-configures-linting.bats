@@ -119,6 +119,20 @@ create_architecture_hook_project() {
   assert_output "{}"
 }
 
+@test "when the project-level Stop hook receives its own follow-up Stop task then it exits silently to prevent a feedback loop" {
+  local project="$BATS_TEST_TMPDIR/architecture-loop-guard"
+  create_architecture_hook_project "$project"
+  printf '%s\n' '#!/usr/bin/env bash' 'touch pnpm-was-called' 'exit 1' > "$project/bin/pnpm"
+  chmod +x "$project/bin/pnpm"
+
+  cd "$project"
+  run env PATH="$project/bin:$PATH" bash -c 'printf "%s" "{\"stop_hook_active\":true}" | bash "$1"' _ "$project/architecture-on-stop.sh"
+
+  assert_success
+  assert_output "{}"
+  [ ! -e "$project/pnpm-was-called" ]
+}
+
 @test "when a coding agent writes or edits a project file then the project-level hook runs the normal lint autofix command from the project root after every save" {
   run cat "$SKILL"
   assert_output --partial ".contree/hooks/lint-on-save.sh"
