@@ -194,6 +194,23 @@ module.exports = {
       to: { path: '(^|/)(adapters?|infrastructure)/' },
     },
     {
+      name: 'use-case-no-external-dependencies',
+      severity: 'error',
+      from: { path: '(^|/)(application|use-cases?)/' },
+      to: {
+        dependencyTypes: ['core', 'npm', 'npm-dev', 'npm-optional', 'npm-peer', 'npm-bundled', 'npm-no-pkg', 'npm-unknown'],
+      },
+    },
+    {
+      name: 'use-case-only-domain-data-and-ports',
+      severity: 'error',
+      from: { path: '(^|/)(application|use-cases?)/' },
+      to: {
+        dependencyTypes: ['local', 'localmodule'],
+        pathNot: '(^|/)(domain|ports?|data|types)(/|$)',
+      },
+    },
+    {
       name: 'no-circular',
       severity: 'error',
       from: {},
