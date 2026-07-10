@@ -88,7 +88,7 @@ claude -w
 #    They will conflict on the same file and the hook will handle it.
 
 # 4. Verify
-git log --oneline origin/main   # should have auto-commits + local-only commit
+git log --oneline origin/agents # should have auto-commits + local-only commit
 git status
 cat test/battlefield.txt         # should reflect the resolved content
 
