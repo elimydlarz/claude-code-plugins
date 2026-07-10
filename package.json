@@ -1,6 +1,7 @@
 {
   "private": true,
   "scripts": {
+    "test": "node --test test/adapter/plugin-release.adapter.test.mjs",
     "publish:trunk-sync": "./scripts/publish-trunk-sync.sh",
     "publish:contree": "./scripts/publish-contree.sh"
   }
