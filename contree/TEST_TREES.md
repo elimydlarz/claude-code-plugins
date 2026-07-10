@@ -255,10 +255,12 @@ System: setup-configures-linting (src: skills/setup/SKILL.md; system: test/setup
 ```
 change-writes-trees (src: skills/change/SKILL.md; system: test/change-writes-trees.bats; journey: test/journey/docker-entrypoint.sh)
   when a behaviour change is needed
-    then the change is discussed with the user before modifying trees
+    then the actual tests and source in the affected area are read before modifying trees
+    and pre-existing tree-code drift in that area is reconciled so the edited tree describes post-change reality
+    and the smallest coherent edit changes only affected paths
     and EARS patterns are chosen to match each requirement's nature
     and every then clause asserts something the when clause does not already imply
-    and Journey → System → inner-layer decomposition is planned, one tree per behavioural unit
+    and one tree is written per behavioural unit
     and every tree's paths map verbatim to a describe/it hierarchy in one test file
   when a Journey, System, or Adapter tree is written
     then paths use the consumer's vocabulary, not implementation internals
@@ -270,9 +272,6 @@ change-writes-trees (src: skills/change/SKILL.md; system: test/change-writes-tre
     then its coverage is named in parenthesised semicolon-separated pairs at the end of the tree-name line, labelled src / domain / use-case / adapter / component / system / journey
     and gaps are declared explicitly — "none" for expected-but-uncovered categories, omission for not-applicable ones
     and if naming a tree's paths reveals a mismatch between the consumer need and the file boundaries, the tree or implementation is adjusted until the mapping is honest
-  when planning a change to an area that already has a tree and implementation
-    then the current tree and its paths are compared against the actual tests and file locations before drafting the change
-    and any pre-existing tree-code drift in that area is reconciled as part of the change so the new tree is coherent with post-change reality
   when a tree path's then clause would reference another leaf to convey its meaning
     then the path is rewritten to state its assertion inline
     and phrases like "see above", "as before", or "the existing X branch holds" are not used
@@ -284,15 +283,14 @@ change-writes-trees (src: skills/change/SKILL.md; system: test/change-writes-tre
   when modifying existing behaviour
     then only affected paths are changed
   when removing a capability
-    then the tree is removed after user confirmation
-  when trees are complete
-    then they are presented to the user for alignment
-    and the user is suggested to run sync
+    then the unsupported paths are removed from the tree
   when a tree is named
-    then its first line is exactly `<Layer>: <Subject>`
+    then its first line begins `<Layer>: <Subject>`
     and the layer prefix lets readers and sync detect duplication across trees that share a subject at different layers
   when a when-trigger can only occur as a consequence of a prior then-outcome
     then it is nested as a child of that outcome, not written as a sibling
+  when the change skill is loaded
+    then its complete guidance is no more than 1000 words
 ```
 
 ## change-decomposes-across-layers
@@ -300,32 +298,34 @@ change-writes-trees (src: skills/change/SKILL.md; system: test/change-writes-tre
 ```
 change-decomposes-across-layers (src: skills/change/SKILL.md; system: test/change-decomposes-across-layers.bats; journey: test/journey/docker-entrypoint.sh)
   when a behaviour change is planned
-    then the outermost tree is captured — a Journey tree for a new user arc, or a System tree for a capability under an existing journey
-    and that outermost tree is the only tree written up front — System and inner-layer trees are added only as a failing journey/functional test reveals the need for them
+    then the first tree describes the behaviour at the interface where its actual consumer observes it
     and trees are named for the subject with observable behaviour at their layer
     and every tree reifies exactly one test file
   when decomposing a capability across the test layers
     then every layer is consumer-driven
     and the higher-level tree and failing test create the demand for the next inner unit
-    and Use-case and Component are always written and carry exhaustive coverage; System and Journey are selective, validating the same surfaces with real everything
+    and only behaviour-bearing layers required by that demand receive trees and tests
   when an inner-layer tree is added
-    then it exists because the failing journey/functional test at max realism cannot be satisfied without it
+    then it exists because a failing consumer test cannot be satisfied without it
     and inner-layer trees are never designed up front from speculation about decomposition
+  when TDD follows the consumer failure inward
+    then each failure guides creation of the next lower tree and failing test until the behaviour reaches its native layer
+    and only enough structure is introduced to expose the next meaningful failure, without fake production behaviour
+  when the native failing test passes
+    then its implementation makes the tests at each consuming layer pass upward in turn
+    and every relevant layer proves what crosses its own interface rather than repeating another layer's assertions
   when a side effect is identified
     then it becomes an outbound port named for capability, not technology
     and the port ships in two flavours: an in-memory adapter and a real adapter
     and a shared contract suite is written for the port
     and both adapters must pass the shared suite
   if a capability is a pure library with no driving adapter, use-case, or driven port
-    then a System tree is written only when a cross-function invariant is observable across the library's functions
-    and otherwise System is omitted and the omission is documented rather than left as an untree'd test file
+    then its tree is written at the exported interface where its behaviour is consumed
   when a Domain, Use-case, Driving-adapter, or Driven-adapter tree is considered for a unit
     then it is written only if that unit has its own substantive behaviour — rules, non-trivial orchestration, non-trivial translation, or adapter-specific behaviour beyond its contract
     and a unit that only delegates or trivially forwards does not earn its own tree
   when an app-level invariant applies across slices rather than to one
     then it is captured as a cross-cutting System tree named for the policy, not folded into a single slice's tree
-  when a System test is written for a capability that also has a Use-case in-memory twin
-    then the System test wires the real driven adapter, never the in-memory twin
 ```
 
 ## sync-audits-and-resolves
