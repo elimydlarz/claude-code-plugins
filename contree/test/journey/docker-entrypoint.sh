@@ -317,10 +317,14 @@ JS
 
 case "$TEST_NAME" in
   setup)
-    seed_project "greenfield"
+    if [ "$HARNESS" = "codex" ]; then
+      seed_project "setup-existing"
+    else
+      seed_project "greenfield"
+    fi
 
     if [ "$HARNESS" = "codex" ]; then
-      setup_prompt="Run /contree:setup now. In this turn, execute only the pure-JavaScript test-runner portion: configure separate normal and functional Vitest commands, tree output, and a native test-changed command with machine-local baseline state and Vitest related-test selection. Create TEST_TREES.md and MENTAL_MODEL.md as setup requires. Do not create a plan or todo list, do not install TypeScript, do not create tests, and do not configure Docker. Before ending, verify the commands and required files exist."
+      setup_prompt="Run /contree:setup now on this existing prepared JavaScript project. Its only setup gap is changed-test selection. Do not create a plan or todo list and do not install or update dependencies. Add only a native test-changed package command, executable .contree/hooks/test-changed.sh, and merged Stop entries in both .claude/settings.json and .codex/hooks.json. The command must establish machine-local state through the normal test command, then use Vitest related-test selection for added, modified, and deleted project files while excluding functional tests. Verify those outputs before ending."
     else
       setup_prompt="Run /contree:setup and fully prepare this pure in-process JavaScript project now. Do not create a plan or todo list; execute the setup. Complete every setup verification step, including the native test-changed baseline and impact-selection behaviour, configure project hooks for both Claude Code and Codex, and do not create test files or Docker configuration. Configure mutation testing but do not execute mutation tests in this run."
     fi
@@ -384,10 +388,8 @@ case "$TEST_NAME" in
     if [ "$HARNESS" = "codex" ]; then
       if [ "$pass" -eq 0 ]; then
         AGENT_CALL_COUNT=0
-        run_agent "Run /contree:setup now without creating a plan or todo list. The functional verification found that the test-runner setup is incomplete or its test-changed command failed. Execute only the repair: ensure package.json has normal, functional, and test-changed commands; create the normal and functional Vitest configs; and create an executable .contree/hooks/test-changed.sh that establishes machine-local state through the normal command and then runs only related normal tests for added, modified, or deleted files. This is pure JavaScript; do not install TypeScript or create tests. Verify every output before ending."
+        run_agent "Run /contree:setup now without creating a plan or todo list. The existing prepared project's only setup gap is still a working test-changed command. Do not install or update dependencies and do not change existing test, lint, mutation, or documentation configuration. Repair only package.json, executable .contree/hooks/test-changed.sh, and the merged Stop entries in .claude/settings.json and .codex/hooks.json. The command must establish machine-local state through the normal test command, then use Vitest related-test selection for added, modified, and deleted project files while excluding functional tests. Verify the repair before ending."
       fi
-      AGENT_CALL_COUNT=0
-      run_agent "Continue /contree:setup now without creating a plan or todo list. The test runner and test-changed command are already configured. Execute only the remaining setup: configure mutation testing without running it; configure ESLint and dependency-cruiser with the combined lint command; create executable lint-on-save and architecture-on-stop scripts; configure PostToolUse and Stop hooks in both .claude/settings.json and .codex/hooks.json; and ensure TEST_TREES.md and the seven-section MENTAL_MODEL.md exist. Do not create tests or Docker configuration. Verify every output before ending."
       AGENT_CALL_COUNT=0
       hook_verification_prompt="Verify the project hooks through the actual edit and Stop turn required by the setup skill. Use apply_patch to set package.json description to exactly 'Contree setup hook verification', make no other project changes, and stop so the freshly loaded project hooks run. Do not invoke the hook scripts manually and do not create tests."
     elif [ "$pass" -eq 1 ]; then
