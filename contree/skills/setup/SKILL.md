@@ -92,6 +92,12 @@ Configure one normal test command and one functional test command using native p
 - Tree-style output is configured for both commands where the framework can produce it.
 - If no tests exist yet, the empty suite output is enough to verify command wiring.
 
+Create a native `test-changed` command for fast agent feedback. The normal test command and `test-changed` share machine-local state recording the project files present at the end of the last completed normal test run. Keep that state out of version control.
+
+When `test-changed` runs, it compares the current project files with that state, identifies added, modified, and deleted files, and passes those files to the test framework's dependency or impact selector. It runs only the normal tests impacted by those files; System and Journey tests remain exclusive to the functional test command. A changed test file is itself impacted. Changes to shared test configuration or dependencies impact every normal test.
+
+Use the framework's native related-test or dependency-tracking capability. Install its maintained changed-test plugin when that capability is not built in. Do not substitute last-failed selection, watch mode, mutation-test selection, or a full suite for impact analysis: each answers a different question.
+
 If the config already has a `reporters` or `verbose` key, check whether changing it would break CI, such as removing a JUnit XML reporter. Present the conflict to the user rather than silently overwriting.
 
 **Determine whether a Docker harness is needed.** See the Docker Harness Reference below. Key question: do Adapter, System, or Journey tests need external processes — databases, queues, HTTP servers? If yes, set up a Docker Compose harness behind the normal or functional command that needs it. If the software is pure in-process, Docker is unnecessary.
