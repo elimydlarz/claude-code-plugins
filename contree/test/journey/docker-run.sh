@@ -43,6 +43,8 @@ DOCKER_CODEX_ENV=(-e DEEPSEEK_API_KEY)
 
 # (test-name, harness) pairs run by `all`.
 MATRIX=(
+  "setup:claude"
+  "setup:codex"
   "layered-workflow:claude"
   "layered-workflow:codex"
   "describe-it-drift:claude"

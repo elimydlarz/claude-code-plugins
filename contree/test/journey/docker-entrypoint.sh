@@ -316,6 +316,95 @@ JS
 # --- Test cases ---
 
 case "$TEST_NAME" in
+  setup)
+    seed_project "greenfield"
+
+    run_agent \
+      "Run /contree:setup and fully prepare this pure in-process JavaScript project. Complete every setup verification step, configure project hooks for both Claude Code and Codex, and do not create test files or Docker configuration."
+
+    run_agent \
+      "Verify the project hooks through the actual edit and Stop turn required by the setup skill. Use a file-editing tool to set package.json description to exactly 'Contree setup hook verification', make no other project changes, and stop so the freshly loaded project hooks run. Do not invoke the hook scripts manually and do not create tests."
+
+    pass=1
+
+    for path in TEST_TREES.md MENTAL_MODEL.md .claude/settings.json .codex/hooks.json .contree/hooks/test-changed.sh .contree/hooks/lint-on-save.sh .contree/hooks/architecture-on-stop.sh; do
+      if [ ! -f "$PROJECT_DIR/$path" ]; then
+        echo "Missing setup output: $path" >&2
+        pass=0
+      fi
+    done
+
+    for path in .contree/hooks/test-changed.sh .contree/hooks/lint-on-save.sh .contree/hooks/architecture-on-stop.sh; do
+      if [ ! -x "$PROJECT_DIR/$path" ]; then
+        echo "Setup output is not executable: $path" >&2
+        pass=0
+      fi
+    done
+
+    if ! jq -e '
+      .description == "Contree setup hook verification" and
+      (.scripts.test | type == "string") and
+      (.scripts["test:functional"] | type == "string") and
+      ((.scripts["test-changed"] // .scripts["test:changed"]) | type == "string") and
+      (.scripts["test:mutate"] | type == "string") and
+      (.scripts["lint"] | type == "string") and
+      (.scripts["lint:code"] | type == "string") and
+      (.scripts["lint:code:fix"] | type == "string") and
+      (.scripts["lint:arch"] | type == "string")
+    ' "$PROJECT_DIR/package.json" >/dev/null; then
+      echo "Setup did not create the required native project commands or the hook verification edit was not preserved" >&2
+      pass=0
+    fi
+
+    for config in .claude/settings.json .codex/hooks.json; do
+      if [ -f "$PROJECT_DIR/$config" ] && ! jq -e '
+        ([.hooks.PostToolUse[]?.hooks[]?.command] | any(contains(".contree/hooks/lint-on-save.sh"))) and
+        ([.hooks.Stop[]?.hooks[]?.command] | any(contains(".contree/hooks/test-changed.sh"))) and
+        ([.hooks.Stop[]?.hooks[]?.command] | any(contains(".contree/hooks/architecture-on-stop.sh")))
+      ' "$PROJECT_DIR/$config" >/dev/null; then
+        echo "Setup did not configure every project hook in $config" >&2
+        pass=0
+      fi
+    done
+
+    expected_mental_model_headings=$'## Core Domain Identity\n## World-to-Code Mapping\n## Ubiquitous Language\n## Bounded Contexts\n## Invariants\n## Decision Rationale\n## Temporal View'
+    actual_mental_model_headings="$(grep '^## ' "$PROJECT_DIR/MENTAL_MODEL.md" 2>/dev/null || true)"
+    if [ "$actual_mental_model_headings" != "$expected_mental_model_headings" ]; then
+      echo "Setup did not create the seven mental-model sections in order" >&2
+      pass=0
+    fi
+
+    created_tests="$(find "$PROJECT_DIR" -path "$PROJECT_DIR/node_modules" -prune -o -type f \( -name '*.test.*' -o -name '*.spec.*' \) -print)"
+    if [ -n "$created_tests" ]; then
+      echo "Setup created test files before TDD:" >&2
+      printf '%s\n' "$created_tests" >&2
+      pass=0
+    fi
+
+    if find "$PROJECT_DIR" -maxdepth 2 -type f \( -name 'docker-compose.yml' -o -name 'compose.yml' \) | grep -q .; then
+      echo "Setup created Docker configuration for a pure in-process project" >&2
+      pass=0
+    fi
+
+    assert_no_hook_runner_errors
+
+    write_verify <<VERIFY
+setup — deterministic functional verification under $HARNESS:
+
+  project preparation: $([ "$pass" -eq 1 ] && echo PASS || echo FAIL)
+  actual edit after loading project hooks: $(jq -r '.description' "$PROJECT_DIR/package.json" 2>/dev/null || echo FAIL)
+  normal command: $(jq -r '.scripts.test // "FAIL"' "$PROJECT_DIR/package.json" 2>/dev/null)
+  functional command: $(jq -r '.scripts["test:functional"] // "FAIL"' "$PROJECT_DIR/package.json" 2>/dev/null)
+  changed-test command: $(jq -r '.scripts["test-changed"] // .scripts["test:changed"] // "FAIL"' "$PROJECT_DIR/package.json" 2>/dev/null)
+  Claude Code hooks: $([ -f "$PROJECT_DIR/.claude/settings.json" ] && echo configured || echo FAIL)
+  Codex hooks: $([ -f "$PROJECT_DIR/.codex/hooks.json" ] && echo configured || echo FAIL)
+  setup-created test files: $([ -z "$created_tests" ] && echo none || echo FAIL)
+  unnecessary Docker configuration: $([ ! -f "$PROJECT_DIR/docker-compose.yml" ] && [ ! -f "$PROJECT_DIR/compose.yml" ] && echo none || echo FAIL)
+VERIFY
+
+    [ "$pass" -eq 1 ] || { echo "setup: FAILED deterministic checks" >&2; exit 1; }
+    ;;
+
   layered-workflow)
     # The single end-to-end journey: setup → workflow → drift+sync against an
     # HTTP API fixture that exercises Journey, System, Adapter (driving + driven),
@@ -625,6 +714,7 @@ VERIFY
     echo "Unknown test: $TEST_NAME" >&2
     echo ""
     echo "Available tests:"
+    echo "  setup                         — setup configures and verifies a project under both coding harnesses"
     echo "  layered-workflow              — HTTP API: setup → workflow → drift → sync (every tree, every layer)"
     echo "  describe-it-drift             — one-shot: pre-seeded describe/it mismatch → verifies sync flags it"
     echo "  diff-images                   — one-shot: staged change + mocked gpt-image-2 → verifies /contree:diff-for-humans generates an image of the change"
