@@ -94,9 +94,11 @@ REMOTE_TIMECARDS="$(git -C "$PROJECT_DIR" ls-tree -r --name-only origin/agents -
 
 if [ "$HARNESS" = "claude" ]; then
   AGENT_NAME="Claude Code"
+  AGENT_LABEL="Claude"
   AGENT_PROVENANCE="claude"
 else
   AGENT_NAME="Codex"
+  AGENT_LABEL="Codex"
   AGENT_PROVENANCE="codex"
 fi
 
@@ -117,7 +119,7 @@ else
   exit 1
 fi
 if printf '%s\n' "$COMMIT_BODY" | grep -q '^Session: ' && printf '%s\n' "$COMMIT_BODY" | grep -q "^Agent: $AGENT_PROVENANCE$"; then
-  printf '%s\n' "      and the commit records the $AGENT_NAME session and agent provenance"
+  printf '%s\n' "      and the commit records the $AGENT_LABEL session and agent provenance"
 else
   printf '%s\n' "      not ok - and the commit records the $AGENT_NAME session and agent provenance" >&2
   printf '%s\n' "$COMMIT_BODY" >&2
