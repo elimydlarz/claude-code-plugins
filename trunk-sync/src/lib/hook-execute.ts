@@ -164,11 +164,9 @@ export function runSessionStart(state: RepoState, ownSessionId: string | null, r
   commitTimecardChange(state, `auto: clock-in ${ownSessionId.slice(0, 8)}`);
   syncBestEffort(state);
 
-  const intro = `TRUNK-SYNC SESSION: your session id is ${ownSessionId}.`;
   const now = new Date();
   const { active } = classifyTimecards(ownSessionId, readTimecards(state.repoRoot), now);
-  const roster = formatSessionStartSummary(active, now);
-  return roster ? `${intro}\n\n${roster}` : intro;
+  return formatSessionStartSummary(active, now);
 }
 
 export function runStop(state: RepoState, sessionId: string | null): void {
