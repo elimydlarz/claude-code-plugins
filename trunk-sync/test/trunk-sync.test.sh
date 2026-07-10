@@ -356,9 +356,9 @@ assert_not_contains "$BODY" "File:" "no File line when transcript missing"
 FIRST_LINE=$(head -1 <<< "$BODY")
 assert_equals "Session: sess5678" "$FIRST_LINE" "no blank lines before Session"
 
-# --- Sync path (worktree-to-worktree via origin/) ---
+# --- Sync path (worktree-to-worktree via origin/agents) ---
 
-# 14. Clean sync — push to origin/ succeeds from worktree branch
+# 14. Clean sync — push to origin/agents succeeds from worktree branch
 setup_repos
 echo "new content" > "$WT_A/seed.txt"
 cd "$WT_A"
@@ -423,59 +423,59 @@ assert_contains "$REMOTE_LOG" "auto:" "remote has agent commits"
 CONTENT_A=$(cat "$WT_A/other.txt")
 assert_equals "B's file" "$CONTENT_A" "agent A has agent B's file content after sync"
 
-# --- Local main sync ---
+# --- Local target-branch sync ---
 
-# 19. Local main is fast-forwarded after worktree push
+# 19. Local target branch is fast-forwarded after worktree push
 setup_repos
 echo "from worktree" > "$WT_A/seed.txt"
 cd "$WT_A"
 run_hook "$(make_input "$WT_A/seed.txt" "" "Edit" "")"
 assert_exit 0 "worktree push exits 0"
-# PROJECT has main checked out — hook should have fast-forwarded it
+# PROJECT has the target branch checked out, so the hook should fast-forward it
 PROJECT_CONTENT=$(cat "$PROJECT/seed.txt")
-assert_equals "from worktree" "$PROJECT_CONTENT" "local main working tree updated after worktree push"
+assert_equals "from worktree" "$PROJECT_CONTENT" "local target working tree updated after worktree push"
 
-# 20. Local main tracks multiple agents — B pushes, main updates, A pushes, main updates again
+# 20. Local target branch tracks multiple agents — B pushes, target updates, A pushes, target updates again
 setup_repos
 echo "B first" > "$WT_B/seed.txt"
 cd "$WT_B"
 run_hook "$(make_input "$WT_B/seed.txt" "" "Edit" "")"
 PROJECT_CONTENT=$(cat "$PROJECT/seed.txt")
-assert_equals "B first" "$PROJECT_CONTENT" "local main has B's content"
+assert_equals "B first" "$PROJECT_CONTENT" "local target branch has B's content"
 
 echo "A second" > "$WT_A/newfile.txt"
 cd "$WT_A"
 run_hook "$(make_input "$WT_A/newfile.txt" "" "Write" "")"
 TEST_NUM=$((TEST_NUM + 1))
 if [[ -f "$PROJECT/newfile.txt" ]]; then
-  echo "ok $TEST_NUM - local main has A's new file after A pushes"
+  echo "ok $TEST_NUM - local target branch has A's new file after A pushes"
   PASS=$((PASS + 1))
 else
-  echo "not ok $TEST_NUM - local main has A's new file after A pushes"
+  echo "not ok $TEST_NUM - local target branch has A's new file after A pushes"
   FAIL=$((FAIL + 1))
 fi
 
-# 21. Local commits on main are incorporated — user commits on main, agent picks them up
+# 21. Local commits on the target branch are incorporated — user commits on the target branch, agent picks them up
 setup_repos
-# User commits directly on main in the project
+# User commits directly on the target branch in the project
 echo "user's local work" > "$PROJECT/user-file.txt"
 git -C "$PROJECT" add user-file.txt
-git -C "$PROJECT" commit -m "user commit on main" >/dev/null 2>&1
-# This commit is NOT on origin — only on local main
+git -C "$PROJECT" commit -m "user commit on target branch" >/dev/null 2>&1
+# This commit is NOT on origin — only on the local target branch
 
-# Agent edits in worktree — the hook should merge local main, push everything
+# Agent edits in worktree — the hook should merge the local target branch, push everything
 echo "agent work" > "$WT_A/agent-file.txt"
 cd "$WT_A"
 run_hook "$(make_input "$WT_A/agent-file.txt" "" "Write" "")"
-assert_exit 0 "agent push exits 0 with local-only commits on main"
+assert_exit 0 "agent push exits 0 with local-only commits on target branch"
 
 # User's file should now be on origin (the hook pushed it along)
 REMOTE_FILES=$(git -C "$REMOTE" ls-tree --name-only -r "$SYNC_BRANCH")
 assert_contains "$REMOTE_FILES" "user-file.txt" "user's local commit reached origin via agent push"
 
-# Local main should be up to date (ff worked because we merged main before pushing)
+# Local target branch should be up to date
 PROJECT_FILES=$(ls "$PROJECT")
-assert_contains "$PROJECT_FILES" "agent-file.txt" "local main has agent's file after sync"
+assert_contains "$PROJECT_FILES" "agent-file.txt" "local target branch has agent's file after sync"
 
 # --- File deletion sync ---
 
@@ -610,7 +610,7 @@ setup_repos
 echo "A's content" > "$WT_A/a-file.txt"
 echo "B's content" > "$WT_B/b-file.txt"
 
-# Run both hooks concurrently — they race to push to origin/
+# Run both hooks concurrently — they race to push to origin/agents
 cd "$WT_A"
 HOOK_EXIT_A=0
 STDERR_A=""
