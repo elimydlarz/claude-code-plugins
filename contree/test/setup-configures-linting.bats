@@ -48,6 +48,14 @@ create_js_hook_project() {
   assert_output --partial "Merge the Stop matcher group without replacing existing settings or hooks"
 }
 
+@test "when a coding agent Stop task runs then the project-level Stop hook runs every architecture rule from the project root" {
+  run cat "$SKILL"
+  assert_output --partial 'Create executable `.contree/hooks/architecture-on-stop.sh`'
+  assert_output --partial 'cd "$(git rev-parse --show-toplevel)"'
+  assert_output --partial "pnpm lint:arch"
+  assert_output --partial "--output-type err-long"
+}
+
 @test "when a coding agent writes or edits a project file then the project-level hook runs the normal lint autofix command from the project root after every save" {
   run cat "$SKILL"
   assert_output --partial ".contree/hooks/lint-on-save.sh"
