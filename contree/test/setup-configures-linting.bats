@@ -24,7 +24,7 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial ".codex/hooks.json"
   assert_output --partial "PostToolUse"
   assert_output --partial '"matcher": "Edit|Write"'
-  assert_output --partial "merge into existing project hook configuration"
+  assert_output --partial "Merge into existing project hook configuration"
 }
 
 @test "setup configures a hex-boundary linter" {
