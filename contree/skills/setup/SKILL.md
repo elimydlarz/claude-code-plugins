@@ -269,7 +269,7 @@ Add a script and wire it into the project's lint command:
   "scripts": {
     "lint:code": "eslint .",
     "lint:code:fix": "eslint . --fix",
-    "lint:arch": "depcruise src --config .dependency-cruiser.cjs --output-type err-long",
+    "lint:arch": "bash .contree/scripts/lint-architecture.sh",
     "lint": "pnpm lint:code && pnpm lint:arch"
   }
 }
@@ -320,6 +320,26 @@ Add the same Stop matcher group to `.claude/settings.json` and `.codex/hooks.jso
 ```
 
 Merge the Stop matcher group without replacing existing settings or hooks. When a Stop matcher group already exists, append this command hook to its `hooks` array.
+
+Create executable `.contree/scripts/lint-architecture.sh` with this complete body so syntax and dependency rules both run even when either rule set fails:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+architecture_status=0
+run_architecture_rule_set() {
+  local output
+  if output=$("$@" 2>&1); then
+    return 0
+  fi
+  printf '%s\n' "$output" >&2
+  architecture_status=1
+}
+run_architecture_rule_set pnpm exec eslint 'src/domain/**/*.{js,jsx,ts,tsx}' 'src/**/domain/**/*.{js,jsx,ts,tsx}' --quiet --no-error-on-unmatched-pattern
+run_architecture_rule_set pnpm exec depcruise src --config .dependency-cruiser.cjs --output-type err-long
+exit "$architecture_status"
+```
 
 Create executable `.contree/hooks/architecture-on-stop.sh` with this complete body:
 
