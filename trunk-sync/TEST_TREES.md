@@ -347,6 +347,17 @@ System: hook-sync (src: hooks/hooks.json; system: test/system/hook-sync.system.t
 ## Journey: agent-hook-compatibility
 
 ```
+
+## Adapter: plugin-version-sync
+
+```
+Adapter: plugin-version-sync (src: scripts/sync-plugin-version.js; adapter: test/adapter/plugin-version-sync.adapter.test.mjs)
+
+  when the package version lifecycle runs
+    then the Claude Code and Codex plugin manifests receive the package version
+  if either required plugin manifest is missing
+    then synchronization fails
+```
 Journey: agent-hook-compatibility (journey: test/journey/agent-hook-compatibility.journey.test.sh)
 
   when Claude Code uses the published plugin in a consumer repository
