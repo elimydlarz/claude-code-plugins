@@ -2,6 +2,7 @@
 export interface HookInput {
   tool_name: string | null;
   tool_input: { file_path?: string };
+  turn_id: string | null;
   session_id: string | null;
   transcript_path: string | null;
   cwd?: string | null;

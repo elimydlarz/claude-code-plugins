@@ -12,6 +12,7 @@ export function parseHookInput(json: string): HookInput {
   return {
     tool_name: raw.tool_name ?? null,
     tool_input: raw.tool_input ?? {},
+    turn_id: raw.turn_id ?? null,
     session_id: raw.session_id ?? null,
     transcript_path: raw.transcript_path ?? null,
     cwd: raw.cwd ?? null,

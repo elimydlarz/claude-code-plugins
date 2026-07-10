@@ -20,6 +20,7 @@ function makeInput(overrides: Partial<HookInput> = {}): HookInput {
   return {
     tool_name: "Write",
     tool_input: { file_path: "/repo/src/main.ts" },
+    turn_id: null,
     session_id: "abcdef12-3456-7890-abcd-ef1234567890",
     transcript_path: "~/.claude/projects/proj/session.jsonl",
     ...overrides,

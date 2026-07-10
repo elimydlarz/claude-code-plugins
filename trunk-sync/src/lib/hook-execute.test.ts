@@ -28,6 +28,7 @@ function makeInput(overrides: Partial<HookInput> = {}): HookInput {
   return {
     tool_name: "Write",
     tool_input: {},
+    turn_id: null,
     session_id: null,
     transcript_path: null,
     ...overrides,
