@@ -43,7 +43,7 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   [[ "$output" == *"no external services"* || "$output" == *"needs no external"* ]] || return 1
 }
 
-@test "setup configures mutation testing with layer-suffix exclusions" {
+@test "setup configures mutation testing with layer-suffix exclusions and selects only Domain and Use-case tests" {
   run cat "$SKILL"
   assert_output --partial "mutation testing"
   assert_output --partial "explicitly excluding test files"
@@ -60,6 +60,11 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "'src/**/*.ts'"
   assert_output --partial "'!src/**/*.test.ts'"
   assert_output --partial "'!src/**/*.d.ts'"
+  assert_output --partial 'targetTests.set(setOf("com.example.*DomainTest*", "com.example.*UseCaseTest*"))'
+  assert_output --partial '<param>com.example.*DomainTest*</param>'
+  assert_output --partial '<param>com.example.*UseCaseTest*</param>'
+  refute_output --partial 'targetTests.set(setOf("com.example.*Test"))'
+  refute_output --partial '<targetTests><param>com.example.*Test</param></targetTests>'
 }
 
 @test "setup creates TEST_TREES.md without composing trees" {
