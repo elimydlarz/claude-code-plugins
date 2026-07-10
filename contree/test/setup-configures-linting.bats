@@ -48,6 +48,8 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   run cat "$SKILL"
   assert_output --partial "remaining lint violations"
   assert_output --partial "write the linter output to stderr"
+  assert_output --partial 'if output=$(pnpm lint:code:fix 2>&1); then'
+  assert_output --partial "printf '%s\\n' \"\$output\" >&2"
   assert_output --partial "exit 2"
 }
 
