@@ -115,25 +115,28 @@ Install appropriate mutation testing tool (see Mutation Testing Reference below)
 
 ### 7. CONFIGURE LINTING
 
-Configure a normal linter and hex-boundary lint together. The outcome is one combined lint command that CI can run.
+Configure a conventional normal linter with the ecosystem's strong recommended rules, plus hex-boundary lint. Use the project's language conventions and merge existing lint configuration rather than replacing it. The outcome is one combined lint command that CI can run.
 
-For normal lint, use the project's language conventions:
+| Supported ecosystem | Normal linter | Strong rules |
+|---|---|---|
+| JS | ESLint | `@eslint/js` `recommended` |
+| TypeScript | ESLint | `@eslint/js` `recommended` plus `typescript-eslint` `strictTypeChecked` |
+| Elixir | Credo | `mix credo --strict` |
+| Go | golangci-lint | `standard` plus `errorlint`, `exhaustive`, `gosec`, `nilerr`, `nilnil`, and `wrapcheck` |
 
-| Language | Normal lint |
-|---|---|
-| JS/TS | ESLint plus TypeScript checking when TypeScript is present |
-| Python | Ruff |
-| Ruby | RuboCop |
-| Go | `go vet` plus `staticcheck` when already present or acceptable to install |
-| Rust | `cargo clippy` |
-| Java / Kotlin | Gradle `check`, Checkstyle, ktlint, or the project's existing quality plugin |
-| PHP | PHPStan, Psalm, Pint, or the project's existing standard |
+For JS, install `eslint` and `@eslint/js`, then write or merge `eslint.config.mjs` with `js.configs.recommended`.
+
+For TypeScript, also install `typescript-eslint`, extend `tseslint.configs.strictTypeChecked`, and configure `parserOptions.projectService: true`. Run TypeScript checking from `lint:code` so the normal lint gate covers both ESLint and the compiler.
+
+For Elixir, add Credo to `mix.exs` for `:dev` and `:test`, generate `.credo.exs`, and use strict analysis so low-priority findings are enforced instead of hidden.
+
+For Go, install golangci-lint and write `.golangci.yml` with `default: standard` plus `errorlint`, `exhaustive`, `gosec`, `nilerr`, `nilnil`, and `wrapcheck`. Use `golangci-lint run` as the normal lint command.
 
 Contree also prescribes hexagonal architecture: domain is pure, I/O lives in adapters, dependencies point inward. Install a hex-boundary linter that enforces this so boundary violations break the build rather than the review.
 
 The enforced hex-boundary lint rules are: Domain has no I/O, use-cases depend on ports/interfaces and not concrete adapters, and circular dependencies are rejected.
 
-**For JS/TS projects** — install dependency-cruiser:
+**For JS/TS projects** — install dependency-cruiser alongside the normal linter:
 
 ```bash
 pnpm add -D dependency-cruiser
@@ -175,6 +178,7 @@ Add a script and wire it into the project's lint command:
 {
   "scripts": {
     "lint:code": "eslint .",
+    "lint:code:fix": "eslint . --fix",
     "lint:arch": "depcruise src --config .dependency-cruiser.cjs",
     "lint": "pnpm lint:code && pnpm lint:arch"
   }
@@ -185,7 +189,7 @@ This makes `lint:code` the normal lint command, `lint:arch` the hex-boundary lin
 
 Ensure CI runs `pnpm lint` or the ecosystem's combined lint command so normal and boundary violations fail the build.
 
-**For non-JS/TS projects** — recommend the language-native equivalent. Don't attempt to install without a template; tell the user the rules they need to enforce (no imports from domain into adapters; no imports from application into adapters) and name the tool:
+**For non-JS/TS hex-boundary lint** — recommend the language-native equivalent. Don't attempt to install without a template; tell the user the rules they need to enforce (no imports from domain into adapters; no imports from application into adapters) and name the tool:
 
 | Language | Tool |
 |---|---|
