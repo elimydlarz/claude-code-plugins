@@ -27,6 +27,16 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "Merge into existing project hook configuration"
 }
 
+@test "when a coding agent writes or edits a project file then the project-level hook runs the normal linter's fix mode against the saved file" {
+  run cat "$SKILL"
+  assert_output --partial ".contree/hooks/lint-on-save.sh"
+  assert_output --partial "pnpm lint:code:fix"
+  assert_output --partial "mix format"
+  assert_output --partial "mix credo --strict"
+  assert_output --partial "golangci-lint run --fix"
+  assert_output --partial "from the project root"
+}
+
 @test "setup configures a hex-boundary linter" {
   run cat "$SKILL"
   [[ "$output" == *"dependency-cruiser"* || "$output" == *"hex-boundary"* || "$output" == *"architectural linter"* ]]
