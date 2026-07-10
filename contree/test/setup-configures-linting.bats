@@ -44,6 +44,13 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   refute_output --partial '"async": true'
 }
 
+@test "if lint violations remain after automatic fixes then the project-level hook reports the violations and fails visibly" {
+  run cat "$SKILL"
+  assert_output --partial "remaining lint violations"
+  assert_output --partial "write the linter output to stderr"
+  assert_output --partial "exit 2"
+}
+
 @test "setup configures a hex-boundary linter" {
   run cat "$SKILL"
   [[ "$output" == *"dependency-cruiser"* || "$output" == *"hex-boundary"* || "$output" == *"architectural linter"* ]]
