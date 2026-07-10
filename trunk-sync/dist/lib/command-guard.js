@@ -3,5 +3,5 @@ export function classifyCommand(command) {
     if (command === "git" || command.startsWith("git ")) {
         return { exitCode: 2, stderr: GIT_GUIDANCE };
     }
-    return { exitCode: 0 };
+    return { exitCode: 2, stderr: GIT_GUIDANCE };
 }
