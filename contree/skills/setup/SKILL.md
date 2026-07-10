@@ -211,6 +211,16 @@ Add this matcher group under `hooks.PostToolUse` in both files:
 
 The `Edit|Write` matcher covers Claude Code's file tools and Codex `apply_patch`. After creating or changing the project hook, require the coding harness to trust it, then verify it through an actual file edit. A hook that is only present on disk is not configured until the harness loads and trusts it.
 
+Create executable `.contree/hooks/lint-on-save.sh` with `set -euo pipefail`. It changes to the project root returned by `git rev-parse --show-toplevel`, then runs the ecosystem's exact normal lint autofix command after every matched save:
+
+| Ecosystem | Hook command |
+|---|---|
+| JS/TS | `pnpm lint:code:fix` |
+| Elixir | `mix format`, then `mix credo --strict` |
+| Go | `golangci-lint run --fix` |
+
+Run the autofix command from the project root. This covers multi-file edits without depending on a single file path in the hook payload.
+
 **For non-JS/TS hex-boundary lint** — recommend the language-native equivalent. Don't attempt to install without a template; tell the user the rules they need to enforce (no imports from domain into adapters; no imports from application into adapters) and name the tool:
 
 | Language | Tool |
