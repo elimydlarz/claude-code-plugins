@@ -78,6 +78,8 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.domain.t
       then the body includes `Agent: claude`
     when the input tool is Codex's apply_patch/local_shell
       then the body includes `Agent: codex`
+    when Codex reports a compatibility tool name with a turn id
+      then the body includes `Agent: codex`
 
   extractTaskFromTranscript
     when the transcript starts with a user message

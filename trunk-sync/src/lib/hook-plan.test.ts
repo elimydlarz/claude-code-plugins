@@ -371,6 +371,14 @@ describe("buildCommitBody", () => {
       assert.match(body ?? "", /^Agent: codex$/m, `tool ${tool_name}`);
     }
   });
+
+  it("includes Agent: codex when Codex reports a compatibility tool name with a turn id", () => {
+    const input = makeInput({ tool_name: "Bash", turn_id: "codex-turn" });
+
+    const body = buildCommitBody(input, "src/main.ts");
+
+    assert.match(body ?? "", /^Agent: codex$/m);
+  });
 });
 
 // ── extractTaskFromTranscript ────────────────────────────────────────
