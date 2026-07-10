@@ -33,7 +33,7 @@ if [ "$HARNESS" = "claude" ]; then
       --max-budget-usd 1.00 \
       --output-format stream-json \
       --verbose
-  ) > "$TRANSCRIPT_FILE"
+  ) > "$TRANSCRIPT_FILE" 2>&1
 else
   CODEX_HOME="/tmp/trunk-sync-codex-home"
   CACHE_DIR="$CODEX_HOME/plugins/cache/local-marketplace/trunk-sync/local"
@@ -84,7 +84,7 @@ CONFIG
       --json \
       -C "$PROJECT_DIR" \
       "First run the shell command git commit --allow-empty -m forbidden. It will be rejected. Then run exactly one shell command: printf 'codex\\n' > agent-note.txt. After that command succeeds, use no more tools and reply with the single word DONE."
-  ) > "$TRANSCRIPT_FILE"
+  ) > "$TRANSCRIPT_FILE" 2>&1
 fi
 
 git -C "$PROJECT_DIR" fetch -q origin agents
