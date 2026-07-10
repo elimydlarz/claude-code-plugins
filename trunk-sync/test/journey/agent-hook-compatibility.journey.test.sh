@@ -26,7 +26,7 @@ if [ "$HARNESS" = "claude" ]; then
   (
     cd "$PROJECT_DIR"
     claude -p \
-      "Create agent-note.txt containing exactly claude. Use a file-editing tool. Do not run any git command." \
+      "First run the Bash command git commit --allow-empty -m forbidden. It will be rejected. Then run exactly one Bash command: printf 'claude\\n' > agent-note.txt. After that command succeeds, use no more tools and reply with the single word DONE." \
       --plugin-dir "$TRUNK_SYNC_ROOT" \
       --dangerously-skip-permissions \
       --model sonnet \
@@ -83,12 +83,14 @@ CONFIG
       --skip-git-repo-check \
       --json \
       -C "$PROJECT_DIR" \
-      "Run exactly one shell command: printf 'codex\\n' > agent-note.txt. After that command succeeds, use no more tools and reply with the single word DONE."
+      "First run the shell command git commit --allow-empty -m forbidden. It will be rejected. Then run exactly one shell command: printf 'codex\\n' > agent-note.txt. After that command succeeds, use no more tools and reply with the single word DONE."
   ) > "$TRANSCRIPT_FILE"
 fi
 
 git -C "$PROJECT_DIR" fetch -q origin agents
 COMMIT_BODY="$(git -C "$PROJECT_DIR" log -1 --format=%B origin/agents -- agent-note.txt)"
+REMOTE_CONTENT="$(git -C "$PROJECT_DIR" show origin/agents:agent-note.txt)"
+REMOTE_TIMECARDS="$(git -C "$PROJECT_DIR" ls-tree -r --name-only origin/agents -- .trunk-sync/timeclock)"
 
 if [ "$HARNESS" = "claude" ]; then
   AGENT_NAME="Claude Code"
@@ -100,11 +102,32 @@ fi
 
 printf '%s\n' "Journey: agent-hook-compatibility"
 printf '%s\n' "  when $AGENT_NAME uses the published plugin in a consumer repository"
+printf '%s\n' "    if it attempts a write-side git command"
+if grep -q 'TRUNK-SYNC: Do NOT run git commands' "$TRANSCRIPT_FILE"; then
+  printf '%s\n' "      then the command is rejected with instructions to edit file content instead"
+else
+  printf '%s\n' "      not ok - then the command is rejected with instructions to edit file content instead" >&2
+  exit 1
+fi
 printf '%s\n' "    when it edits a file after the rejection"
+if [ "$REMOTE_CONTENT" = "$AGENT_PROVENANCE" ]; then
+  printf '%s\n' "      then the edit is committed and pushed to the consumer repository's shared \`agents\` branch"
+else
+  printf '%s\n' "      not ok - then the edit is committed and pushed to the consumer repository's shared \`agents\` branch" >&2
+  exit 1
+fi
 if printf '%s\n' "$COMMIT_BODY" | grep -q '^Session: ' && printf '%s\n' "$COMMIT_BODY" | grep -q "^Agent: $AGENT_PROVENANCE$"; then
   printf '%s\n' "      and the commit records the $AGENT_NAME session and agent provenance"
 else
   printf '%s\n' "      not ok - and the commit records the $AGENT_NAME session and agent provenance" >&2
   printf '%s\n' "$COMMIT_BODY" >&2
+  exit 1
+fi
+printf '%s\n' "    when the session ends"
+if [ -z "$REMOTE_TIMECARDS" ]; then
+  printf '%s\n' "      then its presence is removed from the shared branch"
+else
+  printf '%s\n' "      not ok - then its presence is removed from the shared branch" >&2
+  printf '%s\n' "$REMOTE_TIMECARDS" >&2
   exit 1
 fi
