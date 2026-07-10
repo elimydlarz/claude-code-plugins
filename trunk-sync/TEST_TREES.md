@@ -305,7 +305,7 @@ Domain: command-guard (src: src/lib/command-guard.ts; domain: src/lib/command-gu
 ## System: hook-sync
 
 ```
-System: hook-sync (src: hooks/hooks.json, src/lib/hook-entry.ts, src/lib/session-start-entry.ts, src/lib/stop-entry.ts; system: test/system/hook-sync.system.test.mjs; journey: test/journey/agent-hook-compatibility.journey.test.sh)
+System: hook-sync (src: hooks/hooks.json; system: test/system/hook-sync.system.test.mjs; journey: test/journey/agent-hook-compatibility.journey.test.sh)
 
   every Edit/Write/Bash/apply_patch/local_shell tool use
     then the changed file is staged and committed

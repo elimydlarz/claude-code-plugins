@@ -52,6 +52,7 @@ describe("parseHookInput", () => {
     const json = JSON.stringify({
       tool_name: "Edit",
       tool_input: { file_path: "/repo/file.ts" },
+      turn_id: "turn-123",
       session_id: "abc-123",
       transcript_path: "/path/to/transcript",
       cwd: "/repo",
@@ -59,6 +60,7 @@ describe("parseHookInput", () => {
     const result = parseHookInput(json);
     assert.equal(result.tool_name, "Edit");
     assert.equal(result.tool_input.file_path, "/repo/file.ts");
+    assert.equal(result.turn_id, "turn-123");
     assert.equal(result.session_id, "abc-123");
     assert.equal(result.transcript_path, "/path/to/transcript");
     assert.equal(result.cwd, "/repo");
@@ -68,6 +70,7 @@ describe("parseHookInput", () => {
     const result = parseHookInput("{}");
     assert.equal(result.tool_name, null);
     assert.deepEqual(result.tool_input, {});
+    assert.equal(result.turn_id, null);
     assert.equal(result.session_id, null);
     assert.equal(result.transcript_path, null);
     assert.equal(result.cwd, null);
