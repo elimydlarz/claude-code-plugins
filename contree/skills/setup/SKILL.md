@@ -189,6 +189,28 @@ This makes `lint:code` the normal lint command, `lint:arch` the hex-boundary lin
 
 Ensure CI runs `pnpm lint` or the ecosystem's combined lint command so normal and boundary violations fail the build.
 
+Create one project-level `PostToolUse` lint hook for each supported coding harness. Merge into existing project hook configuration without replacing other settings or hooks:
+
+- Claude Code: `.claude/settings.json`
+- Codex: `.codex/hooks.json`
+
+Add this matcher group under `hooks.PostToolUse` in both files:
+
+```json
+{
+  "matcher": "Edit|Write",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "bash \"$(git rev-parse --show-toplevel)/.contree/hooks/lint-on-save.sh\"",
+      "statusMessage": "Fixing lint"
+    }
+  ]
+}
+```
+
+The `Edit|Write` matcher covers Claude Code's file tools and Codex `apply_patch`. After creating or changing the project hook, require the coding harness to trust it, then verify it through an actual file edit. A hook that is only present on disk is not configured until the harness loads and trusts it.
+
 **For non-JS/TS hex-boundary lint** — recommend the language-native equivalent. Don't attempt to install without a template; tell the user the rules they need to enforce (no imports from domain into adapters; no imports from application into adapters) and name the tool:
 
 | Language | Tool |
