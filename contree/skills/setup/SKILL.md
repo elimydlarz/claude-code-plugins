@@ -221,6 +221,8 @@ Create executable `.contree/hooks/lint-on-save.sh` with `set -euo pipefail`. It 
 
 Run the autofix command from the project root. This covers multi-file edits without depending on a single file path in the hook payload.
 
+Keep the handler as a synchronous PostToolUse command. Do not set `async`; the autofix process must finish and write its changes before the coding agent continues.
+
 **For non-JS/TS hex-boundary lint** — recommend the language-native equivalent. Don't attempt to install without a template; tell the user the rules they need to enforce (no imports from domain into adapters; no imports from application into adapters) and name the tool:
 
 | Language | Tool |
