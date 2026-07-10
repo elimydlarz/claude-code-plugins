@@ -109,6 +109,8 @@ The project-level `Stop` hook runs `test-changed` through executable `.contree/h
 
 Require the coding harness to load and trust the project hook, then verify it with an actual file edit and Stop turn. Presence on disk alone is not verification.
 
+If an impacted test fails, `.contree/hooks/test-changed.sh` writes the complete test output to stderr and exits 2. Preserve the native test command's output while translating its non-zero status into the hook failure status; never swallow the failure or report success.
+
 If the config already has a `reporters` or `verbose` key, check whether changing it would break CI, such as removing a JUnit XML reporter. Present the conflict to the user rather than silently overwriting.
 
 **Determine whether a Docker harness is needed.** See the Docker Harness Reference below. Key question: do Adapter, System, or Journey tests need external processes — databases, queues, HTTP servers? If yes, set up a Docker Compose harness behind the normal or functional command that needs it. If the software is pure in-process, Docker is unnecessary.
