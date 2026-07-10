@@ -1,7 +1,7 @@
-## hook-plan
+## Domain: hook-plan
 
 ```
-Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts; system: test/trunk-sync.test.sh)
+Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.domain.test.ts; system: test/system/hook-sync.system.test.sh)
 
   parseHookInput
     when called with complete input
@@ -59,6 +59,7 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
   buildCommitPlanWithTask
     when a task is provided
       then the task is used as the commit subject
+      and the commit body retains its file, session, and agent provenance
     when the task is null
       then the default plan subject is used
 
@@ -97,6 +98,8 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
       then it is skipped
     if the user message content is empty
       then null is returned
+    if the transcript contains no user message content
+      then null is returned
     if a transcript line is not valid JSON
       then it is skipped without throwing
 
@@ -124,8 +127,10 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
       then a single-agent message is returned
     when multiple agents are active
       then all are listed
-    when the elapsed minutes value is rounded
-      then the formatting matches the elapsed wall time
+    when an active agent's elapsed time is displayed
+      then ages under a minute use seconds
+      and ages under an hour use minutes
+      and older ages use hours
 
   formatSessionStartSummary
     when no active card is present
@@ -134,23 +139,10 @@ Domain: hook-plan (src: src/lib/hook-plan.ts; domain: src/lib/hook-plan.test.ts;
       then it is listed with branch, labelled active — another agent is recently alive on it; coordinate, do not duplicate
 ```
 
-## git
+## Adapter: hook-execute
 
 ```
-Domain: git (src: src/lib/git.ts; domain: src/lib/git.test.ts; system: none)
-
-  getGitRoot
-    when inside a git repository
-      then the repository root path is returned
-    if not inside a git repository
-      then null is returned
-
-```
-
-## hook-execute
-
-```
-Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-execute.test.ts; system: test/trunk-sync.test.sh)
+Adapter: hook-execute (src: src/lib/hook-execute.ts; adapter: src/lib/hook-execute.adapter.test.ts; system: test/system/hook-sync.system.test.sh)
 
   gatherRepoState
     when called outside a git repo
@@ -162,7 +154,7 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
       and the current branch name is reported
       and a detached HEAD reports an empty currentBranch
       and a merge in progress is reported when MERGE_HEAD is present
-      and the presence of staged changes is reported
+      and the absence of a merge reports no merge in progress
       and the absence of a remote is reported
       and a configured remote uses "agents" as targetBranch
     when no file_path is provided
@@ -193,7 +185,9 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
       and a deletion is staged
       and modified files (e.g. permission changes) are staged and committed
       and the commit subject is enriched from the transcript when available
+      and an enriched commit retains file, session, and agent provenance
       and the default subject is used if the transcript is unreadable
+      and files are staged relative to the repository root when the hook runs from a subdirectory
     when action is commit-merge
       then the merge is completed
     if the merge is unresolved
@@ -255,14 +249,13 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
   runSessionStart
     when the session-start hook fires
       then the starting agent's timecard is created and synced
-      and the starting agent's own session id is printed to stdout for injection into context
       and every other session's timecard is read and classified by heartbeat age, the starting session excluded
       when active cards are present
         then their labelled summary is appended to coordinate around automatic session presence
       when only stale cards are present
-        then only the own-id is printed because stale cards are not session summaries
+        then no session-start context is emitted because stale cards are not session summaries
       when only reapable cards (or none) remain
-        then only the own-id is printed
+        then no session-start context is emitted
     if the timeclock directory does not exist
       then it is created for the starting session and the hook exits 0
     if no session id is provided
@@ -278,15 +271,15 @@ Use-case: hook-execute (src: src/lib/hook-execute.ts; use-case: src/lib/hook-exe
       then it exits 0 without action
 ```
 
-## hook-sync
+## System: hook-sync
 
 ```
-System: hook-sync (system: test/trunk-sync.test.sh)
+System: hook-sync (src: hooks/hooks.json, src/lib/hook-entry.ts, src/lib/session-start-entry.ts, src/lib/stop-entry.ts; system: test/system/hook-sync.system.test.sh; journey: test/journey/agent-hook-compatibility.journey.test.sh)
 
   every Edit/Write/Bash/apply_patch/local_shell tool use
     then the changed file is staged and committed
     when a remote is configured
-      then HEAD is pushed to the remote's default branch after the commit
+      then HEAD is pushed to the consumer repository's shared `agents` branch after the commit
     when no remote is configured
       then push is silently skipped
   every Bash tool use whose command starts with `git`
@@ -298,13 +291,13 @@ System: hook-sync (system: test/trunk-sync.test.sh)
     when the git command is in the read-only allowlist
       then it is allowed through
   every session start
-    then the starting agent is clocked in and handed its own session id
+    then the starting agent is clocked in without adding its own internal session id to agent context
     when other sessions have stale cards
       then they are omitted because timecards represent presence, not session summaries
     when other sessions have active cards
       then that recently-alive work is surfaced to coordinate around
     when only reapable cards remain
-      then nothing is surfaced beyond the agent's own session id
+      then no session-start context is emitted
   every end of task
     then the agent's timecard is removed and synced, automatically clocking the session out for remote readers
     and the agent is never forced to act — the stop hook always exits 0
@@ -317,4 +310,28 @@ System: hook-sync (system: test/trunk-sync.test.sh)
       then the merge is completed
   when a push is rejected
     then a single pull-and-push retry is attempted
+```
+
+## Journey: agent-hook-compatibility
+
+```
+Journey: agent-hook-compatibility (journey: test/journey/agent-hook-compatibility.journey.test.sh)
+
+  when Claude Code uses the published plugin in a consumer repository
+    if it attempts a write-side git command
+      then the command is rejected with instructions to edit file content instead
+    when it edits a file after the rejection
+      then the edit is committed and pushed to the consumer repository's shared `agents` branch
+      and the commit records the Claude session and agent provenance
+    when the session ends
+      then its presence is removed from the shared branch
+
+  when Codex uses the published plugin in a consumer repository
+    if it attempts a write-side git command
+      then the command is rejected with instructions to edit file content instead
+    when it edits a file after the rejection
+      then the edit is committed and pushed to the consumer repository's shared `agents` branch
+      and the commit records the Codex session and agent provenance
+    when the session ends
+      then its presence is removed from the shared branch
 ```
