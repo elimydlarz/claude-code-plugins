@@ -16,7 +16,7 @@ Users add this repo as a marketplace (`claude plugin marketplace add elimydlarz/
 ## Repo Map
 
 ```
-package.json                    — root package with publish scripts (pnpm publish:<project>)
+package.json                    — private root command manifest with publish scripts (pnpm publish:<project>)
 .claude-plugin/marketplace.json — plugin catalog (name: elimydlarz, relative paths to each plugin)
 scripts/                        — publish scripts and shared helpers (bump-plugin-version.js)
 README.md                       — unified docs for all products

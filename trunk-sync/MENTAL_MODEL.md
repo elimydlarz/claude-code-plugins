@@ -38,7 +38,7 @@
 - Pure logic is unit-tested; git/fs callers use real temp repos — never mocks for git.
 - Every exported function ships with tests in the same PR.
 - Hook exit codes: 0 = success/no-op, 2 = conflict/failure with agent feedback on stderr.
-- `package.json` and `.claude-plugin/plugin.json` versions stay in lockstep via the `version` lifecycle script.
+- `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json` versions stay in lockstep through the release bump.
 
 ## Decision Rationale
 
@@ -48,7 +48,7 @@
 - Agents sync to a dedicated `agents` branch, not the repo's actual default branch, so per-edit auto-commits never land directly on it — merging agent work into the real default branch stays a deliberate, separate step.
 - Timecards stay limited to presence; handover belongs in tests, transcripts, or conversation, not the timeclock.
 - `dist/` is tracked because marketplace installs have no build step.
-- The package manifest and marketplace manifest are bumped together to avoid version skew.
+- Both plugin manifests are bumped together to avoid version skew between agent harnesses.
 
 ## Temporal View
 
@@ -56,4 +56,4 @@
 - Per edit: stage → commit (provenance + refreshed timecard when one exists) → pull `origin/agents` → push; on conflict, exit 2 with active timecards included → agent edits → next fire completes the merge.
 - End of session: the Stop hook removes and syncs the session's timecard, automatically clocking the agent out; it never forces the agent.
 - Reaping: any card whose heartbeat is older than the 14-day TTL, swept on the next agent's commit.
-- Release: bump both manifests → build → push to GitHub marketplace.
+- Release: build and test → commit compiled output → bump both plugin manifests → tag → push to GitHub → create the GitHub release.

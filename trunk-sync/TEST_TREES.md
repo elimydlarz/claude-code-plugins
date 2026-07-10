@@ -348,15 +348,17 @@ System: hook-sync (src: hooks/hooks.json; system: test/system/hook-sync.system.t
 
 ```
 
-## Adapter: plugin-version-sync
+## Adapter: plugin-version-bump
 
 ```
-Adapter: plugin-version-sync (src: scripts/sync-plugin-version.js; adapter: test/adapter/plugin-version-sync.adapter.test.mjs)
+Adapter: plugin-version-bump (src: scripts/bump-plugin-manifests.js; adapter: test/adapter/plugin-version-bump.adapter.test.mjs)
 
-  when the package version lifecycle runs
-    then the Claude Code and Codex plugin manifests receive the package version
+  when a release bump runs
+    then the Claude Code and Codex plugin manifests advance together from their shared version
   if either required plugin manifest is missing
-    then synchronization fails
+    then the bump fails without modifying the existing manifest
+  if the plugin manifests have different versions
+    then the bump fails without modifying either manifest
 ```
 Journey: agent-hook-compatibility (journey: test/journey/agent-hook-compatibility.journey.test.sh)
 

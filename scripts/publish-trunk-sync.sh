@@ -57,13 +57,9 @@ if [ -n "$(git -C "$REPO_ROOT" status --porcelain trunk-sync/dist/)" ]; then
   git -C "$REPO_ROOT" commit -m "build: compile trunk-sync dist/"
 fi
 
-# Bump version — lifecycle script syncs plugin.json
 echo "==> Version bump ($BUMP)"
-pnpm version "$BUMP" --no-git-tag-version
-node scripts/sync-plugin-version.js
-
-VERSION=$(node -p "require('./package.json').version")
-git -C "$REPO_ROOT" add trunk-sync/package.json trunk-sync/.claude-plugin/plugin.json trunk-sync/.codex-plugin/plugin.json
+VERSION=$(node scripts/bump-plugin-manifests.js "$BUMP")
+git -C "$REPO_ROOT" add trunk-sync/.claude-plugin/plugin.json trunk-sync/.codex-plugin/plugin.json
 git -C "$REPO_ROOT" commit -m "v$VERSION"
 git -C "$REPO_ROOT" tag -a "v$VERSION" -m "trunk-sync v$VERSION"
 

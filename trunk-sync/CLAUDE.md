@@ -16,7 +16,7 @@ hooks/hooks.json              — hook registration (PostToolUse Edit|Write|Bash
 scripts/trunk-sync.sh         — 4-line bash wrapper: exec node dist/lib/hook-entry.js
 scripts/trunk-sync-session-start.sh — SessionStart wrapper: exec node dist/lib/session-start-entry.js
 scripts/trunk-sync-stop.sh    — Stop wrapper: exec node dist/lib/stop-entry.js
-scripts/sync-plugin-version.js — npm version hook: syncs plugin.json version from package.json
+scripts/bump-plugin-manifests.js — release helper: bumps both plugin manifests from their shared version
 
 src/lib/hook-types.ts         — types (HookInput, RepoState, HookPlan, Timecard: session, host, clockedInAt, lastActiveAt, branch, no pid)
 src/lib/hook-plan.ts          — pure decision logic (no I/O, no git); incl. classifyTimecards (heartbeat-age), formatSessionStartSummary
@@ -31,9 +31,6 @@ src/lib/hook-entry.ts         — PostToolUse entry point: reads stdin, wires la
 src/lib/session-start-entry.ts — SessionStart entry point: creates/syncs own timecard and prints active peers to stdout
 src/lib/stop-entry.ts         — Stop entry point: removes the session timecard + syncs; never forces
 
-src/lib/git.ts                — shared git utilities
-src/lib/git.test.ts           — unit tests (node:test)
-
 test/system/hook-sync.system.test.mjs — hook System contract over real shell scenarios with temp repos and a bare remote
 test/journey/                 — Dockerized real-agent Journey for Claude Code and Codex
 test/local-setup.sh           — manual test setup
@@ -46,7 +43,7 @@ Behavioural requirements live as test trees in [`TEST_TREES.md`](./TEST_TREES.md
 
 ## Conventions (non-behavioural)
 
-- **version-sync**: `npm version` automatically updates plugin manifests to match `package.json` via the `version` lifecycle script
+- **version-sync**: the release helper bumps both plugin manifests together from their shared version
 - **dist-tracked**: `dist/` is committed to git (excluding tests and `.d.ts`) so marketplace plugin installs have the compiled hook entry point
 - **doc-alignment**: user-facing docs and rules must stay consistent with the trees — worktree mode is optional (for multi-agent), not required for single-agent use
 
@@ -101,22 +98,15 @@ bash test/local-cleanup.sh
 
 ### Publishing
 
-Two distribution channels — both must be updated together:
+Publish from the repository root through the release script:
 
 ```bash
-# 1. Bump version in all manifests
-#    - package.json (npm)
-#    - .claude-plugin/plugin.json (plugin)
-#    - .codex-plugin/plugin.json (plugin)
-
-# 2. Build (dist/ is tracked — marketplace installs need compiled JS)
-pnpm run build
-
-# 3. Push to GitHub (plugin installs from repo root)
-git push origin main
+pnpm publish:trunk-sync patch --notes-file /tmp/trunk-sync-notes.md
 ```
 
-`dist/` is tracked in git because the marketplace plugin installs directly from the repo — without compiled JS, the hook silently fails. Test files and `.d.ts` are gitignored.
+Choose `patch`, `minor`, or `major`. The notes file is required; omitting it prints the exact command for reviewing changes since the previous Trunk Sync tag. The script requires clean source, builds, runs the unit and system suites, commits changed `dist/` output, bumps both plugin manifests together, commits and tags the release, pushes to GitHub, and creates the GitHub release.
+
+GitHub is the distribution source: the marketplace installs directly from this repository. `dist/` is tracked because consumers have no build step. Test files and `.d.ts` are gitignored.
 
 
 ### Key conventions

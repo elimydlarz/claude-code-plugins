@@ -1,30 +1,14 @@
 {
-  "name": "@elimydlarz/trunk-sync",
-  "version": "3.9.4",
+  "private": true,
   "type": "module",
-  "description": "Maximum continuous integration for multi-agent coding — every edit is committed and pushed to trunk immediately",
   "scripts": {
     "build": "tsc",
-    "test": "node --test --test-reporter spec 'dist/**/*.test.js' test/adapter/plugin-version-sync.adapter.test.mjs",
+    "test": "node --test --test-reporter spec 'dist/**/*.test.js' test/adapter/plugin-version-bump.adapter.test.mjs",
     "test:e2e": "node test/system/hook-sync.system.test.mjs",
-    "test:functional": "bash test/journey/docker-run.sh",
-    "version": "node scripts/sync-plugin-version.js && git add .claude-plugin/plugin.json"
+    "test:functional": "bash test/journey/docker-run.sh"
   },
   "devDependencies": {
     "@types/node": "^22",
     "typescript": "^5"
-  },
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/elimydlarz/trunk-sync"
-  },
-  "keywords": [
-    "claude-code",
-    "multi-agent",
-    "git",
-    "sync",
-    "trunk-based-development"
-  ],
-  "dependencies": {}
+  }
 }

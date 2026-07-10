@@ -136,6 +136,15 @@ load test_helper
 
   run grep -F 'Bearer ${apiKey}' "$PROJECT_ROOT/test/journey/codex-deepseek-responses-proxy.mjs"
   assert_success
+
+  run grep -F "role: 'tool'" "$PROJECT_ROOT/test/journey/codex-deepseek-responses-proxy.mjs"
+  assert_success
+
+  run grep -F 'tool_call_id: item.call_id' "$PROJECT_ROOT/test/journey/codex-deepseek-responses-proxy.mjs"
+  assert_success
+
+  run grep -F 'tool_calls: pendingToolCalls' "$PROJECT_ROOT/test/journey/codex-deepseek-responses-proxy.mjs"
+  assert_success
 }
 
 @test "and Claude journey runs fail fast without Claude provider auth" {

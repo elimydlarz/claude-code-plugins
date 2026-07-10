@@ -1,22 +1,22 @@
 # Mental Model
 
 ## Core Domain Identity
-What the system fundamentally does belongs here.
+A pure JavaScript utility generates URL-safe short codes.
 
 ## World-to-Code Mapping
-How domain concepts map to code belongs here.
+The fixture contains project configuration but no production implementation yet.
 
 ## Ubiquitous Language
-The project's shared vocabulary belongs here.
+A changed test is a normal test impacted by added, modified, or deleted project files.
 
 ## Bounded Contexts
-The project's domain boundaries belong here.
+Normal tests stay separate from functional System and Journey tests.
 
 ## Invariants
-Rules that must always hold belong here.
+Changed-test selection never runs functional tests and records state only after tests pass.
 
 ## Decision Rationale
-Reasons behind important decisions belong here.
+The maintained native runner keeps snapshot and impact-selection mechanics out of harness hook configuration.
 
 ## Temporal View
-How the system changes over time belongs here.
+Contree setup integrates the native runner without replacing existing lint or architecture hooks.

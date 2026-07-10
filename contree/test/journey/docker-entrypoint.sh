@@ -324,7 +324,7 @@ case "$TEST_NAME" in
     fi
 
     if [ "$HARNESS" = "codex" ]; then
-      setup_prompt="Run /contree:setup now on this existing prepared JavaScript project. Its only setup gap is changed-test selection. Do not create a plan or todo list and do not install or update dependencies. Add only a native test-changed package command, executable .contree/hooks/test-changed.sh, and merged Stop entries in both .claude/settings.json and .codex/hooks.json. The command must establish machine-local state through the normal test command, then use Vitest related-test selection for added, modified, and deleted project files while excluding functional tests. Verify those outputs before ending."
+      setup_prompt="Run /contree:setup now on this existing prepared JavaScript project. Its only setup gap is integrating the maintained native changed-test runner and executable Stop wrapper already at .contree/scripts/test-changed.mjs and .contree/hooks/test-changed.sh. Do not modify either file, create a plan, install dependencies, stage or restore files, or create tests or documentation. Add only a native test-changed package command that invokes the existing runner and merged Stop entries in both .claude/settings.json and .codex/hooks.json. Verify those outputs before ending."
     else
       setup_prompt="Run /contree:setup and fully prepare this pure in-process JavaScript project now. Do not create a plan or todo list; execute the setup. Complete every setup verification step, including the native test-changed baseline and impact-selection behaviour, configure project hooks for both Claude Code and Codex, and do not create test files or Docker configuration. Configure mutation testing but do not execute mutation tests in this run."
     fi
@@ -360,6 +360,7 @@ case "$TEST_NAME" in
     changed_test_script="$(jq -r 'if .scripts["test-changed"] then "test-changed" elif .scripts["test:changed"] then "test:changed" else "" end' "$PROJECT_DIR/package.json")"
     baseline_output="$PROJECT_DIR/test-changed-baseline.txt"
     impact_output="$PROJECT_DIR/test-changed-impact.txt"
+    failure_output="$PROJECT_DIR/test-changed-failure.txt"
     pass=1
 
     if [ -z "$changed_test_script" ] || ! (cd "$PROJECT_DIR" && npm run "$changed_test_script") > "$baseline_output" 2>&1; then
@@ -385,13 +386,25 @@ case "$TEST_NAME" in
       pass=0
     fi
 
+    printf '%s\n' "export const alpha = () => 'wrong'" > "$PROJECT_DIR/src/alpha.js"
+    set +e
+    (cd "$PROJECT_DIR" && printf '%s\n' '{"stop_hook_active":false}' | bash .contree/hooks/test-changed.sh) > "$failure_output" 2>&1
+    failure_status=$?
+    set -e
+    if [ "$failure_status" -ne 2 ] || ! grep -Eq 'FAIL|AssertionError|expected.*alpha' "$failure_output"; then
+      echo "test-changed Stop hook did not preserve failure output and exit 2" >&2
+      cat "$failure_output" >&2
+      pass=0
+    fi
+    printf '%s\n' "export const alpha = () => ['alpha'].join('')" > "$PROJECT_DIR/src/alpha.js"
+
     if [ "$HARNESS" = "codex" ]; then
       if [ "$pass" -eq 0 ]; then
         AGENT_CALL_COUNT=0
-        run_agent "Run /contree:setup now without creating a plan or todo list. The existing prepared project's only setup gap is still a working test-changed command. Do not install or update dependencies and do not change existing test, lint, mutation, or documentation configuration. Repair only package.json, executable .contree/hooks/test-changed.sh, and the merged Stop entries in .claude/settings.json and .codex/hooks.json. The command must establish machine-local state through the normal test command, then use Vitest related-test selection for added, modified, and deleted project files while excluding functional tests. Verify the repair before ending."
+        run_agent "Run /contree:setup now without creating a plan or todo list. Repair only package.json and merged Stop entries in .claude/settings.json and .codex/hooks.json. Do not modify the maintained .contree/scripts/test-changed.mjs runner or .contree/hooks/test-changed.sh wrapper, install dependencies, stage or restore files, or create tests or documentation. The package command must invoke the existing runner and both Stop configs must invoke the existing wrapper. This verification has alpha and beta probes: the clean first call must print both; after only alpha.js changes the second call must print alpha and must not print beta. Verify exactly that behavior before ending."
       fi
       AGENT_CALL_COUNT=0
-      hook_verification_prompt="Verify the project hooks through the actual edit and Stop turn required by the setup skill. Use apply_patch to set package.json description to exactly 'Contree setup hook verification', make no other project changes, and stop so the freshly loaded project hooks run. Do not invoke the hook scripts manually and do not create tests."
+      hook_verification_prompt="Do not inspect the project. As your first and only action, run npm pkg set description='Contree setup hook verification'. Then immediately reply done and end the turn so the freshly loaded project hooks run. Do not invoke hook scripts manually and make no other changes."
     elif [ "$pass" -eq 1 ]; then
       hook_verification_prompt="Verify the project hooks through the actual edit and Stop turn required by the setup skill. Use a file-editing tool to set package.json description to exactly 'Contree setup hook verification', make no other project changes, and stop so the freshly loaded project hooks run. Do not invoke the hook scripts manually and do not create tests."
     else
@@ -426,7 +439,18 @@ case "$TEST_NAME" in
       pass=0
     fi
 
-    rm -rf "$PROJECT_DIR/src" "$PROJECT_DIR/test" "$baseline_output" "$impact_output"
+    printf '%s\n' "export const alpha = () => 'wrong'" > "$PROJECT_DIR/src/alpha.js"
+    set +e
+    (cd "$PROJECT_DIR" && printf '%s\n' '{"stop_hook_active":false}' | bash .contree/hooks/test-changed.sh) > "$failure_output" 2>&1
+    failure_status=$?
+    set -e
+    if [ "$failure_status" -ne 2 ] || ! grep -Eq 'FAIL|AssertionError|expected.*alpha' "$failure_output"; then
+      echo "repaired test-changed Stop hook did not preserve failure output and exit 2" >&2
+      cat "$failure_output" >&2
+      pass=0
+    fi
+
+    rm -rf "$PROJECT_DIR/src" "$PROJECT_DIR/test" "$baseline_output" "$impact_output" "$failure_output"
 
     for path in TEST_TREES.md MENTAL_MODEL.md .claude/settings.json .codex/hooks.json .contree/hooks/test-changed.sh .contree/hooks/lint-on-save.sh .contree/hooks/architecture-on-stop.sh; do
       if [ ! -f "$PROJECT_DIR/$path" ]; then
@@ -475,7 +499,7 @@ case "$TEST_NAME" in
       pass=0
     fi
 
-    created_tests="$(find "$PROJECT_DIR" -path "$PROJECT_DIR/node_modules" -prune -o -type f \( -name '*.test.*' -o -name '*.spec.*' \) -print)"
+    created_tests="$(find "$PROJECT_DIR" \( -path "$PROJECT_DIR/node_modules" -o -path "$PROJECT_DIR/.codex-home" -o -path "$PROJECT_DIR/.git" \) -prune -o -type f \( -name '*.test.*' -o -name '*.spec.*' \) -print)"
     if [ -n "$created_tests" ]; then
       echo "Setup created test files before TDD:" >&2
       printf '%s\n' "$created_tests" >&2
@@ -494,6 +518,7 @@ setup — deterministic functional verification under $HARNESS:
 
   project preparation: $([ "$pass" -eq 1 ] && echo PASS || echo FAIL)
   test-changed baseline and impact selection: $([ "$pass" -eq 1 ] && echo PASS || echo FAIL)
+  failing impacted test output and exit 2: $([ "$pass" -eq 1 ] && echo PASS || echo FAIL)
   actual edit after loading project hooks: $(jq -r '.description' "$PROJECT_DIR/package.json" 2>/dev/null || echo FAIL)
   normal command: $(jq -r '.scripts.test // "FAIL"' "$PROJECT_DIR/package.json" 2>/dev/null)
   functional command: $(jq -r '.scripts["test:functional"] // "FAIL"' "$PROJECT_DIR/package.json" 2>/dev/null)

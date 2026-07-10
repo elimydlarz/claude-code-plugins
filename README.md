@@ -23,14 +23,16 @@ Integration surface notes live in [CLAUDE_CODE_INTERFACE.md](CLAUDE_CODE_INTERFA
 
 ## Publishing (maintainers)
 
-### trunk-sync
+Releases are published from the repository root. Review the product's changes since its latest tag, write release notes, and choose `patch`, `minor`, or `major`:
 
 ```bash
-git log v3.8.3..HEAD -- trunk-sync/ ':!trunk-sync/dist/'   # review and draft notes
-./scripts/publish-trunk-sync.sh patch --notes-file notes.md   # or minor, major
+pnpm publish:contree patch --notes-file /tmp/contree-notes.md
+pnpm publish:trunk-sync patch --notes-file /tmp/trunk-sync-notes.md
 ```
 
-Builds, tests (unit + e2e), bumps version, pushes to GitHub, and cuts a GitHub release from the supplied notes file. The `--notes-file` is required; running without it prints the exact `git log` command for the previous tag.
+The notes file is required. Running either command without it fails and prints the exact `git log` command for reviewing changes since that product's previous tag.
+
+Both commands bump the Claude Code and Codex plugin manifests, commit and tag the release, push `main` and the tag to GitHub, and create a GitHub release. Trunk Sync also builds and runs its unit and system suites and commits changed `dist/` output. Contree refreshes its Claude Code marketplace installation after publishing.
 
 ## License
 
