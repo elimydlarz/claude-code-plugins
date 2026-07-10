@@ -221,6 +221,53 @@ Create executable `.contree/hooks/lint-on-save.sh` with `set -euo pipefail`. It 
 
 Run the autofix command from the project root. This covers multi-file edits without depending on a single file path in the hook payload.
 
+Use the matching complete script body.
+
+JS/TS:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+if output=$(pnpm lint:code:fix 2>&1); then
+  exit 0
+fi
+printf '%s\n' "$output" >&2
+exit 2
+```
+
+Elixir:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+if output=$(mix format 2>&1); then
+  true
+else
+  printf '%s\n' "$output" >&2
+  exit 2
+fi
+if output=$(mix credo --strict 2>&1); then
+  exit 0
+fi
+printf '%s\n' "$output" >&2
+exit 2
+```
+
+Go:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+if output=$(golangci-lint run --fix 2>&1); then
+  exit 0
+fi
+printf '%s\n' "$output" >&2
+exit 2
+```
+
 Keep the handler as a synchronous PostToolUse command. Do not set `async`; the autofix process must finish and write its changes before the coding agent continues.
 
 Capture the autofix command's output. If remaining lint violations make the command fail, write the linter output to stderr and exit 2 so the coding harness reports the violations visibly. Do not swallow the failure or return success.
