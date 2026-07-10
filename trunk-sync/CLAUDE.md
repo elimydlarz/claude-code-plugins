@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Mental Model
 
-The mental model lives in [MENTAL_MODEL.md](./MENTAL_MODEL.md) — Core Domain Identity, World-to-Code Mapping, Ubiquitous Language, Bounded Contexts, Invariants, Decision Rationale, and Temporal View. It covers the hook/CLI split, seance, the timeclock, and the non-obvious Codex-resume fact (rollouts are found by path, not DB insertion).
+The mental model lives in [MENTAL_MODEL.md](./MENTAL_MODEL.md) — Core Domain Identity, World-to-Code Mapping, Ubiquitous Language, Bounded Contexts, Invariants, Decision Rationale, and Temporal View. It covers the hook, fixed `agents` target branch, and the timeclock.
 
 ## Repo Map
 
@@ -27,16 +27,8 @@ src/lib/hook-entry.ts         — PostToolUse entry point: reads stdin, wires la
 src/lib/session-start-entry.ts — SessionStart entry point: creates/syncs own timecard, prints own-id + active roster to stdout
 src/lib/stop-entry.ts         — Stop entry point: removes the session timecard + syncs; never forces
 
-src/cli.ts                    — CLI entry point, argv dispatch
-src/commands/seance.ts        — trunk-sync seance (default/--inspect/--list modes)
-src/commands/seance-codex.ts  — pure Codex rollout rewind logic (rewindCodexRollout), used by seance.ts
-src/commands/config.ts        — trunk-sync config (read/write .trunk-sync/config in the repo, committed+synced; target-branch defaults "agents", commit-transcripts defaults off)
-src/commands/config.test.ts   — config command tests (node:test)
-.transcripts/                 — session snapshots committed by hook (opt in via commit-transcripts=true)
-src/lib/git.ts                — shared git utilities (blame, parseFileRef, extractSessionId, findSnapshotInCommit)
+src/lib/git.ts                — shared git utilities
 src/lib/git.test.ts           — unit tests (node:test)
-src/commands/seance.test.ts   — integration tests (node:test)
-src/commands/seance-codex.test.ts — unit tests for rewindCodexRollout (node:test)
 
 test/trunk-sync.test.sh       — hook e2e test suite (TAP, temp repos + bare remote); System-layer, simulates hook stdin
 test/local-setup.sh           — manual test setup
@@ -51,14 +43,14 @@ Behavioural requirements live as test trees in [`TEST_TREES.md`](./TEST_TREES.md
 
 - **version-sync**: `npm version` automatically updates plugin manifests to match `package.json` via the `version` lifecycle script
 - **dist-tracked**: `dist/` is committed to git (excluding tests and `.d.ts`) so marketplace plugin installs have the compiled hook entry point
-- **doc-alignment**: user-facing docs (README, rules, CLI output) must stay consistent with the trees — worktree mode is optional (for multi-agent), not required for single-agent use
+- **doc-alignment**: user-facing docs and rules must stay consistent with the trees — worktree mode is optional (for multi-agent), not required for single-agent use
 
 ## Development
 
 ### Tests
 
 ```bash
-# CLI tests (TypeScript, node:test)
+# TypeScript tests (node:test)
 pnpm run build && pnpm test
 
 # Hook e2e tests (shell, TAP output)
@@ -67,24 +59,18 @@ pnpm run test:e2e
 
 Hook tests create isolated temp repos with worktrees and a bare remote. Safe to run anywhere — no network access needed.
 
-### Building the CLI
+### Building
 
 ```bash
 pnpm run build        # compile TypeScript → dist/
-pnpm run dev -- <cmd> # run from source via tsx
 ```
 
 ### Manual testing
 
-Scripts for testing the hook live against origin with real worktrees. This workflow assumes the hook targets `main` — set that once per repo (already done for this monorepo) so the assertions below hold instead of the `agents` default:
+Scripts for testing the hook live against origin with real worktrees. The hook targets `agents`.
 
 ```bash
-trunk-sync config target-branch=main
-```
-
-
-```bash
-# 1. Setup — commits a file on local main without pushing
+# 1. Setup
 bash test/local-setup.sh
 
 # 2. Launch two agents in worktrees
@@ -98,11 +84,10 @@ claude -w
 
 # 4. Verify
 git log --oneline origin/main   # should have auto-commits + local-only commit
-git status                       # main should be clean and up to date
+git status
 cat test/battlefield.txt         # should reflect the resolved content
 
-# 5. Cleanup — resets local main and origin/main to pre-test state,
-#    removes all worktrees and trunk-sync branches
+# 5. Cleanup
 bash test/local-cleanup.sh
 ```
 
@@ -118,20 +103,16 @@ Two distribution channels — both must be updated together:
 # 2. Build (dist/ is tracked — marketplace installs need compiled JS)
 pnpm run build
 
-# 3. Publish to npm (prepublishOnly also runs build)
-pnpm publish
-
-# 4. Push to GitHub (plugin installs from repo root)
+# 3. Push to GitHub (plugin installs from repo root)
 git push origin main
 ```
 
-`dist/` is tracked in git because the marketplace plugin installs directly from the repo — without compiled JS, the hook silently fails. Test files and `.d.ts` are gitignored. The npm tarball uses the `files` field in `package.json` to select what ships.
+`dist/` is tracked in git because the marketplace plugin installs directly from the repo — without compiled JS, the hook silently fails. Test files and `.d.ts` are gitignored.
 
 
 ### Key conventions
 
 - Hook no longer requires `jq` at runtime (TypeScript handles JSON parsing)
-- CLI has zero runtime dependencies — only devDependencies (typescript, tsx, @types/node)
 - All TypeScript imports use `.js` extensions (Node16 ESM requirement)
 - Hook exit codes: 0 = success/no-op, 2 = conflict/failure with agent feedback on stderr
 
@@ -139,8 +120,7 @@ git push origin main
 
 - Every exported function must have tests — when adding a new export, add tests in the same PR
 - Three-layer rule: pure logic → unit tests; git/fs callers → integration tests (real temp repos); shell E2E as safety net
-- Test file placement: `foo.ts` → `foo.test.ts`, CLI tests in `src/commands/`
+- Test file placement: `foo.ts` → `foo.test.ts`
 - Reuse helpers: `initRepo()`, `makeInput()`, `makeState()`, `setupRepoWithRemote()`
 - No mocks for git — use real temp repos with `mkdtempSync`
-- CLI command tests via subprocess (`node dist/cli.js`)
-- Execution functions (`executePlan`, `executeSync`, `amendWithTranscriptSnapshot`) require tests covering changed behavior
+- Execution functions (`executePlan`, `executeSync`) require tests covering changed behavior
