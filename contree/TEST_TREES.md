@@ -183,6 +183,8 @@ setup-prepares-project (src: skills/setup/SKILL.md; system: test/setup-prepares-
     and the fixed Contree test strategy is mapped to the project's test framework conventions
     and the normal test command runs Unit, Port contract, Adapter, and Component tests automatically
     and the functional test command runs System and Journey tests separately from the normal test command
+    and a native test-changed command identifies project files changed since the last completed normal test run and runs only the normal tests impacted by those files
+    and a project-level post-change hook runs test-changed whenever an agent changes project files
     and mutation testing is configured with explicit test file exclusions for every layer's suffix
     and mutation test runners select only Domain and Use-case tests when the framework supports test selection
     and TEST_TREES.md is created when missing
@@ -195,6 +197,10 @@ setup-prepares-project (src: skills/setup/SKILL.md; system: test/setup-prepares-
   when setup is run on a new project
     then TEST_TREES.md is created when missing
     and tests are NOT implemented yet
+  if no completed normal test run exists
+    then test-changed runs the normal test command to establish its baseline
+  if an impacted test fails
+    then the project-level post-change hook fails visibly with the test output
   when the language only supports flat test output
     then the best available option is configured
     and the limitation is communicated honestly
