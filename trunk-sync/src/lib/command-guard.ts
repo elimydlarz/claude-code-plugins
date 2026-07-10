@@ -8,5 +8,5 @@ export function classifyCommand(command: string): CommandDecision {
   if (command === "git" || command.startsWith("git ")) {
     return { exitCode: 2, stderr: GIT_GUIDANCE };
   }
-  return { exitCode: 2, stderr: GIT_GUIDANCE };
+  return { exitCode: 0 };
 }
