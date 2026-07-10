@@ -44,7 +44,6 @@ export function planHook(input: HookInput, state: RepoState): HookPlan {
     const relPath = filePath ? state.relPath! : summarizeDeletions(state.deletedFiles);
     const sessionPrefix = buildSessionPrefix(input.session_id);
     const message = `${sessionPrefix}resolve merge conflict in ${relPath}`;
-    const filesToStage = filePath ? [filePath] : [];
     return {
       action: "commit-merge",
       message,
