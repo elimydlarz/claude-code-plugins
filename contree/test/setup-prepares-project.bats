@@ -49,6 +49,15 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "runs the normal test command to establish its baseline"
 }
 
+@test "setup runs test-changed from a project-level Stop hook after coding-agent file changes" {
+  run cat "$SKILL"
+  assert_output --partial "project-level `Stop` hook runs `test-changed`"
+  assert_output --partial ".claude/settings.json"
+  assert_output --partial ".codex/hooks.json"
+  assert_output --partial ".contree/hooks/test-changed.sh"
+  assert_output --partial "after the turn's file changes"
+}
+
 @test "setup notes Component tests run in-process needing no external services" {
   run cat "$SKILL"
   assert_output --partial "Component"
