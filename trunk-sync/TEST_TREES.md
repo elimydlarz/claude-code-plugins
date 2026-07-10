@@ -273,6 +273,35 @@ Adapter: hook-execute (src: src/lib/hook-execute.ts; adapter: src/lib/hook-execu
       then it exits 0 without action
 ```
 
+## Adapter: command-guard
+
+```
+Adapter: command-guard (src: src/lib/pre-tool-entry.ts; adapter: src/lib/pre-tool-entry.adapter.test.ts; system: test/system/hook-sync.system.test.sh; journey: test/journey/agent-hook-compatibility.journey.test.sh)
+
+  when Claude Code sends a Bash command as a string
+    then the command is classified and its decision is returned as the hook exit
+  when Codex sends a local_shell command as an array
+    then the command is classified and its decision is returned as the hook exit
+  when the command is rejected
+    then exit 2 and file-editing guidance are written to stderr
+  when the command is allowed
+    then exit 0 is returned without feedback
+```
+
+## Domain: command-guard
+
+```
+Domain: command-guard (src: src/lib/command-guard.ts; domain: src/lib/command-guard.domain.test.ts; adapter: src/lib/pre-tool-entry.adapter.test.ts; system: test/system/hook-sync.system.test.sh; journey: test/journey/agent-hook-compatibility.journey.test.sh)
+
+  classifyCommand
+    when a command does not start with git
+      then it is allowed
+    when a command is git clone, diff, log, or show with optional `-C <path>`
+      then it is allowed
+    when any other git command is received
+      then it is rejected with file-editing guidance
+```
+
 ## System: hook-sync
 
 ```
