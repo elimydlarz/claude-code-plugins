@@ -127,12 +127,12 @@ Introduce only enough real structure to expose the next meaningful failure. Do n
 
 The relevant test kinds are:
 
-- **Journey** — broad, production-like test of a curated user arc across capabilities.
-- **System** — deep, production-like test of one capability through the whole app.
-- **Component** — deep in-process test of one capability through the whole app, with external services replaced by test doubles.
-- **Adapter** — test of one concrete boundary implementation against the real boundary it adapts: HTTP, CLI, database, filesystem, queue, third-party API, and similar boundaries.
-- **Port contract** — test of an application interface such as a repository, gateway, or store; each implementation of that interface passes the contract.
-- **Unit** — test of one public surface on one subject; every dependency outside the subject is mocked.
+- Journey: broad, production-like test of a curated user arc across capabilities.
+- System: deep, production-like test of one capability through the whole app.
+- Component: deep in-process test of one capability through the whole app, with external services replaced by test doubles.
+- Adapter: test of one concrete boundary implementation against the real boundary it adapts: HTTP, CLI, database, filesystem, queue, third-party API, etc.
+- Port contract: tests for an application interface such as a repository, gateway, or store; each implementation of that interface must pass those tests.
+- Unit: test of one public surface on one subject; every public surface gets native unit tests, and every dependency outside the subject is mocked.
 
 Domain and Use-case trees describe Unit tests at their respective hexagonal positions. Port trees describe Port-contract tests.
 
