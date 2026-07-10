@@ -23,7 +23,7 @@ Seven skills:
 - **`/contree:tdd`** — Auto-triggers when implementing behaviour. Enforces outside-in TDD: confirms tree exists → failing Journey test → System → TDD inward through Driving adapter → Use-case → Domain / port contract → Driven adapter, one failing test at a time. Implementation waits for a ground-level failing test under the journey/functional failure.
 - **`/contree:sync`** — Audits test trees against implementation, finds gaps and drift, then TDDs any gaps closed. Suggests `second-opinion` once you're in sync.
 - **`/contree:workflow`** — Runs change → sync → tdd → second-opinion end-to-end without pausing.
-- **`/contree:second-opinion`** — Sends the current change and your test-tree contract to Z.AI's GLM 5.2 for an independent review of completed work, then surfaces its critique. Fails loudly rather than fabricating a review; requires `ZAI_API_KEY`.
+- **`/contree:second-opinion`** — Sends the current change and your test-tree contract to Z.AI's GLM 5.2 with `ZAI_API_KEY`, or to DeepSeek with `DEEPSEEK_API_KEY`, for an independent review of completed work, then surfaces its critique. Fails loudly rather than fabricating a review.
 - **`/contree:diff-for-humans`** — Generates a single image explaining the current change to a human with OpenAI's gpt-image-2 model, foregrounding the technical substance it touches (contracts, databases, behaviour, test trees) and choosing what to depict from the nature of the change, its key details, and its audience, then surfaces those choices for review. Run on demand; requires `OPENAI_API_KEY`.
 
 Plus a **stop hook** that prompts Claude to keep test trees, mental model, CLAUDE.md, and README.md current after every response. A **session-start header** with skill directions and coding rules, so the agent starts every session knowing when to reach for each skill.
@@ -149,7 +149,7 @@ Languages marked "flat" don't support nested test output natively — contree us
 
 Two skills call external APIs and read their credentials from the environment where Claude Code runs (export them in your shell, or whatever launches Claude Code, so its tools inherit them):
 
-- **`ZAI_API_KEY`** — required by `/contree:second-opinion` to call Z.AI's GLM 5.2. Without it the skill fails loudly rather than fabricating a review.
+- **`ZAI_API_KEY`** or **`DEEPSEEK_API_KEY`** — required by `/contree:second-opinion`; `ZAI_API_KEY` calls Z.AI's GLM 5.2, while `DEEPSEEK_API_KEY` calls DeepSeek. Without either key the skill fails loudly rather than fabricating a review.
 - **`OPENAI_API_KEY`** — required by `/contree:diff-for-humans` to call OpenAI's gpt-image-2.
 
 Both are only needed when you invoke the skill that uses them; the rest of contree works without any keys.
