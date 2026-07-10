@@ -10,6 +10,14 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "project's language conventions"
 }
 
+@test "when setup is run then a conventional normal linter is installed and configured with the ecosystem's strong recommended rules" {
+  run cat "$SKILL"
+  assert_output --partial "@eslint/js"
+  assert_output --partial "strictTypeChecked"
+  assert_output --partial "credo --strict"
+  assert_output --partial "golangci-lint run"
+}
+
 @test "setup configures a hex-boundary linter" {
   run cat "$SKILL"
   [[ "$output" == *"dependency-cruiser"* || "$output" == *"hex-boundary"* || "$output" == *"architectural linter"* ]]
