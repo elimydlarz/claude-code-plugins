@@ -98,6 +98,8 @@ When `test-changed` runs, it compares the current project files with that state,
 
 Use the framework's native related-test or dependency-tracking capability. Install its maintained changed-test plugin when that capability is not built in. Do not substitute last-failed selection, watch mode, mutation-test selection, or a full suite for impact analysis: each answers a different question.
 
+If no completed normal test run exists, `test-changed` runs the normal test command to establish its baseline. After either command completes, record the current project-file state so the next `test-changed` invocation measures changes from that run.
+
 If the config already has a `reporters` or `verbose` key, check whether changing it would break CI, such as removing a JUnit XML reporter. Present the conflict to the user rather than silently overwriting.
 
 **Determine whether a Docker harness is needed.** See the Docker Harness Reference below. Key question: do Adapter, System, or Journey tests need external processes — databases, queues, HTTP servers? If yes, set up a Docker Compose harness behind the normal or functional command that needs it. If the software is pure in-process, Docker is unnecessary.
