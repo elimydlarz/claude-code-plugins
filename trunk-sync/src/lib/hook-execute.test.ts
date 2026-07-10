@@ -637,6 +637,38 @@ describe("executePlan", () => {
     assert.match(subject, /Fix the login bug/);
   });
 
+  it("an enriched commit retains file, session, and agent provenance", () => {
+    const filePath = join(dir, "provenance.txt");
+    writeFileSync(filePath, "provenance\n");
+    const transcriptPath = join(dir, "transcript.jsonl");
+    writeFileSync(
+      transcriptPath,
+      jsonl({ type: "user", message: { role: "user", content: "Record provenance" } }),
+    );
+    const sessionId = "abcdef12-3456-7890-abcd-ef1234567890";
+    const plan: HookPlan = {
+      action: "commit-and-sync",
+      commit: {
+        filesToStage: [filePath],
+        filesToRemove: [],
+        subject: "auto: write provenance.txt",
+        body: null,
+      },
+      sync: null,
+    };
+    const input = makeInput({
+      tool_input: { file_path: filePath },
+      transcript_path: transcriptPath,
+      session_id: sessionId,
+    });
+    const state = makeState(dir, { relPath: "provenance.txt" });
+
+    executePlan(plan, input, state);
+
+    const body = execSync("git log -1 --format=%b", { cwd: dir, encoding: "utf-8" }).trim();
+    assert.equal(body, `File: provenance.txt\nSession: ${sessionId}\nAgent: claude`);
+  });
+
   it("uses default subject when transcript unreadable", () => {
     const filePath = join(dir, "fallback.txt");
     writeFileSync(filePath, "fallback\n");
