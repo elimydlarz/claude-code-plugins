@@ -106,6 +106,19 @@ create_architecture_hook_project() {
   assert_output --partial "dependency-cruiser executable is unavailable"
 }
 
+@test "if every architecture rule passes during a Stop task then the project-level Stop hook exits successfully without architecture feedback" {
+  local project="$BATS_TEST_TMPDIR/architecture-success"
+  create_architecture_hook_project "$project"
+  printf '%s\n' '#!/usr/bin/env bash' 'exit 0' > "$project/bin/pnpm"
+  chmod +x "$project/bin/pnpm"
+
+  cd "$project"
+  run env PATH="$project/bin:$PATH" bash -c 'printf "%s" "{\"stop_hook_active\":false}" | bash "$1"' _ "$project/architecture-on-stop.sh"
+
+  assert_success
+  assert_output "{}"
+}
+
 @test "when a coding agent writes or edits a project file then the project-level hook runs the normal lint autofix command from the project root after every save" {
   run cat "$SKILL"
   assert_output --partial ".contree/hooks/lint-on-save.sh"
