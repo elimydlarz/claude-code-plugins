@@ -57,13 +57,6 @@ export function gatherRepoState(input) {
         currentBranch = headContent.slice("ref: refs/heads/".length);
     }
     const inMerge = existsSync(join(gitDir, "MERGE_HEAD"));
-    let hasStagedChanges = false;
-    try {
-        execSync("git diff --cached --quiet", { stdio: "ignore" });
-    }
-    catch {
-        hasStagedChanges = true;
-    }
     let deletedFiles = [];
     let modifiedFiles = [];
     let untrackedFiles = [];
@@ -110,7 +103,6 @@ export function gatherRepoState(input) {
         targetBranch,
         currentBranch,
         inMerge,
-        hasStagedChanges,
         deletedFiles,
         modifiedFiles,
         untrackedFiles,
