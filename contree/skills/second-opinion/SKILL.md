@@ -1,11 +1,11 @@
 ---
 name: second-opinion
-description: "Get an independent review of completed work from a different model — sends the change and the test-tree contract to Z.AI's GLM 5.2 using ZAI_API_KEY or DEEPSEEK_API_KEY and surfaces its critique. TRIGGER when: sync has just finished, the user asks for a second opinion, an independent review, or a sanity check on completed work before a PR or release."
+description: "Get an independent review of completed work from a different model — sends the change and the test-tree contract to Z.AI's GLM 5.2 with ZAI_API_KEY, or to DeepSeek with DEEPSEEK_API_KEY, and surfaces its critique. TRIGGER when: sync has just finished, the user asks for a second opinion, an independent review, or a sanity check on completed work before a PR or release."
 ---
 
 # Second Opinion
 
-Sends the completed change to a **different model** — Z.AI's **GLM 5.2** — and surfaces its independent review. Once `sync` reports the trees and implementation are aligned, a second pair of eyes from another model catches what a single perspective misses: bugs, drift from the test-tree contract, rule violations, gaps the author rationalised away.
+Sends the completed change to a **different model** — Z.AI's **GLM 5.2** when `ZAI_API_KEY` is present, or **DeepSeek** when `DEEPSEEK_API_KEY` is present — and surfaces its independent review. Once `sync` reports the trees and implementation are aligned, a second pair of eyes from another model catches what a single perspective misses: bugs, drift from the test-tree contract, rule violations, gaps the author rationalised away.
 
 ## When to Use
 
@@ -30,22 +30,28 @@ CHANGE=$(git diff HEAD; git ls-files --others --exclude-standard | while read -r
 
 For a wider grouping spanning several trunk-sync commits, diff the appropriate range instead. Then read `## Test Trees` (or `TEST_TREES.md`) — this is the contract the work must satisfy. If there are no non-trivial changes to review, say so and stop — there is nothing to review.
 
-### 2. Ask GLM 5.2 to review against the contract
+### 2. Ask an independent model to review against the contract
 
-Call Z.AI's chat completions API with the `glm-5.2` model, authenticated with `ZAI_API_KEY`, or `DEEPSEEK_API_KEY` when `ZAI_API_KEY` is absent. Send the change and the test trees, and ask GLM 5.2 to review the work as an independent critic: does the change satisfy the test-tree contract, are there bugs or drift, does it honour the rules (KISS, YAGNI, no fake code, fail-fast, no comments), and what would it change?
+Call Z.AI's chat completions API with the `glm-5.2` model when `ZAI_API_KEY` is present. When `ZAI_API_KEY` is absent and `DEEPSEEK_API_KEY` is present, call DeepSeek's chat completions API with `deepseek-chat`. Send the change and the test trees, and ask the model to review the work as an independent critic: does the change satisfy the test-tree contract, are there bugs or drift, does it honour the rules (KISS, YAGNI, no fake code, fail-fast, no comments), and what would it change?
 
 ```bash
 REVIEW_INPUT=$(printf 'TEST TREES (the contract):\n\n%s\n\nCHANGE (the work to review):\n\n%s\n' \
   "$(cat TEST_TREES.md)" "$CHANGE")
-ZAI_BASE_URL="${ZAI_BASE_URL:-https://api.z.ai/api/paas/v4}"
-REVIEW_API_KEY="${ZAI_API_KEY:-${DEEPSEEK_API_KEY:-}}"
-: "${REVIEW_API_KEY:?missing both ZAI_API_KEY and DEEPSEEK_API_KEY}"
+if [ -n "${ZAI_API_KEY:-}" ]; then
+  REVIEW_API_KEY="$ZAI_API_KEY"
+  REVIEW_BASE_URL="${ZAI_BASE_URL:-https://api.z.ai/api/paas/v4}"
+  REVIEW_MODEL="glm-5.2"
+else
+  REVIEW_API_KEY="${DEEPSEEK_API_KEY:?missing both ZAI_API_KEY and DEEPSEEK_API_KEY}"
+  REVIEW_BASE_URL="${DEEPSEEK_BASE_URL:-https://api.deepseek.com/v1}"
+  REVIEW_MODEL="deepseek-chat"
+fi
 
-curl -sS -f -X POST "$ZAI_BASE_URL/chat/completions" \
+curl -sS -f -X POST "$REVIEW_BASE_URL/chat/completions" \
   -H "Authorization: Bearer $REVIEW_API_KEY" \
   -H "Content-Type: application/json" \
-  -d "$(jq -n --arg input "$REVIEW_INPUT" '{
-        model: "glm-5.2",
+  -d "$(jq -n --arg input "$REVIEW_INPUT" --arg model "$REVIEW_MODEL" '{
+        model: $model,
         messages: [
           { role: "system", content: "You are an independent code reviewer. Review the completed work against the test-tree contract. Surface bugs, drift from the trees, rule violations, and gaps. Be specific and concrete." },
           { role: "user", content: $input }
@@ -56,8 +62,8 @@ curl -sS -f -X POST "$ZAI_BASE_URL/chat/completions" \
 
 ### 3. Surface the review
 
-Present GLM 5.2's review to the user verbatim, attributed to GLM 5.2 so it is clear this is a second opinion from another model, not your own. The user decides what to act on; where the review finds drift or gaps, route them back through `change`, `sync`, or `tdd`.
+Present the returned review to the user verbatim, attributed to `$REVIEW_MODEL` so it is clear this is a second opinion from another model, not your own. The user decides what to act on; where the review finds drift or gaps, route them back through `change`, `sync`, or `tdd`.
 
 ## Failure is loud
 
-If the review request fails — missing both `ZAI_API_KEY` and `DEEPSEEK_API_KEY`, an API error, a non-2xx response (`curl -f`), or empty content — surface the failure as an error and stop. Never fabricate a review, summarise the diff yourself and pass it off as GLM 5.2's, or report a second opinion you did not get. A missing review is an honest outcome; a fake one is not.
+If the review request fails — missing both `ZAI_API_KEY` and `DEEPSEEK_API_KEY`, an API error, a non-2xx response (`curl -f`), or empty content — surface the failure as an error and stop. Never fabricate a review, summarise the diff yourself and pass it off as the independent model's review, or report a second opinion you did not get. A missing review is an honest outcome; a fake one is not.
