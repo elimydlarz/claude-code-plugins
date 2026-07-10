@@ -120,6 +120,7 @@ last_body() {
 
 TMPDIR_BASE=$(cd "$(mktemp -d)" && pwd -P)
 trap 'rm -rf "$TMPDIR_BASE"' EXIT
+SYNC_BRANCH=agents
 
 # Isolate hook temp files to this run's temp dir.
 export TMPDIR="$TMPDIR_BASE"
@@ -144,24 +145,18 @@ setup_repos() {
   git -C "$PROJECT" commit -m "seed" >/dev/null 2>&1
   git -C "$PROJECT" push origin main >/dev/null 2>&1
 
-  # This suite's fixtures assume "main" as the sync target throughout — pin it
-  # via .trunk-sync/config rather than relying on the "agents" default, and do
-  # so before worktrees are created so both check the file out.
-  mkdir -p "$PROJECT/.trunk-sync"
-  echo "target-branch=main" > "$PROJECT/.trunk-sync/config"
-  git -C "$PROJECT" add .trunk-sync/config
-  git -C "$PROJECT" commit -m "config: target-branch=main" >/dev/null 2>&1
-  git -C "$PROJECT" push origin main >/dev/null 2>&1
+  git -C "$PROJECT" checkout -b "$SYNC_BRANCH" >/dev/null 2>&1
+  git -C "$PROJECT" push origin "$SYNC_BRANCH" >/dev/null 2>&1
 
   # Worktree A — agent A's isolated working directory
   WT_A="$TMPDIR_BASE/wt-a"
-  git -C "$PROJECT" worktree add "$WT_A" -b trunk-sync/agent-a origin/main >/dev/null 2>&1
+  git -C "$PROJECT" worktree add "$WT_A" -b trunk-sync/agent-a "origin/$SYNC_BRANCH" >/dev/null 2>&1
   git -C "$WT_A" config user.email "agent-a@test.com"
   git -C "$WT_A" config user.name "Agent A"
 
   # Worktree B — agent B's isolated working directory
   WT_B="$TMPDIR_BASE/wt-b"
-  git -C "$PROJECT" worktree add "$WT_B" -b trunk-sync/agent-b origin/main >/dev/null 2>&1
+  git -C "$PROJECT" worktree add "$WT_B" -b trunk-sync/agent-b "origin/$SYNC_BRANCH" >/dev/null 2>&1
   git -C "$WT_B" config user.email "agent-b@test.com"
   git -C "$WT_B" config user.name "Agent B"
 }
