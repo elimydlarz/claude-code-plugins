@@ -93,6 +93,19 @@ create_architecture_hook_project() {
   assert_output --partial "error no-circular: src/a.ts -> src/b.ts -> src/a.ts"
 }
 
+@test "if the architecture linter cannot run during a Stop task then the project-level Stop hook reports the execution error and the Stop task fails" {
+  local project="$BATS_TEST_TMPDIR/architecture-execution-error"
+  create_architecture_hook_project "$project"
+  printf '%s\n' '#!/usr/bin/env bash' 'printf "%s\n" "dependency-cruiser executable is unavailable" >&2' 'exit 127' > "$project/bin/pnpm"
+  chmod +x "$project/bin/pnpm"
+
+  cd "$project"
+  run env PATH="$project/bin:$PATH" bash -c 'printf "%s" "{\"stop_hook_active\":false}" | bash "$1"' _ "$project/architecture-on-stop.sh"
+
+  assert_equal "$status" 2
+  assert_output --partial "dependency-cruiser executable is unavailable"
+}
+
 @test "when a coding agent writes or edits a project file then the project-level hook runs the normal lint autofix command from the project root after every save" {
   run cat "$SKILL"
   assert_output --partial ".contree/hooks/lint-on-save.sh"
