@@ -343,6 +343,7 @@ assert_contains "$SUBJECT" "Implement the login page" "subject contains task fro
 BODY=$(last_body "$WT_A")
 assert_contains "$BODY" "File: seed.txt" "body contains File line when task in subject"
 assert_contains "$BODY" "Session: sess1234" "body contains Session line"
+assert_contains "$BODY" "Agent: claude" "body contains originating Agent line"
 assert_not_contains "$BODY" "Transcript:" "body does not contain Transcript line"
 
 # 13. No File line when transcript missing — body has Session only, no blank lines
