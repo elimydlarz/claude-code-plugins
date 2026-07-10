@@ -97,11 +97,11 @@ export function buildCommitBody(input, _relPath) {
     if (!input.session_id)
         return null;
     let body = `Session: ${input.session_id}`;
-    body += `\nAgent: ${agentForTool(input.tool_name)}`;
+    body += `\nAgent: ${agentForInput(input)}`;
     return body;
 }
-function agentForTool(toolName) {
-    if (toolName === "apply_patch" || toolName === "local_shell")
+function agentForInput(input) {
+    if (input.turn_id || input.tool_name === "apply_patch" || input.tool_name === "local_shell")
         return "codex";
     return "claude";
 }
