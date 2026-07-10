@@ -377,8 +377,39 @@ case "$TEST_NAME" in
       pass=0
     fi
 
-    run_agent \
-      "Verify the project hooks through the actual edit and Stop turn required by the setup skill. Use a file-editing tool to set package.json description to exactly 'Contree setup hook verification', make no other project changes, and stop so the freshly loaded project hooks run. Do not invoke the hook scripts manually and do not create tests."
+    if [ "$pass" -eq 1 ]; then
+      hook_verification_prompt="Verify the project hooks through the actual edit and Stop turn required by the setup skill. Use a file-editing tool to set package.json description to exactly 'Contree setup hook verification', make no other project changes, and stop so the freshly loaded project hooks run. Do not invoke the hook scripts manually and do not create tests."
+    else
+      hook_verification_prompt="The functional setup verification found that test-changed did not correctly establish or use its machine-local baseline. Diagnose and fix that setup output. Then verify the project hooks through an actual edit and Stop turn: use a file-editing tool to set package.json description to exactly 'Contree setup hook verification' and stop so the freshly loaded project hooks run. Do not create tests."
+    fi
+    run_agent "$hook_verification_prompt"
+
+    find "$PROJECT_DIR/.contree" -type f ! -path "$PROJECT_DIR/.contree/hooks/*" ! -path "$PROJECT_DIR/.contree/scripts/*" -delete
+    printf '%s\n' "export const alpha = () => 'alpha'" > "$PROJECT_DIR/src/alpha.js"
+    pass=1
+
+    if ! (cd "$PROJECT_DIR" && npm run "$changed_test_script") > "$baseline_output" 2>&1; then
+      echo "repaired test-changed did not establish its baseline through the normal test command" >&2
+      cat "$baseline_output" >&2
+      pass=0
+    elif ! grep -q 'alpha impact probe' "$baseline_output" || ! grep -q 'beta impact probe' "$baseline_output" || grep -q 'functional exclusion probe' "$baseline_output"; then
+      echo "repaired test-changed baseline did not run exactly the normal tests" >&2
+      cat "$baseline_output" >&2
+      pass=0
+    fi
+
+    printf '%s\n' "export const alpha = () => ['alpha'].join('')" > "$PROJECT_DIR/src/alpha.js"
+    if (cd "$PROJECT_DIR" && npm run "$changed_test_script") > "$impact_output" 2>&1; then
+      if ! grep -q 'alpha impact probe' "$impact_output" || grep -q 'beta impact probe' "$impact_output" || grep -q 'functional exclusion probe' "$impact_output"; then
+        echo "repaired test-changed did not select only the impacted normal test since its baseline" >&2
+        cat "$impact_output" >&2
+        pass=0
+      fi
+    else
+      echo "repaired test-changed failed after one source file changed" >&2
+      cat "$impact_output" >&2
+      pass=0
+    fi
 
     rm -rf "$PROJECT_DIR/src" "$PROJECT_DIR/test" "$baseline_output" "$impact_output"
 
