@@ -216,7 +216,7 @@ echo "*.log" > "$WT_A/.gitignore"
 cd "$WT_A"
 git add .gitignore
 git commit -m "add gitignore" >/dev/null 2>&1
-git push origin HEAD:main >/dev/null 2>&1
+git push origin HEAD: >/dev/null 2>&1
 echo "debug output" > "$WT_A/debug.log"
 BEFORE=$(commit_count "$WT_A")
 run_hook "$(make_input "$WT_A/debug.log" "" "Edit" "")"
@@ -240,7 +240,7 @@ echo "line from B" > "$WT_B/conflict.txt"
 cd "$WT_B"
 git -C "$WT_B" add conflict.txt
 git -C "$WT_B" commit -m "B's version" >/dev/null 2>&1
-git -C "$WT_B" push origin HEAD:main >/dev/null 2>&1
+git -C "$WT_B" push origin HEAD: >/dev/null 2>&1
 
 # Now agent A edits the same file — pull will conflict
 echo "A's updated line" > "$WT_A/conflict.txt"
@@ -267,7 +267,7 @@ echo "a2" > "$WT_A/file2.txt"
 cd "$WT_A"
 git -C "$WT_A" add file1.txt file2.txt
 git -C "$WT_A" commit -m "A's files" >/dev/null 2>&1
-git -C "$WT_A" push origin HEAD:main >/dev/null 2>&1
+git -C "$WT_A" push origin HEAD: >/dev/null 2>&1
 
 # Agent B pulls, modifies both, pushes
 git -C "$WT_B" pull origin main --no-rebase >/dev/null 2>&1
@@ -275,7 +275,7 @@ echo "b1" > "$WT_B/file1.txt"
 echo "b2" > "$WT_B/file2.txt"
 git -C "$WT_B" add file1.txt file2.txt
 git -C "$WT_B" commit -m "B's files" >/dev/null 2>&1
-git -C "$WT_B" push origin HEAD:main >/dev/null 2>&1
+git -C "$WT_B" push origin HEAD: >/dev/null 2>&1
 
 # Agent A diverges on both files
 echo "a1-v2" > "$WT_A/file1.txt"
@@ -356,15 +356,15 @@ assert_not_contains "$BODY" "File:" "no File line when transcript missing"
 FIRST_LINE=$(head -1 <<< "$BODY")
 assert_equals "Session: sess5678" "$FIRST_LINE" "no blank lines before Session"
 
-# --- Sync path (worktree-to-worktree via origin/main) ---
+# --- Sync path (worktree-to-worktree via origin/) ---
 
-# 14. Clean sync — push to origin/main succeeds from worktree branch
+# 14. Clean sync — push to origin/ succeeds from worktree branch
 setup_repos
 echo "new content" > "$WT_A/seed.txt"
 cd "$WT_A"
 run_hook "$(make_input "$WT_A/seed.txt" "sync1234" "Edit" "")"
 assert_exit 0 "clean sync exits 0"
-REMOTE_COUNT=$(git -C "$REMOTE" rev-list --count main)
+REMOTE_COUNT=$(git -C "$REMOTE" rev-list --count "")
 LOCAL_COUNT=$(commit_count "$WT_A")
 assert_equals "$LOCAL_COUNT" "$REMOTE_COUNT" "commit reached remote"
 
@@ -416,7 +416,7 @@ echo "A modifies seed" > "$WT_A/seed.txt"
 cd "$WT_A"
 run_hook "$(make_input "$WT_A/seed.txt" "" "Edit" "")"
 assert_exit 0 "push retry succeeds after non-conflicting pull"
-REMOTE_LOG=$(git -C "$REMOTE" log --oneline main)
+REMOTE_LOG=$(git -C "$REMOTE" log --oneline "")
 assert_contains "$REMOTE_LOG" "auto:" "remote has agent commits"
 
 # 18. Both worktrees converge — after sync, both have the same files
@@ -470,7 +470,7 @@ run_hook "$(make_input "$WT_A/agent-file.txt" "" "Write" "")"
 assert_exit 0 "agent push exits 0 with local-only commits on main"
 
 # User's file should now be on origin (the hook pushed it along)
-REMOTE_FILES=$(git -C "$REMOTE" ls-tree --name-only -r main)
+REMOTE_FILES=$(git -C "$REMOTE" ls-tree --name-only -r "")
 assert_contains "$REMOTE_FILES" "user-file.txt" "user's local commit reached origin via agent push"
 
 # Local main should be up to date (ff worked because we merged main before pushing)
@@ -505,7 +505,7 @@ assert_contains "$SUBJECT" "delete" "deletion commit subject contains delete"
 assert_contains "$SUBJECT" "doomed.txt" "deletion commit subject contains filename"
 
 # File should be gone from remote too
-REMOTE_FILES=$(git -C "$REMOTE" ls-tree --name-only -r main)
+REMOTE_FILES=$(git -C "$REMOTE" ls-tree --name-only -r "")
 assert_not_contains "$REMOTE_FILES" "doomed.txt" "deleted file removed from remote"
 
 # 23. Multiple file deletion — commit message summarizes count
@@ -516,7 +516,7 @@ echo "c" > "$WT_A/del3.txt"
 cd "$WT_A"
 git -C "$WT_A" add del1.txt del2.txt del3.txt
 git -C "$WT_A" commit -m "add files to delete" >/dev/null 2>&1
-git -C "$WT_A" push origin HEAD:main >/dev/null 2>&1
+git -C "$WT_A" push origin HEAD: >/dev/null 2>&1
 
 rm "$WT_A/del1.txt" "$WT_A/del2.txt" "$WT_A/del3.txt"
 run_hook "$(make_input "" "" "Bash" "")"
@@ -545,7 +545,7 @@ AFTER=$(commit_count "$WT_A")
 assert_equals "$((BEFORE + 1))" "$AFTER" "new untracked file via Bash creates a commit"
 SUBJECT=$(last_subject "$WT_A")
 assert_contains "$SUBJECT" "newfile.txt" "new file commit subject contains the filename"
-REMOTE_FILES=$(git -C "$REMOTE" ls-tree --name-only -r main)
+REMOTE_FILES=$(git -C "$REMOTE" ls-tree --name-only -r "")
 assert_contains "$REMOTE_FILES" "newfile.txt" "new untracked file reached the remote"
 
 # 24c. New untracked file alongside a gitignored one — only the tracked-worthy file is committed
@@ -553,12 +553,12 @@ setup_repos
 printf '*.log\n' > "$WT_A/.gitignore"
 cd "$WT_A"
 git -C "$WT_A" add .gitignore && git -C "$WT_A" commit -q -m "add gitignore"
-git -C "$WT_A" push -q origin HEAD:main
+git -C "$WT_A" push -q origin HEAD:
 echo "keep me" > "$WT_A/keep.txt"
 echo "ignore me" > "$WT_A/debug.log"
 run_hook "$(make_input "" "gitig123" "Bash" "")"
 assert_exit 0 "new file with gitignored sibling exits 0"
-REMOTE_FILES=$(git -C "$REMOTE" ls-tree --name-only -r main)
+REMOTE_FILES=$(git -C "$REMOTE" ls-tree --name-only -r "")
 assert_contains "$REMOTE_FILES" "keep.txt" "untracked non-ignored new file reached the remote"
 assert_not_contains "$REMOTE_FILES" "debug.log" "gitignored new file did NOT reach the remote"
 
@@ -610,7 +610,7 @@ setup_repos
 echo "A's content" > "$WT_A/a-file.txt"
 echo "B's content" > "$WT_B/b-file.txt"
 
-# Run both hooks concurrently — they race to push to origin/main
+# Run both hooks concurrently — they race to push to origin/
 cd "$WT_A"
 HOOK_EXIT_A=0
 STDERR_A=""
@@ -644,7 +644,7 @@ else
 fi
 
 # Both files should be on the remote
-REMOTE_FILES=$(git -C "$REMOTE" ls-tree --name-only -r main)
+REMOTE_FILES=$(git -C "$REMOTE" ls-tree --name-only -r "")
 assert_contains "$REMOTE_FILES" "a-file.txt" "concurrent push: agent A's file on remote"
 assert_contains "$REMOTE_FILES" "b-file.txt" "concurrent push: agent B's file on remote"
 
@@ -736,7 +736,7 @@ run_git_block "$(make_bash_input "git diff")"
 assert_exit 0 "git-block: git diff is allowed"
 
 # 28d. git diff with args is allowed
-run_git_block "$(make_bash_input "git diff --stat origin/main")"
+run_git_block "$(make_bash_input "git diff --stat origin/")"
 assert_exit 0 "git-block: git diff --stat is allowed"
 
 # 28e. git log is allowed
@@ -935,7 +935,7 @@ AFTER=$(commit_count "$WT_A")
 assert_equals "$AFTER" "$((BEFORE + 1))" "codex apply_patch add: one new commit"
 HEAD_FILES=$(git -C "$WT_A" diff-tree --no-commit-id --name-only -r HEAD)
 assert_contains "$HEAD_FILES" "added-by-codex.txt" "codex apply_patch add: new file is in the commit"
-REMOTE_FILES=$(git -C "$REMOTE" ls-tree --name-only -r main)
+REMOTE_FILES=$(git -C "$REMOTE" ls-tree --name-only -r "")
 assert_contains "$REMOTE_FILES" "added-by-codex.txt" "codex apply_patch add: new file reached the remote"
 
 # --- Transcript snapshots ---
@@ -1033,8 +1033,8 @@ assert_equals "0" "$STOP_EXIT" "stop: the stop hook always exits 0 — the agent
 assert_contains "$(git -C "$WT_A" log --format=%s -5)" "clock-out" "stop: clock-out is committed"
 [[ -f "$CARD" ]] && CLOCKED_OUT=no || CLOCKED_OUT=yes
 assert_equals "yes" "$CLOCKED_OUT" "stop: local timecard is removed"
-git -C "$WT_A" fetch -q origin main
-REMOTE_CARD=$(git -C "$WT_A" show "origin/main:.trunk-sync/timeclock/agentaaa.json" 2>/dev/null || true)
+git -C "$WT_A" fetch -q origin ""
+REMOTE_CARD=$(git -C "$WT_A" show "origin/:.trunk-sync/timeclock/agentaaa.json" 2>/dev/null || true)
 [[ -z "$REMOTE_CARD" ]] && REMOTE_CLOCKED_OUT=yes || REMOTE_CLOCKED_OUT=no
 assert_equals "yes" "$REMOTE_CLOCKED_OUT" "stop: timecard removal is synced to the remote"
 
