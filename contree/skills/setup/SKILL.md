@@ -100,6 +100,15 @@ Use the framework's native related-test or dependency-tracking capability. Insta
 
 If no completed normal test run exists, `test-changed` runs the normal test command to establish its baseline. After either command completes, record the current project-file state so the next `test-changed` invocation measures changes from that run.
 
+Create one project-level `Stop` hook for each supported coding harness and merge it into existing project hook configuration without replacing other settings or hooks:
+
+- Claude Code: `.claude/settings.json`
+- Codex: `.codex/hooks.json`
+
+The project-level `Stop` hook runs `test-changed` through executable `.contree/hooks/test-changed.sh` after the turn's file changes and after synchronous `PostToolUse` save hooks have completed. Generate that script with `set -euo pipefail`, change to the project root returned by `git rev-parse --show-toplevel`, and invoke the ecosystem's exact native `test-changed` command. Keep the hook synchronous so its result reaches the coding agent before the turn finishes.
+
+Require the coding harness to load and trust the project hook, then verify it with an actual file edit and Stop turn. Presence on disk alone is not verification.
+
 If the config already has a `reporters` or `verbose` key, check whether changing it would break CI, such as removing a JUnit XML reporter. Present the conflict to the user rather than silently overwriting.
 
 **Determine whether a Docker harness is needed.** See the Docker Harness Reference below. Key question: do Adapter, System, or Journey tests need external processes — databases, queues, HTTP servers? If yes, set up a Docker Compose harness behind the normal or functional command that needs it. If the software is pure in-process, Docker is unnecessary.
