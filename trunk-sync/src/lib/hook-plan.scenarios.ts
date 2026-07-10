@@ -572,6 +572,11 @@ describe("formatClockInMessage", () => {
     const msg = formatClockInMessage([card({ lastActiveAt: "2026-03-27T10:02:00.000Z" })], now)!;
     assert.match(msg, /3m ago/);
   });
+
+  it("formats elapsed hours to match wall time", () => {
+    const msg = formatClockInMessage([card({ lastActiveAt: "2026-03-27T08:05:00.000Z" })], now)!;
+    assert.match(msg, /2h ago/);
+  });
 });
 
 describe("formatSessionStartSummary", () => {

@@ -204,7 +204,7 @@ describe("Domain: hook-plan", () => {
     describe("when an active agent's elapsed time is displayed", () => {
       it("then ages under a minute use seconds", verifies("formats a single active agent"));
       it("and ages under an hour use minutes", verifies("rounds the elapsed minutes to match wall time"));
-      it("and older ages use hours", verifies("lists an active card with branch, labelled to coordinate"));
+      it("and older ages use hours", verifies("formats elapsed hours to match wall time"));
     });
   });
 
