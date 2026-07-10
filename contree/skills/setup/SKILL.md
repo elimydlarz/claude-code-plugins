@@ -285,11 +285,15 @@ Add the same Stop matcher group to `.claude/settings.json` and `.codex/hooks.jso
 
 ```json
 {
-  "hooks": [
+  "Stop": [
     {
-      "type": "command",
-      "command": "bash \"$(git rev-parse --show-toplevel)/.contree/hooks/architecture-on-stop.sh\"",
-      "statusMessage": "Checking architecture"
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash \"$(git rev-parse --show-toplevel)/.contree/hooks/architecture-on-stop.sh\"",
+          "statusMessage": "Checking architecture"
+        }
+      ]
     }
   ]
 }
