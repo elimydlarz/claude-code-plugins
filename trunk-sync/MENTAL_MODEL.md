@@ -52,7 +52,7 @@
 
 ## Temporal View
 
-- At session start: the SessionStart hook creates and syncs the agent's timecard, hands the agent its session id, and surfaces active sessions' timecards so the agent can coordinate around shared resources.
+- At session start: the SessionStart hook creates and syncs the agent's timecard and surfaces other active sessions' timecards so the agent can coordinate around shared resources.
 - Per edit: stage → commit (provenance + refreshed timecard when one exists) → pull `origin/agents` → push; on conflict, exit 2 with active timecards included → agent edits → next fire completes the merge.
 - End of session: the Stop hook removes and syncs the session's timecard, automatically clocking the agent out; it never forces the agent.
 - Reaping: any card whose heartbeat is older than the 14-day TTL, swept on the next agent's commit.

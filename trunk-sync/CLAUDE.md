@@ -20,9 +20,13 @@ scripts/sync-plugin-version.js — npm version hook: syncs plugin.json version f
 
 src/lib/hook-types.ts         — types (HookInput, RepoState, HookPlan, Timecard: session, host, clockedInAt, lastActiveAt, branch, no pid)
 src/lib/hook-plan.ts          — pure decision logic (no I/O, no git); incl. classifyTimecards (heartbeat-age), formatSessionStartSummary
-src/lib/hook-plan.test.ts     — unit tests for pure logic (fast, no repos)
+src/lib/hook-plan.domain.test.ts — domain tests for pure logic (fast, no repos)
+src/lib/command-guard.ts      — pure policy for allowed and rejected agent git commands
+src/lib/command-guard.domain.test.ts — domain tests for command policy
 src/lib/hook-execute.ts       — gathers git state, executes the plan; incl. runSessionStart, runStop (clock-out), reapCards
-src/lib/hook-execute.test.ts  — integration tests (temp repos)
+src/lib/hook-execute.adapter.test.ts — adapter tests against real temp git repos
+src/lib/pre-tool-entry.ts     — PreToolUse command-guard adapter
+src/lib/pre-tool-entry.adapter.test.ts — command-guard protocol tests
 src/lib/hook-entry.ts         — PostToolUse entry point: reads stdin, wires layers, exits
 src/lib/session-start-entry.ts — SessionStart entry point: creates/syncs own timecard, prints own-id + active roster to stdout
 src/lib/stop-entry.ts         — Stop entry point: removes the session timecard + syncs; never forces
@@ -30,7 +34,8 @@ src/lib/stop-entry.ts         — Stop entry point: removes the session timecard
 src/lib/git.ts                — shared git utilities
 src/lib/git.test.ts           — unit tests (node:test)
 
-test/trunk-sync.test.sh       — hook e2e test suite (TAP, temp repos + bare remote); System-layer, simulates hook stdin
+test/system/hook-sync.system.test.sh — hook System suite (TAP, temp repos + bare remote); simulates hook stdin
+test/journey/                 — Dockerized real-agent Journey for Claude Code and Codex
 test/local-setup.sh           — manual test setup
 test/local-cleanup.sh         — manual test teardown
 ```
@@ -55,6 +60,9 @@ pnpm run build && pnpm test
 
 # Hook e2e tests (shell, TAP output)
 pnpm run test:e2e
+
+# Real Claude Code and Codex functional journey (Docker + DEEPSEEK_API_KEY)
+pnpm run test:functional
 ```
 
 Hook tests create isolated temp repos with worktrees and a bare remote. Safe to run anywhere — no network access needed.
@@ -96,9 +104,10 @@ bash test/local-cleanup.sh
 Two distribution channels — both must be updated together:
 
 ```bash
-# 1. Bump version in both manifests
+# 1. Bump version in all manifests
 #    - package.json (npm)
 #    - .claude-plugin/plugin.json (plugin)
+#    - .codex-plugin/plugin.json (plugin)
 
 # 2. Build (dist/ is tracked — marketplace installs need compiled JS)
 pnpm run build

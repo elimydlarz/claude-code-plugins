@@ -52,7 +52,7 @@ Failing tests — not the timecard — are the authoritative signal of unfinishe
 
 ## Session Start — see active sessions
 
-At session start the hook gives the agent its own session id and surfaces other active committed timecards:
+At session start the hook surfaces other active committed timecards:
 
 ```
 TRUNK-SYNC ACTIVE: 1 other session is clocked in. Coordinate around shared resources when needed.
