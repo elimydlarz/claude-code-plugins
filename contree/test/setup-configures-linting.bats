@@ -214,6 +214,13 @@ create_architecture_hook_project() {
   assert_output --partial "normal and boundary violations fail the build"
 }
 
+@test "if the project's ecosystem cannot enforce every architecture rule then setup fails visibly without claiming that the project is prepared" {
+  run cat "$SKILL"
+  assert_output --partial "If the project's ecosystem cannot enforce every architecture rule, fail setup visibly"
+  assert_output --partial "Do not claim that the project is prepared"
+  refute_output --partial "the user wires the rules themselves"
+}
+
 @test "setup names the language-native equivalent tool and states the rules to enforce when no first-party template exists" {
   run cat "$SKILL"
   assert_output --partial "For non-JS/TS hex-boundary lint"
