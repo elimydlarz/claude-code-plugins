@@ -32,7 +32,7 @@ pnpm publish:trunk-sync patch --notes-file /tmp/trunk-sync-notes.md
 
 The notes file is required. Running either command without it fails and prints the exact `git log` command for reviewing changes since that product's previous tag.
 
-Both commands bump the Claude Code and Codex plugin manifests, commit and tag the release, push `main` and the tag to GitHub, and create a GitHub release. Trunk Sync also builds and runs its unit and system suites and commits changed `dist/` output. Contree refreshes its Claude Code marketplace installation after publishing.
+Both commands require a semantic version change kind, bump the Claude Code and Codex plugin manifests, commit and tag the release, push `main` and the tag to GitHub, and create a GitHub release. They do not build or run tests; the maintainer does that separately before release. Contree refreshes its Claude Code marketplace installation after publishing.
 
 ## License
 

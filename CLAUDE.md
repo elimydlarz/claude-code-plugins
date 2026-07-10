@@ -40,7 +40,7 @@ git log <prev-tag>..HEAD -- <plugin>/    # review and draft notes to /tmp/notes.
 pnpm publish:contree patch --notes-file /tmp/notes.md    # or minor, major
 ```
 
-Invoking a publish script without `--notes-file` fails fast and prints the exact `git log` command to use for review. Each script checks for clean source, runs tests (if any), bumps the version, commits, tags, pushes, and creates a GitHub release from the supplied notes file.
+Invoking a publish script without `--notes-file` fails fast and prints the exact `git log` command to use for review. Each script checks for clean source, requires a semantic version change kind, bumps the version, commits, tags, pushes, and creates a GitHub release from the supplied notes file. Building and testing remain the maintainer's responsibility before release.
 
 ## Updating the marketplace
 

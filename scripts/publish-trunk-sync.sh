@@ -32,29 +32,11 @@ fi
 
 cd "$REPO_ROOT/trunk-sync"
 
-# Source changes must be committed — dist/ staleness is handled below
-DIRTY=$(git -C "$REPO_ROOT" status --porcelain -- 'trunk-sync/' ':!trunk-sync/dist/')
+DIRTY=$(git -C "$REPO_ROOT" status --porcelain -- 'trunk-sync/')
 if [ -n "$DIRTY" ]; then
   echo "Uncommitted source changes — commit or stash first:" >&2
   echo "$DIRTY" >&2
   exit 1
-fi
-
-# Build and test
-echo "==> Build"
-pnpm run build
-
-echo "==> Test (unit)"
-pnpm test
-
-echo "==> Test (e2e)"
-pnpm run test:e2e
-
-# Commit dist/ if the build produced changes
-if [ -n "$(git -C "$REPO_ROOT" status --porcelain trunk-sync/dist/)" ]; then
-  echo "==> Committing stale dist/"
-  git -C "$REPO_ROOT" add trunk-sync/dist/
-  git -C "$REPO_ROOT" commit -m "build: compile trunk-sync dist/"
 fi
 
 echo "==> Version bump ($BUMP)"

@@ -56,4 +56,4 @@
 - Per edit: stage → commit (provenance + refreshed timecard when one exists) → pull the configured target branch (`origin/agents` by default) → push; on conflict, exit 2 with active timecards included → agent edits → next fire completes the merge.
 - End of session: the Stop hook removes and syncs the session's timecard, automatically clocking the agent out; it never forces the agent.
 - Reaping: any card whose heartbeat is older than the 14-day TTL, swept on the next agent's commit.
-- Release: build and test → commit compiled output → bump both plugin manifests → tag → push to GitHub → create the GitHub release.
+- Release: choose a semantic version change kind → bump both plugin manifests → tag → push to GitHub → create the GitHub release.
