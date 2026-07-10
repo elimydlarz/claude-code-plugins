@@ -144,6 +144,24 @@ Contree also prescribes hexagonal architecture: domain is pure, I/O lives in ada
 
 The enforced hex-boundary lint rules are: Domain has no I/O, use-cases depend on ports/interfaces and not concrete adapters, and circular dependencies are rejected.
 
+For JS/TS domain code, merge this entry into `eslint.config.mjs` so purity also excludes asynchronous functions:
+
+```javascript
+{
+  name: 'contree/domain-no-async',
+  files: ['src/domain/**/*.{js,jsx,ts,tsx}', 'src/**/domain/**/*.{js,jsx,ts,tsx}'],
+  rules: {
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector: ':matches(FunctionDeclaration, FunctionExpression, ArrowFunctionExpression)[async=true]',
+        message: 'Domain code must be synchronous.',
+      },
+    ],
+  },
+}
+```
+
 **For JS/TS projects** — install dependency-cruiser alongside the normal linter:
 
 ```bash
@@ -160,6 +178,14 @@ module.exports = {
       severity: 'error',
       from: { path: '(^|/)domain/' },
       to: { path: '(^|/)(application|use-cases?|adapters?|infrastructure)/' },
+    },
+    {
+      name: 'domain-no-external-dependencies',
+      severity: 'error',
+      from: { path: '(^|/)domain/' },
+      to: {
+        dependencyTypes: ['core', 'npm', 'npm-dev', 'npm-optional', 'npm-peer', 'npm-bundled', 'npm-no-pkg', 'npm-unknown'],
+      },
     },
     {
       name: 'use-case-no-adapter',
