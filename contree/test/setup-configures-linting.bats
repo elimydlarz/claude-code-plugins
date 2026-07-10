@@ -220,19 +220,3 @@ create_architecture_hook_project() {
   assert_output --partial "Do not claim that the project is prepared"
   refute_output --partial "the user wires the rules themselves"
 }
-
-@test "setup names the language-native equivalent tool and states the rules to enforce when no first-party template exists" {
-  run cat "$SKILL"
-  assert_output --partial "For non-JS/TS hex-boundary lint"
-  assert_output --partial "recommend the language-native equivalent"
-  assert_output --partial "ArchUnit"
-  assert_output --partial "depguard"
-  assert_output --partial "import-linter"
-  assert_output --partial "cargo-modules"
-}
-
-@test "setup communicates honestly that the user wires the rules themselves without a first-party template" {
-  run cat "$SKILL"
-  assert_output --partial "State the limitation honestly"
-  assert_output --partial "the user wires the rules themselves"
-}
