@@ -58,6 +58,15 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   [[ "$output" == *"dependency-cruiser"* || "$output" == *"hex-boundary"* || "$output" == *"architectural linter"* ]]
 }
 
+@test "when setup is run then an architecture linter is installed and configured for every project source layout" {
+  run cat "$SKILL"
+  assert_output --partial "dependency-cruiser"
+  assert_output --partial "(^|/)domain/"
+  assert_output --partial "(^|/)(application|use-cases?)/"
+  assert_output --partial "(^|/)(adapters?|infrastructure)/"
+  refute_output --partial "src/.+/domain/"
+}
+
 @test "setup configures one combined lint command" {
   run cat "$SKILL"
   assert_output --partial "combined lint command"
