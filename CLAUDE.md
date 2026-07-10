@@ -8,7 +8,7 @@ This is the **elimydlarz** monorepo — source code, plugin marketplace, and doc
 
 Products in this repo:
 
-- **trunk-sync** — multi-agent sync hook + seance CLI (Claude Code plugin + npm package `@elimydlarz/trunk-sync`)
+- **trunk-sync** — multi-agent sync hook (Claude Code plugin)
 - **contree** — test trees as living requirements: setup, change, sync, and TDD skills with stop hook + coding rules. Ships as both a Claude Code plugin and a Codex CLI plugin from one `contree/` directory: shared `skills/` and `hooks/` referenced by parallel `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json` manifests. Codex sets `CLAUDE_PLUGIN_ROOT` in hook env, while Codex-specific payload and transcript differences are documented in [CODEX_INTERFACE.md](CODEX_INTERFACE.md).
 
 Users add this repo as a marketplace (`claude plugin marketplace add elimydlarz/claude-code-plugins`), then install individual plugins. The marketplace uses relative paths (`"source": "./trunk-sync"`) so plugins are installed directly from this repo.
@@ -25,7 +25,7 @@ MENTAL_MODEL.md                 — index of per-product mental models (referenc
 CLAUDE_CODE_INTERFACE.md        — Claude Code plugin/hook integration surface notes
 CODEX_INTERFACE.md              — Codex plugin/hook integration surface notes
 
-trunk-sync/                     — multi-agent sync plugin + seance CLI (has its own CLAUDE.md)
+trunk-sync/                     — multi-agent sync plugin (has its own CLAUDE.md)
 contree/                        — test trees as living requirements plugin (has its own CLAUDE.md)
 ```
 
@@ -40,7 +40,7 @@ git log <prev-tag>..HEAD -- <plugin>/    # review and draft notes to /tmp/notes.
 pnpm publish:contree patch --notes-file /tmp/notes.md    # or minor, major
 ```
 
-Invoking a publish script without `--notes-file` fails fast and prints the exact `git log` command to use for review. Each script checks for clean source, runs tests (if any), bumps the version, commits, tags, pushes, and creates a GitHub release from the supplied notes file. trunk-sync also publishes to npm.
+Invoking a publish script without `--notes-file` fails fast and prints the exact `git log` command to use for review. Each script checks for clean source, runs tests (if any), bumps the version, commits, tags, pushes, and creates a GitHub release from the supplied notes file.
 
 ## Updating the marketplace
 
