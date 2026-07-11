@@ -38,88 +38,42 @@ setup-scaffolds-mental-model (src: skills/setup/SKILL.md; system: test/setup-sca
 
 ```
 outside-in-tdd (src: skills/tdd/SKILL.md; system: test/outside-in-tdd.bats; journey: test/journey/docker-entrypoint.sh)
-  when starting a new capability
-    then the first failing test is the outermost the capability needs at the highest tolerable realism — a Journey test for a new user-visible arc, otherwise a System test — with real driving and driven adapters, real infrastructure, real boundaries
-    and System and inner-layer trees and tests are added only as implementation pressure from that failing journey/functional test demands them
-    and inner layers are not designed up front
-  when implementing a tree
-    then each when/then path becomes one failing test, written one at a time in tree order
-    and the test is written at the tree's layer (Journey / System / Component / Adapter / Use-case / Domain)
-    and the test file reifies the tree — describe/it hierarchy mirrors when/then verbatim
-    and existing trees are not modified silently
-  when writing a Journey test
-    then real driving and driven adapters are wired across the multi-capability arc at max realism
-    and the arc walks representative error paths, not every error, and eventually succeeds
-    and the journey is curated and kept runnable in under 5 minutes, trimmed to the highest-impact and most-recent steps
-  when writing a System test
-    then real driving and driven adapters are wired whole-app for one capability at the highest tolerable realism — the same surface a Component test covers, validated against real infrastructure
-    and System tests are selective, not exhaustive — real-everything is expensive, so it is spent on the highest-impact capabilities and expanded over time
-    and when breadth at max realism is unaffordable, the journey is leaned on instead of wiring many in-memory System tests
-  when writing a Component test
-    then real driving and driven adapters are wired whole-app for one capability, with externals doubled only at the edge — an in-memory database and stubbed outbound HTTP
-    and exhaustive single-capability behaviour coverage lives here, because doubling only the edges keeps it cheap enough to always write
-  when breadth coverage is required
-    then it is carried by the exhaustive cheap layers — Use-case and Component
-  when writing a Use-case test
-    then the in-memory adapter for each outbound port is wired
-    and exhaustive single-behaviour orchestration coverage lives here, isolated from real adapters
-  when writing an Adapter test for an in-memory or real driven adapter
-    then the shared port contract suite is imported and run against the adapter
-  when writing an Adapter test for a real driven adapter
-    then real infrastructure is exercised
-    and adapter-specific tests are added for behaviour beyond the shared contract
-  when TDD discovers new test cases
-    then new cases are added to the tree
-    but existing when/then paths are not changed or removed
-  when TDD creates a test or source file at a path the tree does not yet name
-    then the tree's labelled parenthesised paths are updated to include the new file under its category before moving to the next test
-    and any prior "none" value under that category is replaced with the new path
-  when TDD moves or renames a file that a tree names
-    then the tree's labelled parenthesised paths are updated to reflect the new location in the same step as the move
-  when reading a tree reveals an error in its leaf text
-    then the tree's leaf text is corrected before writing the test
-    and the test mirrors the corrected text rather than replicating the error
-  when an expected-red test passes incidentally
-    then break the implementation intentionally
-    and observe the test failing
-    then fix the implementation, observe the test passing, and move on
-  when a failing higher-layer test surfaces inner behaviour that requires new code
-    then the failing higher-layer test is run and its failure is read to identify the next layer down to descend into
-    and a tree for the inner unit is added at its native ground layer before code is written
-    and the inner unit's own failing test is written before any implementation lands
-    and implementation is not written off the journey/functional failure alone — only once the failing ground-level test exists beneath it
-    and the higher-layer test passing is not treated as sufficient coverage for the inner unit
-    and overlap between the inner tree's coverage and the higher-layer test is intentional, not waste
-  when descending the layers from a failing higher-layer test
-    then each layer's failing test guides the next failing test one layer down — Journey to System to Component to Adapter to Use-case to Domain or Port
-    and descent continues to the lowest layer the behaviour reaches
-    and descent never stops at a higher layer because the behaviour appears already covered there
-    and coverage at a higher layer never justifies skipping a test at a lower layer
-    and every layer the behaviour touches ends with its own complete coverage, written down to the lowest level
-  when the lowest-layer failing test for the behaviour is made to pass
-    then the layers fold back up — each higher-layer test passes in turn as the layers beneath it are satisfied, up to the Journey
-    and a higher-layer test still failing means a layer beneath it lacks coverage, so another lower failing test is written before retrying upward
-  when all trees for a slice have passing tests
-    then run mutation testing against Domain and Use-case layers as final validation
-    and suggest the user runs sync
-  if no tree covers the behaviour
-    then suggest the user runs change first
-  when starting to implement a tree
-    then the covering tree is identified and stated explicitly before any test is written
-    and an incomplete-seeming tree is noted but implementation proceeds with what's there
-  when writing a Domain test
-    then the pure rule is tested with no collaborators
-    and the test calls functions directly, asserting on returned data
-  when writing an Adapter test for a driving adapter, and the protocol translation is non-trivial
-    then a driving-adapter test is written with the use-case mocked
-    and the test asserts on protocol-to-input translation — routing, deserialization, auth extraction, error-code shaping
-  when all tests are green after an inner cycle
-    then only the code just changed is refactored, not more broadly
-    and duplication is treated as a hint to watch, not a command to immediately extract
-  when a test fails unexpectedly during the cycle
-    then an unrelated failure is fixed first before continuing
-    and a related failure is fixed as part of continuing the cycle
-    and a missing or wrong test is corrected before continuing
+  when TDD starts
+    then the current test tree is read before tests or implementation
+    and one observable behaviour is selected
+    and development proceeds outside-in from that behaviour's consumer
+  when choosing a test kind
+    then Journey, System, Component, Adapter, Port contract, and Unit are defined in the same concise terms as the session rules
+    and the test kind describes the current test rather than a predetermined implementation order
+  when implementing the selected behaviour
+    then the exact process is write a test, observe RED, implement to GREEN, observe branching during REFACTOR, imagine a unit that encapsulates the branching, mock that unit, consume the mock in implementation, and TDD the mocked unit by returning to the first step
+    and only one test is written and run at a time
+    and only enough real behaviour to pass that test is implemented
+  when the passing test contains different behaviour under different conditions
+    then a unit that can encapsulate that branching is imagined
+    and the unit is not designed before the branching is observed
+  when the imagined unit is mocked
+    then the consumer tests are simplified so they pass only when the mock is consumed correctly
+    and the consumer implementation consumes the mock to pass those tests
+    and the mock visibly names why it exists
+  when the mocked unit becomes the TDD subject
+    then its consumer-established behaviour is recorded in its own tree before its first test
+    and the TDD process restarts from writing a test for that unit
+    and the original consumer test remains as coverage of the consumer
+  when a test is expected to be red
+    then the failure is observed before implementation
+    and an incidentally passing test is shown to fail before it is trusted
+  when a test is green
+    then refactoring is limited to the behaviour just implemented
+    and duplication is treated as a hint while branching under different conditions is the reason to imagine a unit
+  when tests and source files are created, moved, or renamed
+    then the tree's labelled coverage paths are updated immediately
+    and a covered "none" value is replaced with the created path
+  when TDD is complete
+    then every affected tree path passes
+    and every mocked unit has its own tree and test file
+    and test hierarchies mirror their trees verbatim
+    and production consumes real units while mocks remain in tests
 ```
 
 ## pre-task-hook
