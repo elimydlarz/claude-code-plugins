@@ -33,7 +33,7 @@
 - Shared contract suite — one `*.contract.ts` both adapters must pass, making in-memory substitution sound.
 - Slice — one consumer-visible capability; a Journey traverses several.
 - Outside-in — start from the current tree's consumer, implement its behaviour, then let its passing tests reveal deeper units.
-- Consumer-established unit — a unit demanded by observed branching whose required behaviour is made concrete by how its consumer uses a mock.
+- Mocked unit — a unit imagined to own observed branching; once its consumer uses the mock, TDD repeats from step 1 for that unit.
 - Coverage-by-proxy — a unit reachable only through higher-layer tests with no tree at its native layer; treated as uncovered.
 - Drift — divergence between trees and implementation in either direction.
 - Coverage categories — one per layer: `src`, `domain`, `use-case`, `adapter`, `component`, `system`, `journey`.
@@ -52,7 +52,7 @@
 - Trees are the contract: every behaviour/side-effect has a tree; every tree has a test; every test drives real implementation.
 - One tree reifies exactly one test file; the describe/it hierarchy mirrors the tree verbatim.
 - Outside-in TDD begins with the current tree's consumer and keeps implementation flat through RED and GREEN before REFACTOR reveals branching under different conditions.
-- Observed branching creates a mocked unit; the consumer tests specify its required use, then the unit receives its own tree and recursively follows the same TDD cycle.
+- Observed branching creates a mocked unit; after the consumer uses the mock, the unit receives its own tree and repeats TDD from step 1.
 - The original consumer test remains while every mocked unit gains its own complete tree and tests; overlap proves different subjects.
 - Use-case is to Component as Journey is to System: the cheap tier (Use-case in-memory twins; Component real adapters with edges doubled) is always written and exhaustive; the real tier (System, Journey; real infrastructure) is selective. Component and System cover the same single-capability surface at two realism levels.
 - Each outbound Port has an in-memory twin and a real adapter, both bound by one shared contract suite.
@@ -73,7 +73,7 @@
 ## Temporal View
 
 - Per project: `setup` once → then `change` → `sync` → `tdd` → `second-opinion` cycles (or `workflow` end-to-end), repeatedly.
-- Per behaviour: write one test → RED → implement to GREEN → REFACTOR observed branching → mock the imagined unit → simplify its consumer → recursively TDD the unit.
+- Per behaviour: write one test → RED → implement to GREEN → REFACTOR observed branching → mock the imagined unit → simplify its consumer → repeat from step 1 for the unit.
 - Per failing test: write one, run it, see it fail, implement the minimum, see it pass; never batch.
 - Per turn: the Stop hook fires a drift check after each response, with `stop_hook_active` preventing the hook from checking its own drift-check turn.
 - At end of work: mutation testing runs against Domain and Use-case as final validation.

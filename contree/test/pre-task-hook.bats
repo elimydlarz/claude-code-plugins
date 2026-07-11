@@ -86,7 +86,7 @@ run_hook_in() {
   assert_output --partial "REFACTOR"
   assert_output --partial "observed branching"
   assert_output --partial "mock"
-  assert_output --partial "recursively"
+  assert_output --partial "repeat the same TDD process from step 1 for that unit"
 }
 
 @test "session start directs the agent to decide obvious questions itself rather than asking the user" {

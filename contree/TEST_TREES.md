@@ -91,7 +91,7 @@ pre-task-hook (src: hooks/session-start.sh; system: test/pre-task-hook.bats; jou
     and the agent is directed that Journey, System, Component, Adapter, Port contract, and Unit are the test kinds
     and the agent is directed to work outside-in and consumer-driven from the behaviour in the current tree
     and the agent is directed to write a test, observe RED, implement GREEN, then observe branching during REFACTOR
-    and the agent is directed to mock a unit that can encapsulate observed branching, simplify the consumer tests around its correct consumption, and recursively TDD that unit
+    and the agent is directed to mock a unit that can encapsulate observed branching, simplify the consumer tests around its correct consumption, and repeat the TDD process from step 1 for that unit
     and the agent is directed not to design lower units before passing consumer tests reveal their need
     and the agent is directed to decide obvious questions itself rather than asking the user — consulting these rules and the mental model first, then its own best judgment from the code in front of it, escalating to the user only a consequential, genuinely under-determined choice that neither resolves
     and the agent is directed to apply the same ladder to anything it would flag, caveat, or surface — fixing it where these rules or the mental model direct, else using its judgment, else staying silent rather than reporting it
