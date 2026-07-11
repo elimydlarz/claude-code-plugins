@@ -89,10 +89,10 @@ pre-task-hook (src: hooks/session-start.sh; system: test/pre-task-hook.bats; jou
     and the agent is directed that trees are the contract — every observable behaviour and side effect belongs in TEST_TREES.md, every tree maps to one test file, and every test file's describe/it hierarchy mirrors its tree verbatim
     and the agent is directed to describe each level's observable behaviour at its interface — inputs, outputs, and side-effects — not the implementation inside it
     and the agent is directed that Journey, System, Component, Adapter, Port contract, and Unit are the test kinds
-    and the agent is directed to start outside-in with a Journey when the change affects a user arc, otherwise a System test for the capability
-    and the agent is directed to let each failing higher test pull the next lower test kind into being until the behaviour reaches its native Unit, Adapter, or Port-contract test
-    and the agent is directed to implement only after the native failing test exists, then make tests pass upward
-    and the agent is directed that higher-level tests are never adequate by themselves — we always test right to the bottom, at the level where the behaviour lives
+    and the agent is directed to work outside-in and consumer-driven from the behaviour in the current tree
+    and the agent is directed to write a test, observe RED, implement GREEN, then observe branching during REFACTOR
+    and the agent is directed to mock a unit that can encapsulate observed branching, simplify the consumer tests around its correct consumption, and recursively TDD that unit
+    and the agent is directed not to design lower units before passing consumer tests reveal their need
     and the agent is directed to decide obvious questions itself rather than asking the user — consulting these rules and the mental model first, then its own best judgment from the code in front of it, escalating to the user only a consequential, genuinely under-determined choice that neither resolves
     and the agent is directed to apply the same ladder to anything it would flag, caveat, or surface — fixing it where these rules or the mental model direct, else using its judgment, else staying silent rather than reporting it
     and the agent is directed to use Contree skills as directed by skill frontmatter

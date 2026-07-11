@@ -77,13 +77,16 @@ run_hook_in() {
   assert_output --partial "Unit: test of one public surface on one subject"
 }
 
-@test "session start directs outside-in tdd right to the bottom" {
+@test "session start directs recursive outside-in consumer-driven tdd" {
   run_hook_in "$BATS_TEST_TMPDIR"
   assert_output --partial "Outside-in TDD"
-  assert_output --partial "start with a Journey when the change affects a user arc"
-  assert_output --partial "native Unit, Adapter, or Port-contract test"
-  assert_output --partial "make tests pass upward"
-  assert_output --partial "we always test right to the bottom"
+  assert_output --partial "current tree"
+  assert_output --partial "RED"
+  assert_output --partial "GREEN"
+  assert_output --partial "REFACTOR"
+  assert_output --partial "observed branching"
+  assert_output --partial "mock"
+  assert_output --partial "recursively"
 }
 
 @test "session start directs the agent to decide obvious questions itself rather than asking the user" {
