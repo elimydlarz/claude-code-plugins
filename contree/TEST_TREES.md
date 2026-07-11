@@ -11,7 +11,7 @@ test-trees-as-requirements (system: test/test-trees-as-requirements.bats)
     and every test file reifies exactly one tree
     and every tree names its coverage in parenthesised labelled pairs on the tree-name line, covering the categories src, domain, use-case, adapter, component, system, journey
     and gaps are declared explicitly — "none" for expected-but-uncovered categories, omission for not-applicable ones
-    and the EARS rule is embedded in skills that use it
+    and the EARS rule is embedded where trees are written
   when a behaviour change is needed
     then the tree must exist before implementation starts
   when implementation reveals new understanding

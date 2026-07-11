@@ -42,14 +42,9 @@ load test_helper
   assert_output --partial "where"
 }
 
-@test "EARS rule is embedded in the tdd skill" {
-  run cat "$PROJECT_ROOT/skills/tdd/SKILL.md"
-  [[ "$output" == *"EARS"* ]]
-}
-
 @test "tdd skill directs updating the tree when implementation reveals new understanding" {
   run cat "$PROJECT_ROOT/skills/tdd/SKILL.md"
-  [[ "$output" == *"add new cases as you discover them"* || "$output" == *"add newly discovered cases"* ]]
+  assert_output --partial "Record the mocked unit's consumer-established behaviour in its own tree"
 }
 
 @test "every tree reifies exactly one test file — no system-category test file is claimed by two trees" {
