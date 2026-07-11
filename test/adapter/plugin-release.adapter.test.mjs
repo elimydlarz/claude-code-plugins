@@ -27,5 +27,11 @@ describe("Adapter: plugin-release", () => {
         assert.doesNotMatch(readFileSync(releaseScript, "utf-8"), /\bpnpm\b/)
       }
     })
+
+    it("and it leaves pushing commits and tags to trunk-sync", () => {
+      for (const releaseScript of releaseScripts) {
+        assert.doesNotMatch(readFileSync(releaseScript, "utf-8"), /git .*push/)
+      }
+    })
   })
 })
