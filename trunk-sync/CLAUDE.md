@@ -104,7 +104,7 @@ Publish from the repository root through the release script:
 pnpm publish:trunk-sync patch --notes-file /tmp/trunk-sync-notes.md
 ```
 
-Choose `patch`, `minor`, or `major`. The notes file is required; omitting it prints the exact command for reviewing changes since the previous Trunk Sync tag. The script requires clean source, bumps both plugin manifests together, commits and tags the release, pushes to GitHub, and creates the GitHub release. Building and testing remain the maintainer's responsibility before release.
+Choose `patch`, `minor`, or `major`. The notes file is required; omitting it prints the exact command for reviewing changes since the previous Trunk Sync tag. The script requires clean source, bumps both plugin manifests together, commits and tags the release, and creates the GitHub release. Trunk Sync owns pushing commits and tags. Building and testing remain the maintainer's responsibility before release.
 
 GitHub is the distribution source: the marketplace installs directly from this repository. `dist/` is tracked because consumers have no build step. Test files and `.d.ts` are gitignored.
 

@@ -49,10 +49,6 @@ git -C "$REPO_ROOT" add contree/.claude-plugin/plugin.json contree/.codex-plugin
 git -C "$REPO_ROOT" commit -m "contree v$VERSION"
 git -C "$REPO_ROOT" tag -a "contree-v$VERSION" -m "contree v$VERSION"
 
-# Push commits + tag to GitHub
-echo "==> Push to GitHub"
-git -C "$REPO_ROOT" push origin main --follow-tags
-
 echo "==> Create GitHub release"
 gh release create "contree-v$VERSION" --title "contree v$VERSION" --notes-file "$NOTES_FILE"
 

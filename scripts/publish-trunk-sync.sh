@@ -45,10 +45,6 @@ git -C "$REPO_ROOT" add trunk-sync/.claude-plugin/plugin.json trunk-sync/.codex-
 git -C "$REPO_ROOT" commit -m "v$VERSION"
 git -C "$REPO_ROOT" tag -a "v$VERSION" -m "trunk-sync v$VERSION"
 
-# Push commits + tag to GitHub
-echo "==> Push to GitHub"
-git -C "$REPO_ROOT" push origin main --follow-tags
-
 echo "==> Create GitHub release"
 gh release create "v$VERSION" --title "trunk-sync v$VERSION" --notes-file "$NOTES_FILE"
 
