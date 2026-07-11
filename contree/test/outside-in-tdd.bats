@@ -58,9 +58,10 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
 
 @test "when the mocked unit becomes the subject then it receives a tree and the process restarts" {
   run cat "$SKILL"
-  assert_output --partial "Record the mocked unit's consumer-established behaviour in its own tree"
-  assert_output --partial "Return to step 1"
-  assert_output --partial "Keep the original consumer test."
+  assert_output --partial "The mock names the next subject."
+  assert_output --partial "Add a tree for the behaviour expected from that mock."
+  assert_output --partial "Repeat from step 1 with that unit."
+  assert_output --partial "Production uses the real unit; the consumer test keeps the mock."
 }
 
 @test "when a test is expected to be red then its failure is observed before implementation" {

@@ -44,7 +44,7 @@ load test_helper
 
 @test "tdd skill directs updating the tree when implementation reveals new understanding" {
   run cat "$PROJECT_ROOT/skills/tdd/SKILL.md"
-  assert_output --partial "Record the mocked unit's consumer-established behaviour in its own tree"
+  assert_output --partial "Add a tree for the behaviour expected from that mock."
 }
 
 @test "every tree reifies exactly one test file — no system-category test file is claimed by two trees" {

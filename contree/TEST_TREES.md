@@ -57,9 +57,9 @@ outside-in-tdd (src: skills/tdd/SKILL.md; system: test/outside-in-tdd.bats; jour
     and the consumer implementation consumes the mock to pass those tests
     and the mock visibly names why it exists
   when the mocked unit becomes the TDD subject
-    then its consumer-established behaviour is recorded in its own tree before its first test
-    and the TDD process restarts from writing a test for that unit
-    and the original consumer test remains as coverage of the consumer
+    then its own tree describes the behaviour expected by the mock before its first test
+    and the TDD process returns to step 1 with that unit as the new subject
+    and when the unit is green production uses the real unit while the original consumer test keeps the mock
   when a test is expected to be red
     then the failure is observed before implementation
     and an incidentally passing test is shown to fail before it is trusted
