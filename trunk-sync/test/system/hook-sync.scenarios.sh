@@ -786,9 +786,37 @@ assert_exit 2 "git-block: git add is blocked"
 run_git_block "$(make_bash_input "git checkout main")"
 assert_exit 2 "git-block: git checkout is blocked"
 
-# 28k. git status is blocked
+# 28k. git status is allowed
 run_git_block "$(make_bash_input "git status")"
-assert_exit 2 "git-block: git status is blocked"
+assert_exit 0 "git-block: git status is allowed"
+
+# 28k1. other repository inspection commands are allowed
+run_git_block "$(make_bash_input "git branch --show-current")"
+assert_exit 0 "git-block: git branch inspection is allowed"
+
+run_git_block "$(make_bash_input "git reflog show --oneline")"
+assert_exit 0 "git-block: git reflog inspection is allowed"
+
+run_git_block "$(make_bash_input "git blame README.md")"
+assert_exit 0 "git-block: git blame is allowed"
+
+run_git_block "$(make_bash_input "git ls-files --modified")"
+assert_exit 0 "git-block: git ls-files is allowed"
+
+run_git_block "$(make_bash_input "git remote -v")"
+assert_exit 0 "git-block: git remote inspection is allowed"
+
+run_git_block "$(make_bash_input "git config --get user.email")"
+assert_exit 0 "git-block: git config reads are allowed"
+
+run_git_block "$(make_bash_input "git tag --list 'v*'")"
+assert_exit 0 "git-block: git tag inspection is allowed"
+
+run_git_block "$(make_bash_input "git worktree list")"
+assert_exit 0 "git-block: git worktree inspection is allowed"
+
+run_git_block "$(make_bash_input "git stash list")"
+assert_exit 0 "git-block: git stash inspection is allowed"
 
 # 28k2. git stash is blocked
 run_git_block "$(make_bash_input "git stash")"
@@ -840,6 +868,14 @@ assert_exit 0 "local_shell git-block: array git log allowed"
 # Codex 3b: array-form git -C <path> diff is allowed (path-scoped read-only variant)
 run_local_shell_block "$(make_local_shell_input_array '["git","-C","/some/other/repo","diff","--stat"]')"
 assert_exit 0 "local_shell git-block: array git -C <path> diff allowed"
+
+# Codex 3c: array-form git status is allowed
+run_local_shell_block "$(make_local_shell_input_array '["git","status","--short"]')"
+assert_exit 0 "local_shell git-block: array git status allowed"
+
+# Codex 3d: array-form git branch inspection is allowed
+run_local_shell_block "$(make_local_shell_input_array '["git","branch","--show-current"]')"
+assert_exit 0 "local_shell git-block: array git branch inspection allowed"
 
 # Codex 4: string-form git commit is blocked
 run_local_shell_block "$(make_local_shell_input_string "git commit -m foo")"

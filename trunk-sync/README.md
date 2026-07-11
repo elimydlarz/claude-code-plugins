@@ -24,6 +24,8 @@ Once the plugin is installed, every file edit is committed and pushed automatica
 
 After every `Edit` or `Write`, the hook fires: stage, commit, pull, push. Works on branches and in worktrees. No git commands to remember, no manual merging, no work left behind on a branch nobody pushed.
 
+Agents can still inspect Git normally with commands such as `git status`, `git log`, `git show`, `git diff`, `git blame`, and read-only branch, tag, remote, worktree, stash, reflog, and config queries. Trunk-sync rejects only write-side commands that could change repository, worktree, configuration, or remote state.
+
 For multi-agent work, launch each agent in its own worktree:
 
 ```bash

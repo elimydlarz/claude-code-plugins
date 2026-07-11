@@ -53,34 +53,56 @@ describe("System: hook-sync", () => {
   })
 
   describe("every Bash tool use whose command starts with `git`", () => {
-    it("then the command is rejected with feedback directing the agent to use Edit", verifies(
-      "git-block: git push is blocked",
-      "git-block: push gets TRUNK-SYNC feedback",
-    ))
-    describe("when the git command is `clone`, `diff`, `log`, or `show` (or their `-C <path>` variants)", () => {
+    describe("when the command is git clone or only inspects repository, worktree, or history state", () => {
       it("then it is allowed through", verifies(
         "git-block: git clone is allowed",
         "git-block: git diff is allowed",
         "git-block: git log is allowed",
         "git-block: git show is allowed",
+        "git-block: git status is allowed",
+        "git-block: git branch inspection is allowed",
+        "git-block: git reflog inspection is allowed",
+        "git-block: git blame is allowed",
+        "git-block: git ls-files is allowed",
+        "git-block: git remote inspection is allowed",
+        "git-block: git config reads are allowed",
+        "git-block: git tag inspection is allowed",
+        "git-block: git worktree inspection is allowed",
+        "git-block: git stash inspection is allowed",
         "git-block: git -C <path> diff is allowed",
         "git-block: git -C <path> log is allowed",
         "git-block: git -C <path> show is allowed",
         "git-block: git -C <path> clone is allowed",
       ))
     })
+    describe("if the git command can change repository, worktree, configuration, or remote state", () => {
+      it("then it is rejected with feedback directing the agent to edit files and leave git writes to trunk-sync", verifies(
+        "git-block: git push is blocked",
+        "git-block: push gets TRUNK-SYNC feedback",
+        "git-block: git commit is blocked",
+        "git-block: git add is blocked",
+        "git-block: git checkout is blocked",
+        "git-block: git stash is blocked",
+        "git-block: git stash pop is blocked",
+      ))
+    })
   })
 
   describe("every local_shell tool use whose command starts with `git`", () => {
-    it("then the command is rejected with the same feedback as Bash", verifies(
-      "local_shell git-block: array git push blocked",
-      "local_shell git-block: array git push gets feedback",
-    ))
-    describe("when the git command is in the read-only allowlist", () => {
+    describe("when the command is git clone or only inspects repository, worktree, or history state", () => {
       it("then it is allowed through", verifies(
         "local_shell git-block: array git diff allowed",
         "local_shell git-block: array git log allowed",
         "local_shell git-block: array git -C <path> diff allowed",
+        "local_shell git-block: array git status allowed",
+        "local_shell git-block: array git branch inspection allowed",
+      ))
+    })
+    describe("if the git command can change repository, worktree, configuration, or remote state", () => {
+      it("then it is rejected with the same feedback as Bash", verifies(
+        "local_shell git-block: array git push blocked",
+        "local_shell git-block: array git push gets feedback",
+        "local_shell git-block: string git commit blocked",
       ))
     })
   })

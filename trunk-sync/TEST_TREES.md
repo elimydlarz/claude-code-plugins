@@ -285,7 +285,7 @@ Adapter: command-guard (src: src/lib/pre-tool-entry.ts; adapter: src/lib/pre-too
   when Codex sends a local_shell command as an array
     then the command is classified and its decision is returned as the hook exit
   when the command is rejected
-    then exit 2 and file-editing guidance are written to stderr
+    then exit 2 and guidance that inspection is allowed and trunk-sync owns git writes are written to stderr
   when the command is allowed
     then exit 0 is returned without feedback
 ```
@@ -298,10 +298,10 @@ Domain: command-guard (src: src/lib/command-guard.ts; domain: src/lib/command-gu
   classifyCommand
     when a command does not start with git
       then it is allowed
-    when a command is git clone, diff, log, or show with optional `-C <path>`
-      then it is allowed
-    when any other git command is received
-      then it is rejected with file-editing guidance
+    when git clone or a git command only inspects repository, worktree, or history state
+      then it is allowed, including with read-only global and subcommand options
+    if a git command can change repository, worktree, configuration, or remote state
+      then it is rejected with guidance that inspection is allowed and trunk-sync owns git writes
 ```
 
 ## System: hook-sync
@@ -317,13 +317,15 @@ System: hook-sync (src: hooks/hooks.json; system: test/system/hook-sync.system.t
     when no remote is configured
       then push is silently skipped
   every Bash tool use whose command starts with `git`
-    then the command is rejected with feedback directing the agent to use Edit
-    when the git command is `clone`, `diff`, `log`, or `show` (or their `-C <path>` variants)
+    when the command is git clone or only inspects repository, worktree, or history state
       then it is allowed through
+    if the git command can change repository, worktree, configuration, or remote state
+      then it is rejected with feedback directing the agent to edit files and leave git writes to trunk-sync
   every local_shell tool use whose command starts with `git`
-    then the command is rejected with the same feedback as Bash
-    when the git command is in the read-only allowlist
+    when the command is git clone or only inspects repository, worktree, or history state
       then it is allowed through
+    if the git command can change repository, worktree, configuration, or remote state
+      then it is rejected with the same feedback as Bash
   every session start
     then the starting agent is clocked in without adding its own internal session id to agent context
     when other sessions have stale cards

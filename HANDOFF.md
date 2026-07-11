@@ -52,4 +52,4 @@ If continuing this thread, address the valid DeepSeek findings through Contree:
 3. Update `contree/skills/setup/SKILL.md` with the smallest prose changes needed.
 4. Run the focused setup test, then the full Contree Bats suite.
 
-Do not use git commands directly in this workspace; the trunk-sync hook blocks them and handles git operations.
+Use read-only Git commands freely to inspect this workspace, but leave write-side Git operations to the trunk-sync hook.

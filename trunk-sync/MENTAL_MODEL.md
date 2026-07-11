@@ -2,7 +2,7 @@
 
 - trunk-sync keeps multiple agents in continuous integration on a shared branch via Claude Code / Codex hooks.
 - The hook layer owns auto commit/pull/push and timecards.
-- Conflicts are surfaced as hook feedback for the agent to resolve in file content; the hook completes the merge on the next fire — agents never run git themselves.
+- Conflicts are surfaced as hook feedback for the agent to resolve in file content; the hook completes the merge on the next fire — agents inspect Git freely but leave write-side Git operations to the hook.
 - Every commit with a session carries `Session:` and `Agent:` provenance.
 - Agents register presence via committed, heartbeat-timestamped timecards, giving cross-machine visibility of who is clocked in.
 
@@ -31,7 +31,7 @@
 
 ## Invariants
 
-- The hook owns all git operations during a sync; agents only edit files, never run git.
+- The hook owns write-side Git operations during a sync; agents may inspect repository, worktree, and history state with read-only Git commands.
 - Conflicts are resolved by editing file contents; the hook completes the merge on the next fire.
 - Every commit with a session carries `Session:` and `Agent:`.
 - `dist/` is committed (minus tests and `.d.ts`) because marketplace installs run the compiled hook.
@@ -42,7 +42,7 @@
 
 ## Decision Rationale
 
-- The hook handles git so agents stay focused on content and never corrupt the shared branch with ad-hoc git.
+- The hook handles Git writes so agents stay focused on content and never corrupt the shared branch with ad-hoc mutations, while read-only inspection remains available for understanding what happened.
 - The functional-core / imperative-shell split keeps decision logic pure and fast to unit-test.
 - Timecards are committed, not local-only, so presence is visible across every machine and agent working on the repo. Liveness is the heartbeat's age, not a PID — the hook runs as an ephemeral process, so a stored PID is never the agent's; remote liveness can only ever be presumed from the heartbeat, and failing tests are the authoritative unfinished-work signal.
 - Agents default to a dedicated `agents` branch so per-edit auto-commits do not land directly on the repo's actual default branch; repositories can deliberately choose another target with `.trunk-sync/config`.

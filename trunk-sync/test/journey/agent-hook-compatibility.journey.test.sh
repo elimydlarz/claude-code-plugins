@@ -105,7 +105,7 @@ fi
 printf '%s\n' "Journey: agent-hook-compatibility"
 printf '%s\n' "  when $AGENT_NAME uses the published plugin in a consumer repository"
 printf '%s\n' "    if it attempts a write-side git command"
-if grep -q 'TRUNK-SYNC: Do NOT run git commands' "$TRANSCRIPT_FILE"; then
+if grep -q 'TRUNK-SYNC: Do NOT run write-side git commands' "$TRANSCRIPT_FILE"; then
   printf '%s\n' "      then the command is rejected with instructions to edit file content instead"
 else
   printf '%s\n' "      not ok - then the command is rejected with instructions to edit file content instead" >&2

@@ -28,15 +28,16 @@ describe("Adapter: command-guard", () => {
   });
 
   describe("when the command is rejected", () => {
-    it("then exit 2 and file-editing guidance are written to stderr", () => {
+    it("then exit 2 and guidance that inspection is allowed and trunk-sync owns git writes are written to stderr", () => {
       const result = spawnSync(process.execPath, [entryPath.pathname], {
         input: JSON.stringify({ tool_name: "Bash", tool_input: { command: "git push" } }),
         encoding: "utf-8",
       });
 
       assert.equal(result.status, 2);
-      assert.match(result.stderr, /Do NOT run git commands/);
-      assert.match(result.stderr, /fix file contents using Edit/);
+      assert.match(result.stderr, /Do NOT run write-side git commands/);
+      assert.match(result.stderr, /Read-only git inspection is allowed/);
+      assert.match(result.stderr, /Trunk-sync handles git writes/);
     });
   });
 
