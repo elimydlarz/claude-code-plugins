@@ -71,17 +71,17 @@ When one unit can encapsulate the branching:
 4. Change the consumer implementation to consume it.
 5. Keep the consumer tests green.
 
-The simplified tests prove that the consumer supplies what the unit needs, consumes its result or error correctly, and preserves the consumer's own observable behaviour.
+The mock now shows what the new unit must do.
 
-## Recurse
+## Repeat for the Mocked Unit
 
-Record the mocked unit's consumer-established behaviour in its own tree before writing its first test.
+The mock names the next subject.
 
-Return to step 1 with the mocked unit as the subject. Apply the same RED-GREEN-REFACTOR process recursively.
+1. Add a tree for the behaviour expected from that mock.
+2. Repeat from step 1 with that unit.
+3. When its tests pass, use the real unit in production.
 
-Keep the original consumer test. It proves the consumer; the new tests prove the unit that now owns the branching.
-
-When the unit is green, production consumes the real unit while the consumer's tests continue to use their mock.
+Production uses the real unit; the consumer test keeps the mock.
 
 ## Discipline
 
