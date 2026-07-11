@@ -79,13 +79,12 @@ The mock names the next subject.
 
 1. Add a tree for the behaviour expected from that mock.
 2. Repeat from step 1 with that unit.
-3. When its tests pass, use the real unit in production.
+3. When its tests pass
 
 Production uses the real unit; the consumer test keeps the mock.
 
 ## Discipline
 
-- Refactor only the behaviour just implemented.
 - Duplication is a hint; branching under different conditions is the reason to imagine a unit.
 - Keep every existing consumer test that still describes supported behaviour.
 - Update the tree's labelled coverage paths immediately when creating, moving, or renaming a test or source file, and replace the corresponding `none` when coverage lands.
