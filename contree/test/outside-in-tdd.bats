@@ -23,6 +23,23 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
   assert_output --partial "not an implementation order"
 }
 
+@test "when a Unit dependency call causes an intentional external effect then the interaction is asserted" {
+  run cat "$SKILL"
+  assert_output --partial "A side effect is an intentional change outside the test subject"
+  assert_output --partial "publishing a message"
+  assert_output --partial "writing data that the test does not read back"
+  assert_output --partial "Assert that interaction"
+}
+
+@test "when a Unit dependency call only obtains data then a realistic exact mock replaces interaction assertions" {
+  run cat "$SKILL"
+  assert_output --partial "A dependency read is an implementation detail"
+  assert_output --partial "Do not assert that interaction."
+  assert_output --partial "return the required data only when it receives the exact realistic invocation and arguments"
+  assert_output --partial "Assert the subject's result."
+  assert_output --partial "wrong interaction cannot make the test pass"
+}
+
 @test "when implementing the selected behaviour then the exact recursive TDD process is given" {
   run cat "$SKILL"
   assert_output --partial "1 Write a test"
