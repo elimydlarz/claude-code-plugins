@@ -111,7 +111,7 @@ pre-task-hook (src: hooks/session-start.sh; system: test/pre-task-hook.bats; jou
     and the agent is directed to decide obvious questions itself rather than asking the user — consulting these rules and the mental model first, then its own best judgment from the code in front of it, escalating to the user only a consequential, genuinely under-determined choice that neither resolves
     and the agent is directed to apply the same ladder to anything it would flag, caveat, or surface — fixing it where these rules or the mental model direct, else using its judgment, else staying silent rather than reporting it
     and the agent is directed to use Contree skills as directed by skill frontmatter
-    and the agent is shown the skill names change, tdd, sync, setup, and workflow
+    and the agent is shown every focused setup skill alongside change, tdd, sync, setup, and workflow
 ```
 
 ## post-task-hook
@@ -388,7 +388,19 @@ skill-discoverability (src: hooks/session-start.sh; system: test/skill-discovera
   when a user asks about drift between code and requirements without naming a skill
     then the sync skill is triggered
   when a user asks to set up testing without naming a skill
-    then the setup skill is triggered
+    then the setup-test-feedback skill is triggered
+  when a user asks to set up conventional linting without naming a skill
+    then the setup-linter skill is triggered
+  when a user asks to set up architecture enforcement without naming a skill
+    then the setup-architecture-linter skill is triggered
+  when a user asks to fix architecture violations without naming a skill
+    then the fix-architecture skill is triggered
+  when a user asks to discover and test the behaviour of an existing project without naming a skill
+    then the bootstrap-test-trees skill is triggered
+  when a user asks to set up mutation testing without naming a skill
+    then the setup-mutation-testing skill is triggered
+  when a user asks for every Contree feedback loop without naming a skill
+    then the comprehensive setup skill is triggered
   when a user asks to implement from existing requirements without naming a skill
     then the tdd skill is triggered
   when a user asks to take an idea through the full workflow without naming a skill
@@ -398,7 +410,7 @@ skill-discoverability (src: hooks/session-start.sh; system: test/skill-discovera
 ## composable-testing
 
 ```
-composable-testing (src: skills/setup/SKILL.md, skills/change/SKILL.md; system: test/composable-testing.bats; journey: test/journey/docker-entrypoint.sh)
+composable-testing (src: skills/setup-test-feedback/SKILL.md, skills/setup-mutation-testing/SKILL.md, skills/change/SKILL.md; system: test/composable-testing.bats; journey: test/journey/docker-entrypoint.sh)
   when a project uses contree
     then Domain tests are colocated with source (*.domain.test.*)
     and Use-case tests are colocated with the use-case (*.use-case.test.*)

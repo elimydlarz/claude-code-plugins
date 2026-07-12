@@ -15,7 +15,8 @@
 - Hexagonal seams → inner layers: Adapter (`*.adapter.test.*`), Use-case (`*.use-case.test.*`), Domain (`*.domain.test.*`).
 - A tree's coverage on disk → a parenthesised label set, one per layer: `src`, `domain`, `use-case`, `adapter`, `component`, `system`, `journey`; `none` marks a declared gap.
 - An outbound dependency → a Port; each Port ships an in-memory twin plus a real adapter, both bound by one shared `*.contract.ts` suite.
-- Workflow phases → skills: `setup`, `change`, `sync`, `tdd`, `second-opinion`, `workflow`.
+- Project steering → focused setup skills for test feedback, conventional lint, architecture lint and repair, test-tree bootstrap, and mutation feedback; `setup` orchestrates the complete suite.
+- Behaviour workflow → skills: `change`, `sync`, `tdd`, `second-opinion`, `workflow`.
 - Enforcement → hooks: SessionStart (rules + trees) and Stop (drift check).
 - The product's theory → `MENTAL_MODEL.md` (this file); its behaviour → `TEST_TREES.md`; its operating discipline → the rules.
 
@@ -42,8 +43,9 @@
 
 - Tree language — EARS syntax, causal nesting, one-tree-one-file, leaf granularity; the grammar of the contract.
 - Test-layer taxonomy — Journey ▸ System ▸ Component ▸ Adapter ▸ Use-case ▸ Domain (+ Port contract); each layer owns its own seam.
-- Skill workflow — `setup` (configure) → `change` (set behaviour) → `sync` (audit and fulfil the contract) → `tdd` (close gaps) → `second-opinion` (independent review from another model); `workflow` runs the arc.
-- Enforcement hooks — plugin SessionStart and drift-check Stop hooks, plus setup-generated project hooks for save-time lint autofix and architecture checks.
+- Setup suite — focused skills establish test, lint, architecture, behavioural-contract, and mutation feedback independently; `setup` dynamically orchestrates the comprehensive operator-guided workflow.
+- Skill workflow — `change` (set behaviour) → `sync` (audit and fulfil the contract) → `tdd` (close gaps) → `second-opinion` (independent review from another model); `workflow` runs the arc.
+- Enforcement hooks — plugin SessionStart and drift-check Stop hooks, plus setup-generated project hooks for save-time lint autofix, impacted tests, and architecture checks.
 - Hexagonal architecture — domain pure, I/O in adapters, dependencies inward, a boundary linter holding the line.
 - Dual-harness packaging — one source directory, parallel `.claude-plugin` / `.codex-plugin` manifests, `CLAUDE_PLUGIN_ROOT` shared by both.
 
@@ -68,11 +70,12 @@
 - Trees live in `TEST_TREES.md`, not a separate requirements doc, so spec and tests can never drift into two truths.
 - One source directory with parallel manifests avoids duplicating skills/hooks per harness; `CLAUDE_PLUGIN_ROOT` lets shared scripts run on both while harness adapters handle Codex-specific payload and transcript differences.
 - Enforcement is hook-driven rather than advisory prose, because rules in text alone get ignored under pressure.
+- Setup is split by feedback loop so each steering mechanism can be installed, run, repaired, and verified independently; comprehensive setup composes only the work the project needs.
 - The mental model is fixed at seven capped sections so it stays a theory, not a dumping ground.
 
 ## Temporal View
 
-- Per project: `setup` once → then `change` → `sync` → `tdd` → `second-opinion` cycles (or `workflow` end-to-end), repeatedly.
+- Per project: run focused setup skills as steering needs change, or `setup` for the comprehensive suite; then repeat `change` → `sync` → `tdd` → `second-opinion` cycles (or `workflow` end-to-end).
 - Per behaviour: write one test → RED → implement to GREEN → REFACTOR excessive branching → create mock and throwing stub → green the consumer tests → repeat from step 1 for the unit.
 - Per failing test: write one, run it, see it fail, implement the minimum, see it pass; never batch.
 - Per turn: the Stop hook fires a drift check after each response, with `stop_hook_active` preventing the hook from checking its own drift-check turn.
