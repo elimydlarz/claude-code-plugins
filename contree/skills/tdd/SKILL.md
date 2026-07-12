@@ -30,11 +30,11 @@ Use the test kind named by the current tree. The list classifies the current tes
 
 ## Unit Tests: Intentional External Impact and Implementation Details
 
-Before setting up dependency mocks or assertions, identify each interaction as either an intentional external impact or an incidental implementation detail.
+Before setting up mocks for a test, understand what that test asserts: its observable result and any intentional side effects. Everything else the subject does to produce that behaviour is an implementation detail.
 
-The operator intends an external impact when the interaction itself must happen, such as publishing a message or changing an external record. Set up the mock to record the interaction. Assert that it was called correctly with the meaningful arguments.
+A side effect is an external impact the operator expects this test to guarantee. Set up the mock to record the interaction. Assert that it was called correctly with the meaningful arguments.
 
-The interaction is an incidental implementation detail when it is only how the current implementation produces the result under test. Set up the mock to behave realistically: it provides the needed response only for the exact invocation and arguments that work in reality. Do not assert against the interaction. Assert the subject's observable result.
+An implementation detail is an interaction the test needs only because the subject currently works that way. Set up the mock to behave realistically: it provides the needed response only for the exact invocation and arguments that work in reality. Do not assert against the interaction. Assert the subject's observable result.
 
 The realistic setup means an incorrect interaction cannot make the test pass, while the absence of an interaction assertion keeps the implementation detail out of the contract.
 
