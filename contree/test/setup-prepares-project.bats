@@ -4,172 +4,52 @@ load test_helper
 
 SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
 
-@test "setup detects and merges into existing test config rather than overwriting" {
+@test "when an operator asks for comprehensive Contree setup then setup presents and runs a dynamic workflow for every missing steering loop" {
   run cat "$SKILL"
-  assert_output --partial "existing"
-  [[ "$output" == *"merge"* || "$output" == *"do not overwrite"* || "$output" == *"augment"* ]] || return 1
+  assert_output --partial "dynamic setup workflow"
+  assert_output --partial "setup-test-feedback"
+  assert_output --partial "setup-linter"
+  assert_output --partial "setup-architecture-linter"
+  assert_output --partial "bootstrap-test-trees"
+  assert_output --partial "setup-mutation-testing"
 }
 
-@test "setup configures tree-shaped output where available" {
+@test "when an operator asks for comprehensive Contree setup then setup engages the operator at consequential setup decisions" {
   run cat "$SKILL"
-  assert_output --regexp "(tree reporters|tree-shaped)"
+  assert_output --partial "framework"
+  assert_output --partial "architecture"
+  assert_output --partial "behavioural scope"
+  assert_output --partial "mutation threshold"
+  assert_output --partial "operator"
 }
 
-@test "setup maps the fixed Contree strategy to normal and functional test commands" {
+@test "when an operator asks for comprehensive Contree setup then setup uses subagents for independent setup work and reconciles their results" {
   run cat "$SKILL"
-  assert_output --partial "fixed Contree test strategy"
-  assert_output --partial "normal test command"
-  assert_output --partial "functional test command"
-  assert_output --partial "Unit"
-  assert_output --partial "Port contract"
-  assert_output --partial "Component"
-  assert_output --partial "Adapter"
-  assert_output --partial "System"
-  assert_output --partial "Journey"
-  assert_output --partial "test:functional"
-  refute_output --partial "\"test:domain\""
-  refute_output --partial "\"test:use-case\""
-  refute_output --partial "\"test:adapter\""
-  refute_output --partial "\"test:component\""
-  refute_output --partial "\"test:system\""
-  refute_output --partial "\"test:journey\""
-  refute_output --partial "SessionStart hook"
+  assert_output --partial "subagents"
+  assert_output --partial "non-overlapping"
+  assert_output --partial "reconcile"
 }
 
-@test "setup creates a native test-changed command that runs only normal tests impacted since the last completed normal test run" {
+@test "when an operator asks for comprehensive Contree setup then setup verifies and fixes every configured feedback command" {
   run cat "$SKILL"
-  assert_output --partial "test-changed"
-  assert_output --partial "last completed normal test run"
-  assert_output --partial "runs only the normal tests impacted by those files"
+  assert_output --partial "test"
+  assert_output --partial "lint"
+  assert_output --partial "architecture"
+  assert_output --partial "mutation"
+  assert_output --partial "fix"
+  assert_output --partial "verify"
 }
 
-@test "setup establishes the test-changed baseline with the normal test command when no completed normal test run exists" {
+@test "when comprehensive Contree setup completes then setup reports the steering installed for the operator" {
   run cat "$SKILL"
-  assert_output --partial "no completed normal test run exists"
-  assert_output --partial "runs the normal test command to establish its baseline"
+  assert_output --partial "installed commands"
+  assert_output --partial "automatic hooks"
+  assert_output --partial "test-tree coverage"
+  assert_output --partial "mutation result"
 }
 
-@test "setup runs test-changed from a project-level Stop hook after coding-agent file changes" {
+@test "if a specialised setup skill cannot establish its feedback loop then setup fails without claiming the project is prepared" {
   run cat "$SKILL"
-  assert_output --partial 'project-level `Stop` hook runs `test-changed`'
-  assert_output --partial ".claude/settings.json"
-  assert_output --partial ".codex/hooks.json"
-  assert_output --partial ".contree/hooks/test-changed.sh"
-  assert_output --partial "after the turn's file changes"
-}
-
-@test "setup makes the project-level hook fail visibly with the impacted test output" {
-  run cat "$SKILL"
-  assert_output --partial 'If an impacted test fails, `.contree/hooks/test-changed.sh` writes the complete test output to stderr and exits 2'
-}
-
-@test "setup notes Component tests run in-process needing no external services" {
-  run cat "$SKILL"
-  assert_output --partial "Component"
-  assert_output --partial "in-process"
-  [[ "$output" == *"no external services"* || "$output" == *"needs no external"* ]] || return 1
-}
-
-@test "setup configures mutation testing with layer-suffix exclusions and selects only Domain and Use-case tests" {
-  run cat "$SKILL"
-  assert_output --partial "mutation testing"
-  assert_output --partial "explicitly excluding test files"
-  assert_output --partial "!src/**/*.domain.test.ts"
-  assert_output --partial "!src/**/*.use-case.test.ts"
-  assert_output --partial "!src/**/*.adapter.test.ts"
-  assert_output --partial "!src/**/*.component.test.ts"
-  assert_output --partial "!src/**/*.system.test.ts"
-  assert_output --partial "!src/**/*.journey.test.ts"
-  assert_output --partial "!test/**/*.component.test.ts"
-  assert_output --partial "!test/**/*.system.test.ts"
-  assert_output --partial "!test/**/*.journey.test.ts"
-  assert_output --partial "!src/**/*.contract.ts"
-  assert_output --partial "'src/**/*.ts'"
-  assert_output --partial "'!src/**/*.test.ts'"
-  assert_output --partial "'!src/**/*.d.ts'"
-  assert_output --partial 'targetTests.set(setOf("com.example.*DomainTest*", "com.example.*UseCaseTest*"))'
-  assert_output --partial '<param>com.example.*DomainTest*</param>'
-  assert_output --partial '<param>com.example.*UseCaseTest*</param>'
-  refute_output --partial 'targetTests.set(setOf("com.example.*Test"))'
-  refute_output --partial '<targetTests><param>com.example.*Test</param></targetTests>'
-}
-
-@test "setup creates TEST_TREES.md without composing trees" {
-  run cat "$SKILL"
-  assert_output --partial "TEST_TREES.md"
-  assert_output --partial "Do not compose the trees yourself"
-}
-
-@test "setup examples follow setup rules" {
-  run cat "$SKILL"
-  assert_output --partial "setup rules"
-  assert_output --partial "no copied comments"
-  assert_output --partial "no env-var behaviour switches"
-  assert_output --partial "composition over inheritance"
-  refute_output --partial "process.env.CI"
-  refute_output --partial "fall back"
-  refute_output --partial "|| true"
-  refute_output --partial "os.environ.get(\"APP_URL\""
-  refute_output --partial "baseURL = \"http://localhost:3001\""
-  refute_output --partial "\"**objbinMigrations/**\""
-  assert_output --partial "\"mutate\": [\"**/*.cs\", \"!**/obj/**\", \"!**/bin/**\", \"!**/Migrations/**\"]"
-  refute_output --partial "test.unit"
-  refute_output --partial "test.integration"
-  refute_output --partial "--tag domain"
-  refute_output --partial "--tag system"
-  refute_output --partial "tests/domain/"
-  refute_output --partial "tests/system/"
-  refute_output --partial "go test -tags=integration"
-  refute_output --partial "go test -short"
-  refute_output --partial "dependsOn(testing.suites.named(\"systemTest\"))"
-  refute_output --partial "\"break\": 0"
-  refute_output --partial "|| (docker compose"
-}
-
-@test "setup chooses test frameworks but asks before choosing the application framework" {
-  run cat "$SKILL"
-  assert_output --partial "choose the test framework"
-  assert_output --partial "Ask before choosing the main application framework"
-}
-
-@test "setup creates native project commands for configured DX" {
-  run cat "$SKILL"
-  assert_output --partial "native project commands"
-  assert_output --partial "package.json scripts"
-  assert_output --partial "Makefile targets"
-  assert_output --partial "\"test\""
-  assert_output --partial "\"test:functional\""
-  assert_output --partial "\"lint\""
-}
-
-@test "setup for a new project creates the tree home without implementing tests" {
-  run cat "$SKILL"
-  assert_output --partial "new project"
-  assert_output --partial "TEST_TREES.md"
-  assert_output --partial "No test files"
-  assert_output --partial "Do NOT create any test files"
-}
-
-@test "setup uses Docker when Adapter or System tests need external services" {
-  run cat "$SKILL"
-  assert_output --partial "Docker"
-  assert_output --partial "external"
-}
-
-@test "setup tears down Docker test artefacts afterwards" {
-  run cat "$SKILL"
-  assert_output --partial "Docker"
-  assert_output --partial "tear down"
-  assert_output --partial "cleanup"
-}
-
-@test "setup passes secrets via environment variables" {
-  run cat "$SKILL"
-  [[ "$output" == *"environment variable"* || "$output" == *"env"* ]]
-}
-
-@test "setup communicates flat-output limitations honestly" {
-  run cat "$SKILL"
-  assert_output --partial "flat output"
-  assert_output --partial "be honest"
+  assert_output --partial "fail visibly"
+  assert_output --partial "Do not claim"
 }
