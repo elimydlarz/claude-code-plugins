@@ -14,6 +14,8 @@ SKILL="$PROJECT_ROOT/skills/bootstrap-test-trees/SKILL.md"
   run cat "$SKILL"
   assert_output --partial "non-overlapping areas"
   assert_output --partial "observable behaviour, existing tests, architecture, and mental-model concepts"
+  assert_output --partial "regardless of project size"
+  assert_output --partial "Never replace either wave with your own direct work"
 }
 
 @test "when an operator asks to bootstrap test trees for an existing project then the coding agent reconciles their evidence into one coherent MENTAL_MODEL.md and TEST_TREES.md with the operator" {
@@ -34,6 +36,16 @@ SKILL="$PROJECT_ROOT/skills/bootstrap-test-trees/SKILL.md"
   assert_output --partial "second wave of subagents"
   assert_output --partial "non-overlapping trees"
   assert_output --partial "each test hierarchy mirror its tree verbatim"
+  assert_output --partial "one tree maps to exactly one test file"
+  assert_output --partial "Do not write comments"
+}
+
+@test "when an existing project is bootstrapped then change owns valid layered EARS trees with honest coverage" {
+  run cat "$SKILL"
+  assert_output --partial "Use `change`"
+  assert_output --partial '`<Layer>: <Subject> (<coverage>)`'
+  assert_output --partial "EARS"
+  assert_output --partial "Do not write ad-hoc headings, bullets, `File`, or `Coverage` fields"
 }
 
 @test "when an operator asks to bootstrap test trees for an existing project then the coding agent reconciles the test implementations and runs the normal and functional test commands" {
