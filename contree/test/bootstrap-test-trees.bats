@@ -7,7 +7,7 @@ SKILL="$PROJECT_ROOT/skills/bootstrap-test-trees/SKILL.md"
 @test "when an operator asks to bootstrap test trees for an existing project then the skill explains the evidence it will gather and agrees the behavioural scope with the operator" {
   run cat "$SKILL"
   assert_output --partial "Explain the evidence"
-  assert_output --partial "agree the behavioural scope with the operator"
+  assert_output --partial "Agree the behavioural scope with the operator"
 }
 
 @test "when an operator asks to bootstrap test trees for an existing project then subagents inspect non-overlapping areas of the project for observable behaviour, tests, architecture, and mental-model concepts" {
@@ -33,7 +33,7 @@ SKILL="$PROJECT_ROOT/skills/bootstrap-test-trees/SKILL.md"
   run cat "$SKILL"
   assert_output --partial "second wave of subagents"
   assert_output --partial "non-overlapping trees"
-  assert_output --partial "hierarchy mirrors its tree verbatim"
+  assert_output --partial "each test hierarchy mirror its tree verbatim"
 }
 
 @test "when an operator asks to bootstrap test trees for an existing project then the coding agent reconciles the test implementations and runs the normal and functional test commands" {
@@ -56,7 +56,7 @@ SKILL="$PROJECT_ROOT/skills/bootstrap-test-trees/SKILL.md"
 
 @test "if bootstrapped tests expose behaviour that disagrees with the operator's intended contract then the disagreement is left visible and routed through change or tdd rather than weakened in the trees or tests" {
   run cat "$SKILL"
-  assert_output --partial "Leave the disagreement visible"
+  assert_output --partial "leave the disagreement visible"
   assert_output --partial 'route it through `change` or `tdd`'
   assert_output --partial "Do not weaken the trees or tests"
 }
