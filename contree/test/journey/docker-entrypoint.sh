@@ -780,7 +780,7 @@ VERIFY
     seed_project "describe-it-drift"
 
     run_agent \
-      "Check this project for drift between the test trees and the test files. When you find describe/it drift, present both sides and ask which side is authoritative in your assistant response. Do not call request_user_input. Do not silently choose a side, and do not modify files."
+      "Run sync on this project. Resolve every drift issue you find using TEST_TREES.md as the operator contract and your own judgment. Modify the project as needed, verify the result, and ask only if a consequential choice is genuinely under-determined."
 
     pass=1
     if grep -Eiq "(/contree:sync|sync process|drift between the test trees|drift detected)" "$TRANSCRIPT_FILE"; then
@@ -795,29 +795,29 @@ VERIFY
       identifies_drift="FAIL — transcript does not identify describe/it hierarchy drift"
       pass=0
     fi
-    if grep -q "when called with an https URL" "$TRANSCRIPT_FILE" \
-      && grep -q "then the canonical form is returned" "$TRANSCRIPT_FILE" \
-      && grep -q "if called with a non-URL string" "$TRANSCRIPT_FILE" \
-      && grep -q "then InvalidUrl is thrown" "$TRANSCRIPT_FILE" \
-      && grep -q "URL handling" "$TRANSCRIPT_FILE" \
-      && grep -q "returns canonical https form" "$TRANSCRIPT_FILE" \
-      && grep -q "throws for garbage input" "$TRANSCRIPT_FILE"; then
-      presents_both="PASS — transcript presents both tree paths and test-file describe/it structure"
+    if grep -q "describe('parseUrl'" "$PROJECT_DIR/src/bookmark.domain.test.js" \
+      && grep -q "describe('when called with an https URL'" "$PROJECT_DIR/src/bookmark.domain.test.js" \
+      && grep -q "it('then the canonical form is returned'" "$PROJECT_DIR/src/bookmark.domain.test.js" \
+      && grep -q "describe('if called with a non-URL string'" "$PROJECT_DIR/src/bookmark.domain.test.js" \
+      && grep -q "it('then InvalidUrl is thrown'" "$PROJECT_DIR/src/bookmark.domain.test.js"; then
+      mirrors_tree="PASS — test hierarchy now mirrors the tree"
     else
-      presents_both="FAIL — transcript does not present both tree and test-file structures"
+      mirrors_tree="FAIL — test hierarchy does not mirror the tree"
       pass=0
     fi
-    if grep -Eiq "which side is authoritative|should I align the test file|update the tree to match" "$TRANSCRIPT_FILE"; then
-      asks_authority="PASS — transcript asks which side is authoritative"
+    if grep -q "expect" "$PROJECT_DIR/src/bookmark.domain.test.js" \
+      && grep -Eq "toBe|toEqual" "$PROJECT_DIR/src/bookmark.domain.test.js" \
+      && grep -Eq "toThrow|InvalidUrl" "$PROJECT_DIR/src/bookmark.domain.test.js"; then
+      tests_intention="PASS — tests assert the intention expressed by both leaves"
     else
-      asks_authority="FAIL — transcript does not ask which side is authoritative"
+      tests_intention="FAIL — tests do not assert the intention expressed by both leaves"
       pass=0
     fi
-    if grep -q "request_user_input is unavailable" "$TRANSCRIPT_FILE"; then
-      no_unavailable_tool="FAIL — transcript attempted unavailable request_user_input"
+    if grep -Eiq "which side is authoritative|should I align the test file|update the tree to match|request_user_input is unavailable" "$TRANSCRIPT_FILE"; then
+      acts_without_asking="FAIL — transcript asks the operator to resolve deterministic drift"
       pass=0
     else
-      no_unavailable_tool="PASS — transcript did not attempt unavailable request_user_input"
+      acts_without_asking="PASS — deterministic drift is resolved without asking the operator"
     fi
 
     write_verify <<VERIFY
@@ -825,13 +825,13 @@ describe-it-drift — deterministic verification (no AI eval):
 
   $follows_sync
   $identifies_drift
-  $presents_both
-  $asks_authority
-  $no_unavailable_tool
+  $mirrors_tree
+  $tests_intention
+  $acts_without_asking
 
 These cover the describe/it drift path from sync-audits-and-resolves for this
 functional fixture: the agent follows sync, identifies structural test drift,
-presents both sides, and asks for authority without using unavailable Codex tools.
+uses the tree as the operator contract, and proactively makes the tests fulfil it.
 VERIFY
 
     [ "$pass" -eq 1 ] || { echo "describe-it-drift: FAILED deterministic checks" >&2; exit 1; }
