@@ -16,9 +16,15 @@ It is a foundation, not the whole house. You are still expected to **build your 
 
 **Test trees become requirements.** Instead of separate requirement documents and test code, contree puts `when/then` test trees directly in your project's `TEST_TREES.md` at the project root. Every test you write reifies exactly one tree.
 
-Seven skills:
+Thirteen skills:
 
-- **`/contree:setup`** — Configures your test framework with tree reporters, normal and functional test commands, an impact-selected `test-changed` command and Stop hook, a conventional linter with strong rules, save-time autofix and architecture enforcement through project-level hooks, and creates `TEST_TREES.md` when needed. Run once per project.
+- **`/contree:setup-test-feedback`** — Configures and verifies normal, functional, and impact-selected test feedback.
+- **`/contree:setup-linter`** — Installs strong conventional linting, runs autofix, repairs remaining violations, and adds save-time feedback.
+- **`/contree:setup-architecture-linter`** — Maps the project's real hexagonal boundaries, enforces them in CI and Stop hooks, and runs the rules immediately.
+- **`/contree:fix-architecture`** — Partitions architecture violations across subagents, reconciles their fixes, and reruns every rule until green.
+- **`/contree:bootstrap-test-trees`** — Uses one subagent wave to discover current behaviour with you, then a fresh wave to implement and run the agreed trees as tests.
+- **`/contree:setup-mutation-testing`** — Configures fast Domain and Use-case mutation feedback, runs it, and strengthens tests until the agreed threshold passes.
+- **`/contree:setup`** — The comprehensive setup: dynamically orchestrates every missing feedback loop, engages you at consequential decisions, uses subagents for independent work, and verifies the whole steering system before reporting success.
 - **`/contree:change`** — Write or modify test trees in `TEST_TREES.md` before any code is written. Auto-triggers when planning behaviour changes.
 - **`/contree:tdd`** — Auto-triggers when implementing behaviour. Runs one observable behaviour through RED, GREEN, and REFACTOR; excessive branching moves behind a passing mock and throwing stub, signalling a new TDD cycle for that unit.
 - **`/contree:sync`** — Uses subagents to audit every tree leaf, production code area, and mental-model heading, then proactively resolves drift according to operator intention. Suggests `second-opinion` once everything agrees.
@@ -54,7 +60,7 @@ Skills run automatically once installed. Hooks require the feature flags above. 
 
 ## How it works
 
-1. Run `/contree:setup` — sets up the test framework, normal and functional test commands, impact-selected tests after agent changes, strong linting with project-level autofix and architecture hooks, and creates `TEST_TREES.md` when needed
+1. Run the focused setup skill for the feedback you need, or `/contree:setup` for the comprehensive operator-guided workflow across tests, lint, architecture, test-tree bootstrap, and mutation testing
 2. When you plan a behaviour change, `/contree:change` writes or modifies test trees first
 3. `/contree:tdd` auto-triggers during implementation — outside-in TDD against test trees
 4. The stop hook keeps `CLAUDE.md` and `README.md` current after every response
