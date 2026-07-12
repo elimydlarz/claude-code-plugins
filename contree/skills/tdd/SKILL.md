@@ -28,6 +28,16 @@ If no tree covers the behaviour, stop. Do not invent the contract while implemen
 
 Use the test kind named by the current tree. The list classifies the current test; it is not an implementation order.
 
+## Unit Tests: Side Effects and Implementation Details
+
+Before asserting against a dependency mock, decide why the subject calls it.
+
+A side effect is an intentional change outside the test subject, such as publishing a message or writing data that the test does not read back. The interaction is part of the required behaviour. Assert that interaction and its meaningful arguments.
+
+A dependency read is an implementation detail when the subject only needs data to produce the result under test. The source of that data is not the required behaviour. Do not assert that interaction.
+
+Instead, set up the mock realistically: return the required data only when it receives the exact realistic invocation and arguments. Assert the subject's result. If the subject calls the dependency incorrectly, the mock does not provide the data, so the wrong interaction cannot make the test pass without an explicit interaction assertion.
+
 ## Process
 
 1 Write a test
