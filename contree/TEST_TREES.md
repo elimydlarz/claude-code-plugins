@@ -304,6 +304,7 @@ sync-audits-and-resolves (src: skills/sync/SKILL.md; system: test/sync-audits-an
   when sync is run
     then TEST_TREES.md is treated as the operator's expected behaviour and the coding agent's contract with the operator
     and the EARS forms bare then, while/then, when/then, where/then, and if/then are used to identify every leaf
+    and causal behaviour nests beneath the outcome that makes it possible
     and labelled src / domain / use-case / adapter / component / system / journey paths are verified against the filesystem
     and each test file's describe/it hierarchy is parsed and compared with its tree verbatim
     and every "none" value is treated as a gap to close
@@ -319,7 +320,7 @@ sync-audits-and-resolves (src: skills/sync/SKILL.md; system: test/sync-audits-an
     then each of its seven headings is reviewed with subagents
     and each heading's representation is checked for fit and usefulness against the codebase
     and the codebase is checked for whether it honours the representation
-  when an extracted unit has no tree and test at its natural lowest layer
+  when a substantive unit revealed by TDD has no tree and test at its natural lowest layer
     then the missing native coverage is closed immediately through TDD
     and existing higher-layer coverage is retained
     and every applicable layer tests the behaviour at its own seam
