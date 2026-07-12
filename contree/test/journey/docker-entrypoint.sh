@@ -328,6 +328,14 @@ case "$TEST_NAME" in
       echo "Comprehensive setup did not bootstrap the existing behaviour into trees and tests" >&2
       bootstrap_pass=0
     fi
+    if [ "$HARNESS" = "claude" ] && ! grep -q '"name":"Task"' "$TRANSCRIPT_FILE"; then
+      echo "Comprehensive setup did not use required subagent waves" >&2
+      bootstrap_pass=0
+    fi
+    if [ "$HARNESS" = "codex" ] && ! grep -Eq 'spawn_agent|"name":"collaboration.spawn_agent"' "$TRANSCRIPT_FILE"; then
+      echo "Comprehensive setup did not use required subagent waves" >&2
+      bootstrap_pass=0
+    fi
     if ! (cd "$PROJECT_DIR" && npm test && npm run test:functional && npm run test:mutate); then
       echo "Comprehensive setup did not leave normal, functional, and mutation feedback green" >&2
       bootstrap_pass=0

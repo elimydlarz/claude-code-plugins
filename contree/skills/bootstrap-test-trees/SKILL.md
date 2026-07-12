@@ -23,7 +23,9 @@ Propose complete, non-overlapping behavioural areas based on the project evidenc
 
 ### Discover in Parallel
 
-Dispatch subagents across the agreed non-overlapping areas. Give each subagent explicit ownership boundaries and require evidence from the files it inspected.
+Dispatch subagents across the agreed non-overlapping areas regardless of project size. A one-file project still receives a discovery subagent. Give each subagent explicit ownership boundaries and require evidence from the files it inspected.
+
+Both subagent waves are required behaviour, not an optimisation. Never replace either wave with your own direct work because the project appears small or obvious.
 
 Each discovery subagent returns:
 
@@ -50,13 +52,15 @@ Reconcile the result into one coherent `MENTAL_MODEL.md` and `TEST_TREES.md` wit
 6. `## Decision Rationale`
 7. `## Temporal View`
 
-Use `change` to create or modify the test-tree contract. Every discovered behaviour is expressed at its consumer-visible seam. Do not invent unsupported behaviour. Every tree names honest coverage, including `none` for tests that the implementation wave must add.
+Use `change` to create or modify the test-tree contract. Every tree starts with `<Layer>: <Subject> (<coverage>)` and expresses observable paths through EARS `then`, `while`, `when`, `where`, and `if` forms. Do not write ad-hoc headings, bullets, `File`, or `Coverage` fields as substitutes for a tree. Every discovered behaviour is expressed at its consumer-visible seam. Do not invent unsupported behaviour. Every tree names honest coverage, including `none` for tests that the implementation wave must add.
 
 Present the reconciled mental model and trees to the operator and obtain agreement before tests are implemented.
 
 ### Implement the Tests
 
 Start a second wave of subagents only after the operator agrees the contract. Partition complete non-overlapping trees across the second wave of subagents. One tree belongs to exactly one subagent.
+
+One tree maps to exactly one test file and one test file maps to exactly one tree. Separate behaviours into separate files when they are separate trees; never share one test file across multiple trees.
 
 Each implementation subagent uses `tdd` for its owned trees and:
 
@@ -65,6 +69,7 @@ Each implementation subagent uses `tdd` for its owned trees and:
 - makes each test hierarchy mirror its tree verbatim
 - updates the tree's coverage path when its test file is created
 - creates no placeholder, skipped, or fake tests
+- Do not write comments in test code
 - runs the narrowest owning test after every test addition
 
 Subagents do not weaken trees to make tests pass and do not edit trees outside their ownership.

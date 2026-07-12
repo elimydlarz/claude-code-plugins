@@ -42,7 +42,7 @@ SKILL="$PROJECT_ROOT/skills/bootstrap-test-trees/SKILL.md"
 
 @test "when an existing project is bootstrapped then change owns valid layered EARS trees with honest coverage" {
   run cat "$SKILL"
-  assert_output --partial "Use `change`"
+  assert_output --partial 'Use `change`'
   assert_output --partial '`<Layer>: <Subject> (<coverage>)`'
   assert_output --partial "EARS"
   assert_output --partial "Do not write ad-hoc headings, bullets, `File`, or `Coverage` fields"
