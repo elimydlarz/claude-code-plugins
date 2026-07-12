@@ -4,7 +4,6 @@ load test_helper
 
 TEST_FEEDBACK="$PROJECT_ROOT/skills/setup-test-feedback/SKILL.md"
 MUTATION_TESTING="$PROJECT_ROOT/skills/setup-mutation-testing/SKILL.md"
-CHANGE="$PROJECT_ROOT/skills/change/SKILL.md"
 
 @test "setup colocates Domain tests with source (*.domain.test.*)" {
   run cat "$TEST_FEEDBACK"
@@ -63,8 +62,8 @@ CHANGE="$PROJECT_ROOT/skills/change/SKILL.md"
   assert_output --partial "Use-case and Component"
 }
 
-@test "change wires System tests with real driven adapters at the highest tolerable realism by default" {
-  run cat "$CHANGE"
+@test "setup wires System tests with real driven adapters at the highest tolerable realism by default" {
+  run cat "$TEST_FEEDBACK"
   assert_output --partial "real driven adapters"
   assert_output --regexp "highest tolerable realism|max realism|max-realism"
 }

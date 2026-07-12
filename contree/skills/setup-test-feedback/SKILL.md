@@ -35,8 +35,16 @@ Map the fixed Contree strategy:
 
 - the normal command runs Unit, Port contract, Adapter, and Component tests
 - a separate functional command runs System and Journey tests
-- Component tests run in-process with external services replaced at their edges
-- System and Journey tests use real infrastructure at the highest tolerable realism
+- Domain tests are colocated with source as `*.domain.test.*`
+- Use-case tests are colocated with the use-case as `*.use-case.test.*`
+- Adapter tests for both driving and driven adapters are colocated with the adapter as `*.adapter.test.*`
+- Component tests live under `test/component/` as `*.component.test.*`
+- System tests live under `test/system/` as `*.system.test.*`
+- Journey tests live under `test/journey/` as `*.journey.test.*`
+- Component tests cover one capability in-process through real driving and driven adapters, with an in-memory database and stubbed outbound HTTP at the external edges
+- System tests use real driven adapters at the highest tolerable realism
+- Journey tests exercise real everything across the multi-capability arc at max realism
+- exhaustive single-capability breadth belongs at the Use-case and Component layers
 
 Use native project commands such as package scripts, Make targets, task aliases, build-tool tasks, or ecosystem equivalents. Do not create separate commands for every test layer.
 
