@@ -35,7 +35,7 @@ Make routine ecosystem choices directly. Do not turn conventional package instal
 
 Run each selected focused skill faithfully.
 
-Use subagents for independent, non-overlapping setup work that can safely proceed in parallel. Keep dependent feedback loops ordered: configure before fixing, establish trees before implementing their tests, and install mutation feedback after Domain and Use-case tests exist. Give every subagent explicit file or capability ownership. Reconcile their results yourself before starting dependent work.
+Use subagents for independent, non-overlapping setup work that can safely proceed in parallel. Keep dependent feedback loops ordered: configure before fixing, establish trees before implementing their tests, and install mutation feedback after Domain and Use-case tests exist. Give every subagent explicit file or capability ownership, then reconcile their results yourself before starting dependent work.
 
 Run `setup-test-feedback` before `bootstrap-test-trees` so the second bootstrap wave has working normal and functional commands. Run `setup-linter` before `setup-architecture-linter` so the combined lint command has a stable conventional-lint half. When architecture setup invokes `fix-architecture`, finish that repair before bootstrap records the project architecture.
 
@@ -50,7 +50,7 @@ Run every configured feedback command from the project root:
 - architecture lint and the actual project Stop hook
 - mutation testing
 
-Fix every failure through the focused skill that owns it, then rerun that command. Verify coding-harness hooks through real edit and Stop turns; files on disk are not proof that the harness loaded them.
+Fix every failure through the focused skill that owns it, then rerun that command and verify its feedback. Verify coding-harness hooks through real edit and Stop turns; files on disk are not proof that the harness loaded them.
 
 If any specialised setup skill cannot establish its feedback loop, fail visibly. Do not claim that the project is prepared.
 
