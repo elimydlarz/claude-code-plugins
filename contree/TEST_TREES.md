@@ -234,6 +234,10 @@ System: setup-prepares-project (src: skills/setup/SKILL.md; system: test/setup-p
     and setup engages the operator at each consequential framework, architecture, behavioural-scope, and mutation-threshold decision
     and setup orchestrates setup-test-feedback, setup-linter, setup-architecture-linter, bootstrap-test-trees, and setup-mutation-testing
     and setup uses subagents for independent setup work that can safely run in parallel and reconciles their results
+    and setup keeps focused-skill orchestration in the coordinator instead of delegating an entire focused skill to an unattended background agent
+    and setup waits for every selected phase and its subagents to finish before starting a dependent phase or reporting completion
+    and setup proves each phase from its required commands and retained artifacts rather than accepting a subagent summary as proof
+    and setup proves bootstrap retained layered EARS trees with exactly one test file per tree before mutation setup begins
     and setup runs every configured feedback command and fixes failures before reporting the project prepared
     and setup reports the installed commands, automatic hooks, test-tree coverage, and mutation result to the operator
   if any specialised setup skill cannot establish its feedback loop

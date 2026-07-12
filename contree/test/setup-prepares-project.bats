@@ -30,6 +30,22 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "reconcile"
 }
 
+@test "when comprehensive setup orchestrates focused skills then the coordinator does not abandon a focused skill in a background agent" {
+  run cat "$SKILL"
+  assert_output --partial "Do not delegate an entire focused skill"
+  assert_output --partial "unattended background agent"
+  assert_output --partial "wait for every selected phase"
+  assert_output --partial "no subagent is still running"
+}
+
+@test "when a focused setup phase reports completion then setup proves its retained artifacts before continuing" {
+  run cat "$SKILL"
+  assert_output --partial "Never accept a subagent summary as proof"
+  assert_output --partial "layered EARS tree"
+  assert_output --partial "exactly one retained test file"
+  assert_output --partial "before mutation setup begins"
+}
+
 @test "when an operator asks for comprehensive Contree setup then setup verifies and fixes every configured feedback command" {
   run cat "$SKILL"
   assert_output --partial "test"
