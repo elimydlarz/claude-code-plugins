@@ -19,7 +19,7 @@ SKILL="$PROJECT_ROOT/skills/bootstrap-test-trees/SKILL.md"
 @test "when an operator asks to bootstrap test trees for an existing project then the coding agent reconciles their evidence into one coherent MENTAL_MODEL.md and TEST_TREES.md with the operator" {
   run cat "$SKILL"
   assert_output --partial "Reconcile"
-  assert_output --partial "one coherent `MENTAL_MODEL.md` and `TEST_TREES.md`"
+  assert_output --partial 'one coherent `MENTAL_MODEL.md` and `TEST_TREES.md`'
   assert_output --partial "with the operator"
 }
 
@@ -44,8 +44,8 @@ SKILL="$PROJECT_ROOT/skills/bootstrap-test-trees/SKILL.md"
 
 @test "when an operator asks to bootstrap test trees for a new project then the skill creates the seven-section mental-model home and an empty test-tree home" {
   run cat "$SKILL"
-  assert_output --partial "seven-section `MENTAL_MODEL.md`"
-  assert_output --partial "empty `TEST_TREES.md`"
+  assert_output --partial 'seven-section `MENTAL_MODEL.md`'
+  assert_output --partial 'empty `TEST_TREES.md`'
 }
 
 @test "when an operator asks to bootstrap test trees for a new project then it leaves behaviour trees and tests to be pulled into existence by the first requested capability" {
@@ -57,6 +57,6 @@ SKILL="$PROJECT_ROOT/skills/bootstrap-test-trees/SKILL.md"
 @test "if bootstrapped tests expose behaviour that disagrees with the operator's intended contract then the disagreement is left visible and routed through change or tdd rather than weakened in the trees or tests" {
   run cat "$SKILL"
   assert_output --partial "Leave the disagreement visible"
-  assert_output --partial "route it through `change` or `tdd`"
+  assert_output --partial 'route it through `change` or `tdd`'
   assert_output --partial "Do not weaken the trees or tests"
 }
