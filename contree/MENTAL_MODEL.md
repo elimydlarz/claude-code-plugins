@@ -73,9 +73,9 @@
 
 ## Temporal View
 
-- Per project: run focused setup skills as steering needs change, or `setup` for the comprehensive suite; then repeat `change` → `sync` → `tdd` → `second-opinion` cycles (or `workflow` end-to-end).
-- Per behaviour: write one test → RED → implement to GREEN → REFACTOR excessive branching → create mock and throwing stub → green the consumer tests → repeat from step 1 for the unit.
-- Per failing test: write one, run it, see it fail, implement the minimum, see it pass; never batch.
+- Per project: focused setup skills evolve individual steering loops and `setup` composes the comprehensive harness; thereafter each behaviour skill runs when triggered, while `workflow` composes `change` → `sync` → `tdd` → `second-opinion` without pausing.
+- Per behaviour: select one contracted tree leaf → write one test → RED → implement to GREEN → REFACTOR excessive branching behind a mock and throwing stub → add the revealed unit's tree → repeat from RED at that unit's public seam.
+- Per sync: run the full suite → partition every leaf, all production code, and all seven mental-model headings across subagents → reconcile evidence → resolve every finding → rerun affected tests and the full suite until contract, tests, implementation, and mental model agree.
 - Per turn: the Stop hook fires a drift check after each response, with `stop_hook_active` preventing the hook from checking its own drift-check turn.
-- At end of work: mutation testing runs against Domain and Use-case as final validation.
+- At the end of `workflow`'s TDD phase: mutation testing validates Domain and Use-case tests before independent review.
 - Across sessions: SessionStart injects rules, mental model, and trees so every session starts in-context.
