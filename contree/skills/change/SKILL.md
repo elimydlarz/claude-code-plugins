@@ -9,13 +9,17 @@ Turn a requested behaviour change into a coherent edit to `TEST_TREES.md` that f
 
 Change owns trees. TDD owns tests and implementation.
 
+Before implementation, establish the expected behaviour in trees. Trees first, code second.
+
 ## Process
 
 ### 1. Inspect Reality
 
-Read the relevant mental model, trees, tests, and source before editing the contract.
+Discuss the behaviour change with the user before modifying trees.
 
-If trees and implementation already disagree in the affected area, reconcile that drift so the edited tree describes the intended post-change reality. Surface only consequential conflicts that cannot be resolved from the project.
+Read the relevant mental model, trees, actual tests, and source before drafting or modifying the contract. Compare the current tree and its paths with the actual tests and source locations in the affected area.
+
+If trees and implementation already disagree in the affected area, reconcile that pre-existing tree-code drift as part of the change so the edited tree describes one coherent intended post-change reality. Surface only consequential conflicts that cannot be resolved from the project.
 
 ### 2. Identify the Consumer
 
@@ -29,17 +33,20 @@ Identify:
 
 Describe outer interfaces in the consumer's vocabulary. Describe an inner unit using its own public inputs, outputs, and errors, but only when an existing consumer has forced that unit into existence.
 
-Pure functions are consumer-driven too: they exist because a caller needs to observe their result or error.
+Every layer is consumer-driven: the consumer is created before the thing it consumes is implemented. Domain, Use-case, and Port trees express what the outer consumer forced into existence and needs to observe.
+
+Pure functions are still consumer-driven: a caller forced the function into existence because it needs to observe its result or error.
 
 ### 3. Reflect Operator Intention
 
 Make the tree edit that most faithfully captures what the operator intends, including observable consequences discovered while tracing the change through the system.
 
 - Modify every existing path affected by the intended behaviour.
+- Change only affected paths. Do not rewrite paths that are not changing.
 - Follow the change through related trees, tests, and source to discover changed outcomes, side effects, prevented behaviour, and invariants.
 - Make complementary tree adjustments wherever those consequences alter the contract.
 - Add one tree for each new behavioural unit.
-- Remove paths that no longer describe supported behaviour.
+- Confirm with the user before removing a capability, then remove paths that no longer describe supported behaviour.
 - Do not design inner trees before a failing consumer test reveals their need.
 
 For a pure library, write the tree at the exported interface where the behaviour is consumed. Capture an invariant spanning slices as a System tree named for the policy.
@@ -56,7 +63,7 @@ Layers are `Journey`, `System`, `Component`, `Adapter`, `Use-case`, `Domain`, an
 
 The subject is the behaviour-bearing thing observed at that layer.
 
-One tree maps to exactly one test file. Its paths map verbatim to that file's `describe`/`it` hierarchy.
+One tree, one test file. One tree maps to exactly one test file. Its paths map verbatim to that file's `describe`/`it` hierarchy.
 
 Coverage is recorded as semicolon-separated labelled paths:
 
@@ -69,7 +76,7 @@ Labels are `src`, `domain`, `use-case`, `adapter`, `component`, `system`, and `j
 
 Use `none` when coverage is expected but missing. Omit categories that do not apply. Coverage may be attached to a subtree when a distinct file owns that behaviour.
 
-Treat dishonest coverage or file boundaries as design feedback and resolve the mismatch.
+Treat a mismatch between the consumer need and the file boundaries as design feedback. Resolve it until the coverage is honest.
 
 ### 5. Write Observable Paths
 
@@ -100,10 +107,10 @@ when <trigger>
       then <next outcome>
 ```
 
-Each path must:
+Journey, System, Component, and Adapter paths describe principles, not cases, in the consumer's vocabulary. Each path must:
 
 - describe observable behaviour, including side effects
-- state principles rather than enumerate examples
+- state principles rather than enumerate cases
 - add information rather than restate its condition
 - include meaningful negative behaviour
 - stand alone without references such as "see above"
@@ -111,7 +118,43 @@ Each path must:
 
 When behaviour is described as "just like" existing behaviour, write the paths in full. If duplication reveals one shared concept, collapse the subjects into one tree and let one generic implementation serve both.
 
-### 6. Let Tests Reveal the Layers
+Every `then` adds information that its condition does not already imply. Reject tautological outcomes.
+
+Causal nesting is mandatory: a `when` trigger made possible only by a preceding `then` outcome is not a sibling — it is a child of that outcome.
+
+### 6. Decompose from Consumer Pressure
+
+Capture the outermost consumer tree first: a Journey tree for a new user arc, or a System tree for a capability under an existing journey. Write only the outermost tree up front. A failing journey/functional test creates pressure for System and inner-layer trees.
+
+Plan the possible Journey → System → inner-layer movement without designing those inner trees. The higher-level tree and failing test create the demand for the next inner unit. Designing inner-layer trees from speculation is a YAGNI failure; an inner tree is not designed ahead of time when its consumer has not asked for it.
+
+Every behavioural unit with substantive observable behaviour gets one tree at its natural layer: Domain, Use-case, Adapter, or port contract. Name every tree for the subject with observable behaviour at that layer.
+
+The layers from outside inward are Journey, System, Component, Adapter, Use-case, Domain, and Port. Component tests use `*.component.test.*`, exercise one capability through its real adapters, and double external services only at the edge.
+
+Every layer is consumer-driven. The higher-level tree and failing test create the demand for the next inner unit. Use-case and Component are always written and exhaustive. Component and Use-case carry exhaustive single-capability coverage. System and Journey validate the same surfaces with real everything, selectively.
+
+Trivial units do not earn trees:
+
+- Trivial value objects don't earn a tree.
+- A use-case that just delegates to a single port doesn't earn a tree.
+- Thin adapters don't earn a tree unless they have adapter-specific behaviour beyond the port contract.
+
+Only substantive rules, non-trivial orchestration, non-trivial translation, and adapter-specific behaviour beyond the port contract earn separate inner trees.
+
+### 7. Model Outbound Capabilities
+
+When a side effect is identified, define an outbound port named for the capability, not technology. Ship the port in two flavours: an in-memory adapter and a real adapter. Write one shared contract suite for the port; both adapters must pass the shared contract suite.
+
+System tests do not lean on the in-memory twin. They wire real driven adapters and exercise real infrastructure. Use-case tests use the in-memory twin; System tests and production wire real adapters.
+
+### 8. Handle Cross-Cutting and Pure Behaviour
+
+Cross-cutting System trees capture app-level policies that span slices, such as auth enforcement, rate limiting, and error envelope. Write a System tree named for the policy rather than folding it into one slice.
+
+Pure libraries (no vertical slice) have no driving adapter, no use-case, and no driven port. Write a System tree only for a cross-function invariant observable across exported functions, such as all `ShortCode` operations preserving one encoding policy. If no cross-function invariant exists, omit System altogether and document the omission.
+
+### 9. Let Tests Reveal the Layers
 
 TDD turns the current tree into a failing consumer test. Its failure reveals the next missing behaviour or boundary.
 
@@ -138,10 +181,10 @@ Domain and Use-case trees describe Unit tests at their respective hexagonal posi
 
 Tests at different layers intentionally overlap while asserting different seams. Higher-level coverage does not replace the native test for behaviour it consumes.
 
-Only substantive rules, orchestration, translation, and adapter-specific behaviour earn separate inner trees. Trivial forwarding does not.
-
-When a use-case needs an outbound capability, define a capability-named port with an in-memory twin and a real adapter. Both pass the same Port contract.
+When a use-case needs an outbound capability, follow the outbound-port rules above.
 
 ## Finish
 
-Leave `TEST_TREES.md` with the coherent contract that best reflects operator intention and report what changed. Implementation proceeds through TDD.
+Leave `TEST_TREES.md` with the coherent contract that best reflects operator intention. Present the completed trees to the user for alignment and suggest running `sync`. Report what changed. Implementation proceeds through TDD.
+
+Every tree's first line is `<Layer>: <Subject> (<coverage>)`. Without the layer prefix, readers and sync cannot detect duplication across layers.
