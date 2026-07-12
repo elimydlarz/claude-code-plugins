@@ -37,7 +37,11 @@ Run each selected focused skill faithfully.
 
 Use subagents for independent, non-overlapping setup work that can safely proceed in parallel. Keep dependent feedback loops ordered: configure before fixing, establish trees before implementing their tests, and install mutation feedback after Domain and Use-case tests exist. Give every subagent explicit file or capability ownership, then reconcile their results yourself before starting dependent work.
 
+Keep ownership of the dynamic workflow in this coordinator. Do not delegate an entire focused skill to an unattended background agent. Invoke each focused skill yourself, let that skill dispatch its required bounded subagents, and wait for every selected phase to finish. Before advancing, confirm that no subagent is still running for that phase. A background task launch is not phase completion.
+
 Run `setup-test-feedback` before `bootstrap-test-trees` so the second bootstrap wave has working normal and functional commands. Run `setup-linter` before `setup-architecture-linter` so the combined lint command has a stable conventional-lint half. When architecture setup invokes `fix-architecture`, finish that repair before bootstrap records the project architecture.
+
+Gate dependent phases on retained evidence. Never accept a subagent summary as proof. After every focused skill, inspect its changed files and run its owning command. After `bootstrap-test-trees`, require at least one retained layered EARS tree for an existing project and exactly one retained test file for each tree, with its hierarchy mirrored, before mutation setup begins. If those artifacts are absent, resume or repair bootstrap instead of moving on.
 
 ## Verify
 
@@ -51,6 +55,8 @@ Run every configured feedback command from the project root:
 - mutation testing
 
 Fix every failure through the focused skill that owns it, then rerun that command and verify its feedback. Verify coding-harness hooks through real edit and Stop turns; files on disk are not proof that the harness loaded them.
+
+Before reporting, list every selected phase and prove that it passed its artifact gate, command gate, and subagent-completion gate. Do not mark an orchestration task complete while one of its focused-skill agents is still running.
 
 If any specialised setup skill cannot establish its feedback loop, fail visibly. Do not claim that the project is prepared.
 
