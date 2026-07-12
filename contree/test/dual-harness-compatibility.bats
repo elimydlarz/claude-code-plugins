@@ -164,9 +164,9 @@ load test_helper
   run grep -F "describe-it-drift — deterministic verification (no AI eval)" "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
   assert_success
 
-  run grep -F "request_user_input is unavailable" "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
+  run grep -F "test hierarchy now mirrors the tree" "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
   assert_success
 
-  run grep -F "transcript did not attempt unavailable request_user_input" "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
+  run grep -F "deterministic drift is resolved without asking the operator" "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
   assert_success
 }
