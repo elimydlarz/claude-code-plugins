@@ -26,35 +26,36 @@ Select one observable behaviour from one tree. Its test file's hierarchy mirrors
 
 Use the test kind named by the current tree. The list classifies the current test; it is not an implementation order.
 
+## Unit Test Mocks
+
+Before setting up mocks for a test, understand what that test asserts: its observable result and any intentional side effects. Everything else the subject does to produce that behaviour is an implementation detail.
+
+A side effect is an external impact the operator expects this test to guarantee. Set up the mock to record the interaction. Assert that it was called correctly with the meaningful arguments.
+
+An implementation detail is an interaction the test needs only because the subject currently works that way. Set up the mock to behave realistically only for the exact invocation and arguments. Do not assert against the interaction. Assert the subject's observable result. An incorrect interaction must not make the test pass.
+
 ## Process
 
-1 Write a test:
-  - TDD one test at a time
-  - Each test specifies an output or side-effect of the subject, given inputs and initial state
-2 (RED) Test fails:
-  - Observe red before changing implementation
-  - Confirm that the failure comes from the behaviour the test requires
-  - If a test expected to be red passes, show that it can fail before trusting it
-3 (GREEN) Implement:
-  - Implement only enough to make the test pass
-  - Run the test and observe it pass
-  - Do not add behaviour for tests that do not exist
-4 (REFACTOR):
-  - If you observe too much branching in test structure (e.g. an it block nested in 3 levels of describe blocks):
-    - This reveals excessive conditional logic in the test subject, no matter how cleverly hidden by syntax
-    - Imagine a new unit that can encapsulate some of that branching
-    - Create a mock and a stub implementation for the new unit
-      - Stub implementation throws NotImplemented
-    - Simplify the consumer tests so they pass only when the mock is consumed correctly
-    - Make the consumer call the new unit
-      - Test passes but real runtime throws NotImplemented
-    - TDD out the new unit (GOTO 1 but for the new unit)
-      - Replacing the NotImplemented with a real implementation through the same TDD process
-5 Next test: GOTO 1
+1 Write a test
+2 (RED) Test goes red
+3 (GREEN) Implement to green the test
+4 (REFACTOR) Observe too much branching in the test or tree - too many conditions
+5 Imagine a unit that can encapsulate some of that branching
+6 Create a mock and a stub implementation for that unit
+7 Make the consumer call the unit; the mock passes the tests while the stub throws NotImplemented
+8 TDD out the new unit (GOTO 1 but this time for the new unit)
 
-In this way we implement only what is needed, outside-in, consumer-driven, using test-driven design to infrom when and what to extract.
+Write and run one test at a time. Each test specifies an output or side effect of the subject given its public input and initial state. Observe RED before changing implementation. Confirm that the failure comes from the required behaviour. If a test expected to be red passes, show that it can fail before trusting it.
 
-This organic extension of test trees is part of the process, and should be reflected in test tree writes.
+Implement only enough real behaviour to pass the current test. Run it and observe GREEN. Do not add behaviour for tests that do not exist.
+
+During REFACTOR, inspect the passing test and its tree for too much branching in the test or tree under different conditions. Branching creates demand for a unit that encapsulates some of that branching. Do not predict units before that demand is observable.
+
+Create a mock for the unit. Give the mock a visible reason naming the branching it replaces. Create a stub implementation that throws `NotImplemented`. Simplify the consumer tests so they pass only when the mock is consumed correctly. Make the consumer call the unit. The consumer tests pass through the mock while running the code throws `NotImplemented`.
+
+The passing mock and throwing stub are the signal to TDD the new unit. Add its tree from the behaviour the consumer requires. Return to step 1 with that unit. Replace the throwing stub through its own RED-GREEN-REFACTOR cycle.
+
+Refactor only the behaviour just implemented. Duplication is a hint; branching under different conditions is the reason to extract a unit.
 
 ## Discipline
 
