@@ -1,23 +1,22 @@
 ## Core Domain Identity
 
-- Contree makes test trees the living contract: `TEST_TREES.md` IS the specification, kept in sync with implementation, never a stale parallel doc.
-- Development is outside-in and consumer-driven: each behaviour goes RED, GREEN, then REFACTOR; excessive branching is extracted behind a mock and throwing stub, signalling a new TDD cycle for that unit.
+- Contree makes `TEST_TREES.md` the living expression of operator intention and the coding agent's contract; Sync keeps trees, faithful tests, implementation, and the mental model in agreement with the intention shared by each leaf and test.
+- Development is outside-in and consumer-driven: each observable behaviour goes RED, GREEN, then REFACTOR; excessive branching is extracted behind a mock and throwing stub, signalling a new TDD cycle for that unit.
 - A tree is both specification (EARS `then`, `while`, `when`, `where`, and `if` forms in `TEST_TREES.md`) and structure (the test file's describe/it hierarchy, mirrored verbatim).
-- It ships as one product from one `contree/` directory under two harnesses (Claude Code, Codex) via parallel manifests over shared `skills/` and `hooks/`.
-- Coding rules (KISS, fail-fast, hexagonal, no comments, …) ride alongside the trees as the always-on operating discipline.
+- Coding rules (KISS, fail-fast, hexagonal, no comments, …) are injected at SessionStart as session-wide operating discipline alongside the mental model and trees.
 
 ## World-to-Code Mapping
 
-- Expected behaviour → a tree in `TEST_TREES.md`; anything observable anywhere (files, network, logs, next invocation) belongs there.
-- One tree → exactly one test file; the tree's EARS paths → that file's describe/it hierarchy, verbatim.
+- Operator-expected observable behaviour and side effects → EARS trees in `TEST_TREES.md`, the coding agent's contract with the operator; files, network, logs, and the next invocation all count as observable.
+- One `<Layer>: <Subject>` tree → exactly one test file; the tree's EARS paths → that file's describe/it hierarchy, verbatim.
 - The user-visible arc across capabilities → the **Journey** layer (`test/journey/*.journey.test.*`), the outermost layer and outside-in entry point.
-- A single capability wired whole-app → the **System** layer (real infrastructure; `test/system/*.system.test.*`) and the **Component** layer (externals doubled at the edge — in-memory database, stubbed outbound HTTP; `test/component/*.component.test.*`), both interior to the Journey.
+- A single capability wired whole-app → the **System** layer (real infrastructure; `test/system/*.system.test.*`) and the **Component** layer (real adapters with external services doubled only at the edge; `test/component/*.component.test.*`), both interior to the Journey.
 - Hexagonal seams → inner layers: Adapter (`*.adapter.test.*`), Use-case (`*.use-case.test.*`), Domain (`*.domain.test.*`).
-- A tree's coverage on disk → a parenthesised label set, one per layer: `src`, `domain`, `use-case`, `adapter`, `component`, `system`, `journey`; `none` marks a declared gap.
-- An outbound dependency → a Port; each Port ships an in-memory twin plus a real adapter, both bound by one shared `*.contract.ts` suite.
+- A tree's implementation and overlapping test coverage on disk → parenthesised labelled paths: `src`, `domain`, `use-case`, `adapter`, `component`, `system`, `journey`; `none` marks expected coverage not yet fulfilled, while inapplicable labels are omitted.
+- An outbound capability → a Port with an in-memory twin and real adapter, both passing one shared Port-contract suite.
 - Project steering → focused setup skills for test feedback, conventional lint, architecture lint and repair, test-tree bootstrap, and mutation feedback; `setup` orchestrates the complete suite.
-- Behaviour workflow → skills: `change`, `sync`, `tdd`, `second-opinion`, `workflow`.
-- Enforcement → hooks: SessionStart (rules + trees) and Stop (drift check).
+- Behaviour responsibility → `change` owns the operator contract; `tdd` owns tests and implementation; `sync` audits and resolves agreement across intention, trees, tests, code, and mental model; `second-opinion` reviews independently; `workflow` composes the arc.
+- Lifecycle hooks → SessionStart injects rules, mental model, and trees; Stop prompts review of the model, tree/implementation drift, CLAUDE.md, and README.
 - The product's theory → `MENTAL_MODEL.md` (this file); its behaviour → `TEST_TREES.md`; its operating discipline → the rules.
 
 ## Ubiquitous Language
