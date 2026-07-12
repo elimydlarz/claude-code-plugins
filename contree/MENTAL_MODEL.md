@@ -62,14 +62,14 @@
 
 ## Decision Rationale
 
-- Journey is canonised as distinct from System so the outside-in entry point is a real multi-capability arc — not a per-capability System test pressed into doing the arc's job; it is kept curated and under 5 minutes (highest-impact + most-recent steps) because it cannot be exhaustive — the lower layers carry the rest.
-- Mock-and-stub extraction prevents speculative decomposition: a lower unit exists only after branching demands it, with passing mock-based tests and a throwing stub making the unfinished work explicit.
-- Hexagonal layering is chosen over "unit/integration/functional" because seams give sharper targets; a green higher layer can still hide an untested seam. The cheap tier splits into Use-case (behaviour, in-memory twins) and Component (system, real adapters with edges doubled) so the assembled wiring the twins skip is still covered exhaustively without paying for real infrastructure.
-- Trees live in `TEST_TREES.md`, not a separate requirements doc, so spec and tests can never drift into two truths.
-- One source directory with parallel manifests avoids duplicating skills/hooks per harness; `CLAUDE_PLUGIN_ROOT` lets shared scripts run on both while harness adapters handle Codex-specific payload and transcript differences.
-- Enforcement is hook-driven rather than advisory prose, because rules in text alone get ignored under pressure.
+- Journey is distinct from System so the outside-in entry point can express a curated multi-capability arc while lower seams carry exhaustive breadth.
+- Mock-and-stub extraction prevents speculative decomposition: a lower unit exists only after observed branching demands it, with consumer tests passing through the mock and the throwing stub making unfinished runtime work explicit.
+- Tests are classified by observable seam because green higher-layer coverage cannot prove a lower seam; every applicable seam retains overlapping coverage, native lowest-layer coverage is mandatory, and YAGNI separately prevents unrevealed units.
+- Trees live in `TEST_TREES.md` as the single operator-owned behaviour contract rather than a second requirements document; one-tree/one-test structure makes drift inspectable and Sync resolves it.
+- Literal green assertions are insufficient for an operator contract, so Sync checks the intention shared by leaf, test, and implementation, resolves evidence-settled drift proactively, and escalates only genuinely under-determined conflicts.
+- One source directory and lifecycle hooks serve both harnesses: parallel manifests avoid duplicated skills, `$CLAUDE_PLUGIN_ROOT` resolves shared hooks, SessionStart injects context, and Stop prompts reconciliation.
 - Setup is split by feedback loop so each steering mechanism can be installed, run, repaired, and verified independently; comprehensive setup composes only the work the project needs.
-- The mental model is fixed at seven capped sections so it stays a theory, not a dumping ground.
+- The mental model uses seven fixed, bounded sections with merge and displacement discipline so it remains a theory rather than a dumping ground.
 
 ## Temporal View
 
