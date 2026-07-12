@@ -6,8 +6,8 @@ SKILL="$PROJECT_ROOT/skills/setup-test-feedback/SKILL.md"
 
 @test "when an operator asks to set up test feedback then the skill inspects the existing project and agrees the framework choice and command mapping with the operator before changing files" {
   run cat "$SKILL"
-  assert_output --partial "inspect the existing project"
-  assert_output --partial "agree the framework choice and command mapping with the operator before changing files"
+  assert_output --partial "Inspect the existing project"
+  assert_output --partial "Agree the framework choice and command mapping with the operator before changing files"
 }
 
 @test "when an operator asks to set up test feedback and it merges existing test configuration instead of replacing it" {
@@ -33,7 +33,7 @@ SKILL="$PROJECT_ROOT/skills/setup-test-feedback/SKILL.md"
 @test "when an operator asks to set up test feedback and a native test-changed command plus project Stop hooks give coding agents the impacted normal-test result after each turn" {
   run cat "$SKILL"
   assert_output --partial 'native `test-changed` command'
-  assert_output --partial "project-level `Stop` hooks"
+  assert_output --partial 'project-level `Stop` hooks'
   assert_output --partial "impacted normal-test result after each turn"
   assert_output --partial ".claude/settings.json"
   assert_output --partial ".codex/hooks.json"
@@ -44,7 +44,7 @@ SKILL="$PROJECT_ROOT/skills/setup-test-feedback/SKILL.md"
   assert_output --partial "Run both test commands"
   assert_output --partial "baseline"
   assert_output --partial "impact selection"
-  assert_output --partial "before reporting completion"
+  assert_output --partial "Do not report completion until"
 }
 
 @test "if a configured test command or project hook fails verification then the skill fixes the configuration and reruns verification until the feedback path works" {

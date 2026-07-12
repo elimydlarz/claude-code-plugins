@@ -7,7 +7,7 @@ SKILL="$PROJECT_ROOT/skills/setup-mutation-testing/SKILL.md"
 @test "when an operator asks to set up mutation testing then the skill inspects the source and test layout and agrees the mutation scope and useful feedback threshold with the operator" {
   run cat "$SKILL"
   assert_output --partial "Inspect the source and test layout"
-  assert_output --partial "agree the mutation scope and useful feedback threshold with the operator"
+  assert_output --partial "Agree the mutation scope and useful feedback threshold with the operator"
 }
 
 @test "when an operator asks to set up mutation testing and it configures the ecosystem's mutation tool to mutate production source while explicitly excluding every colocated test pattern" {
@@ -38,6 +38,6 @@ SKILL="$PROJECT_ROOT/skills/setup-mutation-testing/SKILL.md"
 @test "if surviving mutants keep the agreed threshold from passing then the skill strengthens the responsible Domain or Use-case tests and reruns only the affected mutation scope until it passes" {
   run cat "$SKILL"
   assert_output --partial "Strengthen the responsible Domain or Use-case tests"
-  assert_output --partial "rerun only the affected mutation scope"
+  assert_output --partial "Rerun only the affected mutation scope"
   assert_output --partial "until the agreed threshold passes"
 }
