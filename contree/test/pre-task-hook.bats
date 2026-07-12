@@ -84,9 +84,13 @@ run_hook_in() {
   assert_output --partial "RED"
   assert_output --partial "GREEN"
   assert_output --partial "REFACTOR"
-  assert_output --partial "observed branching"
+  assert_output --partial "too much branching"
   assert_output --partial "mock"
-  assert_output --partial "repeat the same TDD process from step 1 for that unit"
+  assert_output --partial "stub"
+  assert_output --partial "NotImplemented"
+  assert_output --partial "mock makes the consumer tests pass"
+  assert_output --partial "stub makes running code fail loudly"
+  assert_output --partial "repeat the TDD process from step 1 for the new unit"
 }
 
 @test "session start directs the agent to decide obvious questions itself rather than asking the user" {

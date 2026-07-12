@@ -33,11 +33,11 @@ Use the test kind named by the current tree. The list classifies the current tes
 1 Write a test
 2 (RED) Test goes red
 3 (GREEN) Implement to green the test
-4 (REFACTOR) Observe branching in the test - different behaviour under different conditions
-5 Imagine a unit that can encapsulate the branching
-6 Mock that unit and simplify tests such that they only work when mock is consumed correctly
-7 Consume the mock in implementation to pass the tests
-8 TDD out the mocked unit (GOTO 1 but this time for the mocked unit)
+4 (REFACTOR) Observe too much branching in the test or tree - too many conditions
+5 Imagine a unit that can encapsulate some of that branching
+6 Create a mock and a stub implementation for that unit
+7 Make the consumer call the unit; the mock passes the tests while the stub throws NotImplemented
+8 TDD out the new unit (GOTO 1 but this time for the new unit)
 
 ## Write a Test
 
@@ -59,32 +59,33 @@ Run the test and observe it pass. Do not add behaviour for tests that do not exi
 
 ## REFACTOR
 
-Observe whether the passing test contains different behaviour under different conditions.
+Observe whether the passing test or its tree contains too much branching under different conditions.
 
-Only observed branching creates demand for a new unit. Do not predict units or extract trivial forwarding.
+Do not predict units. Wait until the conditions in front of you show that one unit could own some of that branching.
 
-When one unit can encapsulate the branching:
+When that happens:
 
-1. Mock that unit.
+1. Create a mock for the unit.
 2. Give the mock a visible reason for existing.
-3. Simplify the consumer tests so they pass only when the mock is consumed correctly.
-4. Change the consumer implementation to consume it.
-5. Keep the consumer tests green.
+3. Create a stub implementation that throws `NotImplemented`.
+4. Simplify the consumer tests so they pass only when the mock is consumed correctly.
+5. Make the consumer call the unit.
 
-The mock now shows what the new unit must do.
+Now the consumer tests pass because they use the mock, but running the code throws `NotImplemented` when it reaches the stub. That is intentional: the consumer needs the new unit, but the unit does not work yet.
 
-## Repeat for the Mocked Unit
+## TDD the New Unit
 
-The mock names the next subject.
+The passing mock and throwing stub are the signal to TDD the new unit.
 
-1. Add a tree for the behaviour expected from that mock.
-2. Repeat from step 1 with that unit.
-3. When its tests pass
+1. Add its tree from the behaviour the consumer requires.
+2. Return to step 1 with that unit.
+3. Replace the throwing stub by making the unit's tests pass.
 
-Production uses the real unit; the consumer test keeps the mock.
+That is the whole recursion: a mock makes the consumer tests pass, a stub makes the unfinished unit fail loudly, and the TDD loop moves to that unit.
 
 ## Discipline
 
+- Refactor only the behaviour just implemented.
 - Duplication is a hint; branching under different conditions is the reason to imagine a unit.
 - Keep every existing consumer test that still describes supported behaviour.
 - Update the tree's labelled coverage paths immediately when creating, moving, or renaming a test or source file, and replace the corresponding `none` when coverage lands.
@@ -98,4 +99,4 @@ TDD is complete when:
 - Every mocked unit has its own tree and test file.
 - Every test hierarchy mirrors its tree verbatim.
 - Every coverage path names the files that exist.
-- Production consumes real units; mocks remain in tests.
+- No `NotImplemented` stub remains.

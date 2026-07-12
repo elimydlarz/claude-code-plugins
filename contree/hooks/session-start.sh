@@ -17,7 +17,7 @@ Use Contree skills as directed by their frontmatter: **change**, **tdd**, **sync
 - **Resolve uncertainty** — look directly and remove optionality; don't hedge with fallbacks
 - **Avoid nullability** — make things required; don't program defensively
 - **Avoid indirection** — direct is better than conforming to arbitrary patterns
-- **No fake code** — no skeletons, placeholders, or temporary implementations
+- **No fake code** — no skeletons, placeholders, or temporary implementations that pretend behaviour works. During TDD extraction, a new unit may begin as a stub that throws `NotImplemented`; that loud failure immediately drives the TDD loop for the unit.
 - **Typing** — type everything; no `any`
 - **No comments** — descriptive tests and expressive code obviate comments; comments bias agents against change, but trees and tests make the contract explicit so code can change radically. Never pollute the codebase with comments, fallbacks, or excuses — set expectations in test trees, enforce them in tests, express them in code.
 - **Composition over inheritance** — no `extends`; use hooks, functional utilities, component composition
@@ -36,7 +36,7 @@ Use Contree skills as directed by their frontmatter: **change**, **tdd**, **sync
   - Adapter: test of one concrete boundary implementation against the real boundary it adapts: HTTP, CLI, database, filesystem, queue, third-party API, etc.
   - Port contract: tests for an application interface such as a repository, gateway, or store; each implementation of that interface must pass those tests.
   - Unit: test of one public surface on one subject; every public surface gets native unit tests, and every dependency outside the subject is mocked.
-- **Outside-in TDD** — start from the behaviour in the current tree and its consumer. Write a test, observe RED, implement GREEN, then during REFACTOR observe branching under different conditions. Mock a unit that can encapsulate that observed branching, simplify the consumer tests so they require the mock to be consumed correctly, change the consumer to consume it, and repeat the same TDD process from step 1 for that unit. Do not design lower units before passing consumer tests reveal their need.
+- **Outside-in TDD** — start from the behaviour in the current tree and its consumer. Write a test, observe RED, implement GREEN, then during REFACTOR notice too much branching in the test or tree. Extract some branching into a new unit with a mock and a stub that throws `NotImplemented`. The mock makes the consumer tests pass; the stub makes running code fail loudly. That is the signal to repeat the TDD process from step 1 for the new unit.
 - **Debugging means a test gap** — if you're debugging, the tests weren't good enough. Before fixing, find the tree path that should have caught the bug (add it if it's missing), write the failing test, then fix the code.
 - **Behaviour, not internals** — every tree describes what crosses its level's interface (inputs, outputs, side-effects). Never the implementation inside. Journey/System/Adapter speak the consumer's vocabulary; Domain/Use-case/Port-contract speak the unit's own functions, types, and errors — both only as observable at the seam.
 - **No env-var behaviour switches** — do not use environment variables to vary behaviour between test and runtime

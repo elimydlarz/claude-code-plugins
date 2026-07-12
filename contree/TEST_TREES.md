@@ -46,20 +46,23 @@ outside-in-tdd (src: skills/tdd/SKILL.md; system: test/outside-in-tdd.bats; jour
     then Journey, System, Component, Adapter, Port contract, and Unit are defined in the same concise terms as the session rules
     and the test kind describes the current test rather than a predetermined implementation order
   when implementing the selected behaviour
-    then the exact process is write a test, observe RED, implement to GREEN, observe branching during REFACTOR, imagine a unit that encapsulates the branching, mock that unit, consume the mock in implementation, and TDD the mocked unit by returning to the first step
+    then the exact process is write a test, observe RED, implement to GREEN, observe too much branching in the test or tree during REFACTOR, imagine a unit that encapsulates some of that branching, create its mock and throwing stub, make the consumer call it, and TDD the new unit by returning to the first step
     and only one test is written and run at a time
     and only enough real behaviour to pass that test is implemented
-  when the passing test contains different behaviour under different conditions
+  when the passing test or its tree contains too much branching under different conditions
     then a unit that can encapsulate that branching is imagined
     and the unit is not designed before the branching is observed
   when the imagined unit is mocked
     then the consumer tests are simplified so they pass only when the mock is consumed correctly
-    and the consumer implementation consumes the mock to pass those tests
     and the mock visibly names why it exists
+    and a stub implementation of the unit throws NotImplemented
+    and the consumer implementation calls the unit
+    and the consumer tests pass through the mock while running the code fails at the throwing stub
   when the mocked unit becomes the TDD subject
-    then its own tree describes the behaviour expected by the mock before its first test
+    then the passing mock and throwing stub signal that the new unit must be TDDed
+    and its own tree describes the behaviour its consumer requires before its first test
     and the TDD process returns to step 1 with that unit as the new subject
-    and when the unit is green production uses the real unit while the original consumer test keeps the mock
+    and its implementation replaces the throwing stub as its tests are made green
   when a test is expected to be red
     then the failure is observed before implementation
     and an incidentally passing test is shown to fail before it is trusted
@@ -73,7 +76,7 @@ outside-in-tdd (src: skills/tdd/SKILL.md; system: test/outside-in-tdd.bats; jour
     then every affected tree path passes
     and every mocked unit has its own tree and test file
     and test hierarchies mirror their trees verbatim
-    and production consumes real units while mocks remain in tests
+    and no NotImplemented stub remains
 ```
 
 ## pre-task-hook
@@ -90,9 +93,9 @@ pre-task-hook (src: hooks/session-start.sh; system: test/pre-task-hook.bats; jou
     and the agent is directed to describe each level's observable behaviour at its interface — inputs, outputs, and side-effects — not the implementation inside it
     and the agent is directed that Journey, System, Component, Adapter, Port contract, and Unit are the test kinds
     and the agent is directed to work outside-in and consumer-driven from the behaviour in the current tree
-    and the agent is directed to write a test, observe RED, implement GREEN, then observe branching during REFACTOR
-    and the agent is directed to mock a unit that can encapsulate observed branching, simplify the consumer tests around its correct consumption, and repeat the TDD process from step 1 for that unit
-    and the agent is directed not to design lower units before passing consumer tests reveal their need
+    and the agent is directed to write a test, observe RED, implement GREEN, then notice too much branching in the test or tree during REFACTOR
+    and the agent is directed to extract some branching into a new unit with a mock and a stub that throws NotImplemented
+    and the agent is directed that the mock makes consumer tests pass while the stub makes running code fail loudly, signalling that the TDD process repeats from step 1 for the new unit
     and the agent is directed to decide obvious questions itself rather than asking the user — consulting these rules and the mental model first, then its own best judgment from the code in front of it, escalating to the user only a consequential, genuinely under-determined choice that neither resolves
     and the agent is directed to apply the same ladder to anything it would flag, caveat, or surface — fixing it where these rules or the mental model direct, else using its judgment, else staying silent rather than reporting it
     and the agent is directed to use Contree skills as directed by skill frontmatter

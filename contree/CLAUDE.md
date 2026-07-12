@@ -24,7 +24,7 @@ Mechanisms:
 
 ## Mental Model
 
-The mental model lives in [MENTAL_MODEL.md](./MENTAL_MODEL.md) — Core Domain Identity, World-to-Code Mapping, Ubiquitous Language, Bounded Contexts, Invariants, Decision Rationale, and Temporal View. It defines the test-layer model and the outside-in flow: RED, GREEN, then REFACTOR observed branching into a mocked unit and repeat from step 1 for that unit.
+The mental model lives in [MENTAL_MODEL.md](./MENTAL_MODEL.md) — Core Domain Identity, World-to-Code Mapping, Ubiquitous Language, Bounded Contexts, Invariants, Decision Rationale, and Temporal View. It defines the test-layer model and the outside-in flow: RED, GREEN, then REFACTOR excessive branching behind a mock and `NotImplemented` stub; passing consumer tests plus the throwing stub signal a new TDD cycle for that unit.
 
 Flow: `setup` prepares the project for test-tree-driven development → `change` sets expected behaviour → `sync` identifies gaps and cruft → `tdd` closes gaps → `second-opinion` gets an independent review of the completed work from a different model. Or use `workflow` for the full arc without pausing. The stop hook guards the contract throughout. Rules apply always.
 

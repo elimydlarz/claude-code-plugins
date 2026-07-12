@@ -10,7 +10,7 @@ contree does not turn a prompt into shipped software while you watch. **You stay
 
 What contree gives you is a **very strong harness, bootstrapped for you**: the outside-in layered testing discipline, the trees-as-contract invariant, the skills that route you through change → sync → tdd → second-opinion, and the hooks that keep everything honest. That harness is a general way of working with AI — not tied to any one stack or domain.
 
-It is a foundation, not the whole house. You are still expected to **build your project-level harness on top** — your own fixtures, runners, conventions, and domain detail. contree gets you a rigorous starting point and keeps you honest as you go; the specifics of your project remain yours to develop. Tests are layered — Journey, System, Component, Adapter, Port contract, Unit — but those kinds are not a prescribed implementation order. TDD starts outside-in from the current tree's consumer: write one test, observe RED, implement GREEN, then during REFACTOR observe branching under different conditions. When a unit can encapsulate that branching, mock it, simplify the consumer tests so they require correct consumption, change the consumer to consume it, and repeat from step 1 for that unit. The original consumer test remains while the new unit receives its own tree and tests.
+It is a foundation, not the whole house. You are still expected to **build your project-level harness on top** — your own fixtures, runners, conventions, and domain detail. contree gets you a rigorous starting point and keeps you honest as you go; the specifics of your project remain yours to develop. Tests are layered — Journey, System, Component, Adapter, Port contract, Unit — but those kinds are not a prescribed implementation order. TDD starts outside-in from the current tree's consumer: write one test, observe RED, implement GREEN, then during REFACTOR notice too much branching in the test or tree. Extract some branching into a new unit with a mock and a stub that throws `NotImplemented`. The mock makes the consumer tests pass; the stub makes running code fail loudly. That is the signal to give the unit its own tree and repeat the TDD process from step 1 for it.
 
 ## What it does
 
@@ -20,7 +20,7 @@ Seven skills:
 
 - **`/contree:setup`** — Configures your test framework with tree reporters, normal and functional test commands, an impact-selected `test-changed` command and Stop hook, a conventional linter with strong rules, save-time autofix and architecture enforcement through project-level hooks, and creates `TEST_TREES.md` when needed. Run once per project.
 - **`/contree:change`** — Write or modify test trees in `TEST_TREES.md` before any code is written. Auto-triggers when planning behaviour changes.
-- **`/contree:tdd`** — Auto-triggers when implementing behaviour. Runs one observable behaviour through RED, GREEN, and REFACTOR; when observed branching is moved behind a mock, the process repeats from step 1 for that unit.
+- **`/contree:tdd`** — Auto-triggers when implementing behaviour. Runs one observable behaviour through RED, GREEN, and REFACTOR; excessive branching moves behind a passing mock and throwing stub, signalling a new TDD cycle for that unit.
 - **`/contree:sync`** — Audits test trees against implementation, finds gaps and drift, then TDDs any gaps closed. Suggests `second-opinion` once you're in sync.
 - **`/contree:workflow`** — Runs change → sync → tdd → second-opinion end-to-end without pausing.
 - **`/contree:second-opinion`** — Sends the current change and your test-tree contract to Z.AI's GLM 5.2 with `ZAI_API_KEY`, or to DeepSeek with `DEEPSEEK_API_KEY`, for an independent review of completed work, then surfaces its critique. Fails loudly rather than fabricating a review.
@@ -73,7 +73,7 @@ Tests are **layered outside-in**, each layer owning complete coverage of its own
 - **Use-case** (`*.use-case.test.*`) — orchestration over in-memory ports.
 - **Domain** (`*.domain.test.*`) — the pure core, no I/O.
 
-The test kinds define what each test exercises, not an implementation sequence. Development remains outside-in and consumer-driven: start from the current consumer, make one behaviour pass, then let observed branching during refactoring create demand for a mocked unit. Give that unit its own tree and repeat from step 1 for it. The consumer test remains, so overlap proves the consumer and the extracted unit independently.
+The test kinds define what each test exercises, not an implementation sequence. Development remains outside-in and consumer-driven: start from the current consumer, make one behaviour pass, then move excessive branching behind a mock and a stub that throws `NotImplemented`. Passing consumer tests prove the mock is consumed correctly; the throwing stub shows the new unit is unfinished and must begin its own TDD cycle.
 
 This is the standardised foundation. Your project's own fixtures, runners, and conventions are layered on top of it.
 

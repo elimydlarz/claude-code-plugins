@@ -1,7 +1,7 @@
 ## Core Domain Identity
 
 - Contree makes test trees the living contract: `TEST_TREES.md` IS the specification, kept in sync with implementation, never a stale parallel doc.
-- Development is outside-in and consumer-driven: each behaviour goes RED, GREEN, then REFACTOR; observed branching creates demand for a mocked unit that is TDDed through the same cycle.
+- Development is outside-in and consumer-driven: each behaviour goes RED, GREEN, then REFACTOR; excessive branching is extracted behind a mock and throwing stub, signalling a new TDD cycle for that unit.
 - A tree is both specification (EARS `when/then` in `TEST_TREES.md`) and structure (the test file's describe/it hierarchy, mirrored verbatim).
 - It ships as one product from one `contree/` directory under two harnesses (Claude Code, Codex) via parallel manifests over shared `skills/` and `hooks/`.
 - Coding rules (KISS, fail-fast, hexagonal, no comments, …) ride alongside the trees as the always-on operating discipline.
@@ -33,7 +33,7 @@
 - Shared contract suite — one `*.contract.ts` both adapters must pass, making in-memory substitution sound.
 - Slice — one consumer-visible capability; a Journey traverses several.
 - Outside-in — start from the current tree's consumer, implement its behaviour, then let its passing tests reveal deeper units.
-- Mocked unit — a unit imagined to own observed branching; once its consumer uses the mock, TDD repeats from step 1 for that unit.
+- Mocked unit — a unit imagined to own some observed branching; its mock passes consumer tests while its stub throws `NotImplemented` until the unit is TDDed.
 - Coverage-by-proxy — a unit reachable only through higher-layer tests with no tree at its native layer; treated as uncovered.
 - Drift — divergence between trees and implementation in either direction.
 - Coverage categories — one per layer: `src`, `domain`, `use-case`, `adapter`, `component`, `system`, `journey`.
@@ -52,7 +52,7 @@
 - Trees are the contract: every behaviour/side-effect has a tree; every tree has a test; every test drives real implementation.
 - One tree reifies exactly one test file; the describe/it hierarchy mirrors the tree verbatim.
 - Outside-in TDD begins with the current tree's consumer and keeps implementation flat through RED and GREEN before REFACTOR reveals branching under different conditions.
-- Observed branching creates a mocked unit; after the consumer uses the mock, the unit receives its own tree and repeats TDD from step 1.
+- Excessive branching creates a mock and a `NotImplemented` stub; passing consumer tests plus failing code signal that the unit receives its own tree and repeats TDD from step 1.
 - The original consumer test remains while every mocked unit gains its own complete tree and tests; overlap proves different subjects.
 - Use-case is to Component as Journey is to System: the cheap tier (Use-case in-memory twins; Component real adapters with edges doubled) is always written and exhaustive; the real tier (System, Journey; real infrastructure) is selective. Component and System cover the same single-capability surface at two realism levels.
 - Each outbound Port has an in-memory twin and a real adapter, both bound by one shared contract suite.
@@ -63,7 +63,7 @@
 ## Decision Rationale
 
 - Journey is canonised as distinct from System so the outside-in entry point is a real multi-capability arc — not a per-capability System test pressed into doing the arc's job; it is kept curated and under 5 minutes (highest-impact + most-recent steps) because it cannot be exhaustive — the lower layers carry the rest.
-- Recursive mock-driven extraction prevents speculative decomposition: a lower unit exists only after passing consumer tests reveal branching and prove how that unit is consumed.
+- Mock-and-stub extraction prevents speculative decomposition: a lower unit exists only after branching demands it, with passing mock-based tests and a throwing stub making the unfinished work explicit.
 - Hexagonal layering is chosen over "unit/integration/functional" because seams give sharper targets; a green higher layer can still hide an untested seam. The cheap tier splits into Use-case (behaviour, in-memory twins) and Component (system, real adapters with edges doubled) so the assembled wiring the twins skip is still covered exhaustively without paying for real infrastructure.
 - Trees live in `TEST_TREES.md`, not a separate requirements doc, so spec and tests can never drift into two truths.
 - One source directory with parallel manifests avoids duplicating skills/hooks per harness; `CLAUDE_PLUGIN_ROOT` lets shared scripts run on both while harness adapters handle Codex-specific payload and transcript differences.
@@ -73,7 +73,7 @@
 ## Temporal View
 
 - Per project: `setup` once → then `change` → `sync` → `tdd` → `second-opinion` cycles (or `workflow` end-to-end), repeatedly.
-- Per behaviour: write one test → RED → implement to GREEN → REFACTOR observed branching → mock the imagined unit → simplify its consumer → repeat from step 1 for the unit.
+- Per behaviour: write one test → RED → implement to GREEN → REFACTOR excessive branching → create mock and throwing stub → green the consumer tests → repeat from step 1 for the unit.
 - Per failing test: write one, run it, see it fail, implement the minimum, see it pass; never batch.
 - Per turn: the Stop hook fires a drift check after each response, with `stop_hook_active` preventing the hook from checking its own drift-check turn.
 - At end of work: mutation testing runs against Domain and Use-case as final validation.
