@@ -89,6 +89,6 @@ Keep the hook synchronous so automatic changes and failures reach the coding age
 
 Run autofix across the whole existing project. Then run the non-fixing lint command across the whole project.
 
-Fix remaining violations directly. Do not merely list them or ask the operator to fix them. Preserve intended behavior and project-owned rules. Rerun lint after every repair batch until it passes.
+Fix remaining violations directly. Do not merely list them or transfer the repair work to the operator. Preserve intended behavior and project-owned rules. Rerun lint after every repair batch until it passes.
 
 Verify the CI gate and verify the hook through an actual coding-agent edit. Do not report completion until lint passes and the save-time feedback path has been exercised successfully.

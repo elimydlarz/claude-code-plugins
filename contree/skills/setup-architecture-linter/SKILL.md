@@ -11,7 +11,7 @@ Turn the project's intended hexagonal boundaries into fast executable feedback, 
 
 Read `MENTAL_MODEL.md`, manifests, source, tests, imports, existing lint configuration, CI, and coding-harness hooks. Map the actual source layout: every domain, use-case, port, adapter, infrastructure, and composition root location. Identify the single composition root from running code rather than assuming a conventional filename.
 
-Present the complete map and proposed enforced boundaries to the operator. Agree the map with the operator before changing files because a wrong boundary changes the architecture rather than merely configuring feedback.
+Present the complete map and proposed enforced boundaries to the operator. Then agree the map with the operator before changing files because a wrong boundary changes the architecture rather than merely configuring feedback.
 
 The required rules are:
 
