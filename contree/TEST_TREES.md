@@ -45,12 +45,15 @@ outside-in-tdd (src: skills/tdd/SKILL.md; system: test/outside-in-tdd.bats; jour
   when choosing a test kind
     then Journey, System, Component, Adapter, Port contract, and Unit are defined in the same concise terms as the session rules
     and the test kind describes the current test rather than a predetermined implementation order
-  when the operator intends a Unit dependency interaction itself to have an external impact
-    then the interaction is asserted because that impact is part of the required observable behaviour
-  when a Unit dependency interaction is only how the current implementation produces the required outcome
-    then the interaction is treated as an incidental implementation detail and is not asserted
-    and the mock responds only to the exact realistic invocation and arguments
-    and the test asserts the subject's observable result, so an incorrect interaction cannot make the test pass
+  when a Unit test has dependency interactions
+    then each interaction is identified as an intentional external impact or incidental implementation detail before mocks and assertions are set up
+    when the operator intends the external impact itself
+      then the mock is set up to record the interaction
+      and the test asserts that it is called correctly with meaningful arguments
+    when the interaction is only how the current implementation produces the required outcome
+      then the mock responds only to the exact realistic invocation and arguments
+      and the interaction is not asserted
+      and the test asserts the subject's observable result, so an incorrect interaction cannot make the test pass
   when implementing the selected behaviour
     then the exact process is write a test, observe RED, implement to GREEN, observe too much branching in the test or tree during REFACTOR, imagine a unit that encapsulates some of that branching, create its mock and throwing stub, make the consumer call it, and TDD the new unit by returning to the first step
     and only one test is written and run at a time

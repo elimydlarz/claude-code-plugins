@@ -23,22 +23,26 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
   assert_output --partial "not an implementation order"
 }
 
-@test "when the operator intends a Unit dependency interaction to have external impact then it is asserted" {
+@test "when a Unit test has dependency interactions then they are identified before mocks and assertions are set up" {
   run cat "$SKILL"
-  assert_output --partial "whether the operator intends the interaction itself to happen"
-  assert_output --partial "An intentional external impact is part of the required behaviour"
-  assert_output --partial "publishing a message"
-  assert_output --partial "Assert that interaction"
+  assert_output --partial "Before setting up dependency mocks or assertions"
+  assert_output --partial "identify each interaction as either an intentional external impact or an incidental implementation detail"
 }
 
-@test "when a Unit dependency interaction is incidental to the current implementation then strict realistic setup replaces assertion" {
+@test "when the operator intends the external impact then the mock records it and the test asserts it was called correctly" {
   run cat "$SKILL"
-  assert_output --partial "An incidental dependency interaction is only how the current implementation"
-  assert_output --partial "The operator does not require that particular interaction."
-  assert_output --partial "Do not assert it."
-  assert_output --partial "exact realistic invocation and arguments"
+  assert_output --partial "The operator intends an external impact"
+  assert_output --partial "Set up the mock to record the interaction"
+  assert_output --partial "Assert that it was called correctly with the meaningful arguments"
+}
+
+@test "when a dependency interaction is an incidental implementation detail then strict realistic setup replaces assertion" {
+  run cat "$SKILL"
+  assert_output --partial "The interaction is an incidental implementation detail"
+  assert_output --partial "Set up the mock to behave realistically"
+  assert_output --partial "only for the exact invocation and arguments"
+  assert_output --partial "Do not assert against the interaction."
   assert_output --partial "Assert the subject's observable result."
-  assert_output --partial "without making the incidental interaction part of the contract"
 }
 
 @test "when implementing the selected behaviour then the exact recursive TDD process is given" {
