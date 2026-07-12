@@ -18,20 +18,22 @@ test-trees-as-requirements (system: test/test-trees-as-requirements.bats)
     then the tree is updated to reflect reality
 ```
 
-## setup-scaffolds-mental-model
+## bootstrap-test-trees
 
 ```
-setup-scaffolds-mental-model (src: skills/setup/SKILL.md; system: test/setup-scaffolds-mental-model.bats; journey: test/journey/docker-entrypoint.sh)
-  when setup is run and MENTAL_MODEL.md does not exist
-    then MENTAL_MODEL.md is created with seven H2 sections
-    and the seven sections are: Core Domain Identity, World-to-Code Mapping, Ubiquitous Language, Bounded Contexts, Invariants, Decision Rationale, Temporal View
-    and each section is followed by a one-line placeholder describing what belongs there
-  when setup is run and MENTAL_MODEL.md already exists
-    then its content is not modified
-  when setup is run and CLAUDE.md does not reference MENTAL_MODEL.md
-    then a pointer line is added to CLAUDE.md identifying MENTAL_MODEL.md as the definition of the mental model
-  when setup is run and CLAUDE.md already references MENTAL_MODEL.md
-    then the pointer is not duplicated
+System: bootstrap-test-trees (src: none; system: none; journey: none)
+  when an operator asks to bootstrap test trees for an existing project
+    then the skill explains the evidence it will gather and agrees the behavioural scope with the operator
+    and subagents inspect non-overlapping areas of the project for observable behaviour, tests, architecture, and mental-model concepts
+    and the coding agent reconciles their evidence into one coherent MENTAL_MODEL.md and TEST_TREES.md with the operator
+    and every discovered behaviour is expressed at its consumer-visible seam without inventing unsupported behaviour
+    and a second wave of subagents implements non-overlapping test trees as tests whose hierarchy mirrors each tree verbatim
+    and the coding agent reconciles the test implementations and runs the normal and functional test commands
+  when an operator asks to bootstrap test trees for a new project
+    then the skill creates the seven-section mental-model home and an empty test-tree home
+    and it leaves behaviour trees and tests to be pulled into existence by the first requested capability
+  if bootstrapped tests expose behaviour that disagrees with the operator's intended contract
+    then the disagreement is left visible and routed through change or tdd rather than weakened in the trees or tests
 ```
 
 ## outside-in-tdd
@@ -140,81 +142,99 @@ post-task-hook (src: hooks/stop-drift-check.sh; system: test/post-task-hook.bats
     and emits the normal drift prompt instead of failing
 ```
 
+## setup-test-feedback
+
+```
+System: setup-test-feedback (src: none; system: none; journey: none)
+  when an operator asks to set up test feedback
+    then the skill inspects the existing project and agrees the framework choice and command mapping with the operator before changing files
+    and it merges existing test configuration instead of replacing it
+    and it configures tree-shaped normal and functional test output where the ecosystem supports it
+    and the normal command runs Unit, Port contract, Adapter, and Component tests while the functional command separately runs System and Journey tests
+    and a native test-changed command plus project Stop hooks give coding agents the impacted normal-test result after each turn
+    and it runs both test commands and verifies the test-changed baseline and impact selection before reporting completion
+  if a configured test command or project hook fails verification
+    then the skill fixes the configuration and reruns verification until the feedback path works
+  when tests need external services
+    then the relevant command owns a self-contained Docker lifecycle and always tears its test artefacts down
+```
+
+## setup-linter
+
+```
+System: setup-linter (src: none; system: none; journey: none)
+  when an operator asks to set up code linting
+    then the skill inspects the ecosystem and existing configuration and agrees the strong conventional rules with the operator
+    and it installs and merges the conventional linter without replacing project-owned rules
+    and it creates a native lint command and CI gate
+    and synchronous project save hooks run the linter's autofix command from the project root before the coding agent continues
+    and the skill runs autofix and lint across the existing project before reporting completion
+  if lint violations remain after automatic fixes
+    then the skill fixes the remaining violations and reruns lint until it passes
+  if a save-time autofix cannot complete
+    then the project hook reports the complete linter output and fails visibly
+```
+
+## setup-architecture-linter
+
+```
+System: setup-architecture-linter (src: none; system: none; journey: none)
+  when an operator asks to set up architecture linting
+    then the skill maps the project's actual domain, use-case, port, adapter, and composition-root locations with the operator
+    and it installs and configures rules that keep domain code pure, dependencies pointing inward, adapters reachable only from the composition root, and dependency cycles absent
+    and it creates a native architecture command, combines it with the project lint command, and adds the combined gate to CI
+    and project Stop hooks run every architecture rule from the project root before the coding agent finishes
+    and the skill runs every architecture rule before reporting completion
+  if the project's ecosystem cannot enforce every required boundary
+    then the skill fails visibly without claiming architecture feedback is configured
+  if architecture violations are found during setup
+    then the skill invokes fix-architecture with the complete violations
+  if the architecture linter cannot run from a project Stop hook
+    then the hook reports the execution error and fails visibly
+  when the project Stop hook receives its own follow-up Stop task
+    then it exits silently without running architecture lint again
+```
+
+## fix-architecture
+
+```
+System: fix-architecture (src: none; system: none; journey: none)
+  when an operator asks to fix architecture violations
+    then the skill runs the architecture linter and partitions the reported violations into non-overlapping work for subagents
+    and subagents fix violations without disabling rules, weakening boundaries, or adding exemptions
+    and the coding agent reconciles their changes and reruns every architecture rule
+    and repeated violations are repartitioned and fixed until architecture lint passes
+  if a violation conflicts with the operator's intended architecture
+    then the skill resolves the architecture and mental-model decision with the operator before changing the enforced boundary
+```
+
+## setup-mutation-testing
+
+```
+System: setup-mutation-testing (src: none; system: none; journey: none)
+  when an operator asks to set up mutation testing
+    then the skill inspects the source and test layout and agrees the mutation scope and useful feedback threshold with the operator
+    and it configures the ecosystem's mutation tool to mutate production source while explicitly excluding every colocated test pattern
+    and mutation test runners select only Domain and Use-case tests when the framework supports test selection
+    and incremental mode and a native mutation command provide the fastest available repeat feedback
+    and the skill runs mutation testing before reporting completion
+  if surviving mutants keep the agreed threshold from passing
+    then the skill strengthens the responsible Domain or Use-case tests and reruns only the affected mutation scope until it passes
+```
+
 ## setup-prepares-project
 
 ```
-setup-prepares-project (src: skills/setup/SKILL.md; system: test/setup-prepares-project.bats; journey: test/journey/docker-entrypoint.sh)
-  when setup is run on an existing project
-    then existing test config is detected and merged into, not overwritten
-    and tree-shaped output is configured where the framework can produce it
-    and the fixed Contree test strategy is mapped to the project's test framework conventions
-    and the normal test command runs Unit, Port contract, Adapter, and Component tests automatically
-    and the functional test command runs System and Journey tests separately from the normal test command
-    and a native test-changed command identifies project files changed since the last completed normal test run and runs only the normal tests impacted by those files
-    and a project-level post-change hook runs test-changed whenever an agent changes project files
-    and mutation testing is configured with explicit test file exclusions for every layer's suffix
-    and mutation test runners select only Domain and Use-case tests when the framework supports test selection
-    and TEST_TREES.md is created when missing
-    and native project commands are created for the configured testing and linting DX
-    and setup examples follow the setup rules — no copied comments, no env-var behaviour switches, and strong preference for composition over inheritance
-  when setup detects multiple viable test frameworks
-    then setup chooses the test framework using the project evidence and tree-output quality
-  when setup would choose the main application framework for a project
-    then setup asks the user before proceeding
-  when setup is run on a new project
-    then TEST_TREES.md is created when missing
-    and tests are NOT implemented yet
-  if no completed normal test run exists
-    then test-changed runs the normal test command to establish its baseline
-  if an impacted test fails
-    then the project-level post-change hook fails visibly with the test output
-  when the language only supports flat test output
-    then the best available option is configured
-    and the limitation is communicated honestly
-  when tests are colocated with source
-    then mutation testing mutate globs explicitly exclude test file patterns
-  when the project needs external services for Adapter, System, or Journey tests
-    then those layers run in Docker
-    and test artefacts are torn down afterwards
-    and secrets are passed via environment variables
-  when Component tests run
-    then they run in-process with an in-memory database and stubbed outbound HTTP, needing no external services
-```
-
-## setup-configures-linting
-
-```
-System: setup-configures-linting (src: skills/setup/SKILL.md; system: test/setup-configures-linting.bats; journey: test/journey/docker-entrypoint.sh)
-  when setup is run
-    then a conventional normal linter is installed and configured with the ecosystem's strong recommended rules
-    and an architecture linter is installed and configured for every project source layout
-    and the combined lint command runs both normal lint and hex-boundary lint
-    and the architecture linter rejects domain dependencies on frameworks, I/O, asynchronous work, application code, and adapters
-    and the architecture linter restricts use-cases to domain code, plain data, and ports rather than frameworks, I/O, or concrete adapters
-    and the architecture linter permits concrete adapters to be imported only by the composition root
-    and the architecture linter rejects dependencies that point outward across hexagonal boundaries
-    and the architecture linter rejects circular dependencies
-    and CI is wired to run the combined lint command so normal and boundary violations fail the build
-    and a project-level hook is created for coding-agent file saves
-    and a project-level Stop hook is merged with the project's existing hooks
-  when a coding agent writes or edits a project file
-    then the project-level hook runs the normal lint autofix command from the project root after every save
-    and automatic fixes are written to the file before the coding agent continues
-  if lint violations remain after automatic fixes
-    then the project-level hook reports the violations and fails visibly
-  when a coding agent Stop task runs
-    then the project-level Stop hook runs every architecture rule from the project root
-  if architecture violations are found during a Stop task
-    then the project-level Stop hook reports every violation with its rule, source, and forbidden dependency
-    and the Stop task fails so the coding agent receives the architecture feedback before finishing
-  if the architecture linter cannot run during a Stop task
-    then the project-level Stop hook reports the execution error and the Stop task fails
-  if every architecture rule passes during a Stop task
-    then the project-level Stop hook exits successfully without architecture feedback
-  when the project-level Stop hook receives its own follow-up Stop task
-    then it exits silently to prevent a feedback loop
-  if the project's ecosystem cannot enforce every architecture rule
-    then setup fails visibly without claiming that the project is prepared
+System: setup-prepares-project (src: skills/setup/SKILL.md; system: test/setup-prepares-project.bats; journey: test/journey/docker-entrypoint.sh)
+  when an operator asks for comprehensive Contree setup
+    then setup inspects the project and presents a dynamic setup workflow shaped by the steering that is missing
+    and setup engages the operator at each consequential framework, architecture, behavioural-scope, and mutation-threshold decision
+    and setup orchestrates setup-test-feedback, setup-linter, setup-architecture-linter, bootstrap-test-trees, and setup-mutation-testing
+    and setup uses subagents for independent setup work that can safely run in parallel and reconciles their results
+    and setup runs every configured feedback command and fixes failures before reporting the project prepared
+    and setup reports the installed commands, automatic hooks, test-tree coverage, and mutation result to the operator
+  if any specialised setup skill cannot establish its feedback loop
+    then setup fails visibly and does not claim that the project is prepared
 ```
 
 ## change-writes-trees
