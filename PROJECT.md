@@ -1,14 +1,2 @@
 # Project
-- Break setup into more skills, engage the operator in setting these things up
-    - Setup linter
-        - Run and fix linting issues automatically, don't just complain
-    - Setup arch linter
-        - Run and fix
-    - Fix arch problems
-        - subagents
-    - Bootstrap test trees
-        - subagents
-        - implement the tests: subagents again
-    - Mutation testing
-    - All of these optimised to provide coding agents with fast and useful feedback, because setup is about steering over instruction: setting up the steering
-    - Also a comperehensive setup skill that does everything, the whole luxury thing, with subagents or dynamic workflows such as the coding agent is capable of managing
+- Contree skills should recommend Codex Spark when running large numbers of subagents for simple work
