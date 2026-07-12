@@ -2,14 +2,14 @@
 
 - Contree makes test trees the living contract: `TEST_TREES.md` IS the specification, kept in sync with implementation, never a stale parallel doc.
 - Development is outside-in and consumer-driven: each behaviour goes RED, GREEN, then REFACTOR; excessive branching is extracted behind a mock and throwing stub, signalling a new TDD cycle for that unit.
-- A tree is both specification (EARS `when/then` in `TEST_TREES.md`) and structure (the test file's describe/it hierarchy, mirrored verbatim).
+- A tree is both specification (EARS `then`, `while`, `when`, `where`, and `if` forms in `TEST_TREES.md`) and structure (the test file's describe/it hierarchy, mirrored verbatim).
 - It ships as one product from one `contree/` directory under two harnesses (Claude Code, Codex) via parallel manifests over shared `skills/` and `hooks/`.
 - Coding rules (KISS, fail-fast, hexagonal, no comments, …) ride alongside the trees as the always-on operating discipline.
 
 ## World-to-Code Mapping
 
 - Expected behaviour → a tree in `TEST_TREES.md`; anything observable anywhere (files, network, logs, next invocation) belongs there.
-- One tree → exactly one test file; the tree's `when/then` paths → that file's describe/it hierarchy, verbatim.
+- One tree → exactly one test file; the tree's EARS paths → that file's describe/it hierarchy, verbatim.
 - The user-visible arc across capabilities → the **Journey** layer (`test/journey/*.journey.test.*`), the outermost layer and outside-in entry point.
 - A single capability wired whole-app → the **System** layer (real infrastructure; `test/system/*.system.test.*`) and the **Component** layer (externals doubled at the edge — in-memory database, stubbed outbound HTTP; `test/component/*.component.test.*`), both interior to the Journey.
 - Hexagonal seams → inner layers: Adapter (`*.adapter.test.*`), Use-case (`*.use-case.test.*`), Domain (`*.domain.test.*`).
@@ -17,11 +17,11 @@
 - An outbound dependency → a Port; each Port ships an in-memory twin plus a real adapter, both bound by one shared `*.contract.ts` suite.
 - Workflow phases → skills: `setup`, `change`, `sync`, `tdd`, `second-opinion`, `workflow`.
 - Enforcement → hooks: SessionStart (rules + trees) and Stop (drift check).
-- The product's theory → `MENTAL_MODEL.md` (this file); its behaviour → `## Test Trees`; its operating discipline → the rules.
+- The product's theory → `MENTAL_MODEL.md` (this file); its behaviour → `TEST_TREES.md`; its operating discipline → the rules.
 
 ## Ubiquitous Language
 
-- Test tree — a `when/then` (EARS) hierarchy that is simultaneously requirement and test structure.
+- Test tree — an EARS hierarchy that is simultaneously requirement and test structure.
 - Leaf — a single `then`/`and`/`but` assertion at behaviour granularity.
 - EARS keywords — `when` (event), `while` (state), `if` (unwanted), `where` (optional), bare `then` (ubiquitous).
 - Causal nesting — a `when` that can only occur after a prior `then` nests under it, not as a sibling.
@@ -42,7 +42,7 @@
 
 - Tree language — EARS syntax, causal nesting, one-tree-one-file, leaf granularity; the grammar of the contract.
 - Test-layer taxonomy — Journey ▸ System ▸ Component ▸ Adapter ▸ Use-case ▸ Domain (+ Port contract); each layer owns its own seam.
-- Skill workflow — `setup` (configure) → `change` (set behaviour) → `sync` (find drift) → `tdd` (close gaps) → `second-opinion` (independent review from another model); `workflow` runs the arc.
+- Skill workflow — `setup` (configure) → `change` (set behaviour) → `sync` (audit and fulfil the contract) → `tdd` (close gaps) → `second-opinion` (independent review from another model); `workflow` runs the arc.
 - Enforcement hooks — plugin SessionStart and drift-check Stop hooks, plus setup-generated project hooks for save-time lint autofix and architecture checks.
 - Hexagonal architecture — domain pure, I/O in adapters, dependencies inward, a boundary linter holding the line.
 - Dual-harness packaging — one source directory, parallel `.claude-plugin` / `.codex-plugin` manifests, `CLAUDE_PLUGIN_ROOT` shared by both.
@@ -56,7 +56,7 @@
 - The original consumer test remains while every mocked unit gains its own complete tree and tests; overlap proves different subjects.
 - Use-case is to Component as Journey is to System: the cheap tier (Use-case in-memory twins; Component real adapters with edges doubled) is always written and exhaustive; the real tier (System, Journey; real infrastructure) is selective. Component and System cover the same single-capability surface at two realism levels.
 - Each outbound Port has an in-memory twin and a real adapter, both bound by one shared contract suite.
-- Trees are never modified silently; drift is never resolved unilaterally — both surface to the user.
+- Drift is resolved toward operator intention with `TEST_TREES.md` authoritative; only consequential conflicts that project evidence cannot settle return to the operator.
 - Consumer-driven, not internals-driven: each tree describes what its consumer observes; outside-in tests create the consumer before the consumed unit is implemented.
 - Shared hook scripts preserve enforcement across Claude Code and Codex.
 
