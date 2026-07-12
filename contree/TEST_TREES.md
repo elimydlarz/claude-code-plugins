@@ -299,46 +299,43 @@ change-decomposes-across-layers (src: skills/change/SKILL.md; system: test/chang
 
 ```
 sync-audits-and-resolves (src: skills/sync/SKILL.md; system: test/sync-audits-and-resolves.bats; journey: test/journey/docker-entrypoint.sh)
-  then drift is never resolved unilaterally — every case is presented to the user for a decision before any edit
   if the project's test trees do not exist or are empty
     then sync stops and suggests running setup first
   when sync is run
-    then every when/then path is checked for implementation and tests
-    and each test file's describe/it hierarchy is parsed and compared to its tree
-    and each tree's labelled parenthesised paths are verified against the filesystem per category
-    and every "none" value is surfaced as an explicit gap for the user to resolve
-    and drift between trees and implementation is identified
-  when implementation exists without a tree
-    then it is discussed with the user — may need a tree or may need removing
-  when a tree exists without implementation
-    then it is flagged as a gap to implement
-  when code is reachable only through higher-layer tests with no tree at its native layer
-    then it is flagged as coverage-by-proxy drift
-    and the proposed resolution is a new tree at the unit's native layer plus its own failing tests
-    and removal of the higher-layer test is never proposed as the resolution
-  when a tree's named path does not exist on disk
-    then it is flagged as drift
-  when a test file's describe/it hierarchy disagrees with its tree
-    then both are presented to the user for resolution
-    and sync does not pick a side
-    and the functional journey verifies those signals deterministically without AI evaluation
-  when stale trees or dead paths are found
-    then they are discussed with the user before removal
-  when gaps are identified
-    then the user is suggested to run tdd to implement them
+    then TEST_TREES.md is treated as the operator's expected behaviour and the coding agent's contract with the operator
+    and the EARS forms bare then, while/then, when/then, where/then, and if/then are used to identify every leaf
+    and labelled src / domain / use-case / adapter / component / system / journey paths are verified against the filesystem
+    and each test file's describe/it hierarchy is parsed and compared with its tree verbatim
+    and every "none" value is treated as a gap to close
+  when test-tree leaves are reviewed
+    then subagents review every leaf
+    and determine whether it is tested
+    and determine whether the test expresses the operator's intention in the leaf
+    and determine whether the implementation passes the test
+    and determine whether the implementation fulfils the intention expressed by the leaf and test
+  when source code is reviewed
+    then subagents identify behaviour that is not expressed in the test trees
+  when MENTAL_MODEL.md is reviewed
+    then each of its seven headings is reviewed with subagents
+    and each heading's representation is checked for fit and usefulness against the codebase
+    and the codebase is checked for whether it honours the representation
+  when an extracted unit has no tree and test at its natural lowest layer
+    then the missing native coverage is closed immediately through TDD
+    and existing higher-layer coverage is retained
+    and every applicable layer tests the behaviour at its own seam
   when the project is in sync
-    then the user is suggested to run second-opinion for an independent review of the completed work
+    then every identified issue has been resolved proactively
+    and all tests pass
+    and the trees, tests, implementation, and mental model agree
+    and the user is suggested to run second-opinion for an independent review of the completed work
   when a Domain, Use-case, or Port-contract tree is checked
     then every observable branch in the unit's code corresponds to a tree path, and every tree path corresponds to a branch
-  when a test exists for a tree path but does not pass
-    then the implementation is assumed wrong by default unless evidence says otherwise
-    and fixing it is treated as part of sync, not deferred to the user
-    and sync is not complete while any test is red
-  when a slice has inner trees but no System tree above them
-    then a System tree is written for the slice, or the pure-library exception is confirmed and the omission documented
-    and a System tree is never invented silently
-  when all gaps are implemented and all tests pass
-    then mutation testing is run against Domain and Use-case as final validation, if configured
+    and YAGNI is evaluated separately from branch parity
+  when drift is identified
+    then the coding agent resolves it using the rules, mental model, trees, tests, code, and its own judgment
+    and operator intention remains the guiding principle
+    and only a consequential genuinely under-determined choice is escalated to the operator
+    and contract changes are handled through change while test and implementation gaps are handled through tdd
 ```
 
 ## workflow-runs-end-to-end
