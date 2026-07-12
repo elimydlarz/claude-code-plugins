@@ -4,6 +4,8 @@
 
 A pure JavaScript utility for generating URL-safe short codes.
 
+Consumers call `generate()` to receive a new six-character lowercase alphanumeric code and `isValid(code)` to check that format.
+
 The project keeps changed-test selection in a maintained native runner. Contree setup owns its package-command and coding-harness integration.
 
 ## Repo Map
@@ -13,3 +15,4 @@ The project keeps changed-test selection in a maintained native runner. Contree 
 - `package.json` — project manifest
 - `.contree/scripts/test-changed.mjs` — native changed-test runner
 - `.contree/hooks/test-changed.sh` — synchronous Stop wrapper that translates failure to exit 2
+- `src/shortcode.js` — short-code generation and validation
