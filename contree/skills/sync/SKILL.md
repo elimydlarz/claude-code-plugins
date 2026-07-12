@@ -9,7 +9,7 @@ description: "Identify and resolve drift between operator intention, test trees,
 
 `TEST_TREES.md` expresses what the operator expects from the software. It is the coding agent's contract with the operator. Operator intention is the guiding principle.
 
-Read `TEST_TREES.md`, `MENTAL_MODEL.md`, tests, production code, and test commands. If `TEST_TREES.md` does not exist or contains no trees, stop and suggest running `setup` first. Run the full suite before reviewing; every failure is drift.
+Read `TEST_TREES.md`, `MENTAL_MODEL.md`, tests, production code, and test commands. If TEST_TREES.md does not exist or contains no trees, stop and suggest running `setup` first. Run the full suite before reviewing; every failure is drift.
 
 Requirements use these exact EARS forms:
 
@@ -35,9 +35,11 @@ Causal behaviour nests beneath the outcome that makes it possible. Review each `
 
 Partition complete, non-overlapping work across subagents. Reconcile their evidence yourself.
 
+Delegate every leaf across the subagents.
+
 1. **Every tree leaf**
    - Establish that its test exists.
-   - Establish that the test hierarchy mirrors the tree verbatim and expresses the leaf's intention.
+   - Establish that the test file's describe/it hierarchy mirrors the tree verbatim and expresses the leaf's intention.
    - Run the test and establish that the implementation passes the test.
    - Establish that the implementation fulfils the intention shared by the leaf and test: the spirit, not only the literal assertion.
    - Verify every labelled `src`, `domain`, `use-case`, `adapter`, `component`, `system`, and `journey` path against the filesystem. Every `none` is a gap to close immediately.
