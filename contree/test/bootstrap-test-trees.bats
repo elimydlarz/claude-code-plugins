@@ -45,7 +45,7 @@ SKILL="$PROJECT_ROOT/skills/bootstrap-test-trees/SKILL.md"
   assert_output --partial 'Use `change`'
   assert_output --partial '`<Layer>: <Subject> (<coverage>)`'
   assert_output --partial "EARS"
-  assert_output --partial "Do not write ad-hoc headings, bullets, `File`, or `Coverage` fields"
+  assert_output --partial 'Do not write ad-hoc headings, bullets, `File`, or `Coverage` fields'
 }
 
 @test "when an operator asks to bootstrap test trees for an existing project then the coding agent reconciles the test implementations and runs the normal and functional test commands" {

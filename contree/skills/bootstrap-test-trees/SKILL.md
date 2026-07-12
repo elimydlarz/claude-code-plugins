@@ -60,7 +60,7 @@ Present the reconciled mental model and trees to the operator and obtain agreeme
 
 Start a second wave of subagents only after the operator agrees the contract. Partition complete non-overlapping trees across the second wave of subagents. One tree belongs to exactly one subagent.
 
-One tree maps to exactly one test file and one test file maps to exactly one tree. Separate behaviours into separate files when they are separate trees; never share one test file across multiple trees.
+Exactly one tree maps to exactly one test file and exactly one test file maps to exactly one tree. Separate behaviours into separate files when they are separate trees; never share one test file across multiple trees.
 
 Each implementation subagent uses `tdd` for its owned trees and:
 
