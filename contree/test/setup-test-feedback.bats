@@ -32,7 +32,7 @@ SKILL="$PROJECT_ROOT/skills/setup-test-feedback/SKILL.md"
 
 @test "when an operator asks to set up test feedback and a native test-changed command plus project Stop hooks give coding agents the impacted normal-test result after each turn" {
   run cat "$SKILL"
-  assert_output --partial "native `test-changed` command"
+  assert_output --partial 'native `test-changed` command'
   assert_output --partial "project-level `Stop` hooks"
   assert_output --partial "impacted normal-test result after each turn"
   assert_output --partial ".claude/settings.json"
