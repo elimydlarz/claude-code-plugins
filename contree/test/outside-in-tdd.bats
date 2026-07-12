@@ -23,22 +23,23 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
   assert_output --partial "not an implementation order"
 }
 
-@test "when a Unit test has dependency interactions then they are identified before mocks and assertions are set up" {
+@test "when setting up Unit test mocks then the agent first understands what the test asserts" {
   run cat "$SKILL"
-  assert_output --partial "Before setting up dependency mocks or assertions"
-  assert_output --partial "identify each interaction as either an intentional external impact or an incidental implementation detail"
+  assert_output --partial "Before setting up mocks for a test, understand what that test asserts"
+  assert_output --partial "its observable result and any intentional side effects"
+  assert_output --partial "Everything else the subject does to produce that behaviour is an implementation detail."
 }
 
-@test "when the operator intends the external impact then the mock records it and the test asserts it was called correctly" {
+@test "when an intentional side effect is under test then the mock records it and the test asserts it was called correctly" {
   run cat "$SKILL"
-  assert_output --partial "The operator intends an external impact"
+  assert_output --partial "A side effect is an external impact the operator expects this test to guarantee."
   assert_output --partial "Set up the mock to record the interaction"
   assert_output --partial "Assert that it was called correctly with the meaningful arguments"
 }
 
-@test "when a dependency interaction is an incidental implementation detail then strict realistic setup replaces assertion" {
+@test "when a dependency interaction is an implementation detail then strict realistic setup replaces assertion" {
   run cat "$SKILL"
-  assert_output --partial "The interaction is an incidental implementation detail"
+  assert_output --partial "An implementation detail is an interaction the test needs only because the subject currently works that way."
   assert_output --partial "Set up the mock to behave realistically"
   assert_output --partial "only for the exact invocation and arguments"
   assert_output --partial "Do not assert against the interaction."

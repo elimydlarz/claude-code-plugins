@@ -45,12 +45,13 @@ outside-in-tdd (src: skills/tdd/SKILL.md; system: test/outside-in-tdd.bats; jour
   when choosing a test kind
     then Journey, System, Component, Adapter, Port contract, and Unit are defined in the same concise terms as the session rules
     and the test kind describes the current test rather than a predetermined implementation order
-  when a Unit test has dependency interactions
-    then each interaction is identified as an intentional external impact or incidental implementation detail before mocks and assertions are set up
-    when the operator intends the external impact itself
-      then the mock is set up to record the interaction
+  when setting up mocks for a Unit test
+    then the agent first identifies the observable result and intentional side effects that the test asserts
+    and treats other dependency interactions as implementation details of how the subject currently produces that behaviour
+    when an intentional side effect is part of the behaviour under test
+      then the mock records the interaction
       and the test asserts that it is called correctly with meaningful arguments
-    when the interaction is only how the current implementation produces the required outcome
+    when a dependency interaction is an implementation detail
       then the mock responds only to the exact realistic invocation and arguments
       and the interaction is not asserted
       and the test asserts the subject's observable result, so an incorrect interaction cannot make the test pass
