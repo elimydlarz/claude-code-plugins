@@ -15,7 +15,7 @@ Before implementation, establish the expected behaviour in trees. Trees first, c
 
 ### 1. Inspect Reality
 
-Discuss the behaviour change with the user before modifying trees.
+Talk it through with the user and discuss the behaviour change before modifying trees.
 
 Read the relevant mental model, trees, actual tests, and source before drafting or modifying the contract. Compare the current tree and its paths with the actual tests and source locations in the affected area.
 
@@ -33,7 +33,7 @@ Identify:
 
 Describe outer interfaces in the consumer's vocabulary. Describe an inner unit using its own public inputs, outputs, and errors, but only when an existing consumer has forced that unit into existence.
 
-Every layer is consumer-driven: the consumer is created before the thing it consumes is implemented. Domain, Use-case, and Port trees express what the outer consumer forced into existence and needs to observe.
+At every layer, every layer is consumer-driven: the consumer is created before the thing it consumes is implemented. Domain, Use-case, and Port trees express what the outer consumer forced into existence and needs to observe.
 
 Pure functions are still consumer-driven: a caller forced the function into existence because it needs to observe its result or error.
 
@@ -63,9 +63,9 @@ Layers are `Journey`, `System`, `Component`, `Adapter`, `Use-case`, `Domain`, an
 
 The subject is the behaviour-bearing thing observed at that layer.
 
-One tree, one test file. One tree maps to exactly one test file. Its paths map verbatim to that file's `describe`/`it` hierarchy.
+One tree, one test file. One tree maps to exactly one test file. Every tree's describe/it hierarchy mirrors the tree verbatim.
 
-Coverage is recorded as semicolon-separated labelled paths:
+Coverage is recorded as parenthesised, semicolon-separated labelled paths:
 
 ```text
 Domain: Money (src: src/money.ts; domain: src/money.domain.test.ts)
@@ -113,10 +113,10 @@ Journey, System, Component, and Adapter paths describe principles, not cases, in
 - state principles rather than enumerate cases
 - add information rather than restate its condition
 - include meaningful negative behaviour
-- stand alone without references such as "see above"
+- stand alone without cross-leaf references such as "see above" or "as before"
 - use consumer vocabulary rather than implementation details
 
-When behaviour is described as "just like" existing behaviour, write the paths in full. If duplication reveals one shared concept, collapse the subjects into one tree and let one generic implementation serve both.
+When behaviour is described as "just like" existing behaviour, duplicate the existing tree's paths in full. If duplication reveals one shared concept, collapse the subjects into one tree and let one generic implementation serve both.
 
 Every `then` adds information that its condition does not already imply. Reject tautological outcomes.
 
@@ -128,11 +128,11 @@ Capture the outermost consumer tree first: a Journey tree for a new user arc, or
 
 Plan the possible Journey → System → inner-layer movement without designing those inner trees. The higher-level tree and failing test create the demand for the next inner unit. Designing inner-layer trees from speculation is a YAGNI failure; an inner tree is not designed ahead of time when its consumer has not asked for it.
 
-Every behavioural unit with substantive observable behaviour gets one tree at its natural layer: Domain, Use-case, Adapter, or port contract. Name every tree for the subject with observable behaviour at that layer.
+Write one tree per behavioural unit with substantive observable behaviour at its natural layer: Domain, Use-case, Adapter, or port contract. Name every tree for the subject with observable behaviour at that layer.
 
 The layers from outside inward are Journey, System, Component, Adapter, Use-case, Domain, and Port. Component tests use `*.component.test.*`, exercise one capability through its real adapters, and double external services only at the edge.
 
-Every layer is consumer-driven. The higher-level tree and failing test create the demand for the next inner unit. Use-case and Component are always written and exhaustive. Component and Use-case carry exhaustive single-capability coverage. System and Journey validate the same surfaces with real everything, selectively.
+At every layer, every layer is consumer-driven. The higher-level tree and failing test create the demand for the next inner unit. Use-case and Component are always written and exhaustive. Component and Use-case carry exhaustive single-capability coverage. System and Journey validate the same surfaces with real everything, selectively.
 
 Trivial units do not earn trees:
 
@@ -150,7 +150,7 @@ System tests do not lean on the in-memory twin. They wire real driven adapters a
 
 ### 8. Handle Cross-Cutting and Pure Behaviour
 
-Cross-cutting System trees capture app-level policies that span slices, such as auth enforcement, rate limiting, and error envelope. Write a System tree named for the policy rather than folding it into one slice.
+Cross-cutting System trees capture app-level policies that span slices, such as auth enforcement, rate limiting, error envelope. Write a System tree named for the policy rather than folding it into one slice.
 
 Pure libraries (no vertical slice) have no driving adapter, no use-case, and no driven port. Write a System tree only for a cross-function invariant observable across exported functions, such as all `ShortCode` operations preserving one encoding policy. If no cross-function invariant exists, omit System altogether and document the omission.
 
