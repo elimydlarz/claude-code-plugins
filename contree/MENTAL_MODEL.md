@@ -23,28 +23,27 @@
 
 - Test tree — an EARS hierarchy that is simultaneously requirement and test structure.
 - Leaf — a single `then`/`and`/`but` assertion at behaviour granularity.
-- EARS keywords — `when` (event), `while` (state), `if` (unwanted), `where` (optional), bare `then` (ubiquitous).
+- EARS keywords — `when` (trigger), `while` (precondition), `if` (unwanted condition), `where` (optional feature), bare `then` (ubiquitous outcome).
 - Causal nesting — a `when` that can only occur after a prior `then` nests under it, not as a sibling.
-- Journey — the outermost layer: a curated, non-exhaustive user arc across capabilities and contexts, at max realism, kept runnable in under 5 minutes, walking representative errors and eventually succeeding.
+- Journey — the outermost layer: a curated, non-exhaustive user arc across capabilities and contexts at maximum realism, kept runnable in under 5 minutes.
 - System — a single capability wired whole-app against real infrastructure, interior to the Journey; validates the same surface a Component test covers, selectively.
 - Component — that same whole-app capability with externals doubled only at the edge (in-memory database, stubbed outbound HTTP); in-process, exhaustive, cheap.
-- Adapter / Use-case / Domain — one adapter vs its contract / orchestration over in-memory ports / the pure core.
-- Port — an outbound interface; ships an in-memory twin and a real adapter.
-- Shared contract suite — one `*.contract.ts` both adapters must pass, making in-memory substitution sound.
+- Adapter — a concrete boundary implementation tested against the real boundary it adapts; Unit — one public surface on one subject; Domain and Use-case locate Unit tests at their respective hexagonal positions.
+- Port — an outbound application interface with an in-memory twin and real adapter; both pass one shared Port-contract suite, making substitution sound.
 - Slice — one consumer-visible capability; a Journey traverses several.
-- Outside-in — start from the current tree's consumer, implement its behaviour, then let its passing tests reveal deeper units.
-- Mocked unit — a unit imagined to own some observed branching; its mock passes consumer tests while its stub throws `NotImplemented` until the unit is TDDed.
-- Coverage-by-proxy — a unit reachable only through higher-layer tests with no tree at its native layer; treated as uncovered.
-- Drift — divergence between trees and implementation in either direction.
-- Coverage categories — one per layer: `src`, `domain`, `use-case`, `adapter`, `component`, `system`, `journey`.
+- Outside-in — select the current consumer's tree leaf, observe its test RED, implement GREEN, then let branching observed during REFACTOR reveal a deeper unit.
+- Mocked unit — a unit revealed to own observed branching; consumer tests pass only when its mock is consumed correctly, while its real stub throws `NotImplemented` until the unit is TDDed.
+- Native coverage — every substantive unit revealed by TDD has its own tree and test at its natural lowest layer; higher-layer overlap never substitutes for it.
+- Drift — disagreement among operator intention, trees, tests, coverage, implementation, or the mental model.
+- Coverage labels — `src`, `domain`, `use-case`, `adapter`, `component`, `system`, `journey`; `none` means expected but missing, while omission means inapplicable.
 
 ## Bounded Contexts
 
 - Tree language — EARS syntax, causal nesting, one-tree-one-file, leaf granularity; the grammar of the contract.
-- Test-layer taxonomy — Journey ▸ System ▸ Component ▸ Adapter ▸ Use-case ▸ Domain (+ Port contract); each layer owns its own seam.
+- Test seams — Journey owns a multi-capability arc; System and Component own one capability at different realism; Adapter and Port contract own boundaries; Use-case and Domain own unit interfaces.
 - Setup suite — focused skills establish test, lint, architecture, behavioural-contract, and mutation feedback independently; `setup` dynamically orchestrates the comprehensive operator-guided workflow.
-- Skill workflow — `change` (set behaviour) → `sync` (audit and fulfil the contract) → `tdd` (close gaps) → `second-opinion` (independent review from another model); `workflow` runs the arc.
-- Enforcement hooks — plugin SessionStart and drift-check Stop hooks, plus setup-generated project hooks for save-time lint autofix, impacted tests, and architecture checks.
+- Skill ownership — `change` owns trees; `tdd` owns tests and implementation; `sync` audits and resolves agreement across operator intention, trees, tests, code, and mental model; `second-opinion` reviews independently; `workflow` composes them.
+- Enforcement hooks — plugin SessionStart injects discipline and plugin Stop prompts documentation reconciliation; setup-generated project hooks run impacted normal tests and architecture checks at Stop, and lint autofix after saves.
 - Hexagonal architecture — domain pure, I/O in adapters, dependencies inward, a boundary linter holding the line.
 - Dual-harness packaging — one source directory, parallel `.claude-plugin` / `.codex-plugin` manifests, `CLAUDE_PLUGIN_ROOT` shared by both.
 
