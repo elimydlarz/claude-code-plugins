@@ -1,6 +1,6 @@
 # Describe/It Drift Fixture
 
-A tiny Bookmark module used by Contree functional tests to verify sync reporting.
+A tiny Bookmark module used by Contree journey tests to verify proactive sync resolution.
 
 ## Install
 
