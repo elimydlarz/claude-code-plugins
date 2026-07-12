@@ -317,18 +317,21 @@ JS
 
 case "$TEST_NAME" in
   setup)
-    if [ "$HARNESS" = "codex" ]; then
-      seed_project "setup-existing"
-    else
-      seed_project "greenfield"
-    fi
+    seed_project "setup-existing"
 
-    if [ "$HARNESS" = "codex" ]; then
-      setup_prompt="Run /contree:setup now on this existing prepared JavaScript project. Its only setup gap is integrating the maintained native changed-test runner and executable Stop wrapper already at .contree/scripts/test-changed.mjs and .contree/hooks/test-changed.sh. Do not modify either file, create a plan, install dependencies, stage or restore files, or create tests or documentation. Add only a native test-changed package command that invokes the existing runner and merged Stop entries in both .claude/settings.json and .codex/hooks.json. Verify those outputs before ending."
-    else
-      setup_prompt="Run /contree:setup and fully prepare this pure in-process JavaScript project now. Do not create a plan or todo list; execute the setup. Complete every setup verification step, including the native test-changed baseline and impact-selection behaviour, configure project hooks for both Claude Code and Codex, and do not create test files or Docker configuration. Configure mutation testing but do not execute mutation tests in this run."
-    fi
+    setup_prompt="Run /contree:setup for the comprehensive luxury setup of this existing pure JavaScript project. The operator agrees that the existing Vitest choice, documented hexagonal architecture, current short-code behaviour, and mutation break threshold of 50 are the intended consequential decisions. Dynamically run every missing focused setup skill, use subagents for independent work, bootstrap the current production behaviour into test trees and tests, integrate the maintained changed-test runner and both coding-harness hooks, and run and fix every configured feedback command including mutation testing. Do not create Docker configuration."
     run_agent "$setup_prompt"
+
+    bootstrap_pass=1
+    bootstrapped_tests="$(find "$PROJECT_DIR/src" "$PROJECT_DIR/test" -type f \( -name '*.test.*' -o -name '*.spec.*' \) -print 2>/dev/null || true)"
+    if [ -z "$bootstrapped_tests" ] || ! grep -Eq '^(Journey|System|Component|Adapter|Use-case|Domain|Port): ' "$PROJECT_DIR/TEST_TREES.md"; then
+      echo "Comprehensive setup did not bootstrap the existing behaviour into trees and tests" >&2
+      bootstrap_pass=0
+    fi
+    if ! (cd "$PROJECT_DIR" && npm test && npm run test:functional && npm run test:mutate); then
+      echo "Comprehensive setup did not leave normal, functional, and mutation feedback green" >&2
+      bootstrap_pass=0
+    fi
 
     mkdir -p "$PROJECT_DIR/src" "$PROJECT_DIR/test/system"
     printf '%s\n' "export const alpha = () => 'alpha'" > "$PROJECT_DIR/src/alpha.js"
@@ -361,7 +364,7 @@ case "$TEST_NAME" in
     baseline_output="$PROJECT_DIR/test-changed-baseline.txt"
     impact_output="$PROJECT_DIR/test-changed-impact.txt"
     failure_output="$PROJECT_DIR/test-changed-failure.txt"
-    pass=1
+    pass="$bootstrap_pass"
 
     if [ -z "$changed_test_script" ] || ! (cd "$PROJECT_DIR" && npm run "$changed_test_script") > "$baseline_output" 2>&1; then
       echo "test-changed did not establish its baseline through the normal test command" >&2
@@ -450,7 +453,7 @@ case "$TEST_NAME" in
       pass=0
     fi
 
-    rm -rf "$PROJECT_DIR/src" "$PROJECT_DIR/test" "$baseline_output" "$impact_output" "$failure_output"
+    rm -f "$PROJECT_DIR/src/alpha.js" "$PROJECT_DIR/src/beta.js" "$PROJECT_DIR/src/alpha.unit.test.js" "$PROJECT_DIR/src/beta.unit.test.js" "$PROJECT_DIR/test/system/excluded.system.test.js" "$baseline_output" "$impact_output" "$failure_output"
 
     for path in TEST_TREES.md MENTAL_MODEL.md .claude/settings.json .codex/hooks.json .contree/hooks/test-changed.sh .contree/hooks/lint-on-save.sh .contree/hooks/architecture-on-stop.sh; do
       if [ ! -f "$PROJECT_DIR/$path" ]; then
@@ -500,9 +503,8 @@ case "$TEST_NAME" in
     fi
 
     created_tests="$(find "$PROJECT_DIR" \( -path "$PROJECT_DIR/node_modules" -o -path "$PROJECT_DIR/.codex-home" -o -path "$PROJECT_DIR/.git" \) -prune -o -type f \( -name '*.test.*' -o -name '*.spec.*' \) -print)"
-    if [ -n "$created_tests" ]; then
-      echo "Setup created test files before TDD:" >&2
-      printf '%s\n' "$created_tests" >&2
+    if [ -z "$created_tests" ]; then
+      echo "Setup did not retain bootstrapped test files:" >&2
       pass=0
     fi
 
@@ -525,7 +527,7 @@ setup — deterministic functional verification under $HARNESS:
   changed-test command: $(jq -r '.scripts["test-changed"] // .scripts["test:changed"] // "FAIL"' "$PROJECT_DIR/package.json" 2>/dev/null)
   Claude Code hooks: $([ -f "$PROJECT_DIR/.claude/settings.json" ] && echo configured || echo FAIL)
   Codex hooks: $([ -f "$PROJECT_DIR/.codex/hooks.json" ] && echo configured || echo FAIL)
-  setup-created test files: $([ -z "$created_tests" ] && echo none || echo FAIL)
+  bootstrapped test files: $([ -n "$created_tests" ] && echo present || echo FAIL)
   unnecessary Docker configuration: $([ ! -f "$PROJECT_DIR/docker-compose.yml" ] && [ ! -f "$PROJECT_DIR/compose.yml" ] && echo none || echo FAIL)
 VERIFY
 
