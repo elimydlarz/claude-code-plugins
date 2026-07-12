@@ -21,7 +21,7 @@ test-trees-as-requirements (system: test/test-trees-as-requirements.bats)
 ## bootstrap-test-trees
 
 ```
-System: bootstrap-test-trees (src: none; system: none; journey: none)
+System: bootstrap-test-trees (src: skills/bootstrap-test-trees/SKILL.md; system: test/bootstrap-test-trees.bats)
   when an operator asks to bootstrap test trees for an existing project
     then the skill explains the evidence it will gather and agrees the behavioural scope with the operator
     and subagents inspect non-overlapping areas of the project for observable behaviour, tests, architecture, and mental-model concepts
@@ -145,7 +145,7 @@ post-task-hook (src: hooks/stop-drift-check.sh; system: test/post-task-hook.bats
 ## setup-test-feedback
 
 ```
-System: setup-test-feedback (src: none; system: none; journey: none)
+System: setup-test-feedback (src: skills/setup-test-feedback/SKILL.md; system: test/setup-test-feedback.bats)
   when an operator asks to set up test feedback
     then the skill inspects the existing project and agrees the framework choice and command mapping with the operator before changing files
     and it merges existing test configuration instead of replacing it
@@ -162,7 +162,7 @@ System: setup-test-feedback (src: none; system: none; journey: none)
 ## setup-linter
 
 ```
-System: setup-linter (src: none; system: none; journey: none)
+System: setup-linter (src: skills/setup-linter/SKILL.md; system: test/setup-linter.bats)
   when an operator asks to set up code linting
     then the skill inspects the ecosystem and existing configuration and agrees the strong conventional rules with the operator
     and it installs and merges the conventional linter without replacing project-owned rules
@@ -178,7 +178,7 @@ System: setup-linter (src: none; system: none; journey: none)
 ## setup-architecture-linter
 
 ```
-System: setup-architecture-linter (src: none; system: none; journey: none)
+System: setup-architecture-linter (src: skills/setup-architecture-linter/SKILL.md; system: test/setup-architecture-linter.bats)
   when an operator asks to set up architecture linting
     then the skill maps the project's actual domain, use-case, port, adapter, and composition-root locations with the operator
     and it installs and configures rules that keep domain code pure, dependencies pointing inward, adapters reachable only from the composition root, and dependency cycles absent
@@ -198,7 +198,7 @@ System: setup-architecture-linter (src: none; system: none; journey: none)
 ## fix-architecture
 
 ```
-System: fix-architecture (src: none; system: none; journey: none)
+System: fix-architecture (src: skills/fix-architecture/SKILL.md; system: test/fix-architecture.bats)
   when an operator asks to fix architecture violations
     then the skill runs the architecture linter and partitions the reported violations into non-overlapping work for subagents
     and subagents fix violations without disabling rules, weakening boundaries, or adding exemptions
@@ -211,7 +211,7 @@ System: fix-architecture (src: none; system: none; journey: none)
 ## setup-mutation-testing
 
 ```
-System: setup-mutation-testing (src: none; system: none; journey: none)
+System: setup-mutation-testing (src: skills/setup-mutation-testing/SKILL.md; system: test/setup-mutation-testing.bats)
   when an operator asks to set up mutation testing
     then the skill inspects the source and test layout and agrees the mutation scope and useful feedback threshold with the operator
     and it configures the ecosystem's mutation tool to mutate production source while explicitly excluding every colocated test pattern
