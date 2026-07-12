@@ -113,7 +113,7 @@ Journey, System, Component, and Adapter paths describe principles, not cases, in
 - state principles rather than enumerate cases
 - add information rather than restate its condition
 - include meaningful negative behaviour
-- stand alone without cross-leaf references such as "see above" or "as before"
+- ensure each leaf stands alone without cross-leaf references such as "see above" or "as before"
 - use consumer vocabulary rather than implementation details
 
 When behaviour is described as "just like" existing behaviour, duplicate the existing tree's paths in full. If duplication reveals one shared concept, collapse the subjects into one tree and let one generic implementation serve both.
@@ -150,7 +150,7 @@ System tests do not lean on the in-memory twin. They wire real driven adapters a
 
 ### 8. Handle Cross-Cutting and Pure Behaviour
 
-Cross-cutting System trees capture app-level policies that span slices, such as auth enforcement, rate limiting, error envelope. Write a System tree named for the policy rather than folding it into one slice.
+Cross-cutting System trees capture app-level policies that span slices, such as auth enforcement, rate limiting, error envelope; write a System tree named for the policy rather than folding it into one slice.
 
 Pure libraries (no vertical slice) have no driving adapter, no use-case, and no driven port. Write a System tree only for a cross-function invariant observable across exported functions, such as all `ShortCode` operations preserving one encoding policy. If no cross-function invariant exists, omit System altogether and document the omission.
 
