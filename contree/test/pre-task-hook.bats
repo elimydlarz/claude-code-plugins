@@ -116,5 +116,11 @@ run_hook_in() {
   assert_output --partial "tdd"
   assert_output --partial "sync"
   assert_output --partial "setup"
+  assert_output --partial "setup-test-feedback"
+  assert_output --partial "setup-linter"
+  assert_output --partial "setup-architecture-linter"
+  assert_output --partial "fix-architecture"
+  assert_output --partial "bootstrap-test-trees"
+  assert_output --partial "setup-mutation-testing"
   assert_output --partial "workflow"
 }

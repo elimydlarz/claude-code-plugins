@@ -17,11 +17,48 @@ load test_helper
   assert_output --partial "staleness"
 }
 
-@test "setup skill's frontmatter TRIGGERs when no framework or TEST_TREES.md exists" {
+@test "setup-test-feedback skill's frontmatter TRIGGERs when test feedback is missing" {
+  run sed -n '/^---$/,/^---$/p' "$PROJECT_ROOT/skills/setup-test-feedback/SKILL.md"
+  assert_output --partial "TRIGGER"
+  assert_output --partial "test"
+  assert_output --partial "feedback"
+}
+
+@test "setup-linter skill's frontmatter TRIGGERs on conventional lint setup" {
+  run sed -n '/^---$/,/^---$/p' "$PROJECT_ROOT/skills/setup-linter/SKILL.md"
+  assert_output --partial "TRIGGER"
+  assert_output --partial "lint"
+}
+
+@test "setup-architecture-linter skill's frontmatter TRIGGERs on architecture enforcement setup" {
+  run sed -n '/^---$/,/^---$/p' "$PROJECT_ROOT/skills/setup-architecture-linter/SKILL.md"
+  assert_output --partial "TRIGGER"
+  assert_output --partial "architecture"
+}
+
+@test "fix-architecture skill's frontmatter TRIGGERs on architecture violations" {
+  run sed -n '/^---$/,/^---$/p' "$PROJECT_ROOT/skills/fix-architecture/SKILL.md"
+  assert_output --partial "TRIGGER"
+  assert_output --partial "violations"
+}
+
+@test "bootstrap-test-trees skill's frontmatter TRIGGERs on discovering existing behaviour" {
+  run sed -n '/^---$/,/^---$/p' "$PROJECT_ROOT/skills/bootstrap-test-trees/SKILL.md"
+  assert_output --partial "TRIGGER"
+  assert_output --partial "bootstrap"
+}
+
+@test "setup-mutation-testing skill's frontmatter TRIGGERs on mutation feedback setup" {
+  run sed -n '/^---$/,/^---$/p' "$PROJECT_ROOT/skills/setup-mutation-testing/SKILL.md"
+  assert_output --partial "TRIGGER"
+  assert_output --partial "mutation"
+}
+
+@test "setup skill's frontmatter TRIGGERs comprehensive setup" {
   run sed -n '/^---$/,/^---$/p' "$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "TRIGGER"
-  assert_output --partial "no test framework"
-  assert_output --partial "TEST_TREES.md"
+  assert_output --partial "comprehensive"
+  assert_output --partial "all steering"
 }
 
 @test "tdd skill's frontmatter TRIGGERs on implementing behaviour or writing tests" {
