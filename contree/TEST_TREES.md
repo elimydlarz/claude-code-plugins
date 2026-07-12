@@ -25,9 +25,12 @@ System: bootstrap-test-trees (src: skills/bootstrap-test-trees/SKILL.md; system:
   when an operator asks to bootstrap test trees for an existing project
     then the skill explains the evidence it will gather and agrees the behavioural scope with the operator
     and subagents inspect non-overlapping areas of the project for observable behaviour, tests, architecture, and mental-model concepts
+    and both subagent waves run regardless of project size
     and the coding agent reconciles their evidence into one coherent MENTAL_MODEL.md and TEST_TREES.md with the operator
     and every discovered behaviour is expressed at its consumer-visible seam without inventing unsupported behaviour
+    and change produces layered EARS trees with honest coverage rather than ad-hoc requirement documents
     and a second wave of subagents implements non-overlapping test trees as tests whose hierarchy mirrors each tree verbatim
+    and every tree maps to exactly one uncommented test file
     and the coding agent reconciles the test implementations and runs the normal and functional test commands
   when an operator asks to bootstrap test trees for a new project
     then the skill creates the seven-section mental-model home and an empty test-tree home
