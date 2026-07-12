@@ -49,16 +49,16 @@
 
 ## Invariants
 
-- Trees are the contract: every behaviour/side-effect has a tree; every tree has a test; every test drives real implementation.
+- Trees are the operator contract: every operator-expected observable behaviour and side effect has a tree; every tree has a faithful test; every test drives fulfilling implementation.
 - One tree reifies exactly one test file; the describe/it hierarchy mirrors the tree verbatim.
 - Outside-in TDD begins with the current tree's consumer and keeps implementation flat through RED and GREEN before REFACTOR reveals branching under different conditions.
-- Excessive branching creates a mock and a `NotImplemented` stub; passing consumer tests plus failing code signal that the unit receives its own tree and repeats TDD from step 1.
-- The original consumer test remains while every mocked unit gains its own complete tree and tests; overlap proves different subjects.
-- Use-case is to Component as Journey is to System: the cheap tier (Use-case in-memory twins; Component real adapters with edges doubled) is always written and exhaustive; the real tier (System, Journey; real infrastructure) is selective. Component and System cover the same single-capability surface at two realism levels.
+- Excessive branching creates a mock and a `NotImplemented` stub; passing consumer tests plus the real stub's loud runtime failure signal that the unit receives its own tree and repeats TDD from step 1.
+- Every substantive unit revealed by TDD has a tree and native test at its natural lowest layer; its consumer coverage remains, and every applicable layer tests the behaviour at its own seam.
+- When applicable, the cheap tier (Use-case with in-memory twins; Component with external services doubled at the edge) is exhaustive and the real tier (System and Journey with real infrastructure) is selective; Component and System cover the same capability surface at different realism.
 - Each outbound Port has an in-memory twin and a real adapter, both bound by one shared contract suite.
-- Drift is resolved toward operator intention with `TEST_TREES.md` authoritative; only consequential conflicts that project evidence cannot settle return to the operator.
+- Drift is resolved toward operator intention with `TEST_TREES.md` its authoritative expression; only consequential conflicts that project evidence cannot settle return to the operator.
 - Consumer-driven, not internals-driven: each tree describes what its consumer observes; outside-in tests create the consumer before the consumed unit is implemented.
-- Shared hook scripts preserve enforcement across Claude Code and Codex.
+- Sync delegates three exhaustive audits to subagents and reconciles their evidence: every leaf through faithful test to fulfilling implementation, all production code back toward the trees, and every mental-model heading for useful fit and code compliance.
 
 ## Decision Rationale
 
