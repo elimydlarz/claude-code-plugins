@@ -23,21 +23,22 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
   assert_output --partial "not an implementation order"
 }
 
-@test "when a Unit dependency call causes an intentional external effect then the interaction is asserted" {
+@test "when the operator intends a Unit dependency interaction to have external impact then it is asserted" {
   run cat "$SKILL"
-  assert_output --partial "A side effect is an intentional change outside the test subject"
+  assert_output --partial "whether the operator intends the interaction itself to happen"
+  assert_output --partial "An intentional external impact is part of the required behaviour"
   assert_output --partial "publishing a message"
-  assert_output --partial "writing data that the test does not read back"
   assert_output --partial "Assert that interaction"
 }
 
-@test "when a Unit dependency call only obtains data then a realistic exact mock replaces interaction assertions" {
+@test "when a Unit dependency interaction is incidental to the current implementation then strict realistic setup replaces assertion" {
   run cat "$SKILL"
-  assert_output --partial "A dependency read is an implementation detail"
-  assert_output --partial "Do not assert that interaction."
-  assert_output --partial "return the required data only when it receives the exact realistic invocation and arguments"
-  assert_output --partial "Assert the subject's result."
-  assert_output --partial "wrong interaction cannot make the test pass"
+  assert_output --partial "An incidental dependency interaction is only how the current implementation"
+  assert_output --partial "The operator does not require that particular interaction."
+  assert_output --partial "Do not assert it."
+  assert_output --partial "exact realistic invocation and arguments"
+  assert_output --partial "Assert the subject's observable result."
+  assert_output --partial "without making the incidental interaction part of the contract"
 }
 
 @test "when implementing the selected behaviour then the exact recursive TDD process is given" {
