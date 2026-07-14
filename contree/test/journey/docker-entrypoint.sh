@@ -755,11 +755,7 @@ VERIFY
     ;;
 
   second-opinion-live)
-    # LIVE — real GLM 5.2 inference against the real Z.AI API (no stub). Billable
-    # and non-deterministic, so it is NOT in the auto MATRIX; run manually with a
-    # real ZAI_API_KEY. Plants a deliberate bug that contradicts the test-tree
-    # contract and checks the real review caught it.
-    : "${ZAI_API_KEY:?second-opinion-live needs a real ZAI_API_KEY in the environment}"
+    : "${OPENAI_API_KEY:?second-opinion-live needs OPENAI_API_KEY in the environment}"
     seed_project "greenfield"
 
     cat > "$PROJECT_DIR/TEST_TREES.md" <<'TT'
@@ -771,7 +767,6 @@ Unit: adder (src: index.js; unit: none)
     then their sum is returned
 ```
 TT
-    # Deliberate bug: the contract says "their sum is returned", the code subtracts.
     cat > "$PROJECT_DIR/index.js" <<'JS'
 export function add(a, b) {
   return a - b
@@ -783,17 +778,17 @@ JS
       "Run /contree:second-opinion to get an independent review of the current change."
 
     echo ""
-    echo "=== GLM 5.2 review (extracted from transcript) ==="
+    echo "=== gpt-5.6-sol review (extracted from transcript) ==="
     jq -r 'select(.type=="assistant") | .message.content[]? | select(.type=="text") | .text' \
       "$TRANSCRIPT_FILE" 2>/dev/null | tail -60
 
     write_verify <<'VERIFY'
-second-opinion-live — real GLM 5.2 inference (manual judgement):
+second-opinion-live — real gpt-5.6-sol inference (manual judgement):
 
 The fixture plants a deliberate bug — TEST_TREES.md says `add` returns the SUM, but
 index.js returns `a - b` (subtraction). The skill sent the diff + the trees to the
-real Z.AI GLM 5.2 endpoint. Read the extracted review above (and the full transcript)
-and judge: did GLM 5.2 catch that the implementation contradicts the contract?
+real OpenAI Responses API. Read the extracted review above (and the full transcript)
+and judge: did gpt-5.6-sol catch that the implementation contradicts the contract?
 VERIFY
     ;;
 
@@ -866,8 +861,8 @@ VERIFY
     echo "  test-kinds-workflow           — HTTP API: setup → change-without-me → drift → sync across all four test kinds"
     echo "  describe-it-drift             — one-shot: pre-seeded describe/it mismatch → verifies sync flags it"
     echo "  diff-images                   — one-shot: staged change + mocked gpt-image-2 → verifies /contree:diff-for-humans generates an image of the change"
-    echo "  second-opinion                — one-shot: staged change + mocked GLM 5.2 → verifies /contree:second-opinion reviews the change"
-    echo "  second-opinion-live           — LIVE (billable, manual): planted bug + real GLM 5.2 → checks the real review catches it"
+    echo "  second-opinion                — one-shot: worktree + mocked gpt-5.6-sol → verifies /contree:second-opinion reviews the work"
+    echo "  second-opinion-live           — LIVE (billable, manual): planted bug + real gpt-5.6-sol → checks the real review catches it"
     echo ""
     echo "Harness (2nd arg): claude | codex (default claude)"
     exit 1
