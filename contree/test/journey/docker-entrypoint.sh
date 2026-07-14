@@ -463,14 +463,14 @@ case "$TEST_NAME" in
 
     rm -f "$PROJECT_DIR/src/alpha.js" "$PROJECT_DIR/src/beta.js" "$PROJECT_DIR/src/alpha.unit.test.js" "$PROJECT_DIR/src/beta.unit.test.js" "$PROJECT_DIR/test/system/excluded.system.test.js" "$baseline_output" "$impact_output" "$failure_output"
 
-    for path in TEST_TREES.md MENTAL_MODEL.md .claude/settings.json .codex/hooks.json .contree/hooks/test-changed.sh .contree/hooks/lint-on-save.sh .contree/hooks/architecture-on-stop.sh; do
+    for path in TEST_TREES.md MENTAL_MODEL.md .claude/settings.json .codex/hooks.json .contree/hooks/test-changed.sh .contree/hooks/lint-on-save.sh .contree/hooks/architecture-on-stop.sh .contree/hooks/load-mental-model.sh .contree/hooks/reconcile-mental-model.sh .contree/hooks/test-trees-session-start.sh .contree/hooks/test-trees-on-stop.sh .contree/hooks/mutation-on-stop.sh; do
       if [ ! -f "$PROJECT_DIR/$path" ]; then
         echo "Missing setup output: $path" >&2
         pass=0
       fi
     done
 
-    for path in .contree/hooks/test-changed.sh .contree/hooks/lint-on-save.sh .contree/hooks/architecture-on-stop.sh; do
+    for path in .contree/hooks/test-changed.sh .contree/hooks/lint-on-save.sh .contree/hooks/architecture-on-stop.sh .contree/hooks/load-mental-model.sh .contree/hooks/reconcile-mental-model.sh .contree/hooks/test-trees-session-start.sh .contree/hooks/test-trees-on-stop.sh .contree/hooks/mutation-on-stop.sh; do
       if [ ! -x "$PROJECT_DIR/$path" ]; then
         echo "Setup output is not executable: $path" >&2
         pass=0
@@ -483,6 +483,7 @@ case "$TEST_NAME" in
       (.scripts["test:functional"] | type == "string") and
       ((.scripts["test-changed"] // .scripts["test:changed"]) | type == "string") and
       (.scripts["test:mutate"] | type == "string") and
+      (.scripts["test:mutate:changed"] | type == "string") and
       (.scripts["lint"] | type == "string") and
       (.scripts["lint:code"] | type == "string") and
       (.scripts["lint:code:fix"] | type == "string") and
