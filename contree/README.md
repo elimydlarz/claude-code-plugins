@@ -28,7 +28,7 @@ Thirteen skills:
 - **`/contree:change`** — Write or modify test trees in `TEST_TREES.md` before any code is written. Auto-triggers when planning behaviour changes.
 - **`/contree:tdd`** — Auto-triggers when implementing behaviour. Runs one observable behaviour through RED, GREEN, and REFACTOR; excessive branching moves behind a passing mock and throwing stub, signalling a new TDD cycle for that unit.
 - **`/contree:sync`** — Uses subagents to audit every tree leaf, production code area, and mental-model heading, then proactively resolves drift according to operator intention. Suggests `second-opinion` once everything agrees.
-- **`/contree:workflow`** — Runs change → sync → tdd → second-opinion end-to-end without pausing.
+- **`/contree:change-without-me`** — Runs change → sync → tdd → second-opinion end-to-end without pausing.
 - **`/contree:second-opinion`** — Sends the current change and your test-tree contract to Z.AI's GLM 5.2 with `ZAI_API_KEY`, or to DeepSeek with `DEEPSEEK_API_KEY`, for an independent review of completed work, then surfaces its critique. Fails loudly rather than fabricating a review.
 - **`/contree:diff-for-humans`** — Generates a single image explaining the current change to a human with OpenAI's gpt-image-2 model, foregrounding the technical substance it touches (contracts, databases, behaviour, test trees) and choosing what to depict from the nature of the change, its key details, and its audience, then surfaces those choices for review. Run on demand; requires `OPENAI_API_KEY`.
 
@@ -64,7 +64,7 @@ Skills run automatically once installed. Hooks require the feature flags above. 
 2. When you plan a behaviour change, `/contree:change` writes or modifies test trees first
 3. `/contree:tdd` auto-triggers during implementation — outside-in TDD against test trees
 4. The stop hook keeps `CLAUDE.md` and `README.md` current after every response
-5. Run `/contree:sync` periodically to verify completeness, then `/contree:second-opinion` for an independent review — or `/contree:workflow` for the full cycle
+5. Run `/contree:sync` periodically to verify completeness, then `/contree:second-opinion` for an independent review — or `/contree:change-without-me` for the full cycle
 
 ## Standardised architecture
 
