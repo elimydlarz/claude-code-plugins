@@ -36,6 +36,9 @@ load test_helper
   run bash -c "grep -oE '(domain|use-case|adapter|component|system|journey): [^;)]+' '$file' | sed -E 's/^[a-z-]+: //' | sort | uniq -d"
   assert_success
   assert_output ""
+  run bash -c "comm -23 <(find '$PROJECT_ROOT/test' -maxdepth 1 -name '*.bats' -print | sed \"s#^$PROJECT_ROOT/##\" | sort) <(grep -oE '(domain|use-case|adapter|component|system|journey): [^;)]+' '$file' | sed -E 's/^[a-z-]+: //' | tr ',' '\\n' | sed -E 's/^ +| +$//g' | sort)"
+  assert_success
+  assert_output ""
 }
 
 @test "when a project uses contree and every tree begins with a Journey, System, Component, Adapter, Use-case, Domain, or Port layer" {
