@@ -106,6 +106,46 @@ description: "Never closed"
   assert_output --partial "frontmatter"
 }
 
+@test "if a SKILL.md has content before its frontmatter then the validator exits non-zero and names the offending file" {
+  local skills="$BATS_TEST_TMPDIR/skills"
+  write_skill "$skills/bad" 'body before frontmatter
+---
+name: bad
+description: "Late metadata."
+---
+'
+
+  run bash "$SCRIPT" "$skills"
+  [ "$status" -ne 0 ] || return 1
+  assert_output --partial "bad/SKILL.md"
+}
+
+@test "if a SKILL.md's frontmatter name contains only whitespace then the validator exits non-zero and names the offending file" {
+  local skills="$BATS_TEST_TMPDIR/skills"
+  write_skill "$skills/bad" '---
+name: "   "
+description: "Has a description."
+---
+'
+
+  run bash "$SCRIPT" "$skills"
+  [ "$status" -ne 0 ] || return 1
+  assert_output --partial "bad/SKILL.md"
+}
+
+@test "if a SKILL.md's frontmatter description contains only whitespace then the validator exits non-zero and names the offending file" {
+  local skills="$BATS_TEST_TMPDIR/skills"
+  write_skill "$skills/bad" '---
+name: bad
+description: "   "
+---
+'
+
+  run bash "$SCRIPT" "$skills"
+  [ "$status" -ne 0 ] || return 1
+  assert_output --partial "bad/SKILL.md"
+}
+
 @test "exits non-zero when the skills dir does not exist" {
   run bash "$SCRIPT" "$BATS_TEST_TMPDIR/does-not-exist"
   [ "$status" -ne 0 ] || return 1

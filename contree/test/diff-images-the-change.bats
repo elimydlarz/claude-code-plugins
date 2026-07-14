@@ -71,9 +71,16 @@ SKILL="$PROJECT_ROOT/skills/diff-for-humans/SKILL.md"
   assert_output --partial "stop"
 }
 
-@test "diff-for-humans skill surfaces a failed gpt-image-2 request as an error and fabricates no image" {
+@test "if OPENAI_API_KEY is missing, the gpt-image-2 API returns an error or non-2xx response, the response contains no image, or the returned image is invalid then the failure is surfaced as an error and no image is fabricated" {
   run cat "$SKILL"
   assert_output --partial "fails"
   assert_output --partial "error"
   assert_output --partial "fabricate"
+  assert_output --partial 'curl -sS -f'
+  assert_output --partial 'OPENAI_API_KEY:?OPENAI_API_KEY is required'
+  assert_output --partial "jq -er"
+  assert_output --partial 'select(type == "string" and length > 0)'
+  assert_output --partial 'mktemp'
+  assert_output --partial '[ -s "$TEMP_IMAGE" ]'
+  assert_output --partial 'mv "$TEMP_IMAGE" "$OUTPUT_IMAGE"'
 }
