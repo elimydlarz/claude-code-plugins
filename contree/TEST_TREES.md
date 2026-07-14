@@ -114,7 +114,7 @@ pre-task-hook (src: hooks/session-start.sh; system: test/pre-task-hook.bats; jou
     and the agent is directed to decide obvious questions itself rather than asking the user — consulting these rules and the mental model first, then its own best judgment from the code in front of it, escalating to the user only a consequential, genuinely under-determined choice that neither resolves
     and the agent is directed to apply the same ladder to anything it would flag, caveat, or surface — fixing it where these rules or the mental model direct, else using its judgment, else staying silent rather than reporting it
     and the agent is directed to use Contree skills as directed by skill frontmatter
-    and the agent is shown every focused setup skill alongside change, tdd, sync, setup, and workflow
+    and the agent is shown every focused setup skill alongside change, tdd, sync, setup, and change-without-me
 ```
 
 ## post-task-hook
@@ -366,11 +366,11 @@ sync-audits-and-resolves (src: skills/sync/SKILL.md; system: test/sync-audits-an
     and contract changes are handled through change while test and implementation gaps are handled through tdd
 ```
 
-## workflow-runs-end-to-end
+## change-without-me-runs-end-to-end
 
 ```
-workflow-runs-end-to-end (src: skills/workflow/SKILL.md; system: test/workflow-runs-end-to-end.bats; journey: test/journey/docker-entrypoint.sh)
-  when workflow is run with an idea
+System: change-without-me-runs-end-to-end (src: skills/change-without-me/SKILL.md; system: test/change-without-me-runs-end-to-end.bats; journey: test/journey/docker-entrypoint.sh)
+  when change-without-me is run with an idea
     then change, sync, and tdd run in sequence without pausing
   when change completes
     then sync runs immediately
@@ -411,7 +411,7 @@ skill-discoverability (src: hooks/session-start.sh; system: test/skill-discovera
   when a user asks to implement from existing requirements without naming a skill
     then the tdd skill is triggered
   when a user asks to take an idea through the full workflow without naming a skill
-    then the workflow skill is triggered
+    then the change-without-me skill is triggered
 ```
 
 ## composable-testing
