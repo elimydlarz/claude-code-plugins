@@ -35,7 +35,7 @@ Discovery is read-only. Each subagent returns file-backed evidence in the consum
 
 Reconcile the evidence yourself before proposing trees. Resolve overlaps, vocabulary differences, and contradictions against direct evidence and operator intention.
 
-Reconcile the evidence with the operator through `change` into EARS trees with honest coverage. Follow its consumer-driven test kinds, causal nesting, one-tree-one-test-file boundary, and coverage syntax.
+Reconcile the evidence with the operator through `change` into layered EARS trees with honest coverage. Follow its consumer-driven test kinds, causal nesting, one-tree-one-test-file boundary, and coverage syntax.
 
 Every discovered behaviour is expressed at its consumer-visible seam. Describe principles rather than examples and include observable errors, side effects, and prevented effects. Do not invent unsupported behaviour.
 

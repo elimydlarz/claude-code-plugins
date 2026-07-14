@@ -20,7 +20,7 @@ SKILL="$PROJECT_ROOT/skills/setup-test-trees/SKILL.md"
 @test "when an operator asks to set up test trees for an existing project then the coding agent reconciles the evidence with the operator through change into layered EARS trees with honest coverage" {
   run cat "$SKILL"
   assert_output --partial "Reconcile the evidence"
-  assert_output --partial "through `change`"
+  assert_output --partial 'through `change`'
   assert_output --partial "layered EARS trees"
   assert_output --partial "honest coverage"
 }

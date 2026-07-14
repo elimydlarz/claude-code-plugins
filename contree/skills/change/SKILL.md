@@ -74,7 +74,7 @@ Component: save-score (component: none)
 
 Labels are `src`, `unit`, `integration`, `component`, and `journey`.
 
-Use `none` when coverage is expected but missing. Omission means a category does not apply. Coverage may be attached to a subtree when a distinct file owns that behaviour.
+Use `none` when coverage is expected but missing. Omitted categories do not apply. Coverage may be attached to a subtree when a distinct file owns that behaviour.
 
 Treat a mismatch between the consumer need and the file boundaries as design feedback. Resolve it until the coverage is honest.
 
