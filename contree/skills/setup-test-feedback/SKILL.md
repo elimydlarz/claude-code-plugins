@@ -41,7 +41,7 @@ Map the fixed Contree strategy:
 - Journey tests live under `test/journey/` as `*.journey.test.*`
 - Journey is a broad, production-like test of a curated user arc across capabilities, with external services replaced by test doubles only if unavoidable
 - Component is a deep in-process test of one capability through the whole app, with external services replaced by test doubles
-- Integration starts from the highest-level subject and mocks everything except the subjects you are integrating to see if they really work together as expected
+- Integration starts from the highest-level subject: mock everything except the subjects you are integrating to see if they really work together as expected
 - Unit tests cover every public surface with native unit tests, and every dependency outside the subject is mocked
 
 Use native project commands such as package scripts, Make targets, task aliases, build-tool tasks, or ecosystem equivalents. Do not create separate commands for every test kind.
