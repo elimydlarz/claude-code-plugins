@@ -36,7 +36,7 @@ while IFS= read -r -d '' skill_file; do
   name=$(printf '%s\n' "$frontmatter" | awk '
     /^name:[[:space:]]*/ {
       sub(/^name:[[:space:]]*/, "")
-      gsub(/^"|"$/, "")
+      gsub(/^["\047]|["\047]$/, "")
       sub(/^[[:space:]]+/, "")
       sub(/[[:space:]]+$/, "")
       print
@@ -46,7 +46,7 @@ while IFS= read -r -d '' skill_file; do
   description=$(printf '%s\n' "$frontmatter" | awk '
     /^description:[[:space:]]*/ {
       sub(/^description:[[:space:]]*/, "")
-      gsub(/^"|"$/, "")
+      gsub(/^["\047]|["\047]$/, "")
       sub(/^[[:space:]]+/, "")
       sub(/[[:space:]]+$/, "")
       print
