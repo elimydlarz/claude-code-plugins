@@ -4,25 +4,24 @@ load test_helper
 
 SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
 
-@test "change captures the outermost tree as a Journey for a broad arc or Component for one capability" {
+@test "when a behaviour change is planned then the outermost tree is captured as a Journey for a new user arc or System for a capability under an existing journey" {
   run cat "$SKILL"
   assert_output --partial "Journey tree"
-  assert_output --partial "Component tree"
+  assert_output --partial "System tree"
   assert_output --partial "consumer"
 }
 
-@test "change writes only the outermost tree up front and lets failing consumer tests reveal Integration and Unit tests" {
+@test "when a behaviour change is planned then only the outermost tree is written up front and failing consumer tests reveal inner-layer trees" {
   run cat "$SKILL"
   assert_output --regexp "only that one|only the outermost tree"
-  assert_output --partial "Integration"
-  assert_output --partial "Unit"
+  assert_output --partial "inner-layer trees"
   assert_output --partial "failing consumer test"
 }
 
-@test "change writes one tree per behavioural subject at its test kind" {
+@test "when a behaviour change is planned then trees are named for the subject with observable behaviour at their natural layer" {
   run cat "$SKILL"
   assert_output --partial "subject"
-  assert_output --partial "test kind"
+  assert_output --partial "natural layer"
   assert_output --partial "observable"
 }
 
@@ -33,24 +32,23 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   assert_output --partial "external services replaced by test doubles"
 }
 
-@test "change teaches every test kind as consumer-driven" {
+@test "when choosing a test layer then every layer is consumer-driven" {
   run cat "$SKILL"
   assert_output --partial "consumer-driven"
   assert_output --partial "consumer test"
 }
 
-@test "change defines Journey Component Integration and Unit without the removed test kinds" {
+@test "when choosing a test layer then Journey, System, Component, Adapter, Domain, Use-case, and Port use their distinct native test kinds" {
   run cat "$SKILL"
   assert_output --partial "Journey: broad, production-like test of a curated user arc across capabilities"
+  assert_output --partial "System: deep, production-like test of one capability through the whole app"
   assert_output --partial "Component: deep in-process test of one capability through the whole app"
-  assert_output --partial "Integration: when concerned integration of some (but not all) pieces"
-  assert_output --partial "Unit: test of one public surface on one subject"
-  refute_output --partial "System: deep"
-  refute_output --partial "Adapter: test"
-  refute_output --partial "Port contract: tests"
+  assert_output --partial "Adapter: test of one concrete boundary implementation"
+  assert_output --partial "Port contract: tests for an application interface"
+  assert_output --partial "Domain and Use-case trees describe Unit tests"
 }
 
-@test "change forbids designing Integration and Unit trees up front from speculation" {
+@test "when an inner-layer tree is added then it is never designed up front from speculation" {
   run cat "$SKILL"
   assert_output --regexp "YAGNI failure|speculation"
   assert_output --regexp "not designed ahead of time|not designed up front|hasn't asked"
@@ -61,11 +59,11 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   [[ "$output" == *"One tree, one test file"* || "$output" == *"one tree reifies exactly one test file"* ]]
 }
 
-@test "change names trees for the highest-level subject with observable behaviour at their test kind" {
+@test "when a behaviour change is planned then trees are named for the subject with observable behaviour at their natural layer" {
   run cat "$SKILL"
-  assert_output --partial "highest-level subject"
+  assert_output --partial "natural layer"
   assert_output --partial "observable"
-  assert_output --partial "test kind"
+  assert_output --partial "observable behaviour"
 }
 
 @test "change turns side effects into outbound ports named for capability, not technology" {
@@ -82,43 +80,28 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   assert_output --partial "adapter"
 }
 
-@test "change writes a shared behavioural suite for each port" {
+@test "when a side effect is identified then a shared Port contract suite is written" {
   run cat "$SKILL"
   assert_output --partial "shared"
-  assert_output --partial "behavioural suite"
+  assert_output --partial "shared contract suite"
 }
 
-@test "change requires both adapters to pass the shared behavioural suite" {
+@test "when a side effect is identified then both adapters pass the shared Port contract suite" {
   run cat "$SKILL"
   [[ "$output" == *"both adapters"* || "$output" == *"both must pass"* ]]
 }
 
-@test "change gives every public surface on a pure library a Unit tree" {
+@test "when a potential inner subject has only trivial delegation or value behaviour then it does not receive a speculative tree" {
   run cat "$SKILL"
-  assert_output --partial "pure library"
-  assert_output --partial "every public surface"
-  assert_output --partial "Unit tree"
+  assert_output --partial "Trivial value objects"
+  assert_output --partial "single-port delegation"
+  assert_output --partial "thin adapters"
+  assert_output --partial "do not earn trees"
 }
 
-@test "change classifies domain use-case adapter and port implementation public surfaces as Unit tests" {
-  run cat "$SKILL"
-  assert_output --partial "domain object"
-  assert_output --partial "use-case"
-  assert_output --partial "adapter"
-  assert_output --partial "port implementation"
-  assert_output --partial "Unit"
-}
-
-@test "change captures app-level invariants at the highest test kind whose subject exposes the policy" {
+@test "when an app-level invariant applies across slices rather than to one then it is captured in a System tree named for the policy" {
   run cat "$SKILL"
   assert_output --partial "app-level"
-  assert_output --partial "highest test kind"
+  assert_output --partial "Cross-cutting System trees"
   assert_output --partial "policy"
-}
-
-@test "change defines Integration from the highest-level subject and mocks everything except integrated subjects" {
-  run cat "$SKILL"
-  assert_output --partial "highest-level subject"
-  assert_output --partial "mock everything except"
-  assert_output --partial "subjects"
 }
