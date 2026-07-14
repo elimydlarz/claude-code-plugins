@@ -38,7 +38,7 @@ SKILL="$PROJECT_ROOT/skills/setup-mental-model/SKILL.md"
 @test "when an operator asks to set up a mental model for an existing project and project SessionStart hooks load the mental model before coding agents work" {
   run cat "$SKILL"
   assert_output --partial 'project-local `SessionStart` hooks'
-  assert_output --partial "load the complete `MENTAL_MODEL.md` before coding agents work"
+  assert_output --partial 'load the complete `MENTAL_MODEL.md` before coding agents work'
   assert_output --partial ".claude/settings.json"
   assert_output --partial ".codex/hooks.json"
 }
