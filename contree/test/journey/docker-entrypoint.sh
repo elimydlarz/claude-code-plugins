@@ -543,7 +543,7 @@ VERIFY
     ;;
 
   layered-workflow)
-    # The single end-to-end journey: setup → workflow → drift+sync against an
+    # The single end-to-end journey: setup → change-without-me → drift+sync against an
     # HTTP API fixture that exercises Journey, System, Adapter (driving + driven),
     # Use-case, Domain, ports, and in-memory adapters. Run under both harnesses.
     seed_project "bookmarks-api"
@@ -554,9 +554,9 @@ VERIFY
       "This project has no code yet — read CLAUDE.md for the Mental Model, then run /contree:setup to configure the test framework and create TEST_TREES.md when needed. This project has HTTP endpoints and a persistence port. Configure mutation testing if setup calls for it, but do not execute Stryker in this run."
 
     echo ""
-    echo "=== Phase 2: workflow (change → sync → tdd) ==="
+    echo "=== Phase 2: change-without-me (change → sync → tdd) ==="
     run_agent \
-      "Now implement the project. Use /contree:workflow to set expected behaviour in trees and drive the implementation outside-in. The project has a BookmarkRepository port — remember to build an in-memory adapter and a shared port contract suite alongside the file-based production adapter. Skip mutation testing for this run — configure it if setup tells you to, but do not execute Stryker."
+      "Now implement the project. Use /contree:change-without-me to set expected behaviour in trees and drive the implementation outside-in. The project has a BookmarkRepository port — remember to build an in-memory adapter and a shared port contract suite alongside the file-based production adapter. Skip mutation testing for this run — configure it if setup tells you to, but do not execute Stryker."
 
     echo ""
     echo "=== Phase 3: drift injection + sync ==="
@@ -627,7 +627,7 @@ JS
     start_openai_image_stub
 
     run_agent \
-      "Run only /contree:diff-for-humans for the current staged change. This is not setup, workflow, sync, tdd, second-opinion, or project implementation work. Do not install packages, do not create TEST_TREES.md, do not create README.md, do not create MENTAL_MODEL.md, and do not change source code except writing the returned image file. Read skills/diff-for-humans/SKILL.md, gather the staged git diff, call the skill's curl/OpenAI images API recipe exactly against OPENAI_BASE_URL with model gpt-image-2-2026-04-21, decode data[0].b64_json, save the png, and stop."
+      "Run only /contree:diff-for-humans for the current staged change. This is not setup, change-without-me, sync, tdd, second-opinion, or project implementation work. Do not install packages, do not create TEST_TREES.md, do not create README.md, do not create MENTAL_MODEL.md, and do not change source code except writing the returned image file. Read skills/diff-for-humans/SKILL.md, gather the staged git diff, call the skill's curl/OpenAI images API recipe exactly against OPENAI_BASE_URL with model gpt-image-2-2026-04-21, decode data[0].b64_json, save the png, and stop."
 
     kill "$OPENAI_STUB_PID" 2>/dev/null || true
 
@@ -852,7 +852,7 @@ VERIFY
     echo ""
     echo "Available tests:"
     echo "  setup                         — setup configures and verifies a project under both coding harnesses"
-    echo "  layered-workflow              — HTTP API: setup → workflow → drift → sync (every tree, every layer)"
+    echo "  layered-workflow              — HTTP API: setup → change-without-me → drift → sync (every tree, every layer)"
     echo "  describe-it-drift             — one-shot: pre-seeded describe/it mismatch → verifies sync flags it"
     echo "  diff-images                   — one-shot: staged change + mocked gpt-image-2 → verifies /contree:diff-for-humans generates an image of the change"
     echo "  second-opinion                — one-shot: staged change + mocked GLM 5.2 → verifies /contree:second-opinion reviews the change"
