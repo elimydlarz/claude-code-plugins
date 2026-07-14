@@ -40,7 +40,7 @@ load test_helper
 
 @test "when a project uses contree and every tree begins with a Journey, System, Component, Adapter, Use-case, Domain, or Port layer" {
   local file="$PROJECT_ROOT/TEST_TREES.md"
-  run bash -c "awk '/^```$/ { block = !block; next } block && /^[A-Za-z-]+: / && !/^(Journey|System|Component|Adapter|Use-case|Domain|Port): / { print }' '$file'"
+  run awk '/^```$/ { block = !block; next } block && /^[A-Za-z-]+: / && !/^(Journey|System|Component|Adapter|Use-case|Domain|Port): / { print }' "$file"
   assert_success
   assert_output ""
 }

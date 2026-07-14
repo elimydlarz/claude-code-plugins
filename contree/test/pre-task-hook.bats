@@ -60,7 +60,7 @@ run_hook_in() {
   run_hook_in "$BATS_TEST_TMPDIR"
   assert_output --partial "Behaviour, not internals"
   assert_output --partial "interface"
-  assert_output --partial "not the implementation inside"
+  assert_output --partial "never the implementation inside"
 }
 
 @test "when a session starts and the agent is directed that Journey, System, Component, Adapter, Port contract, and Unit are the test kinds" {
