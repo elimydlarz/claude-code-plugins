@@ -1,11 +1,11 @@
 ---
 name: second-opinion
-description: "Get an independent review of completed work from a different model — sends the change and the test-tree contract to Z.AI's GLM 5.2 with ZAI_API_KEY, or to DeepSeek with DEEPSEEK_API_KEY, and surfaces its critique. TRIGGER when: sync has just finished, the user asks for a second opinion, an independent review, or a sanity check on completed work before a PR or release."
+description: "Get an independent review of completed work from OpenAI's gpt-5.6-sol with high reasoning effort — sends the work and test-tree contract through the Responses API with OPENAI_API_KEY and surfaces its critique. TRIGGER when: sync has just finished, the user asks for a second opinion, an independent review, or a sanity check on completed work before a PR or release."
 ---
 
 # Second Opinion
 
-Sends the completed change to a **different model** — Z.AI's **GLM 5.2** when `ZAI_API_KEY` is present, or **DeepSeek** when `DEEPSEEK_API_KEY` is present — and surfaces its independent review. Once `sync` reports the trees and implementation are aligned, a second pair of eyes from another model catches what a single perspective misses: bugs, drift from the test-tree contract, rule violations, gaps the author rationalised away.
+Sends the completed work to OpenAI's **gpt-5.6-sol** with high reasoning effort and surfaces its independent review. Once `sync` reports the trees and implementation are aligned, a second pair of eyes catches what a single perspective misses: bugs, drift from the test-tree contract, rule violations, gaps the author rationalised away.
 
 ## When to Use
 
@@ -32,38 +32,31 @@ For a wider grouping spanning several trunk-sync commits, diff the appropriate r
 
 ### 2. Ask an independent model to review against the contract
 
-Call Z.AI's chat completions API with the `glm-5.2` model when `ZAI_API_KEY` is present. When `ZAI_API_KEY` is absent and `DEEPSEEK_API_KEY` is present, call DeepSeek's chat completions API with `deepseek-chat`. Send the change and the test trees, and ask the model to review the work as an independent critic: does the change satisfy the test-tree contract, are there bugs or drift, does it honour the rules (KISS, YAGNI, no fake code, fail-fast, no comments), and what would it change?
+Call OpenAI's Responses API at `https://api.openai.com/v1/responses` with `OPENAI_API_KEY`, the `gpt-5.6-sol` model, and high reasoning effort. Send the work and the test trees, and ask the model to review the work as an independent critic: does the change satisfy the test-tree contract, are there bugs or drift, does it honour the rules (KISS, YAGNI, no fake code, fail-fast, no comments), what database schema or API contract changes does it introduce, what does it impact in other systems, and what would it change?
 
 ```bash
 REVIEW_INPUT=$(printf 'TEST TREES (the contract):\n\n%s\n\nCHANGE (the work to review):\n\n%s\n' \
   "$(cat TEST_TREES.md)" "$CHANGE")
-if [ -n "${ZAI_API_KEY:-}" ]; then
-  REVIEW_API_KEY="$ZAI_API_KEY"
-  REVIEW_BASE_URL="${ZAI_BASE_URL:-https://api.z.ai/api/paas/v4}"
-  REVIEW_MODEL="glm-5.2"
-else
-  REVIEW_API_KEY="${DEEPSEEK_API_KEY:?missing both ZAI_API_KEY and DEEPSEEK_API_KEY}"
-  REVIEW_BASE_URL="${DEEPSEEK_BASE_URL:-https://api.deepseek.com/v1}"
-  REVIEW_MODEL="deepseek-chat"
-fi
+REVIEW_BASE_URL="${OPENAI_BASE_URL:-https://api.openai.com/v1}"
+REVIEW_MODEL="gpt-5.6-sol"
 
-curl -sS -f -X POST "$REVIEW_BASE_URL/chat/completions" \
-  -H "Authorization: Bearer $REVIEW_API_KEY" \
+REVIEW_RESPONSE=$(curl -sS -f -X POST "$REVIEW_BASE_URL/responses" \
+  -H "Authorization: Bearer ${OPENAI_API_KEY:?OPENAI_API_KEY is required}" \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg input "$REVIEW_INPUT" --arg model "$REVIEW_MODEL" '{
         model: $model,
-        messages: [
-          { role: "system", content: "You are an independent code reviewer. Review the completed work against the test-tree contract. Review database schema changes, API contract changes, and impacts on other systems. Surface bugs, drift from the trees, rule violations, and gaps. Be specific and concrete." },
-          { role: "user", content: $input }
-        ]
-      }')" \
-  | jq -r '.choices[0].message.content'
+        reasoning: { effort: "high" },
+        instructions: "You are an independent code reviewer. Review the completed work against the test-tree contract. Review database schema changes, API contract changes, and impacts on other systems. Surface bugs, drift from the trees, rule violations, and gaps. Be specific and concrete.",
+        input: $input
+      }')")
+REVIEW=$(printf '%s' "$REVIEW_RESPONSE" | jq -er '[.output[]? | select(.type == "message") | .content[]? | select(.type == "output_text") | .text] | join("\n") | select(length > 0)')
+printf '%s\n' "$REVIEW"
 ```
 
 ### 3. Surface the review
 
-Present the returned review to the user verbatim, attributed to `$REVIEW_MODEL` so it is clear this is a second opinion from another model, not your own. The user decides what to act on; where the review finds drift or gaps, route them back through `change`, `sync`, or `tdd`.
+Present the returned review to the user verbatim, attributed to `gpt-5.6-sol` so it is clear this is a second opinion, not your own. The user decides what to act on; where the review finds drift or gaps, route them back through `change`, `sync`, or `tdd`.
 
 ## Failure is loud
 
-If the review request fails — missing both `ZAI_API_KEY` and `DEEPSEEK_API_KEY`, an API error, a non-2xx response (`curl -f`), or empty content — surface the failure as an error and stop. Never fabricate a review, summarise the diff yourself and pass it off as the independent model's review, or report a second opinion you did not get. A missing review is an honest outcome; a fake one is not.
+If the review request fails — `OPENAI_API_KEY` is missing, the API returns an error or non-2xx response (`curl -f`), or the response contains no review (`jq -e`) — surface the failure as an error and stop. Never fabricate a review, summarise the diff yourself and pass it off as the independent model's review, or report a second opinion you did not get. A missing review is an honest outcome; a fake one is not.
