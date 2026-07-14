@@ -72,7 +72,7 @@ MUTATION_TESTING="$PROJECT_ROOT/skills/setup-mutation-testing/SKILL.md"
 @test "when a project uses contree and Unit tests exercise every public surface of Domain and Use-case subjects while mocking every dependency outside that subject" {
   run cat "$TEST_FEEDBACK"
   assert_output --partial "every public surface of Domain and Use-case subjects"
-  assert_output --partial "every dependency outside the subject is mocked"
+  assert_output --partial "every dependency outside the subject mocked"
 }
 
 @test "when a project uses contree and every test kind produces tree-shaped output" {
