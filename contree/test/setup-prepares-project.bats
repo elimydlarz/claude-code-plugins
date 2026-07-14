@@ -56,7 +56,7 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "before mutation setup begins"
 }
 
-@test "when an operator asks for comprehensive Contree setup then setup verifies save-time lint and Stop-time impacted tests and fixes every feedback failure before reporting the project prepared" {
+@test "when an operator asks for comprehensive Contree setup then setup verifies save-time lint and impacted tests plus Stop-time feedback and fixes every failure before reporting the project prepared" {
   run cat "$SKILL"
   assert_output --partial "test"
   assert_output --partial "lint"
@@ -64,7 +64,7 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "mutation"
   assert_output --partial "fix"
   assert_output --partial "verify"
-  assert_output --partial 'native `test-changed` command and the actual project Stop hooks'
+  assert_output --partial "native `test-changed` command and the actual synchronous project save hooks"
   assert_output --partial "Verify each save hook"
   assert_output --partial "actual file edit"
   assert_output --partial "actual Stop turn"
