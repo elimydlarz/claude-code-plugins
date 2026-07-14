@@ -78,7 +78,7 @@ prime_codex_plugin() {
   cat > "$CODEX_TEST_HOME/config.toml" <<CONFIG
 model = "gpt-5.6-luna"
 model_provider = "openai"
-model_reasoning_effort = "low"
+model_reasoning_effort = "medium"
 
 [features]
 hooks = true
@@ -129,6 +129,7 @@ prime_claude_provider() {
   export ANTHROPIC_DEFAULT_SONNET_MODEL="gpt-5.6-luna"
   export ANTHROPIC_DEFAULT_HAIKU_MODEL="gpt-5.6-luna"
   export CLAUDE_CODE_SUBAGENT_MODEL="gpt-5.6-luna"
+  export CLAUDE_CODE_EFFORT_LEVEL="medium"
 }
 
 AGENT_CALL_COUNT=0

@@ -83,6 +83,7 @@ function toResponsesRequest(request) {
   }))
   const responsesRequest = {
     model: 'gpt-5.6-luna',
+    reasoning: { effort: 'medium' },
     input: toResponsesInput(request.messages || []),
     max_output_tokens: request.max_tokens,
     stream: false
