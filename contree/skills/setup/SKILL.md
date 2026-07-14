@@ -20,7 +20,7 @@ Build a dynamic setup workflow containing only missing or broken steering:
 - `setup-mental-model` for the seven-section model and project-local model steering
 - `setup-test-trees` for the behavioural contract and project-local tree steering
 - `bootstrap-test-trees` to compose both steering skills and implement their trees as tests
-- `setup-mutation-testing` for fast Domain and Use-case test-quality feedback
+- `setup-mutation-testing` for fast Unit-test quality feedback
 
 ## Engage the operator
 
@@ -39,11 +39,11 @@ Run each selected focused skill faithfully.
 
 Treat setup as Contree progressively expanding into the project. After each focused skill, prove its project-local hooks before continuing so every later coding-agent turn receives all steering installed by the earlier phases. Preserve and merge earlier hooks; no setup phase may replace or disconnect feedback installed by another.
 
-Use subagents for independent, non-overlapping setup work that can safely proceed in parallel. Keep dependent feedback loops ordered: configure before fixing, establish trees before implementing their tests, and install mutation feedback after Domain and Use-case tests exist. Give every subagent explicit file or capability ownership, then reconcile their results yourself before starting dependent work.
+Use subagents for independent, non-overlapping setup work that can safely proceed in parallel. Keep dependent feedback loops ordered: configure before fixing, establish trees before implementing their tests, and install mutation feedback after Unit tests exist. Give every subagent explicit file or capability ownership, then reconcile their results yourself before starting dependent work.
 
 Keep ownership of the dynamic workflow in this coordinator. Do not delegate an entire focused skill to an unattended background agent. Invoke each focused skill yourself, let that skill dispatch its required bounded subagents, and wait for every selected phase to finish. Before advancing, confirm that no subagent is still running for that phase. A background task launch is not phase completion.
 
-Run `setup-test-feedback` before `bootstrap-test-trees` so the second bootstrap wave has working normal and functional commands. Within bootstrap, `setup-mental-model` runs before `setup-test-trees`, and both project-local steering hooks must work before the test implementation wave. Run `setup-linter` before `setup-architecture-linter` so the combined lint command has a stable conventional-lint half. When architecture setup invokes `fix-architecture`, finish that repair before bootstrap records the project architecture.
+Run `setup-test-feedback` before `bootstrap-test-trees` so the second bootstrap wave has working normal and journey commands. Within bootstrap, `setup-mental-model` runs before `setup-test-trees`, and both project-local steering hooks must work before the test implementation wave. Run `setup-linter` before `setup-architecture-linter` so the combined lint command has a stable conventional-lint half. When architecture setup invokes `fix-architecture`, finish that repair before bootstrap records the project architecture.
 
 Gate dependent phases on retained evidence. Never accept a subagent summary as proof. After every focused skill, inspect its changed files and run its owning command. After `bootstrap-test-trees`, require at least one retained layered EARS tree for an existing project and exactly one retained test file for each tree, with its hierarchy mirrored, before mutation setup begins. If those artifacts are absent, resume or repair bootstrap instead of moving on.
 
@@ -52,7 +52,7 @@ Gate dependent phases on retained evidence. Never accept a subagent summary as p
 Run every configured feedback command from the project root:
 
 - normal tests
-- functional tests
+- journey tests
 - impacted tests through the native `test-changed` command and the actual synchronous project save hooks
 - conventional lint and its autofix command
 - architecture lint and the actual project Stop hook

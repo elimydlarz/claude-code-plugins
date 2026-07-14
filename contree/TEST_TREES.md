@@ -27,7 +27,7 @@ Unit: bootstrap-test-trees (src: skills/bootstrap-test-trees/SKILL.md; unit: tes
     and it proves both project-local steering hooks are active before implementing tests
     and a second wave of subagents implements non-overlapping test trees as tests whose hierarchy mirrors each tree verbatim
     and every tree maps to exactly one uncommented test file
-    and the coding agent reconciles the test implementations and runs the normal and functional test commands
+    and the coding agent reconciles the test implementations and runs the normal and journey test commands
   when an operator asks to bootstrap test trees for a new project
     then the skill runs setup-mental-model and setup-test-trees to create their empty homes and project-local steering hooks
     and it leaves behaviour trees and tests to be pulled into existence by the first requested capability
@@ -382,7 +382,7 @@ Unit: sync-audits-and-resolves (src: skills/sync/SKILL.md; unit: test/sync-audit
     and the codebase is checked for whether it honours the representation
   when a substantive unit revealed by TDD has no tree and test at its natural lowest layer
     then the missing native coverage is closed immediately through TDD
-    and existing higher-layer coverage is retained
+    and existing coverage for applicable test-kind concerns is retained
     and every applicable layer tests the behaviour at its own seam
   when the project is in sync
     then every identified issue has been resolved proactively
