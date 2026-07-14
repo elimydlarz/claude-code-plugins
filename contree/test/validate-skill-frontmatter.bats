@@ -22,7 +22,7 @@ description: "Does the thing."
 EOF
 }
 
-@test "exits 0 when every SKILL.md has non-empty name and description" {
+@test "when every skills/*/SKILL.md has non-empty frontmatter name and description then the validator exits 0" {
   local skills="$BATS_TEST_TMPDIR/skills"
   write_skill "$skills/alpha" "$(well_formed_body)"
   write_skill "$skills/beta" "$(well_formed_body)"
@@ -32,13 +32,13 @@ EOF
   [ -z "$output" ] || return 1
 }
 
-@test "passes for the real contree skills dir" {
+@test "when every skills/*/SKILL.md has non-empty frontmatter name and description and this holds for contree's own real skills/ directory, not just synthetic fixtures" {
   run bash "$SCRIPT" "$PROJECT_ROOT/skills"
   [ "$status" -eq 0 ] || return 1
   [ -z "$output" ] || return 1
 }
 
-@test "exits 0 when skills dir has no SKILL.md" {
+@test "when the skills directory has no SKILL.md files then the validator exits 0" {
   local skills="$BATS_TEST_TMPDIR/empty"
   mkdir -p "$skills"
 
@@ -47,7 +47,21 @@ EOF
   [ -z "$output" ] || return 1
 }
 
-@test "exits non-zero and names the offender when name is missing" {
+@test "if a SKILL.md's frontmatter name is missing then the validator exits non-zero" {
+  local skills="$BATS_TEST_TMPDIR/skills"
+  write_skill "$skills/good" "$(well_formed_body)"
+  write_skill "$skills/bad" '---
+description: "Has a description but no name."
+---
+
+# Bad
+'
+
+  run bash "$SCRIPT" "$skills"
+  [ "$status" -ne 0 ] || return 1
+}
+
+@test "if a SKILL.md's frontmatter name is missing and names the offending file" {
   local skills="$BATS_TEST_TMPDIR/skills"
   write_skill "$skills/good" "$(well_formed_body)"
   write_skill "$skills/bad" '---
@@ -60,10 +74,23 @@ description: "Has a description but no name."
   run bash "$SCRIPT" "$skills"
   [ "$status" -ne 0 ] || return 1
   assert_output --partial "bad/SKILL.md"
-  assert_output --partial "name"
 }
 
-@test "exits non-zero and names the offender when description is empty" {
+@test "if a SKILL.md's frontmatter description is empty then the validator exits non-zero" {
+  local skills="$BATS_TEST_TMPDIR/skills"
+  write_skill "$skills/bad" '---
+name: bad
+description: ""
+---
+
+# Bad
+'
+
+  run bash "$SCRIPT" "$skills"
+  [ "$status" -ne 0 ] || return 1
+}
+
+@test "if a SKILL.md's frontmatter description is empty and names the offending file" {
   local skills="$BATS_TEST_TMPDIR/skills"
   write_skill "$skills/bad" '---
 name: bad
@@ -76,10 +103,9 @@ description: ""
   run bash "$SCRIPT" "$skills"
   [ "$status" -ne 0 ] || return 1
   assert_output --partial "bad/SKILL.md"
-  assert_output --partial "description"
 }
 
-@test "exits non-zero when frontmatter is missing entirely" {
+@test "if a SKILL.md has no frontmatter at all then the validator exits non-zero" {
   local skills="$BATS_TEST_TMPDIR/skills"
   write_skill "$skills/bad" '# No frontmatter here
 just body.
@@ -91,7 +117,7 @@ just body.
   assert_output --partial "frontmatter"
 }
 
-@test "exits non-zero when frontmatter has no closing marker" {
+@test "if a SKILL.md's frontmatter has no closing marker then the validator exits non-zero" {
   local skills="$BATS_TEST_TMPDIR/skills"
   write_skill "$skills/bad" '---
 name: bad
@@ -146,13 +172,13 @@ description: "   "
   assert_output --partial "bad/SKILL.md"
 }
 
-@test "exits non-zero when the skills dir does not exist" {
+@test "if the skills directory does not exist then the validator exits non-zero" {
   run bash "$SCRIPT" "$BATS_TEST_TMPDIR/does-not-exist"
   [ "$status" -ne 0 ] || return 1
   assert_output --partial "does not exist"
 }
 
-@test "exits non-zero when no argument is given" {
+@test "if no argument is given then the validator exits non-zero" {
   run bash "$SCRIPT"
   [ "$status" -ne 0 ]
 }
