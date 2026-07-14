@@ -306,7 +306,7 @@ http.createServer((req, res) => {
   req.on('data', (c) => (body += c))
   req.on('end', () => {
     if (req.method === 'POST' && req.url.includes('/responses')) {
-      fs.appendFileSync(process.env.OPENAI_REVIEW_HITS, `${req.method} ${req.url} ${body}\n`)
+      fs.writeFileSync(process.env.OPENAI_REVIEW_HITS, body)
       res.writeHead(200, { 'Content-Type': 'application/json' })
       res.end(JSON.stringify({ output: [{ type: 'message', role: 'assistant', content: [{ type: 'output_text', text: review, annotations: [] }] }] }))
     } else {
@@ -714,9 +714,7 @@ JS
     kill "$OPENAI_REVIEW_STUB_PID" 2>/dev/null || true
 
     pass=1
-    if grep -q "/responses" "$OPENAI_REVIEW_HITS" \
-      && grep -q '"model":"gpt-5.6-sol"' "$OPENAI_REVIEW_HITS" \
-      && grep -q '"effort":"high"' "$OPENAI_REVIEW_HITS"; then
+    if jq -e '.model == "gpt-5.6-sol" and .reasoning.effort == "high"' "$OPENAI_REVIEW_HITS" >/dev/null; then
       called="PASS — mocked OpenAI Responses API call recorded with gpt-5.6-sol and high reasoning effort"
     else
       called="FAIL — no valid mocked OpenAI Responses API call recorded"
