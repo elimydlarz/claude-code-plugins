@@ -4,12 +4,6 @@ set -euo pipefail
 # Runs a contree journey case against a coding-agent harness.
 # Works both inside Docker (called by docker-run.sh) and directly on the host.
 #
-# Expects:
-#   - For claude: DEEPSEEK_API_KEY (via docker-run.sh DeepSeek env vars)
-#   - For codex:  DEEPSEEK_API_KEY
-#   - $1 is the test name (test-kinds-workflow | describe-it-drift | diff-images | second-opinion | second-opinion-live)
-#   - $2 is the harness  (claude | codex), default claude
-
 TEST_NAME="${1:?Usage: docker-entrypoint.sh <test-name> [claude|codex]}"
 HARNESS="${2:-claude}"
 case "$HARNESS" in claude|codex) ;; *) echo "Unknown harness: $HARNESS (use claude or codex)" >&2; exit 1;; esac
@@ -31,7 +25,8 @@ fi
 FIXTURES="$CONTREE_ROOT/test/fixtures"
 PROJECT_DIR="/tmp/contree-test-project"
 CODEX_TEST_HOME="$PROJECT_DIR/.codex-home"
-CODEX_DEEPSEEK_PROXY_PORT=8783
+CLAUDE_OPENAI_PROXY_PORT=8783
+JOURNEY_OPENAI_API_KEY="${OPENAI_API_KEY:-}"
 OUTPUT_DIR="$CONTREE_ROOT/test/journey"
 if [ -d "/output" ]; then
   OUTPUT_DIR="/output"
@@ -55,7 +50,8 @@ seed_project() {
 }
 
 CODEX_PRIMED=0
-CODEX_DEEPSEEK_PROXY_PID=0
+CLAUDE_PROVIDER_PRIMED=0
+CLAUDE_OPENAI_PROXY_PID=0
 
 prime_codex_plugin() {
   # Codex reads cached plugins from ~/.codex/plugins/cache/<marketplace>/<plugin>/<version>/
@@ -80,8 +76,8 @@ prime_codex_plugin() {
   } >> "$PROJECT_DIR/.git/info/exclude"
 
   cat > "$CODEX_TEST_HOME/config.toml" <<CONFIG
-model = "deepseek-chat"
-model_provider = "deepseek"
+model = "gpt-5.6-luna"
+model_provider = "openai"
 model_reasoning_effort = "low"
 
 [features]
@@ -94,10 +90,10 @@ inherit = "all"
 [plugins."contree@local-marketplace"]
 enabled = true
 
-[model_providers.deepseek]
-name = "DeepSeek"
-base_url = "http://127.0.0.1:$CODEX_DEEPSEEK_PROXY_PORT/v1"
-env_key = "DEEPSEEK_API_KEY"
+[model_providers.openai]
+name = "OpenAI"
+base_url = "https://api.openai.com/v1"
+env_key = "OPENAI_API_KEY"
 wire_api = "responses"
 CONFIG
 
@@ -111,20 +107,28 @@ trust_level = "trusted"
 CONFIG
 
   export CODEX_HOME="$CODEX_TEST_HOME"
+}
 
-  if [ -z "${DEEPSEEK_API_KEY:-}" ]; then
-    echo "Codex harness requires DEEPSEEK_API_KEY" >&2
-    exit 1
-  fi
+prime_claude_provider() {
+  [ "$CLAUDE_PROVIDER_PRIMED" -eq 1 ] && return 0
+  CLAUDE_PROVIDER_PRIMED=1
 
-  CODEX_DEEPSEEK_PROXY_PORT="$CODEX_DEEPSEEK_PROXY_PORT" node "$CONTREE_ROOT/test/journey/codex-deepseek-responses-proxy.mjs" &
-  CODEX_DEEPSEEK_PROXY_PID=$!
-  trap 'kill "$CODEX_DEEPSEEK_PROXY_PID" 2>/dev/null || true' EXIT
+  OPENAI_API_KEY="$JOURNEY_OPENAI_API_KEY" CLAUDE_OPENAI_PROXY_PORT="$CLAUDE_OPENAI_PROXY_PORT" node "$CONTREE_ROOT/test/journey/claude-openai-responses-proxy.mjs" &
+  CLAUDE_OPENAI_PROXY_PID=$!
+  trap 'kill "$CLAUDE_OPENAI_PROXY_PID" 2>/dev/null || true' EXIT
   for _ in $(seq 1 50); do
-    curl -fsS "http://127.0.0.1:$CODEX_DEEPSEEK_PROXY_PORT/health" >/dev/null 2>&1 && break
+    curl -fsS "http://127.0.0.1:$CLAUDE_OPENAI_PROXY_PORT/health" >/dev/null 2>&1 && break
     sleep 0.1
   done
-  curl -fsS "http://127.0.0.1:$CODEX_DEEPSEEK_PROXY_PORT/health" >/dev/null
+  curl -fsS "http://127.0.0.1:$CLAUDE_OPENAI_PROXY_PORT/health" >/dev/null
+
+  export ANTHROPIC_BASE_URL="http://127.0.0.1:$CLAUDE_OPENAI_PROXY_PORT"
+  export ANTHROPIC_AUTH_TOKEN="$JOURNEY_OPENAI_API_KEY"
+  export ANTHROPIC_MODEL="gpt-5.6-luna"
+  export ANTHROPIC_DEFAULT_OPUS_MODEL="gpt-5.6-luna"
+  export ANTHROPIC_DEFAULT_SONNET_MODEL="gpt-5.6-luna"
+  export ANTHROPIC_DEFAULT_HAIKU_MODEL="gpt-5.6-luna"
+  export CLAUDE_CODE_SUBAGENT_MODEL="gpt-5.6-luna"
 }
 
 AGENT_CALL_COUNT=0
@@ -134,13 +138,14 @@ run_agent() {
   AGENT_CALL_COUNT=$((AGENT_CALL_COUNT + 1))
 
   if [ "$HARNESS" = "claude" ]; then
+    prime_claude_provider
     local continue_flag=()
     local max_budget_usd="2.00"
     [ "$AGENT_CALL_COUNT" -gt 1 ] && continue_flag=(-c)
     # The comprehensive setup journey deliberately runs every focused setup
     # skill plus two subagent waves, so its first turn needs a larger envelope.
     [ "$TEST_NAME" = "setup" ] && [ "$AGENT_CALL_COUNT" -eq 1 ] && max_budget_usd="4.00"
-    (cd "$PROJECT_DIR" && claude -p "$prompt" \
+    (export OPENAI_API_KEY="$JOURNEY_OPENAI_API_KEY"; cd "$PROJECT_DIR" && claude -p "$prompt" \
       "${continue_flag[@]}" \
       --plugin-dir "$CONTREE_ROOT" \
       --dangerously-skip-permissions \
@@ -154,7 +159,7 @@ run_agent() {
 
   prime_codex_plugin
   if [ "$AGENT_CALL_COUNT" -eq 1 ]; then
-    if ! (cd "$PROJECT_DIR" && codex exec \
+    if ! (export OPENAI_API_KEY="$JOURNEY_OPENAI_API_KEY"; cd "$PROJECT_DIR" && codex exec \
       --dangerously-bypass-approvals-and-sandbox \
       --dangerously-bypass-hook-trust \
       --skip-git-repo-check \
@@ -166,7 +171,7 @@ run_agent() {
     fi
     append_codex_artifacts
   else
-    if ! (cd "$PROJECT_DIR" && codex exec resume --last \
+    if ! (export OPENAI_API_KEY="$JOURNEY_OPENAI_API_KEY"; cd "$PROJECT_DIR" && codex exec resume --last \
       --dangerously-bypass-approvals-and-sandbox \
       --dangerously-bypass-hook-trust \
       --skip-git-repo-check \

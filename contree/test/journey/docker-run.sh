@@ -20,26 +20,7 @@ for env_file in "$SCRIPT_DIR/.env" "$REPO_ROOT/.env"; do
   [ -f "$env_file" ] && set -a && . "$env_file" && set +a
 done
 
-export ANTHROPIC_BASE_URL="https://api.deepseek.com/anthropic"
-export ANTHROPIC_AUTH_TOKEN="${DEEPSEEK_API_KEY:-}"
-export ANTHROPIC_MODEL="deepseek-v4-pro[1m]"
-export ANTHROPIC_DEFAULT_OPUS_MODEL="deepseek-v4-pro[1m]"
-export ANTHROPIC_DEFAULT_SONNET_MODEL="deepseek-v4-pro[1m]"
-export ANTHROPIC_DEFAULT_HAIKU_MODEL="deepseek-v4-flash"
-export CLAUDE_CODE_SUBAGENT_MODEL="deepseek-v4-flash"
-export CLAUDE_CODE_EFFORT_LEVEL="max"
-DOCKER_LLM_ENV=(
-  -e ANTHROPIC_BASE_URL
-  -e ANTHROPIC_AUTH_TOKEN
-  -e ANTHROPIC_MODEL
-  -e ANTHROPIC_DEFAULT_OPUS_MODEL
-  -e ANTHROPIC_DEFAULT_SONNET_MODEL
-  -e ANTHROPIC_DEFAULT_HAIKU_MODEL
-  -e CLAUDE_CODE_SUBAGENT_MODEL
-  -e CLAUDE_CODE_EFFORT_LEVEL
-)
-
-DOCKER_CODEX_ENV=(-e DEEPSEEK_API_KEY)
+DOCKER_LLM_ENV=(-e OPENAI_API_KEY)
 
 # (test-name, harness) pairs run by `all`.
 MATRIX=(
@@ -68,23 +49,11 @@ docker build -q -t "$IMAGE_NAME" -f "$SCRIPT_DIR/Dockerfile" "$TEST_DIR"
 run_pair() {
   local name="$1"
   local harness="$2"
-  if [ "$harness" = "claude" ] && [ -z "${DEEPSEEK_API_KEY:-}" ]; then
-    echo "Claude harness requires DEEPSEEK_API_KEY" >&2
-    return 1
-  fi
-  if [ "$harness" = "codex" ] && [ -z "${DEEPSEEK_API_KEY:-}" ]; then
-    echo "Codex harness requires DEEPSEEK_API_KEY" >&2
-    return 1
-  fi
   local docker_env_args=("${DOCKER_LLM_ENV[@]}")
-  if [ "${#DOCKER_CODEX_ENV[@]}" -gt 0 ]; then
-    docker_env_args+=("${DOCKER_CODEX_ENV[@]}")
-  fi
   echo "=== Starting: $name ($harness) ==="
   if docker run --rm \
     --name "contree-test-${name}-${harness}-$$" \
     "${docker_env_args[@]}" \
-    -e "OPENAI_API_KEY=${OPENAI_API_KEY:-}" \
     -v "$REPO_ROOT:/repo:ro" \
     -v "$SCRIPT_DIR:/output" \
     "$IMAGE_NAME" \

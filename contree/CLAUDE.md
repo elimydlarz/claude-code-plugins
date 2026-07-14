@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+Note: This is project publishes the Contree harness. It's important to understand when we are making changes to how this project works vs when we are making changes that will impact downstream operators of this harness. I refer to changes to this project as project changes and changes that will impact downstream operators of the harness changes.
+
 ## What This Is
 
 A plugin that unifies test-tree-driven development with living requirements. Test trees ARE the requirements — they live in `TEST_TREES.md` at the project root, describe what the system does using EARS syntax, and are kept in sync with implementation automatically.

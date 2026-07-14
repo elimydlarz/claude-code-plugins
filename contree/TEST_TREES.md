@@ -481,7 +481,7 @@ Unit: rules-loading (src: hooks/session-start.sh; unit: test/rules-loading.bats;
 ## dual-harness-compatibility
 
 ```
-Integration: dual-harness-compatibility (src: .claude-plugin/plugin.json, .codex-plugin/plugin.json, hooks/hooks.json, test/journey/codex-deepseek-responses-proxy.mjs; integration: test/dual-harness-compatibility.bats; journey: test/journey/docker-entrypoint.sh)
+Integration: dual-harness-compatibility (src: .claude-plugin/plugin.json, .codex-plugin/plugin.json, hooks/hooks.json, test/journey/claude-openai-responses-proxy.mjs; integration: test/dual-harness-compatibility.bats; journey: test/journey/docker-entrypoint.sh)
   when contree is installed under either Claude Code or Codex
     then a manifest exists at .claude-plugin/plugin.json
     and a manifest exists at .codex-plugin/plugin.json declaring skills as ./skills/ and hooks as ./hooks/hooks.json
