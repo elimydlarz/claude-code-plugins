@@ -1,6 +1,6 @@
 ---
 name: setup-test-feedback
-description: "Set up fast test feedback for coding agents by configuring normal, functional, and impacted-test commands plus project Stop hooks. TRIGGER when: an operator asks to configure a test framework, test commands, test output, changed-test selection, test hooks, or Docker-backed tests."
+description: "Set up fast test feedback for coding agents by configuring normal, functional, and impacted-test commands plus project save hooks. TRIGGER when: an operator asks to configure a test framework, test commands, test output, changed-test selection, test hooks, or Docker-backed tests."
 ---
 
 # Setup Test Feedback
@@ -9,7 +9,7 @@ Build the project's test feedback loop with the operator. Configure tests; do no
 
 ## Outcome
 
-Coding agents receive fast normal-test feedback after each turn, while the operator retains a separate production-like functional command. Existing project choices survive unless the operator agrees to change them.
+Coding agents receive fast normal-test feedback after each file edit, while the operator retains a separate production-like functional command. Existing project choices survive unless the operator agrees to change them.
 
 ## 1. Inspect and agree
 
@@ -61,7 +61,28 @@ Create an executable project wrapper under `.contree/hooks/` that:
 - preserves complete test output
 - exits `2` when impacted tests fail
 
-Merge project-level `Stop` hooks into both `.claude/settings.json` and `.codex/hooks.json` without replacing existing settings or hooks. The hooks run synchronously and give coding agents the impacted normal-test result after each turn.
+Merge synchronous `PostToolUse` hooks into both `.claude/settings.json` and `.codex/hooks.json` without replacing existing settings or hooks:
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.contree/hooks/test-changed.sh\"",
+            "statusMessage": "Running impacted tests"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+The project save hooks run after every file edit and give coding agents the complete impacted normal-test result before they continue.
 
 Require each coding harness to load and trust its project hook. A hook present on disk but not exercised by its harness is not verified.
 
@@ -78,9 +99,9 @@ Run both test commands and preserve their tree-shaped output. Then verify the ch
 1. Run the normal command to establish a successful baseline.
 2. Change one known source file.
 3. Run `test-changed` and prove the related normal test runs while an unrelated normal test does not.
-4. Exercise each project Stop hook through an actual coding-agent turn and prove its result reaches the agent.
+4. Exercise each project save hook through an actual coding-agent file edit and prove its result reaches the agent before it continues.
 5. Restore only the deliberate verification edit while preserving all project changes that existed before setup.
 
 Fix failed test commands and hooks, then rerun the complete verification until the feedback path works. Fail visibly with the complete native output if an external dependency, unavailable tool, or consequential operator decision prevents repair. Do not report completion until the normal command, functional command, baseline, impact selection, and both project hooks work.
 
-Report the agreed framework, normal command, functional command, changed-test command, installed Stop hooks, Docker-owned commands, and verification results to the operator.
+Report the agreed framework, normal command, functional command, changed-test command, installed save hooks, Docker-owned commands, and verification results to the operator.
