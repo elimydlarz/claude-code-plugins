@@ -18,7 +18,7 @@ Inspect the existing project before changing files:
 - language, ecosystem, package manager, workspaces, and native command conventions
 - source layout, existing tests, test suffixes, and test framework configuration
 - current normal, journey, CI, and project-hook commands
-- external services required by Integration, Component, or Journey tests
+- external services required by Adapter, Component, System, or Journey tests
 - framework-native related-test or impact-selection support
 
 Read the latest official framework documentation through Context7 before configuring an API or plugin.
@@ -33,22 +33,27 @@ Configure tree-shaped output for both normal and journey commands where the ecos
 
 Map the fixed Contree strategy:
 
-- the normal command runs Unit, Integration, and Component tests
+- the normal command runs Domain, Use-case, Adapter, Port, Component, and System coverage
 - a separate journey command runs Journey tests
-- Unit tests are colocated with their subjects as `*.unit.test.*`
-- Integration tests are colocated with their highest-level subjects as `*.integration.test.*`
+- Domain tests are colocated with their subjects as `*.domain.test.*`
+- Use-case tests are colocated with their subjects as `*.use-case.test.*`
+- Adapter tests are colocated with their adapters as `*.adapter.test.*`
+- Port contract tests are colocated with their ports as `*.port-contract.test.*`
 - Component tests live under `test/component/` as `*.component.test.*`
+- System tests live under `test/system/` as `*.system.test.*`
 - Journey tests live under `test/journey/` as `*.journey.test.*`
-- Journey is a broad, production-like test of a curated user arc across capabilities, with external services replaced by test doubles only if unavoidable
+- Journey is a broad, production-like test of a curated user arc across capabilities
+- System is a deep, production-like test of one capability through the whole app
 - Component is a deep in-process test of one capability through the whole app, with external services replaced by test doubles
-- Integration starts from the highest-level subject: mock everything except the subjects you are integrating to see if they really work together as expected
-- Unit tests cover every public surface with native unit tests, and every dependency outside the subject is mocked
+- Adapter tests exercise one concrete boundary implementation against the real boundary it adapts
+- Port contract tests exercise every implementation of an application interface through one shared contract
+- Unit tests cover every public surface of Domain and Use-case subjects, with every dependency outside the subject mocked
 
 Use native project commands such as package scripts, Make targets, task aliases, build-tool tasks, or ecosystem equivalents. Do not create separate commands for every test kind.
 
 ## 3. Configure impacted tests
 
-Create a native `test-changed` command using the framework's maintained related-test or dependency-selection capability. It must identify project files changed since the last completed normal test run and run only impacted normal tests. A changed test file impacts itself; shared test configuration and dependency changes impact every normal test.
+Create a native `test-changed` command using the framework's maintained related-test or dependency-selection capability. It must identify project files changed since the last completed normal test run and run only impacted normal tests. A changed test file impacts itself; changed source files impact their dependent normal tests; shared test configuration and dependency changes impact every normal test.
 
 Keep machine-local baseline state out of version control. If no completed normal run exists, run the normal command and record the project-file state only after it completes successfully. After a successful impacted run, record the new state. Do not substitute watch mode, last-failed selection, mutation selection, or an unconditional full suite for impact analysis.
 
@@ -88,7 +93,7 @@ Require each coding harness to load and trust its project hook. A hook present o
 
 When tests need external services, make the relevant test command own a self-contained Docker lifecycle. It starts the services, waits for readiness, runs its tests, and uses an exit trap to always tear test artefacts down. Never depend on services already running. Pass secrets and external connection details through environment variables; do not use environment variables as test/runtime behaviour switches.
 
-Integration and Component tests remain in the normal command even when that command must own Docker. Journey infrastructure remains owned by the journey command.
+Adapter, Component, and System tests remain in the normal command even when that command must own Docker. Journey infrastructure remains owned by the journey command.
 
 ## 5. Verify and fix
 
