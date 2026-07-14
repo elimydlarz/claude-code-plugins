@@ -5,29 +5,16 @@ load test_helper
 TEST_FEEDBACK="$PROJECT_ROOT/skills/setup-test-feedback/SKILL.md"
 MUTATION_TESTING="$PROJECT_ROOT/skills/setup-mutation-testing/SKILL.md"
 
-@test "setup colocates Domain tests with source (*.domain.test.*)" {
+@test "setup colocates Unit tests with their subjects (*.unit.test.*)" {
   run cat "$TEST_FEEDBACK"
-  assert_output --partial "*.domain.test.*"
+  assert_output --partial "*.unit.test.*"
   assert_output --partial "colocated"
 }
 
-@test "setup colocates Use-case tests with the use-case (*.use-case.test.*)" {
+@test "setup colocates Integration tests with their highest-level subjects (*.integration.test.*)" {
   run cat "$TEST_FEEDBACK"
-  [[ "$output" == *"*.use-case.test.*"* ]]
-}
-
-@test "setup colocates Adapter tests with the adapter (*.adapter.test.*)" {
-  run cat "$TEST_FEEDBACK"
-  assert_output --partial "*.adapter.test.*"
+  assert_output --partial "*.integration.test.*"
   assert_output --partial "colocated"
-  assert_output --partial "driving"
-  assert_output --partial "driven"
-}
-
-@test "setup places System tests under test/system/ (*.system.test.*)" {
-  run cat "$TEST_FEEDBACK"
-  assert_output --partial "test/system/"
-  assert_output --partial "*.system.test.*"
 }
 
 @test "setup places Journey tests under test/journey/ (*.journey.test.*)" {
@@ -36,10 +23,10 @@ MUTATION_TESTING="$PROJECT_ROOT/skills/setup-mutation-testing/SKILL.md"
   assert_output --partial "*.journey.test.*"
 }
 
-@test "setup wires Journey tests with real adapters across the multi-capability arc at max realism" {
+@test "setup defines Journey tests as broad production-like arcs with external services doubled only if unavoidable" {
   run cat "$TEST_FEEDBACK"
-  assert_output --partial "multi-capability arc at max realism"
-  assert_output --partial "real everything"
+  assert_output --partial "broad, production-like test of a curated user arc across capabilities"
+  assert_output --partial "test doubles only if unavoidable"
 }
 
 @test "setup places Component tests under test/component/ (*.component.test.*)" {
@@ -48,34 +35,33 @@ MUTATION_TESTING="$PROJECT_ROOT/skills/setup-mutation-testing/SKILL.md"
   assert_output --partial "*.component.test.*"
 }
 
-@test "setup wires Component tests with real adapters and externals doubled at the edge" {
+@test "setup defines Component tests as deep in-process whole-app capability tests with external services doubled" {
   run cat "$TEST_FEEDBACK"
-  assert_output --partial "real driving and driven adapters"
-  assert_output --partial "one capability"
-  assert_output --partial "in-memory database"
-  assert_output --partial "stubbed outbound HTTP"
+  assert_output --partial "deep in-process test of one capability through the whole app"
+  assert_output --partial "external services replaced by test doubles"
 }
 
-@test "setup places exhaustive single-capability breadth at Component and Use-case layers" {
+@test "setup defines Integration tests from the highest-level subject with only integrated subjects real" {
   run cat "$TEST_FEEDBACK"
-  assert_output --partial "exhaustive single-capability"
-  assert_output --partial "Use-case and Component"
+  assert_output --partial "highest-level subject"
+  assert_output --partial "mock everything except"
+  assert_output --partial "subjects you are integrating"
 }
 
-@test "setup wires System tests with real driven adapters at the highest tolerable realism by default" {
+@test "setup gives every public surface native Unit tests with dependencies mocked" {
   run cat "$TEST_FEEDBACK"
-  assert_output --partial "real driven adapters"
-  assert_output --regexp "highest tolerable realism|max realism|max-realism"
+  assert_output --partial "every public surface"
+  assert_output --partial "native unit tests"
+  assert_output --partial "every dependency outside the subject is mocked"
 }
 
-@test "setup produces tree-shaped output at every layer" {
+@test "setup produces tree-shaped output for every test kind" {
   run cat "$TEST_FEEDBACK"
   [[ "$output" == *"tree-shaped"* || "$output" == *"tree output"* || "$output" == *"tree reporters"* ]]
 }
 
-@test "setup validates quality with mutation testing at Domain and Use-case layers" {
+@test "setup validates Unit-test quality with mutation testing" {
   run cat "$MUTATION_TESTING"
   assert_output --partial "mutation testing"
-  assert_output --partial "Domain"
-  assert_output --partial "Use-case"
+  assert_output --partial "Unit tests"
 }

@@ -17,9 +17,9 @@ SKILL="$PROJECT_ROOT/skills/setup-mutation-testing/SKILL.md"
   assert_output --partial "explicit exclusion for every colocated test pattern"
 }
 
-@test "when an operator asks to set up mutation testing and mutation test runners select only Domain and Use-case tests when the framework supports test selection" {
+@test "when an operator asks to set up mutation testing and mutation test runners select only Unit tests when the framework supports test selection" {
   run cat "$SKILL"
-  assert_output --partial "only Domain and Use-case tests"
+  assert_output --partial "only Unit tests"
   assert_output --partial "when the framework supports test selection"
 }
 
@@ -30,10 +30,10 @@ SKILL="$PROJECT_ROOT/skills/setup-mutation-testing/SKILL.md"
   assert_output --partial "fastest available repeat feedback"
 }
 
-@test "when an operator asks to set up mutation testing and project Stop hooks run incremental mutation feedback only when relevant Domain or Use-case source or tests changed" {
+@test "when an operator asks to set up mutation testing and project Stop hooks run incremental mutation feedback only when relevant Unit subjects or tests changed" {
   run cat "$SKILL"
   assert_output --partial "project-local incremental mutation command"
-  assert_output --partial "Domain or Use-case production and test files"
+  assert_output --partial "Unit subjects and test files"
   assert_output --partial "without invoking the mutation tool"
   assert_output --partial ".claude/settings.json"
   assert_output --partial ".codex/hooks.json"
@@ -58,9 +58,9 @@ SKILL="$PROJECT_ROOT/skills/setup-mutation-testing/SKILL.md"
   assert_output --partial "Run mutation testing before reporting completion"
 }
 
-@test "if surviving mutants keep the agreed threshold from passing then the skill strengthens the responsible Domain or Use-case tests and reruns only the affected mutation scope until it passes" {
+@test "if surviving mutants keep the agreed threshold from passing then the skill strengthens the responsible Unit tests and reruns only the affected mutation scope until it passes" {
   run cat "$SKILL"
-  assert_output --partial "Strengthen the responsible Domain or Use-case tests"
+  assert_output --partial "Strengthen the responsible Unit tests"
   assert_output --partial "Rerun only the affected mutation scope"
   assert_output --partial "until the agreed threshold passes"
 }

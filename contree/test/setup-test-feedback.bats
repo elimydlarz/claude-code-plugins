@@ -16,18 +16,18 @@ SKILL="$PROJECT_ROOT/skills/setup-test-feedback/SKILL.md"
   assert_output --partial "Never replace"
 }
 
-@test "when an operator asks to set up test feedback and it configures tree-shaped normal and functional test output where the ecosystem supports it" {
+@test "when an operator asks to set up test feedback and it configures tree-shaped normal and journey test output where the ecosystem supports it" {
   run cat "$SKILL"
   assert_output --partial "tree-shaped output"
-  assert_output --partial "normal and functional"
+  assert_output --partial "normal and journey"
   assert_output --partial "where the ecosystem supports it"
 }
 
-@test "when an operator asks to set up test feedback and the normal command runs Unit, Port contract, Adapter, and Component tests while the functional command separately runs System and Journey tests" {
+@test "when an operator asks to set up test feedback and the normal command runs Unit Integration and Component tests while the journey command separately runs Journey tests" {
   run cat "$SKILL"
-  assert_output --partial "Unit, Port contract, Adapter, and Component"
-  assert_output --partial "System and Journey"
-  assert_output --partial "separate functional command"
+  assert_output --partial "Unit, Integration, and Component"
+  assert_output --partial "Journey tests"
+  assert_output --partial "separate journey command"
 }
 
 @test "when an operator asks to set up test feedback and a native test-changed command plus synchronous project save hooks give coding agents the impacted normal-test result after each file edit" {
