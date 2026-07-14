@@ -49,12 +49,12 @@ Run every configured feedback command from the project root:
 
 - normal tests
 - functional tests
-- impacted tests through the native `test-changed` command and the actual project Stop hook
+- impacted tests through the native `test-changed` command and the actual synchronous project save hooks
 - conventional lint and its autofix command
 - architecture lint and the actual project Stop hook
 - mutation testing
 
-Fix every failure through the focused skill that owns it, then rerun that command and verify its feedback. Verify coding-harness hooks through real edit and Stop turns; files on disk are not proof that the harness loaded them.
+Fix every failure through the focused skill that owns it, then rerun that command and verify its feedback. Verify each save hook through an actual file edit and each Stop hook through an actual Stop turn; files on disk are not proof that the harness loaded them.
 
 Before reporting, list every selected phase and prove that it passed its artifact gate, command gate, and subagent-completion gate. Do not mark an orchestration task complete while one of its focused-skill agents is still running.
 
