@@ -109,7 +109,7 @@ when <trigger>
 
 Integration and Unit paths describe observable behaviour at their subjects' public interfaces. Journey and Component paths (because they are higher level) describe the behaviour from a consumer perspective. Each path must:
 - describe observable behaviour, including side effects
-- state principles rather than enumerate cases
+    - describe principles, not cases
 - add information rather than restate its condition
 - include meaningful negative behaviour
 - ensure each leaf stands alone without cross-leaf references such as "see above" or "as before"
