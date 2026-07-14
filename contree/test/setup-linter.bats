@@ -11,7 +11,7 @@ SKILL="$PROJECT_ROOT/skills/setup-linter/SKILL.md"
   assert_output --partial "agree the strong conventional rules with the operator"
 }
 
-@test "when an operator asks to set up code linting then it installs and merges the conventional linter without replacing project-owned rules" {
+@test "when an operator asks to set up code linting and it installs and merges the conventional linter without replacing project-owned rules" {
   run cat "$SKILL"
   assert_output --partial "merge"
   assert_output --partial "Never replace project-owned rules"
@@ -21,7 +21,7 @@ SKILL="$PROJECT_ROOT/skills/setup-linter/SKILL.md"
   assert_output --partial "golangci-lint run"
 }
 
-@test "when an operator asks to set up code linting then it creates a native lint command and CI gate" {
+@test "when an operator asks to set up code linting and it creates a native lint command and CI gate" {
   run cat "$SKILL"
   assert_output --partial "native project command"
   assert_output --partial "CI"
@@ -29,7 +29,7 @@ SKILL="$PROJECT_ROOT/skills/setup-linter/SKILL.md"
   assert_output --partial "lint:code:fix"
 }
 
-@test "when an operator asks to set up code linting then synchronous project save hooks run the linter's autofix command from the project root before the coding agent continues" {
+@test "when an operator asks to set up code linting and synchronous project save hooks run the linter's autofix command from the project root before the coding agent continues" {
   run cat "$SKILL"
   assert_output --partial "PostToolUse"
   assert_output --partial '"matcher": "Edit|Write"'
