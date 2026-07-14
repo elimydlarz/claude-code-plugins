@@ -12,11 +12,19 @@ SKILL="$PROJECT_ROOT/skills/fix-architecture/SKILL.md"
   assert_output --partial "subagents"
 }
 
-@test "when an operator asks to fix architecture violations then subagents fix violations without disabling rules, weakening boundaries, or adding exemptions" {
+@test "when an operator asks to fix architecture violations then subagents preserve observable behaviour while fixing violations without disabling rules, weakening boundaries, adding exemptions, or deleting behaviour" {
   run cat "$SKILL"
   assert_output --partial "Do not disable rules"
   assert_output --partial "weaken boundaries"
   assert_output --partial "add exemptions"
+  assert_output --partial "preserve observable behavior"
+  assert_output --partial "delete behavior"
+}
+
+@test "when an operator asks to fix architecture violations then affected normal tests pass before the skill reports completion" {
+  run cat "$SKILL"
+  assert_output --partial "affected normal tests"
+  assert_output --partial "Do not report completion"
 }
 
 @test "when an operator asks to fix architecture violations then the coding agent reconciles their changes and reruns every architecture rule" {

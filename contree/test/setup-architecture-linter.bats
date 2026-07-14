@@ -26,6 +26,12 @@ SKILL="$PROJECT_ROOT/skills/setup-architecture-linter/SKILL.md"
   assert_output --partial "dependency-cruiser"
 }
 
+@test "when an operator asks to set up architecture linting then it preserves project-owned lint configuration, commands, CI steps, and coding-harness hooks while merging architecture feedback" {
+  run cat "$SKILL"
+  assert_output --partial "Merge all existing commands and CI steps"
+  assert_output --partial "without replacing existing settings or hooks"
+}
+
 @test "when an operator asks to set up architecture linting then it creates a native architecture command, combines it with the project lint command, and adds the combined gate to CI" {
   run cat "$SKILL"
   assert_output --partial "lint:arch"
@@ -48,6 +54,12 @@ SKILL="$PROJECT_ROOT/skills/setup-architecture-linter/SKILL.md"
   assert_output --partial "Do not report completion before every rule has run"
 }
 
+@test "when an operator asks to set up architecture linting then the skill proves the project Stop hook through an actual coding-agent Stop turn before reporting completion" {
+  run cat "$SKILL"
+  assert_output --partial "actual Stop turn"
+  assert_output --partial "before reporting completion"
+}
+
 @test "if the project's ecosystem cannot enforce every required boundary then the skill fails visibly without claiming architecture feedback is configured" {
   run cat "$SKILL"
   assert_output --partial "Fail visibly"
@@ -58,6 +70,12 @@ SKILL="$PROJECT_ROOT/skills/setup-architecture-linter/SKILL.md"
   run cat "$SKILL"
   assert_output --partial "contree:fix-architecture"
   assert_output --partial "complete architecture-linter output"
+}
+
+@test "if architecture violations are found during setup then it reruns the native architecture command and combined lint command until both pass" {
+  run cat "$SKILL"
+  assert_output --partial "rerun the native architecture command and combined lint command"
+  assert_output --partial "until both pass"
 }
 
 @test "if the architecture linter cannot run from a project Stop hook then the hook reports the execution error and fails visibly" {
