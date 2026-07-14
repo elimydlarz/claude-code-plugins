@@ -809,7 +809,7 @@ VERIFY
       "Run sync on this project. Resolve every drift issue you find using TEST_TREES.md as the operator contract and your own judgment. Modify the project as needed, verify the result, and ask only if a consequential choice is genuinely under-determined."
 
     pass=1
-    if grep -Eiq "(Launching skill: contree:sync|/contree:sync|sync process|drift between the test trees|drift detected)" "$TRANSCRIPT_FILE"; then
+    if grep -Eiq "(Launching skill: contree:sync|using the Contree sync skill|/contree:sync|sync process|Sync is complete|drift between the test trees|drift detected)" "$TRANSCRIPT_FILE"; then
       follows_sync="PASS — transcript follows the sync/drift process"
     else
       follows_sync="FAIL — transcript does not show sync/drift process"
