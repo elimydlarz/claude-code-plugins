@@ -486,16 +486,21 @@ Adapter: skill-discoverability (src: hooks/session-start.sh, skills/change/SKILL
 ```
 Port: composable-testing (src: skills/setup-test-feedback/SKILL.md, skills/setup-mutation-testing/SKILL.md; adapter: test/composable-testing.bats)
   when a project uses contree
-    then Unit tests are colocated with their subjects (*.unit.test.*)
-    and Integration tests are colocated with their highest-level subjects (*.integration.test.*)
+    then Domain tests are colocated with their subjects (*.domain.test.*)
+    and Use-case tests are colocated with their subjects (*.use-case.test.*)
+    and Adapter tests are colocated with their adapters (*.adapter.test.*)
+    and Port contract tests are colocated with their ports (*.port-contract.test.*)
     and Component tests live under test/component/ (*.component.test.*)
+    and System tests live under test/system/ (*.system.test.*)
     and Journey tests live under test/journey/ (*.journey.test.*)
-    and Journey tests exercise a broad production-like user arc across capabilities, replacing external services with test doubles only when unavoidable
+    and Journey tests exercise a broad production-like user arc across capabilities
+    and System tests exercise one capability deeply through the whole production-like app
     and Component tests exercise one capability deeply through the whole app in-process, replacing external services with test doubles
-    and Integration tests start from the highest-level subject and mock everything except the subjects whose real collaboration they verify
-    and Unit tests exercise every public surface on one subject while mocking every dependency outside that subject
+    and Adapter tests exercise one concrete boundary implementation against the real boundary it adapts
+    and Port contract tests exercise every implementation of an application interface through one shared contract
+    and Unit tests exercise every public surface of Domain and Use-case subjects while mocking every dependency outside that subject
     and every test kind produces tree-shaped output
-    and mutation testing validates Unit-test quality
+    and mutation testing validates Domain and Use-case test quality
 ```
 
 ## rules-loading
