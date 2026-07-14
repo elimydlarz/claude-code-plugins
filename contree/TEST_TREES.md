@@ -532,7 +532,8 @@ Adapter: dual-harness-compatibility (src: .claude-plugin/plugin.json, .codex-plu
   when Codex is the harness
     then Codex installations require [features].hooks and [features].plugin_hooks to be true so hooks/hooks.json is loaded
     and the automated journey matrix runs the existing functional cases under Codex
-    and the journey harness distinguishes hook runner failures from ordinary agent command failures and test framework hook timeout output
+    and the journey harness distinguishes hook runner failures from ordinary agent command failures
+    and the journey harness distinguishes hook runner failures from test framework hook timeout output
     and the journey harness distinguishes structured Codex failures from ordinary transcript text and recoverable tool diagnostics
     and the journey harness treats unavailable Codex tools as functional failures when a scenario forbids them
 ```

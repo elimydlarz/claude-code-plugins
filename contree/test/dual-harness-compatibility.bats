@@ -2,14 +2,12 @@
 
 load test_helper
 
-# --- when contree is installed under either Claude Code or Codex ---
-
-@test "then a manifest exists at .claude-plugin/plugin.json" {
+@test "when contree is installed under either Claude Code or Codex then a manifest exists at .claude-plugin/plugin.json" {
   run test -f "$PROJECT_ROOT/.claude-plugin/plugin.json"
   assert_success
 }
 
-@test "and a manifest exists at .codex-plugin/plugin.json declaring skills as ./skills/ and hooks as ./hooks/hooks.json" {
+@test "when contree is installed under either Claude Code or Codex and a manifest exists at .codex-plugin/plugin.json declaring skills as ./skills/ and hooks as ./hooks/hooks.json" {
   run test -f "$PROJECT_ROOT/.codex-plugin/plugin.json"
   assert_success
 
@@ -22,7 +20,7 @@ load test_helper
   assert_output "./hooks/hooks.json"
 }
 
-@test "and Codex installations enable hooks and plugin_hooks so hooks/hooks.json is loaded" {
+@test "when Codex is the harness then Codex installations require [features].hooks and [features].plugin_hooks to be true so hooks/hooks.json is loaded" {
   run grep -F "[features].hooks = true" "$PROJECT_ROOT/CLAUDE.md"
   assert_success
 
@@ -36,7 +34,7 @@ load test_helper
   assert_success
 }
 
-@test "and both manifests carry the same name and version" {
+@test "when contree is installed under either Claude Code or Codex and both manifests carry the same name and version" {
   claude_name=$(jq -r '.name' "$PROJECT_ROOT/.claude-plugin/plugin.json")
   codex_name=$(jq -r '.name' "$PROJECT_ROOT/.codex-plugin/plugin.json")
   [ "$claude_name" = "$codex_name" ]
@@ -46,7 +44,7 @@ load test_helper
   [ "$claude_version" = "$codex_version" ]
 }
 
-@test "and .claude-plugin/plugin.json declares a name of \"contree\", a version, and a description" {
+@test "when contree is installed under either Claude Code or Codex and .claude-plugin/plugin.json declares a name of \"contree\", a version, and a description" {
   run jq -r '.name' "$PROJECT_ROOT/.claude-plugin/plugin.json"
   assert_success
   assert_output "contree"
@@ -60,7 +58,7 @@ load test_helper
   refute_output "null"
 }
 
-@test "and one hooks/hooks.json is shared by both harnesses" {
+@test "when contree is installed under either Claude Code or Codex and one hooks/hooks.json is shared by both harnesses" {
   run test -f "$PROJECT_ROOT/hooks/hooks.json"
   assert_success
 
@@ -68,9 +66,7 @@ load test_helper
   assert_output "./hooks/hooks.json"
 }
 
-# --- when a hook fires ---
-
-@test "then hooks.json invokes its script via \$CLAUDE_PLUGIN_ROOT — the env var both harnesses set" {
+@test "when a hook fires then hooks.json invokes its script via \$CLAUDE_PLUGIN_ROOT — the env var both harnesses set" {
   commands=$(jq -r '[.. | objects | .command? // empty] | .[]' "$PROJECT_ROOT/hooks/hooks.json")
   [ -n "$commands" ]
   while IFS= read -r cmd; do
@@ -78,15 +74,13 @@ load test_helper
   done <<< "$commands"
 }
 
-# --- when the Stop hook fires ---
-
-@test "then hooks.json wires it to hooks/stop-drift-check.sh" {
+@test "when the Stop hook fires then hooks.json wires it to hooks/stop-drift-check.sh" {
   run jq -r '.hooks.Stop[0].hooks[0].command' "$PROJECT_ROOT/hooks/hooks.json"
   assert_success
   assert_output --partial "stop-drift-check.sh"
 }
 
-@test "and the journey harness does not treat bare agent command-not-found output as a hook runner error" {
+@test "when Codex is the harness and the journey harness distinguishes hook runner failures from ordinary agent command failures" {
   run grep -F "hook.*command not found" "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
   assert_failure
 
@@ -94,7 +88,7 @@ load test_helper
   assert_failure
 }
 
-@test "and the journey harness does not treat Vitest hook timeout output as a hook runner error" {
+@test "when Codex is the harness and the journey harness distinguishes hook runner failures from test framework hook timeout output" {
   run grep -F "(SessionStart|Stop|PreToolUse|PostToolUse|UserPromptSubmit|Notification) hook \\(failed\\)" "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
   assert_success
 
@@ -102,7 +96,7 @@ load test_helper
   assert_failure
 }
 
-@test "and the journey harness does not treat ordinary Codex apply_patch diagnostics as agent failure" {
+@test "when Codex is the harness and the journey harness distinguishes structured Codex failures from ordinary transcript text and recoverable tool diagnostics" {
   run grep -F '"(message|text)":"[^"]*(usage limit|rate limit)' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
   assert_success
 
@@ -110,7 +104,7 @@ load test_helper
   assert_failure
 }
 
-@test "then its coding-agent model calls are sent to OpenAI's Responses API authenticated with OPENAI_API_KEY" {
+@test "when the functional journey suite runs under either Claude Code or Codex then its coding-agent model calls are sent to OpenAI's Responses API authenticated with OPENAI_API_KEY" {
   run grep -F 'DOCKER_LLM_ENV=(-e OPENAI_API_KEY)' "$PROJECT_ROOT/test/journey/docker-run.sh"
   assert_success
 
@@ -139,7 +133,7 @@ load test_helper
   assert_success
 }
 
-@test "and its coding agent uses gpt-5.6-luna with medium reasoning effort" {
+@test "when the functional journey suite runs under either Claude Code or Codex and its coding agent uses gpt-5.6-luna with medium reasoning effort" {
   run grep -F 'model = "gpt-5.6-luna"' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
   assert_success
 
@@ -156,7 +150,7 @@ load test_helper
   assert_success
 }
 
-@test "then it fails before starting the coding agent" {
+@test "if a functional journey run under either harness lacks OPENAI_API_KEY then it fails before starting the coding agent" {
   run grep -F "Functional journey runs require OPENAI_API_KEY" "$PROJECT_ROOT/test/journey/docker-run.sh"
   assert_success
 
@@ -164,18 +158,22 @@ load test_helper
   assert_success
 }
 
-@test "then standard functional journey agent turns have a \$5 budget ceiling" {
+@test "when Claude Code is the harness then standard functional journey agent turns have a \$5 budget ceiling" {
   run grep -F 'local max_budget_usd="5.00"' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
   assert_success
 }
 
-@test "and the describe-it-drift journey verifies drift signals deterministically" {
-  run grep -F "describe-it-drift — deterministic verification (no AI eval)" "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
+@test "when Codex is the harness and the automated journey matrix runs the existing functional cases under Codex" {
+  for journey in setup test-kinds-workflow describe-it-drift diff-images second-opinion; do
+    run grep -F "\"$journey:codex\"" "$PROJECT_ROOT/test/journey/docker-run.sh"
+    assert_success
+  done
+}
+
+@test "when Codex is the harness and the journey harness treats unavailable Codex tools as functional failures when a scenario forbids them" {
+  run grep -F "request_user_input is unavailable" "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
   assert_success
 
-  run grep -F "test hierarchy now mirrors the tree" "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
-  assert_success
-
-  run grep -F "deterministic drift is resolved without asking the operator" "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
+  run grep -F 'acts_without_asking="FAIL' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
   assert_success
 }
