@@ -495,10 +495,9 @@ Integration: dual-harness-compatibility (src: .claude-plugin/plugin.json, .codex
   when Codex is the harness
     then Codex installations require [features].hooks and [features].plugin_hooks to be true so hooks/hooks.json is loaded
     and the automated journey matrix runs the existing functional cases under Codex
-    and both journey harnesses use DeepSeek auth from DEEPSEEK_API_KEY
-    and Codex journey model calls reach DeepSeek through a Responses-compatible local boundary
-    and Claude journey runs fail fast without Claude provider auth
-    and Codex journey runs fail fast without DeepSeek provider auth
+    and both journey harnesses send their coding-agent model calls to OpenAI's Responses API authenticated with OPENAI_API_KEY
+    and both journey harnesses use gpt-5.6-luna with medium reasoning effort for their coding-agent model calls
+    and journey runs under either harness fail fast without OPENAI_API_KEY before starting the coding agent
     and the journey harness distinguishes hook runner failures from ordinary agent command failures and test framework hook timeout output
     and the journey harness distinguishes structured Codex failures from ordinary transcript text and recoverable tool diagnostics
     and the journey harness treats unavailable Codex tools as functional failures when a scenario forbids them
