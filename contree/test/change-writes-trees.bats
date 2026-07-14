@@ -4,36 +4,27 @@ load test_helper
 
 SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
 
-@test "change discusses the behaviour change with the user before modifying trees" {
+@test "when a behaviour change is needed then the change is discussed with the user before modifying trees" {
   run cat "$SKILL"
   [[ "$output" == *"Talk it through with the user"* || "$output" == *"discuss"* ]]
 }
 
-@test "change teaches that every test kind is consumer-driven" {
+@test "when a behaviour change is needed then every layer is consumer-driven" {
   run cat "$SKILL"
-  assert_output --partial "every test kind is consumer-driven"
+  assert_output --partial "every layer is consumer-driven"
   assert_output --partial "consumer is created before the thing it consumes is implemented"
 }
 
-@test "change scopes principles-not-cases to Journey and Component tests" {
+@test "when a Journey, System, Component, or Adapter tree is written then paths describe principles, not enumerated cases" {
   run cat "$SKILL"
   assert_output --partial "principles, not cases"
-  assert_output --partial "Journey and Component"
+  assert_output --partial "Journey, System, Component, and Adapter"
 }
 
-@test "change writes Integration trees from the highest-level subject and mocks everything else" {
+@test "when a Domain, Use-case, or Port tree is written then the tree describes what its consumer needs to observe at that subject's public seam" {
   run cat "$SKILL"
-  assert_output --partial "Integration"
-  assert_output --partial "highest-level subject"
-  assert_output --partial "mock"
-  assert_output --partial "subjects"
-}
-
-@test "change writes Unit trees for one public surface on one subject" {
-  run cat "$SKILL"
-  assert_output --partial "Unit"
-  assert_output --partial "public surface"
-  assert_output --partial "one subject"
+  assert_output --partial "Domain, Use-case, and Port trees"
+  assert_output --partial "public inputs, outputs, and errors"
 }
 
 @test "change treats pure functions as consumer-driven" {
@@ -59,12 +50,15 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   [[ "$output" == *"tautolog"* || "$output" == *"does not already imply"* ]]
 }
 
-@test "change chooses Journey Component Integration or Unit from observable scope" {
+@test "when a behaviour change is needed then the layer is chosen from Journey, System, Component, Adapter, Use-case, Domain, and Port according to the observable seam under test" {
   run cat "$SKILL"
   assert_output --partial "Journey"
+  assert_output --partial "System"
   assert_output --partial "Component"
-  assert_output --partial "Integration"
-  assert_output --partial "Unit"
+  assert_output --partial "Adapter"
+  assert_output --partial "Use-case"
+  assert_output --partial "Domain"
+  assert_output --partial "Port"
   assert_output --partial "observable"
 }
 
@@ -94,12 +88,14 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   assert_output --partial "labelled"
 }
 
-@test "change specifies the five coverage categories" {
+@test "when a tree is written then its coverage uses the seven labelled categories" {
   run cat "$SKILL"
   assert_output --partial "src"
-  assert_output --partial "unit"
-  assert_output --partial "integration"
+  assert_output --partial "domain"
+  assert_output --partial "use-case"
+  assert_output --partial "adapter"
   assert_output --partial "component"
+  assert_output --partial "system"
   assert_output --partial "journey"
 }
 
@@ -146,11 +142,11 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   assert_output --partial "generic"
 }
 
-@test "change names every tree's first line <Test-kind>: <Subject> so the test-kind prefix lets readers and sync detect duplication across kinds" {
+@test "when a tree is named then its first line is exactly <Layer>: <Subject> and the layer prefix lets readers and sync detect duplication across trees that share a subject at different layers" {
   run cat "$SKILL"
-  assert_output --partial "<Test-kind>: <Subject>"
-  assert_output --partial "Without the test-kind prefix"
-  assert_output --partial "detect duplication across test kinds"
+  assert_output --partial "<Layer>: <Subject>"
+  assert_output --partial "Without the layer prefix"
+  assert_output --partial "detect duplication across layers"
 }
 
 @test "change nests a when-trigger that can only occur as a consequence of a prior then-outcome as a child, not a sibling" {
