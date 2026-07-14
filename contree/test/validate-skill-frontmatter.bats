@@ -148,28 +148,40 @@ description: "Late metadata."
 
 @test "if a SKILL.md's frontmatter name contains only whitespace then the validator exits non-zero and names the offending file" {
   local skills="$BATS_TEST_TMPDIR/skills"
-  write_skill "$skills/bad" '---
+  write_skill "$skills/double-quoted" '---
 name: "   "
 description: "Has a description."
 ---
 '
+  write_skill "$skills/single-quoted" "---
+name: '   '
+description: 'Has a description.'
+---
+"
 
   run bash "$SCRIPT" "$skills"
   [ "$status" -ne 0 ] || return 1
-  assert_output --partial "bad/SKILL.md"
+  assert_output --partial "double-quoted/SKILL.md"
+  assert_output --partial "single-quoted/SKILL.md"
 }
 
 @test "if a SKILL.md's frontmatter description contains only whitespace then the validator exits non-zero and names the offending file" {
   local skills="$BATS_TEST_TMPDIR/skills"
-  write_skill "$skills/bad" '---
+  write_skill "$skills/double-quoted" '---
 name: bad
 description: "   "
 ---
 '
+  write_skill "$skills/single-quoted" "---
+name: bad
+description: '   '
+---
+"
 
   run bash "$SCRIPT" "$skills"
   [ "$status" -ne 0 ] || return 1
-  assert_output --partial "bad/SKILL.md"
+  assert_output --partial "double-quoted/SKILL.md"
+  assert_output --partial "single-quoted/SKILL.md"
 }
 
 @test "if the skills directory does not exist then the validator exits non-zero" {
