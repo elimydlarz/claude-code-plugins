@@ -31,6 +31,8 @@ For every gap identified by sync, run the `tdd` skill process without pausing. C
 
 Run mutation testing at the end of the TDD phase. Mutation testing validates Domain and Use-case tests. Strengthen the responsible tests and rerun the affected mutation scope until the configured threshold passes.
 
+Mutation is a hard gate. If mutation testing is skipped, unavailable, or not proven to pass, report the incomplete gate and stop. Do not run completion sync, second-opinion, or DONE.
+
 ### 4. COMPLETION SYNC — prove agreement
 
 Rerun the complete `sync` audit and its full suite after mutation testing passes. Require intention, trees, tests, implementation, and the mental model to agree.
@@ -41,7 +43,11 @@ If the completion audit finds drift or gaps, route each finding through `change`
 
 Once completion sync proves agreement, run the `second-opinion` skill process and surface its independent review.
 
+Keep exactly one review request active. While the review request is pending, wait for its terminal result and inspect the returned review before making a phase decision. Do not report it unavailable or advance to DONE while it is still running; an actionable result that arrives after an interim status is still the review result and must be closed.
+
 If the review finds actionable drift or gaps, route every finding through `change`, `sync`, or `tdd`. Repeat every completion gate before requesting another independent review. Continue until the independent review has no actionable findings.
+
+If second-opinion terminates without a usable review, surface the review failure. Do not advance to DONE.
 
 ### 6. DONE — intent and implementation are one
 
