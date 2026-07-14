@@ -107,8 +107,7 @@ when <trigger>
       then <next outcome>
 ```
 
-Journey and Component paths describe principles, not cases, in the consumer's vocabulary. Integration and Unit paths describe observable behaviour at their subjects' public interfaces. Each path must:
-
+Integration and Unit paths describe observable behaviour at their subjects' public interfaces. Journey and Component paths (because they are higher level) describe the behaviour from a consumer perspective. Each path must:
 - describe observable behaviour, including side effects
 - state principles rather than enumerate cases
 - add information rather than restate its condition
