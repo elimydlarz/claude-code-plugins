@@ -21,7 +21,7 @@ Explain the behavioural evidence that setup will gather:
 - public seams through which consumers observe behaviour
 - existing tests and the behaviour they prove
 - contradictions among source, tests, documentation, and operator intention
-- architecture boundaries that determine the honest test layer
+- architecture boundaries that identify test subjects without creating extra test kinds
 
 Derive complete non-overlapping behavioural areas from direct project evidence. Present those areas and their boundaries. Agree complete non-overlapping scope with the operator before dispatching discovery. Every area in scope must have exactly one owner.
 
@@ -35,11 +35,11 @@ Discovery is read-only. Each subagent returns file-backed evidence in the consum
 
 Reconcile the evidence yourself before proposing trees. Resolve overlaps, vocabulary differences, and contradictions against direct evidence and operator intention.
 
-Reconcile the evidence with the operator through `change` into layered EARS trees with honest coverage. Follow its consumer-driven layering, causal nesting, one-tree-one-test-file boundary, and coverage syntax.
+Reconcile the evidence with the operator through `change` into EARS trees with honest coverage. Follow its consumer-driven test kinds, causal nesting, one-tree-one-test-file boundary, and coverage syntax.
 
 Every discovered behaviour is expressed at its consumer-visible seam. Describe principles rather than examples and include observable errors, side effects, and prevented effects. Do not invent unsupported behaviour.
 
-Name every applicable `src`, `domain`, `use-case`, `adapter`, `component`, `system`, and `journey` coverage path. Use `none` where a test is expected but absent and omit only inapplicable layers. Existing tests count as coverage only when their hierarchy and assertions actually reify the tree.
+Name every applicable `src`, `unit`, `integration`, `component`, and `journey` coverage path. Use `none` where a test is expected but absent and omit only inapplicable test kinds. Existing tests count as coverage only when their hierarchy and assertions actually reify the tree.
 
 Present the complete reconciled trees to the operator and obtain agreement before installing steering. Do not implement tests, create placeholder tests, or change production behaviour. Test implementation belongs to `tdd` after setup.
 
@@ -67,9 +67,9 @@ cat <<'EOF'
 
 - TEST_TREES.md is the behavioural contract.
 - Write trees before tests or implementation.
-- Use layered EARS paths at consumer-visible seams.
+- Use EARS paths at consumer-visible seams.
 - One tree maps to exactly one test file, whose hierarchy mirrors the tree verbatim.
-- Name honest src, domain, use-case, adapter, component, system, and journey coverage; use none for expected gaps and omit only inapplicable layers.
+- Name honest src, unit, integration, component, and journey coverage; use none for expected gaps and omit only inapplicable test kinds.
 - Route contract changes through contree:change and test or implementation gaps through contree:tdd.
 EOF
 ```

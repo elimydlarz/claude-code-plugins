@@ -42,7 +42,7 @@ Delegate every leaf across the subagents.
    - Establish that the test file's describe/it hierarchy mirrors the tree verbatim and expresses the leaf's intention.
    - Run the test and establish that the implementation passes the test.
    - Establish that the implementation fulfils the intention shared by the leaf and test: the spirit, not only the literal assertion.
-   - Verify every labelled `src`, `domain`, `use-case`, `adapter`, `component`, `system`, and `journey` path against the filesystem. Every `none` is a gap to close immediately.
+   - Verify every labelled `src`, `unit`, `integration`, `component`, and `journey` path against the filesystem. Every `none` is a gap to close immediately.
 
 2. **All production code**
    - Give subagents complete, non-overlapping areas of production code.
@@ -53,9 +53,9 @@ Delegate every leaf across the subagents.
    - Decide whether its representation of the codebase is accurate and useful.
    - Decide whether the codebase honours that representation.
 
-At Domain, Use-case, and Port public seams, every observable branch has a matching EARS path and every path has matching behaviour. Internal control flow is not itself a requirement. Evaluate YAGNI separately when the reverse code review finds behaviour without a consumer.
+At every Unit subject's public surface, every observable branch has a matching EARS path and every path has matching behaviour. Internal control flow is not itself a requirement. Evaluate YAGNI separately when the reverse code review finds behaviour without a consumer.
 
-Coverage overlaps intentionally. A higher-layer test never replaces native coverage of a substantive unit revealed by TDD. A substantive unit without a tree and test at its natural lowest layer is a gap to close immediately. Retain higher-layer coverage, and test the behaviour at every applicable layer where its seam can observe it. Do not invent inner units or layers before TDD reveals them.
+Every public surface requires native Unit coverage; a missing Unit tree or test is a gap to close immediately. Integration applies only when named subjects must be proven to work together. Component applies to one capability through the whole app in-process. Journey applies to a broad production-like arc across capabilities. Do not add one test of every kind by default; add a kind only when its concern applies.
 
 ## Resolve
 
@@ -74,7 +74,7 @@ Run every affected test and the full suite. Sync is complete only when:
 
 - every tree leaf has a faithful passing test and fulfilling implementation
 - every test file reifies exactly one tree and its hierarchy mirrors the tree verbatim
-- every applicable layer has its intentional overlapping coverage
+- every public surface has Unit coverage and every other applicable test-kind concern has its intentional coverage
 - no observable implementation lies outside the trees
 - every coverage path exists and no `none` remains
 - the mental model accurately and usefully represents the codebase, and the codebase honours it

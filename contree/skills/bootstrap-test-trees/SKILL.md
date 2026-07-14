@@ -39,7 +39,7 @@ Each implementation subagent uses `tdd` for its owned trees and:
 
 Subagents do not weaken trees to make tests pass and do not edit trees outside their ownership.
 
-Reconcile the implementations yourself. Confirm every retained tree has exactly one retained uncommented test file whose hierarchy mirrors it verbatim. Run the project's normal and functional test commands. If a test exposes disagreement with operator intention, leave it visible and use `change` for a contract correction or `tdd` for an implementation correction.
+Reconcile the implementations yourself. Confirm every retained tree has exactly one retained uncommented test file whose hierarchy mirrors it verbatim. Run the project's normal and journey test commands. If a test exposes disagreement with operator intention, leave it visible and use `change` for a contract correction or `tdd` for an implementation correction.
 
 ## New project
 
@@ -47,6 +47,6 @@ Stop after `setup-mental-model` and `setup-test-trees` have created their empty 
 
 ## Complete
 
-For an existing project, bootstrap is complete only when both focused setup skills passed, both steering hooks were proved through actual turns, every agreed tree has exactly one passing mirrored test file, and the normal and functional commands pass.
+For an existing project, bootstrap is complete only when both focused setup skills passed, both steering hooks were proved through actual turns, every agreed tree has exactly one passing mirrored test file, and the normal and journey commands pass.
 
 For a new project, bootstrap is complete only when both empty homes exist, both steering hooks were proved through actual turns, and no behaviour tree or test was created.

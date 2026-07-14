@@ -17,7 +17,7 @@ Carries an idea through the full arc: from intent to contract to verified implem
 
 ### 1. CHANGE — set expected behaviour
 
-Run the `change` skill process: understand the behaviour, identify the consumer, write or modify test trees in `## Test Trees`, decompose across layers and positions. **Outside-in: for a new user-visible flow the Journey tree is the only tree to write up front** (a capability under an existing journey starts as that capability's System tree). System and inner trees (Use-case, Domain, Port, Adapter) get added in step 3 (TDD) as the failing journey/functional test pulls them into being — not pre-specified here.
+Run the `change` skill process: understand the behaviour, identify the consumer, and write or modify test trees in `## Test Trees`. **Outside-in: for a broad user arc the Journey tree is the only tree to write up front; one whole-app capability starts as a Component tree.** Integration and Unit trees get added in step 3 only when a failing consumer test reveals their concern.
 
 Do not pause for alignment — proceed directly.
 
@@ -29,7 +29,7 @@ Do not pause to present gaps — proceed directly to implementation.
 
 ### 3. TDD — close gaps
 
-For each gap identified by sync, run the `tdd` skill process: confirm test tree, RED journey, RED system/functional, RED unit at the behaviour's ground layer, implement only then, GREEN unit, GREEN functional, GREEN journey, refactor. A journey/functional failure never licenses implementation on its own — descend to a ground-level failing test first. Repeat for each `when/then` path.
+For each gap identified by sync, run the `tdd` skill process: confirm the current tree, write and observe one RED test at its declared kind, implement only enough to make it GREEN, then refactor. When the failure reveals collaboration or one subject's public behaviour, add the Integration or Unit tree and repeat from its consumer. Repeat for each `when/then` path.
 
 Run mutation testing at the end.
 
