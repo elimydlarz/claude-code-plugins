@@ -18,34 +18,38 @@ SKILL="$PROJECT_ROOT/skills/setup-test-feedback/SKILL.md"
 
 @test "when an operator asks to set up test feedback and it configures tree-shaped normal and journey test output where the ecosystem supports it" {
   run cat "$SKILL"
-  assert_output --partial "tree-shaped output"
-  assert_output --partial "normal and journey"
-  assert_output --partial "where the ecosystem supports it"
+  assert_output --partial "tree-shaped output for both normal and journey commands where the ecosystem supports it"
 }
 
-@test "when an operator asks to set up test feedback and the normal command runs Unit Integration and Component tests while the journey command separately runs Journey tests" {
+@test "when an operator asks to set up test feedback and the normal command runs Domain, Use-case, Adapter, Port, Component, and System coverage while the journey command separately runs Journey tests" {
   run cat "$SKILL"
-  assert_output --partial "Unit, Integration, and Component"
-  assert_output --partial "Journey tests"
-  assert_output --partial "separate journey command"
+  assert_output --partial "normal command runs Domain, Use-case, Adapter, Port, Component, and System coverage"
+  assert_output --partial "separate journey command runs Journey tests"
 }
 
-@test "when an operator asks to set up test feedback and a native test-changed command plus synchronous project save hooks give coding agents the impacted normal-test result after each file edit" {
+@test "when an operator asks to set up test feedback and a native test-changed command selects changed and dependent normal tests from the last successful baseline" {
   run cat "$SKILL"
   assert_output --partial 'native `test-changed` command'
+  assert_output --partial "changed source files impact their dependent normal tests"
+  assert_output --partial "record the project-file state only after it completes successfully"
+}
+
+@test "when an operator asks to set up test feedback and synchronous project save hooks preserve complete output and give coding agents the impacted normal-test result after each file edit" {
+  run cat "$SKILL"
   assert_output --partial 'synchronous `PostToolUse` hooks'
   assert_output --partial '"matcher": "Edit|Write"'
+  assert_output --partial "preserves complete test output"
   assert_output --partial "impacted normal-test result after each file edit"
   assert_output --partial ".claude/settings.json"
   assert_output --partial ".codex/hooks.json"
-  refute_output --partial 'project-level `Stop` hooks'
 }
 
-@test "when an operator asks to set up test feedback and it runs both test commands and verifies the test-changed baseline and impact selection before reporting completion" {
+@test "when an operator asks to set up test feedback and it runs both test commands and verifies the test-changed baseline, impact selection, and both coding-harness hooks before reporting completion" {
   run cat "$SKILL"
   assert_output --partial "Run both test commands"
   assert_output --partial "baseline"
   assert_output --partial "impact selection"
+  assert_output --partial "Exercise each project save hook through an actual coding-agent file edit"
   assert_output --partial "Do not report completion until"
 }
 
@@ -56,9 +60,9 @@ SKILL="$PROJECT_ROOT/skills/setup-test-feedback/SKILL.md"
   assert_output --partial "until the feedback path works"
 }
 
-@test "when tests need external services then the relevant command owns a self-contained Docker lifecycle and always tears its test artefacts down" {
+@test "when tests need external services then the relevant command owns a self-contained Docker lifecycle that waits for readiness and always tears its test artefacts down" {
   run cat "$SKILL"
   assert_output --partial "self-contained Docker lifecycle"
-  assert_output --partial "relevant test command"
+  assert_output --partial "waits for readiness"
   assert_output --partial "always tear test artefacts down"
 }
