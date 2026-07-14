@@ -20,15 +20,15 @@ Sends the completed work to OpenAI's **gpt-5.6-sol** with high reasoning effort 
 Work out *what* to review before gathering it. Rely on natural language, not on a fixed git boundary:
 
 - **If the user gave a natural-language indication** of what to review — "the second-opinion change", "the last thing we did", "everything since the refactor" — review exactly that.
-- **Absent a clear indication**, review the **last non-trivial, naturally grouped change**. Do not equate the work with a single commit: **trunk-sync** commits continuously, so one logical change is smeared across many tiny auto-commits and the latest commit is rarely the whole story. Do not limit yourself to the working tree either — it is often empty once trunk-sync has committed. Read the recent history and the working tree together, skip trivial commits (version bumps, formatting, the sync's own noise), and assemble the most recent coherent unit of work.
+- **Absent a clear indication**, review the **current worktree**.
 
-Gather that change as a diff. For the working tree plus any new untracked files (the common case):
+Gather the current worktree's tracked changes and untracked file contents:
 
 ```bash
-CHANGE=$(git diff HEAD; git ls-files --others --exclude-standard | while read -r f; do git diff --no-index -- /dev/null "$f" || true; done)
+CHANGE=$(git diff HEAD; git ls-files --others --exclude-standard | while read -r f; do printf '\nUNTRACKED FILE: %s\n' "$f"; cat -- "$f"; done)
 ```
 
-For a wider grouping spanning several trunk-sync commits, diff the appropriate range instead. Then read `## Test Trees` (or `TEST_TREES.md`) — this is the contract the work must satisfy. If there are no non-trivial changes to review, say so and stop — there is nothing to review.
+Then read `## Test Trees` (or `TEST_TREES.md`) — this is the contract the work must satisfy. If the current worktree contains no non-trivial work to review, say so and stop without calling the API.
 
 ### 2. Ask an independent model to review against the contract
 
