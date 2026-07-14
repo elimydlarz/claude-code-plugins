@@ -114,6 +114,15 @@ load test_helper
   run grep -F 'DOCKER_LLM_ENV=(-e OPENAI_API_KEY)' "$PROJECT_ROOT/test/journey/docker-run.sh"
   assert_success
 
+  run grep -F 'model_provider = "openai-custom"' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
+  assert_success
+
+  run grep -F '[model_providers.openai-custom]' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
+  assert_success
+
+  run grep -F '[model_providers.openai]' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
+  assert_failure
+
   run grep -F 'base_url = "https://api.openai.com/v1"' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
   assert_success
 
