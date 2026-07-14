@@ -23,20 +23,50 @@ test-trees-as-requirements (system: test/test-trees-as-requirements.bats)
 ```
 System: bootstrap-test-trees (src: skills/bootstrap-test-trees/SKILL.md; system: test/bootstrap-test-trees.bats)
   when an operator asks to bootstrap test trees for an existing project
-    then the skill explains the evidence it will gather and agrees the behavioural scope with the operator
-    and subagents inspect non-overlapping areas of the project for observable behaviour, tests, architecture, and mental-model concepts
-    and both subagent waves run regardless of project size
-    and the coding agent reconciles their evidence into one coherent MENTAL_MODEL.md and TEST_TREES.md with the operator
-    and every discovered behaviour is expressed at its consumer-visible seam without inventing unsupported behaviour
-    and change produces layered EARS trees with honest coverage rather than ad-hoc requirement documents
+    then the skill runs setup-mental-model and setup-test-trees as focused prerequisite phases
+    and it proves both project-local steering hooks are active before implementing tests
     and a second wave of subagents implements non-overlapping test trees as tests whose hierarchy mirrors each tree verbatim
     and every tree maps to exactly one uncommented test file
     and the coding agent reconciles the test implementations and runs the normal and functional test commands
   when an operator asks to bootstrap test trees for a new project
-    then the skill creates the seven-section mental-model home and an empty test-tree home
+    then the skill runs setup-mental-model and setup-test-trees to create their empty homes and project-local steering hooks
     and it leaves behaviour trees and tests to be pulled into existence by the first requested capability
   if bootstrapped tests expose behaviour that disagrees with the operator's intended contract
     then the disagreement is left visible and routed through change or tdd rather than weakened in the trees or tests
+```
+
+## setup-mental-model
+
+```
+System: setup-mental-model (src: skills/setup-mental-model/SKILL.md; system: test/setup-mental-model.bats)
+  when an operator asks to set up a mental model for an existing project
+    then the skill agrees the evidence and non-overlapping discovery areas with the operator
+    and discovery subagents report domain identity, world-to-code mapping, language, boundaries, invariants, rationale, temporal knowledge, and contradictions from inspected files
+    and the coding agent reconciles the evidence with the operator into exactly the seven mental-model sections
+    and unsupported claims and consequential disagreements remain visible rather than being silently invented or resolved
+    and project SessionStart hooks load the mental model before coding agents work
+    and project Stop hooks ask the coding agent to reconcile newly learned domain knowledge before it finishes
+    and the skill proves both hooks through actual coding-agent turns before reporting completion
+  when an operator asks to set up a mental model for a new project
+    then the skill creates the seven-section mental-model home without inventing domain knowledge
+    and it installs and proves the same project-local steering hooks
+```
+
+## setup-test-trees
+
+```
+System: setup-test-trees (src: skills/setup-test-trees/SKILL.md; system: test/setup-test-trees.bats)
+  when an operator asks to set up test trees for an existing project
+    then the skill explains the behavioural evidence it will gather and agrees complete non-overlapping scope with the operator
+    and discovery subagents inspect every area for observable behaviour, existing tests, public seams, errors, side effects, and contradictions
+    and the coding agent reconciles the evidence with the operator through change into layered EARS trees with honest coverage
+    and every discovered behaviour is expressed at its consumer-visible seam without inventing unsupported behaviour
+    and project SessionStart hooks load TEST_TREES.md and the tree-writing rules before coding agents work
+    and project Stop hooks ask the coding agent to reconcile drift between trees, tests, and implementation before it finishes
+    and the skill proves both hooks through actual coding-agent turns before reporting completion
+  when an operator asks to set up test trees for a new project
+    then the skill creates an empty test-tree home without inventing behaviour
+    and it installs and proves the same project-local steering hooks
 ```
 
 ## outside-in-tdd
@@ -220,6 +250,8 @@ System: setup-mutation-testing (src: skills/setup-mutation-testing/SKILL.md; sys
     and it configures the ecosystem's mutation tool to mutate production source while explicitly excluding every colocated test pattern
     and mutation test runners select only Domain and Use-case tests when the framework supports test selection
     and incremental mode and a native mutation command provide the fastest available repeat feedback
+    and project Stop hooks run incremental mutation feedback only when relevant Domain or Use-case source or tests changed
+    and the hook preserves complete surviving-mutant output and fails visibly when the agreed threshold is missed
     and the skill runs mutation testing before reporting completion
   if surviving mutants keep the agreed threshold from passing
     then the skill strengthens the responsible Domain or Use-case tests and reruns only the affected mutation scope until it passes
@@ -232,7 +264,8 @@ System: setup-prepares-project (src: skills/setup/SKILL.md; system: test/setup-p
   when an operator asks for comprehensive Contree setup
     then setup inspects the project and presents a dynamic setup workflow shaped by the steering that is missing
     and setup engages the operator at each consequential framework, architecture, behavioural-scope, and mutation-threshold decision
-    and setup orchestrates setup-test-feedback, setup-linter, setup-architecture-linter, bootstrap-test-trees, and setup-mutation-testing
+    and setup orchestrates setup-test-feedback, setup-linter, setup-architecture-linter, bootstrap-test-trees, and setup-mutation-testing while bootstrap composes setup-mental-model and setup-test-trees
+    and each completed setup phase expands project-local hooks so later coding agents receive progressively richer steering while they work
     and setup uses subagents for independent setup work that can safely run in parallel and reconciles their results
     and setup keeps focused-skill orchestration in the coordinator instead of delegating an entire focused skill to an unattended background agent
     and setup waits for every selected phase and its subagents to finish before starting a dependent phase or reporting completion
@@ -404,6 +437,10 @@ skill-discoverability (src: hooks/session-start.sh; system: test/skill-discovera
     then the fix-architecture skill is triggered
   when a user asks to discover and test the behaviour of an existing project without naming a skill
     then the bootstrap-test-trees skill is triggered
+  when a user asks to establish or repair a project mental model without naming a skill
+    then the setup-mental-model skill is triggered
+  when a user asks to establish behavioural test trees without implementing their tests
+    then the setup-test-trees skill is triggered
   when a user asks to set up mutation testing without naming a skill
     then the setup-mutation-testing skill is triggered
   when a user asks for every Contree feedback loop without naming a skill
