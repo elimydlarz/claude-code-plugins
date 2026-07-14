@@ -7,7 +7,7 @@ set -euo pipefail
 # Expects:
 #   - For claude: DEEPSEEK_API_KEY (via docker-run.sh DeepSeek env vars)
 #   - For codex:  DEEPSEEK_API_KEY
-#   - $1 is the test name (layered-workflow | describe-it-drift | diff-images | second-opinion | second-opinion-live)
+#   - $1 is the test name (test-kinds-workflow | describe-it-drift | diff-images | second-opinion | second-opinion-live)
 #   - $2 is the harness  (claude | codex), default claude
 
 TEST_NAME="${1:?Usage: docker-entrypoint.sh <test-name> [claude|codex]}"
@@ -328,7 +328,7 @@ case "$TEST_NAME" in
 
     bootstrap_pass=1
     bootstrapped_tests="$(find "$PROJECT_DIR/src" "$PROJECT_DIR/test" -type f \( -name '*.test.*' -o -name '*.spec.*' \) -print 2>/dev/null || true)"
-    if [ -z "$bootstrapped_tests" ] || ! grep -Eq '^(Journey|System|Component|Adapter|Use-case|Domain|Port): ' "$PROJECT_DIR/TEST_TREES.md"; then
+    if [ -z "$bootstrapped_tests" ] || ! grep -Eq '^(Journey|Component|Integration|Unit): ' "$PROJECT_DIR/TEST_TREES.md"; then
       echo "Comprehensive setup did not bootstrap the existing behaviour into trees and tests" >&2
       bootstrap_pass=0
     fi
@@ -340,12 +340,12 @@ case "$TEST_NAME" in
       echo "Comprehensive setup did not use required subagent waves" >&2
       bootstrap_pass=0
     fi
-    if ! (cd "$PROJECT_DIR" && npm test && npm run test:functional && npm run test:mutate); then
-      echo "Comprehensive setup did not leave normal, functional, and mutation feedback green" >&2
+    if ! (cd "$PROJECT_DIR" && npm test && npm run test:journey && npm run test:mutate); then
+      echo "Comprehensive setup did not leave normal, journey, and mutation feedback green" >&2
       bootstrap_pass=0
     fi
 
-    mkdir -p "$PROJECT_DIR/src" "$PROJECT_DIR/test/system"
+    mkdir -p "$PROJECT_DIR/src" "$PROJECT_DIR/test/journey"
     printf '%s\n' "export const alpha = () => 'alpha'" > "$PROJECT_DIR/src/alpha.js"
     printf '%s\n' "export const beta = () => 'beta'" > "$PROJECT_DIR/src/beta.js"
     printf '%s\n' \
@@ -366,11 +366,11 @@ case "$TEST_NAME" in
       "})" > "$PROJECT_DIR/src/beta.unit.test.js"
     printf '%s\n' \
       "import { describe, expect, it } from 'vitest'" \
-      "describe('functional exclusion probe', () => {" \
+      "describe('journey exclusion probe', () => {" \
       "  it('stays outside changed normal tests', () => {" \
       "    expect(true).toBe(true)" \
       "  })" \
-      "})" > "$PROJECT_DIR/test/system/excluded.system.test.js"
+      "})" > "$PROJECT_DIR/test/journey/excluded.journey.test.js"
 
     changed_test_script="$(jq -r 'if .scripts["test-changed"] then "test-changed" elif .scripts["test:changed"] then "test:changed" else "" end' "$PROJECT_DIR/package.json")"
     baseline_output="$PROJECT_DIR/test-changed-baseline.txt"
@@ -382,7 +382,7 @@ case "$TEST_NAME" in
       echo "test-changed did not establish its baseline through the normal test command" >&2
       [ -f "$baseline_output" ] && cat "$baseline_output" >&2
       pass=0
-    elif ! grep -q 'alpha impact probe' "$baseline_output" || ! grep -q 'beta impact probe' "$baseline_output" || grep -q 'functional exclusion probe' "$baseline_output"; then
+    elif ! grep -q 'alpha impact probe' "$baseline_output" || ! grep -q 'beta impact probe' "$baseline_output" || grep -q 'journey exclusion probe' "$baseline_output"; then
       echo "test-changed baseline did not run exactly the normal tests" >&2
       cat "$baseline_output" >&2
       pass=0
@@ -390,7 +390,7 @@ case "$TEST_NAME" in
 
     printf '%s\n' "export const alpha = () => ['alpha'].join('')" > "$PROJECT_DIR/src/alpha.js"
     if [ -n "$changed_test_script" ] && (cd "$PROJECT_DIR" && npm run "$changed_test_script") > "$impact_output" 2>&1; then
-      if ! grep -q 'alpha impact probe' "$impact_output" || grep -q 'beta impact probe' "$impact_output" || grep -q 'functional exclusion probe' "$impact_output"; then
+      if ! grep -q 'alpha impact probe' "$impact_output" || grep -q 'beta impact probe' "$impact_output" || grep -q 'journey exclusion probe' "$impact_output"; then
         echo "test-changed did not select only the impacted normal test since its baseline" >&2
         cat "$impact_output" >&2
         pass=0
@@ -435,7 +435,7 @@ case "$TEST_NAME" in
       echo "repaired test-changed did not establish its baseline through the normal test command" >&2
       cat "$baseline_output" >&2
       pass=0
-    elif ! grep -q 'alpha impact probe' "$baseline_output" || ! grep -q 'beta impact probe' "$baseline_output" || grep -q 'functional exclusion probe' "$baseline_output"; then
+    elif ! grep -q 'alpha impact probe' "$baseline_output" || ! grep -q 'beta impact probe' "$baseline_output" || grep -q 'journey exclusion probe' "$baseline_output"; then
       echo "repaired test-changed baseline did not run exactly the normal tests" >&2
       cat "$baseline_output" >&2
       pass=0
@@ -443,7 +443,7 @@ case "$TEST_NAME" in
 
     printf '%s\n' "export const alpha = () => ['alpha'].join('')" > "$PROJECT_DIR/src/alpha.js"
     if (cd "$PROJECT_DIR" && npm run "$changed_test_script") > "$impact_output" 2>&1; then
-      if ! grep -q 'alpha impact probe' "$impact_output" || grep -q 'beta impact probe' "$impact_output" || grep -q 'functional exclusion probe' "$impact_output"; then
+      if ! grep -q 'alpha impact probe' "$impact_output" || grep -q 'beta impact probe' "$impact_output" || grep -q 'journey exclusion probe' "$impact_output"; then
         echo "repaired test-changed did not select only the impacted normal test since its baseline" >&2
         cat "$impact_output" >&2
         pass=0
@@ -465,7 +465,7 @@ case "$TEST_NAME" in
       pass=0
     fi
 
-    rm -f "$PROJECT_DIR/src/alpha.js" "$PROJECT_DIR/src/beta.js" "$PROJECT_DIR/src/alpha.unit.test.js" "$PROJECT_DIR/src/beta.unit.test.js" "$PROJECT_DIR/test/system/excluded.system.test.js" "$baseline_output" "$impact_output" "$failure_output"
+    rm -f "$PROJECT_DIR/src/alpha.js" "$PROJECT_DIR/src/beta.js" "$PROJECT_DIR/src/alpha.unit.test.js" "$PROJECT_DIR/src/beta.unit.test.js" "$PROJECT_DIR/test/journey/excluded.journey.test.js" "$baseline_output" "$impact_output" "$failure_output"
 
     for path in TEST_TREES.md MENTAL_MODEL.md .claude/settings.json .codex/hooks.json .contree/hooks/test-changed.sh .contree/hooks/lint-on-save.sh .contree/hooks/architecture-on-stop.sh .contree/hooks/load-mental-model.sh .contree/hooks/reconcile-mental-model.sh .contree/hooks/test-trees-session-start.sh .contree/hooks/test-trees-on-stop.sh .contree/hooks/mutation-on-stop.sh; do
       if [ ! -f "$PROJECT_DIR/$path" ]; then
@@ -484,7 +484,7 @@ case "$TEST_NAME" in
     if ! jq -e '
       .description == "Contree setup hook verification" and
       (.scripts.test | type == "string") and
-      (.scripts["test:functional"] | type == "string") and
+      (.scripts["test:journey"] | type == "string") and
       ((.scripts["test-changed"] // .scripts["test:changed"]) | type == "string") and
       (.scripts["test:mutate"] | type == "string") and
       (.scripts["test:mutate:changed"] | type == "string") and
@@ -548,7 +548,7 @@ setup — deterministic functional verification under $HARNESS:
   failing impacted test output and exit 2: $([ "$pass" -eq 1 ] && echo PASS || echo FAIL)
   actual edit after loading project hooks: $(jq -r '.description' "$PROJECT_DIR/package.json" 2>/dev/null || echo FAIL)
   normal command: $(jq -r '.scripts.test // "FAIL"' "$PROJECT_DIR/package.json" 2>/dev/null)
-  functional command: $(jq -r '.scripts["test:functional"] // "FAIL"' "$PROJECT_DIR/package.json" 2>/dev/null)
+  journey command: $(jq -r '.scripts["test:journey"] // "FAIL"' "$PROJECT_DIR/package.json" 2>/dev/null)
   changed-test command: $(jq -r '.scripts["test-changed"] // .scripts["test:changed"] // "FAIL"' "$PROJECT_DIR/package.json" 2>/dev/null)
   Claude Code hooks: $([ -f "$PROJECT_DIR/.claude/settings.json" ] && echo configured || echo FAIL)
   Codex hooks: $([ -f "$PROJECT_DIR/.codex/hooks.json" ] && echo configured || echo FAIL)
@@ -559,10 +559,8 @@ VERIFY
     [ "$pass" -eq 1 ] || { echo "setup: FAILED deterministic checks" >&2; exit 1; }
     ;;
 
-  layered-workflow)
-    # The single end-to-end journey: setup → change-without-me → drift+sync against an
-    # HTTP API fixture that exercises Journey, System, Adapter (driving + driven),
-    # Use-case, Domain, ports, and in-memory adapters. Run under both harnesses.
+  test-kinds-workflow)
+    # The single end-to-end journey exercises all four test kinds against an HTTP API fixture.
     seed_project "bookmarks-api"
 
     echo ""
@@ -573,7 +571,7 @@ VERIFY
     echo ""
     echo "=== Phase 2: change-without-me (change → sync → tdd) ==="
     run_agent \
-      "Now implement the project. Use /contree:change-without-me to set expected behaviour in trees and drive the implementation outside-in. The project has a BookmarkRepository port — remember to build an in-memory adapter and a shared port contract suite alongside the file-based production adapter. Skip mutation testing for this run — configure it if setup tells you to, but do not execute Stryker."
+      "Now implement the project. Use /contree:change-without-me to set expected behaviour in trees and drive the implementation outside-in. The project has a BookmarkRepository port — build an in-memory adapter and make its Unit tests share the same behavioural suite as the file-based production adapter. Skip mutation testing for this run — configure it if setup tells you to, but do not execute Stryker."
 
     echo ""
     echo "=== Phase 3: drift injection + sync ==="
@@ -602,16 +600,16 @@ Evaluate the transcript against every tree in the plugin's
 Harness under test: **$HARNESS**.
 
 Focus areas:
-  - change-decomposes-across-layers (Journey → System → inner-layer decomposition; port decomposition, in-memory + real adapters, shared contract)
-  - change-writes-trees (every layer is consumer-driven; inner trees describe what the outer consumer needs from the unit it forced into existence)
-  - outside-in-tdd (outermost failing test pulls inner layers in — a Journey test for a new arc, else System; the Journey is curated and kept under 5 minutes; Use-case wired with in-memory adapters; Adapter runs shared contract; describe/it mirrors trees verbatim; inner units get their own ground-level failing test before code — journey/functional coverage is not coverage)
-  - composable-testing (file naming conventions, port contract suite)
+  - change-chooses-test-kinds (Journey, Component, Integration, and Unit are selected by concern rather than treated as implementation layers)
+  - change-writes-trees (Journey and Component use consumer vocabulary; Integration names the selected collaboration; Unit covers every public surface)
+  - outside-in-tdd (the highest applicable failing test pulls implementation inward; every public surface gets native Unit coverage; describe/it mirrors trees verbatim)
+  - composable-testing (file naming conventions and shared behavioural suites for port implementations)
   - dual-harness-compatibility (when run under codex: SessionStart rules visible in transcript)
 
 Specific consumer-driven checks:
-  - Inspect TEST_TREES.md — Domain/Use-case/Port-contract trees describe what the outer consumer needs to observe from the unit it forced into existence.
+  - Inspect TEST_TREES.md — architecture positions such as domain, use case, adapter, and port are test subjects rather than test kinds.
   - Inspect the corresponding test file — describe/it mirrors the tree verbatim.
-  - Journey/System/Adapter trees use consumer vocabulary, describe principles not enumerated cases.
+  - Journey and Component trees use consumer vocabulary; Integration tests mock everything except the selected collaborating subjects; Unit tests mock every dependency outside one subject.
 
 Out of scope for this scenario (mark these tree paths N/A, not FAIL):
   - outside-in-tdd: "when all trees for a slice have passing tests then run mutation testing" — the prompt instructs the agent to skip Stryker execution to stay within budget. Stryker should be CONFIGURED (phase 1 setup) but NOT EXECUTED. If the transcript shows the agent ran Stryker anyway, that is a FAIL of obedience to the user instruction, not a tree FAIL.
@@ -822,19 +820,19 @@ VERIFY
       identifies_drift="FAIL — transcript does not identify describe/it hierarchy drift"
       pass=0
     fi
-    if grep -q "describe('parseUrl'" "$PROJECT_DIR/src/bookmark.domain.test.js" \
-      && grep -q "describe('when called with an https URL'" "$PROJECT_DIR/src/bookmark.domain.test.js" \
-      && grep -q "it('then the canonical form is returned'" "$PROJECT_DIR/src/bookmark.domain.test.js" \
-      && grep -q "describe('if called with a non-URL string'" "$PROJECT_DIR/src/bookmark.domain.test.js" \
-      && grep -q "it('then InvalidUrl is thrown'" "$PROJECT_DIR/src/bookmark.domain.test.js"; then
+    if grep -q "describe('parseUrl'" "$PROJECT_DIR/src/bookmark.unit.test.js" \
+      && grep -q "describe('when called with an https URL'" "$PROJECT_DIR/src/bookmark.unit.test.js" \
+      && grep -q "it('then the canonical form is returned'" "$PROJECT_DIR/src/bookmark.unit.test.js" \
+      && grep -q "describe('if called with a non-URL string'" "$PROJECT_DIR/src/bookmark.unit.test.js" \
+      && grep -q "it('then InvalidUrl is thrown'" "$PROJECT_DIR/src/bookmark.unit.test.js"; then
       mirrors_tree="PASS — test hierarchy now mirrors the tree"
     else
       mirrors_tree="FAIL — test hierarchy does not mirror the tree"
       pass=0
     fi
-    if grep -q "expect" "$PROJECT_DIR/src/bookmark.domain.test.js" \
-      && grep -Eq "toBe|toEqual" "$PROJECT_DIR/src/bookmark.domain.test.js" \
-      && grep -Eq "toThrow|InvalidUrl" "$PROJECT_DIR/src/bookmark.domain.test.js"; then
+    if grep -q "expect" "$PROJECT_DIR/src/bookmark.unit.test.js" \
+      && grep -Eq "toBe|toEqual" "$PROJECT_DIR/src/bookmark.unit.test.js" \
+      && grep -Eq "toThrow|InvalidUrl" "$PROJECT_DIR/src/bookmark.unit.test.js"; then
       tests_intention="PASS — tests assert the intention expressed by both leaves"
     else
       tests_intention="FAIL — tests do not assert the intention expressed by both leaves"
@@ -869,7 +867,7 @@ VERIFY
     echo ""
     echo "Available tests:"
     echo "  setup                         — setup configures and verifies a project under both coding harnesses"
-    echo "  layered-workflow              — HTTP API: setup → change-without-me → drift → sync (every tree, every layer)"
+    echo "  test-kinds-workflow           — HTTP API: setup → change-without-me → drift → sync across all four test kinds"
     echo "  describe-it-drift             — one-shot: pre-seeded describe/it mismatch → verifies sync flags it"
     echo "  diff-images                   — one-shot: staged change + mocked gpt-image-2 → verifies /contree:diff-for-humans generates an image of the change"
     echo "  second-opinion                — one-shot: staged change + mocked GLM 5.2 → verifies /contree:second-opinion reviews the change"

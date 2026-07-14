@@ -4,8 +4,8 @@ set -euo pipefail
 # Run contree journey tests in Docker.
 #
 # Usage:
-#   ./docker-run.sh layered-workflow                  # default harness: claude
-#   ./docker-run.sh layered-workflow codex            # explicit harness
+#   ./docker-run.sh test-kinds-workflow                # default harness: claude
+#   ./docker-run.sh test-kinds-workflow codex          # explicit harness
 #   ./docker-run.sh all                               # every (test, harness) pair in MATRIX
 #
 # Each (test, harness) pair writes <test>-<harness>-transcript.jsonl and
@@ -45,8 +45,8 @@ DOCKER_CODEX_ENV=(-e DEEPSEEK_API_KEY)
 MATRIX=(
   "setup:claude"
   "setup:codex"
-  "layered-workflow:claude"
-  "layered-workflow:codex"
+  "test-kinds-workflow:claude"
+  "test-kinds-workflow:codex"
   "describe-it-drift:claude"
   "describe-it-drift:codex"
   "diff-images:claude"
