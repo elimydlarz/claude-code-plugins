@@ -9,9 +9,9 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   [[ "$output" == *"Talk it through with the user"* || "$output" == *"discuss"* ]]
 }
 
-@test "change teaches that every layer is consumer-driven" {
+@test "change teaches that every test kind is consumer-driven" {
   run cat "$SKILL"
-  assert_output --partial "every layer is consumer-driven"
+  assert_output --partial "every test kind is consumer-driven"
   assert_output --partial "consumer is created before the thing it consumes is implemented"
 }
 
@@ -146,11 +146,11 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   assert_output --partial "generic"
 }
 
-@test "change names every tree's first line <Layer>: <Subject> so the layer prefix lets readers and sync detect duplication across layers" {
+@test "change names every tree's first line <Test-kind>: <Subject> so the test-kind prefix lets readers and sync detect duplication across kinds" {
   run cat "$SKILL"
-  assert_output --partial "<Layer>: <Subject>"
-  assert_output --partial "Without the layer prefix"
-  assert_output --partial "detect duplication across layers"
+  assert_output --partial "<Test-kind>: <Subject>"
+  assert_output --partial "Without the test-kind prefix"
+  assert_output --partial "detect duplication across test kinds"
 }
 
 @test "change nests a when-trigger that can only occur as a consequence of a prior then-outcome as a child, not a sibling" {
