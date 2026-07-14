@@ -45,6 +45,11 @@ SKILL="$PROJECT_ROOT/skills/second-opinion/SKILL.md"
   assert_output --partial "API contract"
 }
 
+@test "second-opinion skill directs the independent model to review impacts on other systems" {
+  run cat "$SKILL"
+  assert_output --partial "impacts on other systems"
+}
+
 @test "second-opinion skill sends the change and the test trees to the provider matching the configured review key" {
   run cat "$SKILL"
   assert_output --partial "glm-5.2"
