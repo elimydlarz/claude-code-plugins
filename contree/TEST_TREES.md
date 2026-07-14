@@ -454,7 +454,7 @@ Unit: skill-discoverability (src: hooks/session-start.sh; unit: test/skill-disco
 ## composable-testing
 
 ```
-Integration: composable-testing (src: skills/setup-test-feedback/SKILL.md, skills/setup-mutation-testing/SKILL.md, skills/change/SKILL.md; integration: test/composable-testing.bats; journey: test/journey/docker-entrypoint.sh)
+Port: composable-testing (src: skills/setup-test-feedback/SKILL.md, skills/setup-mutation-testing/SKILL.md; adapter: test/composable-testing.bats)
   when a project uses contree
     then Unit tests are colocated with their subjects (*.unit.test.*)
     and Integration tests are colocated with their highest-level subjects (*.integration.test.*)
@@ -471,7 +471,7 @@ Integration: composable-testing (src: skills/setup-test-feedback/SKILL.md, skill
 ## rules-loading
 
 ```
-Unit: rules-loading (src: hooks/session-start.sh; unit: test/rules-loading.bats; journey: test/journey/docker-entrypoint.sh)
+Adapter: rules-loading (src: hooks/session-start.sh, hooks/hooks.json; adapter: test/rules-loading.bats)
   when a session starts
     then the rules list is shown
     and not repeated on every response
@@ -481,7 +481,7 @@ Unit: rules-loading (src: hooks/session-start.sh; unit: test/rules-loading.bats;
 ## dual-harness-compatibility
 
 ```
-Integration: dual-harness-compatibility (src: .claude-plugin/plugin.json, .codex-plugin/plugin.json, hooks/hooks.json, test/journey/claude-openai-responses-proxy.mjs; integration: test/dual-harness-compatibility.bats; journey: test/journey/docker-entrypoint.sh)
+Adapter: dual-harness-compatibility (src: .claude-plugin/plugin.json, .codex-plugin/plugin.json, hooks/hooks.json, test/journey/claude-openai-responses-proxy.mjs, test/journey/docker-entrypoint.sh, test/journey/docker-run.sh; adapter: test/dual-harness-compatibility.bats)
   when contree is installed under either Claude Code or Codex
     then a manifest exists at .claude-plugin/plugin.json
     and a manifest exists at .codex-plugin/plugin.json declaring skills as ./skills/ and hooks as ./hooks/hooks.json
@@ -510,7 +510,7 @@ Integration: dual-harness-compatibility (src: .claude-plugin/plugin.json, .codex
 ## diff-images-the-change
 
 ```
-Unit: diff-images-the-change (src: skills/diff-for-humans/SKILL.md; unit: test/diff-images-the-change.bats; journey: test/journey/docker-entrypoint.sh)
+Use-case: diff-images-the-change (src: skills/diff-for-humans/SKILL.md; use-case: test/diff-images-the-change.bats)
   when the diff-for-humans skill is invoked
     then it determines the change to depict from any natural-language indication the user gave
     and absent a clear indication it depicts the last non-trivial, naturally grouped changes — not a single commit, since trunk-sync commits continuously, and not only the working tree
@@ -523,14 +523,14 @@ Unit: diff-images-the-change (src: skills/diff-for-humans/SKILL.md; unit: test/d
     and it surfaces those choices to the user for review
   when there are no non-trivial changes to depict
     then it says so and stops without calling the API
-  if the gpt-image-2 request fails
+  if OPENAI_API_KEY is missing, the gpt-image-2 API returns an error or non-2xx response, the response contains no image, or the returned image is invalid
     then the failure is surfaced as an error and no image is fabricated
 ```
 
 ## second-opinion-reviews-completed-work
 
 ```
-Unit: second-opinion-reviews-completed-work (src: skills/second-opinion/SKILL.md; unit: test/second-opinion-reviews-completed-work.bats; journey: test/journey/docker-entrypoint.sh)
+Use-case: second-opinion-reviews-completed-work (src: skills/second-opinion/SKILL.md; use-case: test/second-opinion-reviews-completed-work.bats)
   when the second-opinion skill is invoked
     then it determines the work to review from any natural-language indication the user gave
     and absent a clear indication it reviews the current worktree
@@ -550,7 +550,7 @@ Unit: second-opinion-reviews-completed-work (src: skills/second-opinion/SKILL.md
 ## validate-skill-frontmatter
 
 ```
-Unit: validate-skill-frontmatter (src: scripts/validate-skill-frontmatter.sh; unit: test/validate-skill-frontmatter.bats)
+Adapter: validate-skill-frontmatter (src: scripts/validate-skill-frontmatter.sh; adapter: test/validate-skill-frontmatter.bats)
   when every skills/*/SKILL.md has non-empty frontmatter name and description
     then the validator exits 0
     and this holds for contree's own real skills/ directory, not just synthetic fixtures
@@ -564,6 +564,12 @@ Unit: validate-skill-frontmatter (src: scripts/validate-skill-frontmatter.sh; un
     then the validator exits non-zero
   if a SKILL.md's frontmatter has no closing marker
     then the validator exits non-zero
+  if a SKILL.md has content before its frontmatter
+    then the validator exits non-zero and names the offending file
+  if a SKILL.md's frontmatter name contains only whitespace
+    then the validator exits non-zero and names the offending file
+  if a SKILL.md's frontmatter description contains only whitespace
+    then the validator exits non-zero and names the offending file
   if the skills directory does not exist
     then the validator exits non-zero
   if no argument is given
@@ -573,7 +579,7 @@ Unit: validate-skill-frontmatter (src: scripts/validate-skill-frontmatter.sh; un
 ## website-explains-contree
 
 ```
-Unit: website-explains-contree (src: website/index.html; unit: test/website-explains-contree.bats)
+System: website-explains-contree (src: website/index.html; system: test/website-explains-contree.bats)
   when a visitor loads the contree website
     then the page bridges from test-first practice to test trees as living requirements
     and the page explains the four test kinds Journey, Component, Integration, and Unit
