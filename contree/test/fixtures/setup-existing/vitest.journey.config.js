@@ -5,7 +5,6 @@ export default defineConfig({
     passWithNoTests: true,
     reporters: ['tree'],
     include: [
-      'test/system/**/*.system.test.js',
       'test/journey/**/*.journey.test.js',
     ],
   },

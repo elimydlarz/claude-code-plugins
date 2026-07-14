@@ -9,7 +9,7 @@ Run `npm install`.
 ## Test
 
 - `npm test` runs normal tests.
-- `npm run test:functional` runs System and Journey tests.
+- `npm run test:journey` runs Journey tests.
 - Contree setup adds the native changed-test command and coding-harness hooks.
 
 ## Configuration

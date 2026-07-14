@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "vitest run",
-    "test:functional": "vitest run --config vitest.functional.config.js",
+    "test:journey": "vitest run --config vitest.journey.config.js",
     "test:mutate": "stryker run",
     "lint:code": "eslint .",
     "lint:code:fix": "eslint . --fix",

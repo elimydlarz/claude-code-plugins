@@ -31,4 +31,4 @@ The fixture deliberately keeps code and tree behaviour aligned while leaving des
 
 ## Temporal View
 
-The current fixture state contains one intentional drift: `src/bookmark.domain.test.js` does not mirror the tree hierarchy.
+The current fixture state contains one intentional drift: `src/bookmark.unit.test.js` does not mirror the tree hierarchy.

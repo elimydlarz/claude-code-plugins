@@ -6,9 +6,7 @@ export default defineConfig({
     reporters: ['tree'],
     include: [
       'src/**/*.unit.test.js',
-      'src/**/*.domain.test.js',
-      'src/**/*.use-case.test.js',
-      'src/**/*.adapter.test.js',
+      'src/**/*.integration.test.js',
       'test/component/**/*.component.test.js',
     ],
   },
