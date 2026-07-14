@@ -10,7 +10,7 @@ contree does not turn a prompt into shipped software while you watch. **You stay
 
 What contree gives you is a **very strong harness, bootstrapped for you**: outside-in testing, the trees-as-contract invariant, the skills that route you through change → sync → tdd → second-opinion, and the hooks that keep everything honest. That harness is a general way of working with AI — not tied to any one stack or domain.
 
-It is a foundation, not the whole house. You are still expected to **build your project-level harness on top** — your own fixtures, runners, conventions, and domain detail. contree gets you a rigorous starting point and keeps you honest as you go; the specifics of your project remain yours to develop. Tests use four kinds: Journey, Component, Integration, and Unit. TDD starts outside-in from the current tree's consumer: write one test, observe RED, implement GREEN, then during REFACTOR notice too much branching in the test or tree. Extract some branching into a new unit with a mock and a stub that throws `NotImplemented`. The mock makes the consumer tests pass; the stub makes running code fail loudly. That is the signal to give the unit its own tree and repeat the TDD process from step 1 for it.
+It is a foundation, not the whole house. You are still expected to **build your project-level harness on top** — your own fixtures, runners, conventions, and domain detail. contree gets you a rigorous starting point and keeps you honest as you go; the specifics of your project remain yours to develop. Trees name the observable layer they contract: Journey, System, Component, Adapter, Use-case, Domain, or Port. TDD starts outside-in from the current tree's consumer: write one test, observe RED, implement GREEN, then during REFACTOR notice too much branching in the test or tree. Extract some branching into a new unit with a mock and a stub that throws `NotImplemented`. The mock makes the consumer tests pass; the stub makes running code fail loudly. That is the signal to give the unit its own tree and repeat the TDD process from step 1 for it.
 
 ## What it does
 
@@ -25,7 +25,7 @@ Focused skills:
 - **`/contree:setup-mental-model`** — Discovers and reconciles the seven-section project theory with you, then installs project-local SessionStart and Stop steering so later agents work from it and keep it current.
 - **`/contree:setup-test-trees`** — Discovers and reconciles the behavioural contract with you, then installs project-local SessionStart and Stop steering without implementing the tests.
 - **`/contree:bootstrap-test-trees`** — Composes mental-model and test-tree setup, then uses a fresh TDD subagent wave to implement and run exactly one test file per agreed tree.
-- **`/contree:setup-mutation-testing`** — Configures fast Unit-test mutation feedback, installs relevant-change incremental Stop feedback, runs the full quality gate, and strengthens tests until the agreed threshold passes.
+- **`/contree:setup-mutation-testing`** — Configures fast Domain- and Use-case-test mutation feedback, installs relevant-change incremental Stop feedback, runs the full quality gate, and strengthens tests until the agreed threshold passes.
 - **`/contree:setup`** — The comprehensive setup: dynamically orchestrates every missing feedback loop, engages you at consequential decisions, uses subagents for independent work, and verifies the whole steering system before reporting success.
 - **`/contree:change`** — Write or modify test trees in `TEST_TREES.md` before any code is written. Auto-triggers when planning behaviour changes.
 - **`/contree:tdd`** — Auto-triggers when implementing behaviour. Runs one observable behaviour through RED, GREEN, and REFACTOR; excessive branching moves behind a passing mock and throwing stub, signalling a new TDD cycle for that unit.
@@ -70,16 +70,19 @@ Skills run automatically once installed. Hooks require the feature flags above. 
 
 ## Standardised architecture
 
-contree imposes one architecture on every project, so the harness it bootstraps is the same regardless of stack or domain. It is **hexagonal**: the domain is pure, all I/O lives in adapters, and dependencies point inward toward the domain. Each outbound dependency is a **Port** that ships two implementations — an in-memory twin and a real adapter — both held to one shared behavioural suite through Unit tests, so the in-memory substitution used by fast tests stays faithful to the real thing.
+contree imposes one architecture on every project, so the harness it bootstraps is the same regardless of stack or domain. It is **hexagonal**: the domain is pure, all I/O lives in adapters, and dependencies point inward toward the domain. Each outbound dependency is a **Port** that ships two implementations — an in-memory twin and a real adapter — both held to one shared contract suite, so the in-memory substitution used by fast tests stays faithful to the real thing.
 
 Tests are classified by observable scope:
 
-- **Journey** (`test/journey/*.journey.test.*`) — a broad, production-like test of a curated user arc across capabilities, with external services replaced by test doubles only if unavoidable.
-- **Component** (`test/component/*.component.test.*`) — a deep in-process test of one capability through the whole app, with external services replaced by test doubles.
-- **Integration** (`*.integration.test.*`) — when some but not all pieces must work together, test from the highest-level subject and mock everything except the subjects being integrated.
-- **Unit** (`*.unit.test.*`) — one public surface on one subject; every public surface gets native unit tests and every dependency outside the subject is mocked.
+- **Journey** (`test/journey/*.journey.test.*`) — a broad, production-like user arc across capabilities.
+- **System** (`test/system/*.system.test.*`) — one capability deeply through the whole production-like app with real infrastructure.
+- **Component** (`test/component/*.component.test.*`) — one capability deeply through the whole app in-process, with external services replaced at the edge.
+- **Adapter** (`*.adapter.test.*`) — one concrete HTTP, CLI, database, filesystem, queue, or third-party implementation against its real boundary.
+- **Use-case** (`*.use-case.test.*`) — exhaustive application orchestration at its public seam.
+- **Domain** (`*.domain.test.*`) — exhaustive substantive pure rules at their public seam.
+- **Port** (`*.port-contract.test.*`) — one shared contract that every implementation of an outbound application interface must pass.
 
-Domain, use-case, adapter, and port remain architecture vocabulary; they do not create more test kinds. Development remains outside-in and consumer-driven: start from the current consumer, make one behaviour pass, then move excessive branching behind a mock and a stub that throws `NotImplemented`. Passing consumer tests prove the mock is consumed correctly; the throwing stub shows the new unit is unfinished and must begin its own TDD cycle.
+Development remains outside-in and consumer-driven: start from the current consumer, make one behaviour pass, then move excessive branching behind a mock and a stub that throws `NotImplemented`. Passing consumer tests prove the mock is consumed correctly; the throwing stub shows the new unit is unfinished and must begin its own TDD cycle.
 
 This is the standardised foundation. Your project's own fixtures, runners, and conventions are layered on top of it.
 
@@ -90,9 +93,9 @@ Trees in `TEST_TREES.md` look like this:
 A bookmarks feature can have trees at the scopes its consumers actually need:
 
 ```markdown
-### canonicaliseUrl (Unit)
+### canonicaliseUrl (Domain)
 
-Unit: canonicaliseUrl (src: src/features/bookmarks/domain/canonicalise-url.ts; unit: src/features/bookmarks/domain/canonicalise-url.unit.test.ts)
+Domain: canonicaliseUrl (src: src/features/bookmarks/domain/canonicalise-url.ts; domain: src/features/bookmarks/domain/canonicalise-url.domain.test.ts)
   canonicaliseUrl
     when the host contains mixed case
       then the host is lower-cased
@@ -103,9 +106,9 @@ Unit: canonicaliseUrl (src: src/features/bookmarks/domain/canonicalise-url.ts; u
     if the input cannot be parsed as a URL
       then a ParseError is thrown
 
-### createBookmark (Unit)
+### createBookmark (Use-case)
 
-Unit: createBookmark (src: src/features/bookmarks/use-cases/create-bookmark.ts; unit: src/features/bookmarks/use-cases/create-bookmark.unit.test.ts)
+Use-case: createBookmark (src: src/features/bookmarks/use-cases/create-bookmark.ts; use-case: src/features/bookmarks/use-cases/create-bookmark.use-case.test.ts)
   createBookmark
     when called with a valid URL for an authenticated user
       then the URL is canonicalised via the Domain
@@ -127,9 +130,9 @@ Component: CreateBookmark (src: src/features/bookmarks/create-bookmark.ts; compo
     then the request is rejected before the store is touched
 ```
 
-Every tree is consumer-driven. Journey and Component trees describe what users, API clients, hooks, queues, or other boundary callers observe. Integration trees start from their highest-level subject. Unit trees describe one public surface on one subject; even a pure function exists because a caller needs to invoke it and observe its result or error. Causal nesting (the duplicate-URL case under successful persistence) keeps dependent behaviour attached to the outcome it depends on.
+Every tree is consumer-driven. Journey, System, Component, and Adapter trees use the consumer's vocabulary. Domain, Use-case, and Port trees use their own public functions, types, results, and errors. Even a pure function exists because a caller needs to invoke it and observe its result or error. Causal nesting (the duplicate-URL case under successful persistence) keeps dependent behaviour attached to the outcome it depends on.
 
-Each behavioural subject gets its own tree at the test kind its concern requires. Every tree name starts with `<Test-kind>: <Subject>` and names coverage in parenthesised semicolon-separated labelled pairs on the same line. The categories are `src`, `unit`, `integration`, `component`, `journey`. Gaps are declared explicitly: `none` for a category that is expected but uncovered; categories that are genuinely not applicable are omitted. Every test file's describe/it hierarchy mirrors its tree verbatim.
+Each behavioural subject gets its own tree at the layer its consumer observes. Every tree starts with `<Layer>: <Subject>` and names coverage in parenthesised semicolon-separated labelled pairs on the same line. The categories are `src`, `domain`, `use-case`, `adapter`, `component`, `system`, and `journey`. Gaps are declared explicitly: `none` for expected but missing coverage; inapplicable categories are omitted. Every test file's describe/it hierarchy mirrors its tree verbatim.
 
 ## Supported languages
 
