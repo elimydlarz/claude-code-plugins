@@ -1,11 +1,11 @@
 ---
-name: workflow
-description: "Run the full Contree arc from idea to verified software: change sets expected behaviour, sync finds drift and gaps, tdd closes them, and second-opinion reviews the result. TRIGGER when: the user wants the full workflow, asks to take an idea through implementation, asks to make the project complete, or wants change/sync/tdd handled end to end."
+name: change-without-me
+description: "Run the full Contree arc from idea to verified software without operator phase transitions: change sets expected behaviour, sync finds drift and gaps, tdd closes them, and second-opinion reviews the result. TRIGGER when: the user wants the full workflow, asks to take an idea through implementation, asks to make the project complete, or wants change/sync/tdd handled end to end."
 ---
 
-# Workflow
+# Change Without Me
 
-Carries an idea through the full arc: from intent to contract to verified implementation. Sets expected behaviour, identifies where reality diverges, and closes every gap — without pausing for review.
+Carries an idea through the full arc: from intent to contract to verified implementation. Sets expected behaviour, identifies where reality diverges, and closes every gap without pausing for review.
 
 ## When to Use
 

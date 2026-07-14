@@ -15,7 +15,7 @@
 - A tree's implementation and overlapping test coverage on disk → parenthesised labelled paths: `src`, `domain`, `use-case`, `adapter`, `component`, `system`, `journey`; `none` marks expected coverage not yet fulfilled, while inapplicable labels are omitted.
 - An outbound capability → a Port with an in-memory twin and real adapter, both passing one shared Port-contract suite.
 - Project steering → focused setup skills for test feedback, conventional lint, architecture lint and repair, test-tree bootstrap, and mutation feedback; `setup` orchestrates the complete suite.
-- Behaviour responsibility → `change` owns the operator contract; `tdd` owns tests and implementation; `sync` audits and resolves agreement across intention, trees, tests, code, and mental model; `second-opinion` reviews independently; `workflow` composes the arc.
+- Behaviour responsibility → `change` owns the operator contract; `tdd` owns tests and implementation; `sync` audits and resolves agreement across intention, trees, tests, code, and mental model; `second-opinion` reviews independently; `change-without-me` composes the arc.
 - Lifecycle hooks → SessionStart injects rules, mental model, and trees; Stop prompts review of the model, tree/implementation drift, CLAUDE.md, and README.
 - The product's theory → `MENTAL_MODEL.md` (this file); its behaviour → `TEST_TREES.md`; its operating discipline → the rules.
 
@@ -42,7 +42,7 @@
 - Tree language — EARS syntax, causal nesting, one-tree-one-file, leaf granularity; the grammar of the contract.
 - Test seams — Journey owns a multi-capability arc; System and Component own one capability at different realism; Adapter and Port contract own boundaries; Use-case and Domain own unit interfaces.
 - Setup suite — focused skills establish test, lint, architecture, behavioural-contract, and mutation feedback independently; `setup` dynamically orchestrates the comprehensive operator-guided workflow.
-- Skill ownership — `change` owns trees; `tdd` owns tests and implementation; `sync` audits and resolves agreement across operator intention, trees, tests, code, and mental model; `second-opinion` reviews independently; `workflow` composes them.
+- Skill ownership — `change` owns trees; `tdd` owns tests and implementation; `sync` audits and resolves agreement across operator intention, trees, tests, code, and mental model; `second-opinion` reviews independently; `change-without-me` composes them.
 - Enforcement hooks — plugin SessionStart injects discipline and plugin Stop prompts documentation reconciliation; setup-generated project hooks run impacted normal tests and architecture checks at Stop, and lint autofix after saves.
 - Hexagonal architecture — domain pure, I/O in adapters, dependencies inward, a boundary linter holding the line.
 - Dual-harness packaging — one source directory, parallel `.claude-plugin` / `.codex-plugin` manifests, `CLAUDE_PLUGIN_ROOT` shared by both.
@@ -73,9 +73,9 @@
 
 ## Temporal View
 
-- Per project: focused setup skills evolve individual steering loops and `setup` composes the comprehensive harness; thereafter each behaviour skill runs when triggered, while `workflow` composes `change` → `sync` → `tdd` → `second-opinion` without pausing.
+- Per project: focused setup skills evolve individual steering loops and `setup` composes the comprehensive harness; thereafter each behaviour skill runs when triggered, while `change-without-me` composes `change` → `sync` → `tdd` → `second-opinion` without pausing.
 - Per behaviour: select one contracted tree leaf → write one test → RED → implement to GREEN → REFACTOR excessive branching behind a mock and throwing stub → add the revealed unit's tree → repeat from RED at that unit's public seam.
 - Per sync: run the full suite → partition every leaf, all production code, and all seven mental-model headings across subagents → reconcile evidence → resolve every finding → rerun affected tests and the full suite until contract, tests, implementation, and mental model agree.
 - Per turn: the Stop hook prompts reconciliation after each response, with `stop_hook_active` preventing it from reviewing its own follow-up turn.
-- At the end of `workflow`'s TDD phase: mutation testing validates Domain and Use-case tests before independent review.
+- At the end of `change-without-me`'s TDD phase: mutation testing validates Domain and Use-case tests before independent review.
 - Across sessions: SessionStart injects rules, mental model, and trees so every session starts in-context.

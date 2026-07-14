@@ -5,7 +5,7 @@
 cat <<'EOF'
 # Directions
 
-Use Contree skills as directed by their frontmatter: **setup-test-feedback**, **setup-linter**, **setup-architecture-linter**, **fix-architecture**, **bootstrap-test-trees**, **setup-mutation-testing**, **setup**, **change**, **tdd**, **sync**, **workflow**.
+Use Contree skills as directed by their frontmatter: **setup-test-feedback**, **setup-linter**, **setup-architecture-linter**, **fix-architecture**, **bootstrap-test-trees**, **setup-mutation-testing**, **setup**, **change**, **tdd**, **sync**, **change-without-me**.
 
 # Rules
 
