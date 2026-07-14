@@ -348,19 +348,32 @@ System: hook-sync (src: hooks/hooks.json; system: test/system/hook-sync.system.t
     then a single pull-and-push retry is attempted
 ```
 
+## Journey: isolated-agent-sessions
+
+```
+Journey: isolated-agent-sessions (src: README.md; journey: none)
+
+  when an operator prepares any agent session to use trunk-sync
+    then the guidance requires that session to start in its own dedicated worktree, including when it is currently the only session
+    and explains that separate working directories and indexes prevent one session from observing another session's uncommitted files or committing them through its own hook
+    and explains that trunk-sync shares committed changes through the configured integration branch
+
+  when an operator prepares a Claude Code session
+    then the guidance provides `claude --worktree` and its `claude -w` shorthand as the supported launch commands
+
+  when an operator prepares a Codex session
+    then the guidance provides commands that create a dedicated Git worktree before Codex starts and select it with `codex -C <worktree-path>`
+
+  if an agent session was launched in a working tree used by another session
+    then the guidance directs the operator to stop it and relaunch it in its own worktree before editing
+```
+
 ## Journey: agent-hook-compatibility
 
 ```
 Journey: agent-hook-compatibility (journey: test/journey/agent-hook-compatibility.journey.test.sh)
 
-  when Claude Code uses the published plugin in a consumer repository
-    when its session starts without a timecard
-      then a dedicated worktree is automatically created and selected for the session
-      and its shared timecard records that worktree's identifier
-    when a disrupted session resumes from its existing timecard
-      then the worktree identified by the timecard is selected without creating another
-    if its session worktree cannot be created or selected
-      then session start fails before Claude Code can edit from the wrong worktree
+  when Claude Code uses the published plugin from a dedicated worktree in a consumer repository
     if it attempts a write-side git command
       then the command is rejected with instructions to edit file content instead
     when it edits a file after the rejection
@@ -369,14 +382,7 @@ Journey: agent-hook-compatibility (journey: test/journey/agent-hook-compatibilit
     when the session ends
       then its presence is removed from the shared branch
 
-  when Codex uses the published plugin in a consumer repository
-    when its session starts without a timecard
-      then a dedicated worktree is automatically created and selected for the session
-      and its shared timecard records that worktree's identifier
-    when a disrupted session resumes from its existing timecard
-      then the worktree identified by the timecard is selected without creating another
-    if its session worktree cannot be created or selected
-      then session start fails before Codex can edit from the wrong worktree
+  when Codex uses the published plugin from a dedicated worktree in a consumer repository
     if it attempts a write-side git command
       then the command is rejected with instructions to edit file content instead
     when it edits a file after the rejection
