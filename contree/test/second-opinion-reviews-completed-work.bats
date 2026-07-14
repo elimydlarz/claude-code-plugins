@@ -53,11 +53,11 @@ SKILL="$PROJECT_ROOT/skills/second-opinion/SKILL.md"
   refute_output --partial "chat/completions"
 }
 
-@test "second-opinion skill surfaces the independent review attributed to the model that reviewed it" {
+@test "second-opinion skill surfaces the independent model's review to the user attributed to gpt-5.6-sol" {
   run cat "$SKILL"
   assert_output --regexp 'surface|Surface'
   assert_output --partial "attribut"
-  assert_output --partial "REVIEW_MODEL"
+  assert_output --partial "gpt-5.6-sol"
 }
 
 @test "second-opinion skill says so and stops without calling the API when there are no non-trivial changes to review" {
