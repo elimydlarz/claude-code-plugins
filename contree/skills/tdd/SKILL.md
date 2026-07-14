@@ -17,11 +17,9 @@ Select one observable behaviour from one tree. Its test file's hierarchy mirrors
 
 ## Test Kinds
 
-- Journey: broad, production-like test of a curated user arc across capabilities.
-- System: deep, production-like test of one capability through the whole app.
+- Journey: broad, production-like test of a curated user arc across capabilities, with external services replaced by test doubles only if unavoidable.
 - Component: deep in-process test of one capability through the whole app, with external services replaced by test doubles.
-- Adapter: test of one concrete boundary implementation against the real boundary it adapts: HTTP, CLI, database, filesystem, queue, third-party API, etc.
-- Port contract: tests for an application interface such as a repository, gateway, or store; each implementation of that interface must pass those tests.
+- Integration: when concerned integration of some (but not all) pieces, test from the highest-level subject and mock everything except the subjects you are integrating to see if they really work together as expected.
 - Unit: test of one public surface on one subject; every public surface gets native unit tests, and every dependency outside the subject is mocked.
 
 Use the test kind named by the current tree. The list classifies the current test; it is not an implementation order.

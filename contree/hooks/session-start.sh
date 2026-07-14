@@ -36,7 +36,7 @@ Use Contree skills as directed by their frontmatter: **setup-test-feedback**, **
   - Unit: test of one public surface on one subject; every public surface gets native unit tests, and every dependency outside the subject is mocked.
 - **Outside-in TDD** — start from the behaviour in the current tree and its consumer. Write a test, observe RED, implement GREEN, then during REFACTOR notice too much branching in the test or tree. Extract some branching into a new unit with a mock and a stub that throws `NotImplemented`. The mock makes the consumer tests pass; the stub makes running code fail loudly. That is the signal to repeat the TDD process from step 1 for the new unit.
 - **Debugging means a test gap** — if you're debugging, the tests weren't good enough. Before fixing, find the tree path that should have caught the bug (add it if it's missing), write the failing test, then fix the code.
-- **Behaviour, not internals** — every tree describes what crosses its level's interface (inputs, outputs, side-effects). Never the implementation inside. Journey/System/Adapter speak the consumer's vocabulary; Domain/Use-case/Port-contract speak the unit's own functions, types, and errors — both only as observable at the seam.
+- **Behaviour, not internals** — every tree describes what crosses its test subject's interface (inputs, outputs, side-effects), never the implementation inside.
 - **No env-var behaviour switches** — do not use environment variables to vary behaviour between test and runtime
 EOF
 
