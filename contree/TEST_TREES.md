@@ -618,7 +618,7 @@ Adapter: validate-skill-frontmatter (src: scripts/validate-skill-frontmatter.sh;
 System: website-explains-contree (src: website/index.html; system: test/website-explains-contree.bats)
   when a visitor loads the contree website
     then the page bridges from test-first practice to test trees as living requirements
-    and the page explains the four test kinds Journey, Component, Integration, and Unit
+    and the page explains the seven tree layers Journey, System, Component, Adapter, Use-case, Domain, and Port
     and the page walks the skill workflow — setup, change, sync, tdd, second-opinion
     and the page offers change-without-me for the full arc
     and the page explains the Claude Code hook mechanics — the stdout, stderr-exit-2, and additionalContext injection channels, and the Stop-hook control flow

@@ -459,29 +459,41 @@
 <section id="architecture">
   <div class="wrap">
     <p class="eyebrow">Where each test belongs</p>
-    <h2>Four test kinds for a hexagonal app</h2>
+    <h2>Seven tree layers for a hexagonal app</h2>
     <p class="lede" style="max-width:64ch">
       The question that stumps most people new to TDD is <em>“what kind of test should this be?”</em>
       contree answers it the same way for every project: keep the <strong>hexagonal</strong> architecture,
-      and classify tests only by the scope they actually exercise.
+      and place each tree at the interface its consumer actually exercises.
     </p>
 
     <div class="test-kinds">
       <div class="test-kind kind-journey">
         <div class="lname">Journey <small>test/journey</small></div>
-        <div class="ldesc">A broad, production-like test of a curated user arc across capabilities, with external services replaced by test doubles only if unavoidable.</div>
+        <div class="ldesc">A broad, production-like test of a curated user arc across capabilities.</div>
+      </div>
+      <div class="test-kind kind-integration">
+        <div class="lname">System <small>test/system</small></div>
+        <div class="ldesc">A deep, production-like test of one capability through the whole app.</div>
       </div>
       <div class="test-kind kind-component">
         <div class="lname">Component <small>test/component</small></div>
         <div class="ldesc">A deep in-process test of one capability through the whole app, with external services replaced by test doubles.</div>
       </div>
       <div class="test-kind kind-integration">
-        <div class="lname">Integration <small>*.integration.test</small></div>
-        <div class="ldesc">When some but not all pieces must work together, test from the highest-level subject and mock everything except the subjects being integrated.</div>
+        <div class="lname">Adapter <small>*.adapter.test</small></div>
+        <div class="ldesc">One concrete boundary implementation exercised against the real boundary it adapts.</div>
       </div>
       <div class="test-kind kind-unit">
-        <div class="lname">Unit <small>*.unit.test</small></div>
-        <div class="ldesc">One public surface on one subject. Every public surface gets native unit tests, with every dependency outside the subject mocked.</div>
+        <div class="lname">Use-case <small>*.use-case.test</small></div>
+        <div class="ldesc">Non-trivial application orchestration observed through its public surface.</div>
+      </div>
+      <div class="test-kind kind-unit">
+        <div class="lname">Domain <small>*.domain.test</small></div>
+        <div class="ldesc">Pure business behaviour observed through the domain subject's public surface.</div>
+      </div>
+      <div class="test-kind kind-unit">
+        <div class="lname">Port <small>*.port-contract.test</small></div>
+        <div class="ldesc">One shared contract that every implementation of an application interface must satisfy.</div>
       </div>
     </div>
 
@@ -489,7 +501,7 @@
       <strong>Hexagonal</strong> means the domain stays pure, all I/O lives in adapters, and dependencies point inward.
       Each outbound dependency is a <strong>port</strong> shipping two versions — a fast in-memory twin and the real adapter —
       both held to one shared behavioural suite, so the stand-in your fast tests use never lies about the real thing.
-      Domain, use-case, adapter, and port remain architecture vocabulary; they do not create more test kinds.
+      Domain and use-case code stays inward; adapters implement outbound ports at the edge.
     </p>
   </div>
 </section>
@@ -696,7 +708,7 @@ If nothing needs attention, reply 0.</pre>
       </p>
       <div class="feat" style="margin-top:24px">
         <div class="card"><div class="ic">🌱</div><h3>Vision → requirements</h3><p class="muted">Begin loosely. Each tree you refine sharpens what the system should do; the code follows from it.</p></div>
-        <div class="card"><div class="ic">🪜</div><h3>A strong foundation</h3><p class="muted">The four-kind discipline, the trees-as-contract rule, the skills and hooks all come bootstrapped for you.</p></div>
+        <div class="card"><div class="ic">🪜</div><h3>A strong foundation</h3><p class="muted">The seven-layer discipline, the trees-as-contract rule, the skills and hooks all come bootstrapped for you.</p></div>
         <div class="card"><div class="ic">🛠️</div><h3>Yours to extend</h3><p class="muted">It's the foundation, not the whole house. Your fixtures, runners, and conventions go on top.</p></div>
       </div>
     </div>

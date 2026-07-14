@@ -11,13 +11,16 @@ SITE="$PROJECT_ROOT/website/index.html"
   assert_output --partial "test trees as living requirements"
 }
 
-@test "when a visitor loads the contree website and the page explains the four test kinds Journey, Component, Integration, and Unit" {
+@test "when a visitor loads the contree website and the page explains the seven tree layers Journey, System, Component, Adapter, Use-case, Domain, and Port" {
   run cat "$SITE"
   assert_output --partial "hexagonal"
   assert_output --partial "Journey <small>test/journey</small>"
+  assert_output --partial "System <small>test/system</small>"
   assert_output --partial "Component <small>test/component</small>"
-  assert_output --partial "Integration <small>*.integration.test</small>"
-  assert_output --partial "Unit <small>*.unit.test</small>"
+  assert_output --partial "Adapter <small>*.adapter.test</small>"
+  assert_output --partial "Use-case <small>*.use-case.test</small>"
+  assert_output --partial "Domain <small>*.domain.test</small>"
+  assert_output --partial "Port <small>*.port-contract.test</small>"
 }
 
 @test "when a visitor loads the contree website and the page walks the skill workflow — setup, change, sync, tdd, second-opinion" {
