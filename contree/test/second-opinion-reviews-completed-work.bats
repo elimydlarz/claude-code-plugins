@@ -50,19 +50,15 @@ SKILL="$PROJECT_ROOT/skills/second-opinion/SKILL.md"
   assert_output --partial "impacts on other systems"
 }
 
-@test "second-opinion skill sends the change and the test trees to the provider matching the configured review key" {
+@test "second-opinion skill sends the work and test trees to OpenAI's Responses API authenticated with OPENAI_API_KEY, using gpt-5.6-sol with high reasoning effort" {
   run cat "$SKILL"
-  assert_output --partial "glm-5.2"
-  assert_output --partial "api.z.ai"
-  assert_output --partial "deepseek-chat"
-  assert_output --partial "api.deepseek.com"
-  assert_output --partial "chat/completions"
-  assert_output --partial "ZAI_API_KEY"
-  assert_output --partial "DEEPSEEK_API_KEY"
-  assert_output --partial "ZAI_BASE_URL"
-  assert_output --partial "DEEPSEEK_BASE_URL"
-  assert_output --partial 'REVIEW_BASE_URL="${DEEPSEEK_BASE_URL:-https://api.deepseek.com/v1}"'
-  refute_output --partial 'REVIEW_API_KEY="${ZAI_API_KEY:-${DEEPSEEK_API_KEY:-}}"'
+  assert_output --partial "api.openai.com/v1/responses"
+  assert_output --partial "OPENAI_API_KEY"
+  assert_output --partial "gpt-5.6-sol"
+  assert_output --partial 'effort: "high"'
+  refute_output --partial "ZAI_API_KEY"
+  refute_output --partial "DEEPSEEK_API_KEY"
+  refute_output --partial "chat/completions"
 }
 
 @test "second-opinion skill surfaces the independent review attributed to the model that reviewed it" {
