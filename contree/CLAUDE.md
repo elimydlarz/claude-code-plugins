@@ -7,7 +7,7 @@ A plugin that unifies test-tree-driven development with living requirements. Tes
 Ships under two harnesses from the same `skills/` and `hooks/` directories:
 
 - **Claude Code** — `.claude-plugin/plugin.json` + `hooks/hooks.json`.
-- **Codex CLI** — `.codex-plugin/plugin.json` declaring `"hooks": "./hooks/hooks.json"`. Codex injects `CLAUDE_PLUGIN_ROOT` (and `PLUGIN_ROOT`) into hook command env, so the shared hook scripts can run from the same plugin root. SessionStart plain stdout becomes `additionalContext`. Stop hook stdin includes `transcript_path` (same shape as Claude). **Codex requires hooks enabled in `~/.codex/config.toml`** — the functional harness enables both `[features].hooks = true` and `[features].plugin_hooks = true`. `codex exec --json` omits injected hook-context messages, so the journey harness appends Codex's internal session transcript for assertions. Net: the same scripts enforce the same contract across both harnesses.
+- **Codex CLI** — `.codex-plugin/plugin.json` declaring `"hooks": "./hooks/hooks.json"`. Codex injects `CLAUDE_PLUGIN_ROOT` (and `PLUGIN_ROOT`) into hook command env, so the shared hook scripts can run from the same plugin root. SessionStart plain stdout becomes `additionalContext`. Stop hook stdin includes `transcript_path` (same shape as Claude). **Codex requires hooks enabled in `~/.codex/config.toml`** — the journey harness enables both `[features].hooks = true` and `[features].plugin_hooks = true`. `codex exec --json` omits injected hook-context messages, so the journey harness appends Codex's internal session transcript for assertions. Net: the same scripts enforce the same contract across both harnesses.
 
 Mechanisms:
 
@@ -41,7 +41,7 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `hooks/stop-drift-check.sh` — Stop hook: injects the drift-check prompt after each response
 - `website/index.html` — self-contained explainer site (no build step) pitching contree to developers new to TDD: bridges from test-first to test-trees, living requirements, the layered architecture, the workflow, and the Claude Code hook mechanics (SessionStart and Stop). Published to GitHub Pages at https://elimydlarz.github.io/claude-code-plugins/contree/ by the repo-root `.github/workflows/pages.yml` workflow, which stages `contree/website/` into `_site/contree/` (one subdir per plugin, so other plugins can add their own pages) and deploys on push to main
 - `scripts/validate-skill-frontmatter.sh` — bats-only utility: asserts every `skills/*/SKILL.md` has non-empty `name` and `description`
-- `skills/setup-test-feedback/SKILL.md` — normal, functional, and impact-selected test feedback
+- `skills/setup-test-feedback/SKILL.md` — normal, journey, and impact-selected test feedback
 - `skills/setup-linter/SKILL.md` — strong conventional lint, automatic repair, CI, and save-time feedback
 - `skills/setup-architecture-linter/SKILL.md` — architecture rules, combined lint, CI, and Stop feedback
 - `skills/fix-architecture/SKILL.md` — subagent-partitioned architecture repair until every rule passes
