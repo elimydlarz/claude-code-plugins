@@ -442,7 +442,7 @@ Use-case: change-without-me-runs-end-to-end (src: skills/change-without-me/SKILL
                   when mutation testing passes or the operator explicitly skips it
                     then sync reruns its complete audit and full suite
                       if the completion audit finds drift or gaps
-                        then the finding is routed through change, sync, or tdd and the mutation and completion gates repeat
+                        then the finding is routed through change, sync, or tdd and mutation unless explicitly skipped plus completion sync repeat
                       when the completion audit proves intention, trees, tests, implementation, and mental model agree
                         then second-opinion reviews the completed work with an independent model
                           while the review request is pending

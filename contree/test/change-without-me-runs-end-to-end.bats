@@ -39,9 +39,10 @@ SKILL="$PROJECT_ROOT/skills/change-without-me/SKILL.md"
   assert_output --partial 'Rerun the complete `sync` audit and its full suite after mutation testing passes'
 }
 
-@test "when change-without-me is run with an idea then change runs without pausing for a phase transition when change completes then sync runs immediately without pausing when sync identifies gaps then tdd implements every gap immediately without pausing when tdd closes the identified gaps then mutation testing validates Domain and Use-case tests when mutation testing passes then sync reruns its complete audit and full suite if the completion audit finds drift or gaps then the finding is routed through change, sync, or tdd and the mutation and completion gates repeat" {
+@test "when change-without-me is run with an idea then change runs without pausing for a phase transition when change completes then sync runs immediately without pausing when sync identifies gaps then tdd implements every gap immediately without pausing when tdd closes the identified gaps then mutation testing validates Domain and Use-case tests when mutation testing passes then sync reruns its complete audit and full suite if the completion audit finds drift or gaps then the finding is routed through change, sync, or tdd and mutation unless explicitly skipped plus completion sync repeat" {
   run cat "$SKILL"
-  assert_output --partial "repeat mutation testing and the complete sync audit"
+  assert_output --partial "repeat mutation testing unless it was explicitly skipped"
+  assert_output --partial "complete sync audit"
 }
 
 @test "when change-without-me is run with an idea then change runs without pausing for a phase transition when change completes then sync runs immediately without pausing when sync identifies gaps then tdd implements every gap immediately without pausing when tdd closes the identified gaps then mutation testing validates Domain and Use-case tests when mutation testing passes then sync reruns its complete audit and full suite when the completion audit proves intention, trees, tests, implementation, and mental model agree then second-opinion reviews the completed work with an independent model" {

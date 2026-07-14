@@ -37,7 +37,7 @@ If the operator explicitly instructs you to skip mutation testing, record the sk
 
 Rerun the complete `sync` audit and its full suite after mutation testing passes or the explicit skip is recorded. Require intention, trees, tests, implementation, and the mental model to agree.
 
-If the completion audit finds drift or gaps, route each finding through `change`, `sync`, or `tdd`, then repeat mutation testing and the complete sync audit. Continue until the completion audit proves agreement.
+If the completion audit finds drift or gaps, route each finding through `change`, `sync`, or `tdd`, then repeat mutation testing unless it was explicitly skipped and rerun the complete sync audit. Continue until the completion audit proves agreement.
 
 ### 5. SECOND OPINION — close independent findings
 
