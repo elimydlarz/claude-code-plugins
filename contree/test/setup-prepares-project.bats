@@ -64,7 +64,7 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "mutation"
   assert_output --partial "fix"
   assert_output --partial "verify"
-  assert_output --partial "native `test-changed` command and the actual project Stop hooks"
+  assert_output --partial 'native `test-changed` command and the actual project Stop hooks'
   assert_output --partial "Verify each save hook"
   assert_output --partial "actual file edit"
   assert_output --partial "actual Stop turn"
