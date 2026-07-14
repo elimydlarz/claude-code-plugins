@@ -434,15 +434,23 @@ Use-case: change-without-me-runs-end-to-end (src: skills/change-without-me/SKILL
       when change completes
         then sync runs immediately without pausing
           when sync identifies gaps
-            then tdd implements each gap immediately without pausing
-              when tdd closes all gaps
-                then mutation testing runs at the end of the tdd phase
+            then tdd implements every gap immediately without pausing
+              when tdd closes the identified gaps
+                then mutation testing validates Domain and Use-case tests
                   when mutation testing passes
-                    then all test trees have passing tests
-                      when the work is synced and implemented
+                    then sync reruns its complete audit and full suite
+                      if the completion audit finds drift or gaps
+                        then the finding is routed through change, sync, or tdd and the mutation and completion gates repeat
+                      when the completion audit proves intention, trees, tests, implementation, and mental model agree
                         then second-opinion reviews the completed work with an independent model
-                          when second-opinion finds drift or gaps
-                            then they are routed back through change, sync, or tdd
+                          if second-opinion finds actionable drift or gaps
+                            then every finding is routed through change, sync, or tdd and all completion gates repeat before another independent review
+                          when second-opinion has no actionable findings
+                            then change-without-me reports verified, independently reviewed working software
+  if a phase fails
+    then its complete error is surfaced and no later phase or completion claim runs
+  if a consequential choice cannot be resolved from the rules, mental model, trees, tests, code, and operator intention
+    then the operator is consulted without adding routine phase-transition pauses
 ```
 
 ## skill-discoverability
