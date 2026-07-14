@@ -60,9 +60,10 @@ SKILL="$PROJECT_ROOT/skills/second-opinion/SKILL.md"
   assert_output --partial "gpt-5.6-sol"
 }
 
-@test "second-opinion skill says so and stops without calling the API when there are no non-trivial changes to review" {
+@test "second-opinion skill says so and stops without calling the API when the current worktree contains no non-trivial work to review" {
   run cat "$SKILL"
-  assert_output --regexp 'no non-trivial change|nothing to review'
+  assert_output --partial "current worktree"
+  assert_output --regexp 'no non-trivial work|nothing to review'
   assert_output --partial "stop"
 }
 
