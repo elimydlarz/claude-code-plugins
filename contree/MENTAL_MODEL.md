@@ -43,7 +43,7 @@
 - Test seams — Journey owns a multi-capability arc; System and Component own one capability at different realism; Adapter and Port contract own boundaries; Use-case and Domain own unit interfaces.
 - Setup suite — focused skills establish test, lint, architecture, behavioural-contract, and mutation feedback independently; `setup` dynamically orchestrates the comprehensive operator-guided workflow.
 - Skill ownership — `change` owns trees; `tdd` owns tests and implementation; `sync` audits and resolves agreement across operator intention, trees, tests, code, and mental model; `second-opinion` reviews independently; `change-without-me` composes them.
-- Enforcement hooks — plugin SessionStart injects discipline and plugin Stop prompts documentation reconciliation; setup-generated project hooks run impacted normal tests and architecture checks at Stop, and lint autofix after saves.
+- Enforcement hooks — plugin SessionStart injects discipline and plugin Stop prompts documentation reconciliation; setup-generated project save hooks run impacted normal tests and lint autofix after file edits, while architecture checks run at Stop.
 - Hexagonal architecture — domain pure, I/O in adapters, dependencies inward, a boundary linter holding the line.
 - Dual-harness packaging — one source directory, parallel `.claude-plugin` / `.codex-plugin` manifests, `CLAUDE_PLUGIN_ROOT` shared by both.
 

@@ -14,4 +14,4 @@ Run `npm install`.
 
 ## Configuration
 
-Vitest, ESLint, mutation testing, and architecture lint configuration live at the project root. The maintained changed-test runner and Stop wrapper live at `.contree/scripts/test-changed.mjs` and `.contree/hooks/test-changed.sh`.
+Vitest, ESLint, mutation testing, and architecture lint configuration live at the project root. The maintained changed-test runner and save-hook wrapper live at `.contree/scripts/test-changed.mjs` and `.contree/hooks/test-changed.sh`.

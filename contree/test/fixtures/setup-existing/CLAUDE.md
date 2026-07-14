@@ -14,5 +14,5 @@ The project keeps changed-test selection in a maintained native runner. Contree 
 - `TEST_TREES.md` — behaviour contract
 - `package.json` — project manifest
 - `.contree/scripts/test-changed.mjs` — native changed-test runner
-- `.contree/hooks/test-changed.sh` — synchronous Stop wrapper that translates failure to exit 2
+- `.contree/hooks/test-changed.sh` — synchronous save-hook wrapper that translates failure to exit 2
 - `src/shortcode.js` — short-code generation and validation

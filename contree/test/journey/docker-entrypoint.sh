@@ -399,11 +399,11 @@ case "$TEST_NAME" in
 
     printf '%s\n' "export const alpha = () => 'wrong'" > "$PROJECT_DIR/src/alpha.js"
     set +e
-    (cd "$PROJECT_DIR" && printf '%s\n' '{"stop_hook_active":false}' | bash .contree/hooks/test-changed.sh) > "$failure_output" 2>&1
+    (cd "$PROJECT_DIR" && bash .contree/hooks/test-changed.sh) > "$failure_output" 2>&1
     failure_status=$?
     set -e
     if [ "$failure_status" -ne 2 ] || ! grep -Eq 'FAIL|AssertionError|expected.*alpha' "$failure_output"; then
-      echo "test-changed Stop hook did not preserve failure output and exit 2" >&2
+      echo "test-changed save hook did not preserve failure output and exit 2" >&2
       cat "$failure_output" >&2
       pass=0
     fi
@@ -412,14 +412,14 @@ case "$TEST_NAME" in
     if [ "$HARNESS" = "codex" ]; then
       if [ "$pass" -eq 0 ]; then
         AGENT_CALL_COUNT=0
-        run_agent "Run /contree:setup now without creating a plan or todo list. Repair only package.json and merged Stop entries in .claude/settings.json and .codex/hooks.json. Do not modify the maintained .contree/scripts/test-changed.mjs runner or .contree/hooks/test-changed.sh wrapper, install dependencies, stage or restore files, or create tests or documentation. The package command must invoke the existing runner and both Stop configs must invoke the existing wrapper. This verification has alpha and beta probes: the clean first call must print both; after only alpha.js changes the second call must print alpha and must not print beta. Verify exactly that behavior before ending."
+        run_agent "Run /contree:setup now without creating a plan or todo list. Repair only package.json and merged PostToolUse entries in .claude/settings.json and .codex/hooks.json. Do not modify the maintained .contree/scripts/test-changed.mjs runner or .contree/hooks/test-changed.sh wrapper, install dependencies, stage or restore files, or create tests or documentation. The package command must invoke the existing runner and both PostToolUse configs must invoke the existing wrapper after Edit or Write. This verification has alpha and beta probes: the clean first call must print both; after only alpha.js changes the second call must print alpha and must not print beta. Verify exactly that behavior before ending."
       fi
       AGENT_CALL_COUNT=0
-      hook_verification_prompt="Do not inspect the project. As your first and only action, run npm pkg set description='Contree setup hook verification'. Then immediately reply done and end the turn so the freshly loaded project hooks run. Do not invoke hook scripts manually and make no other changes."
+      hook_verification_prompt="Do not inspect the project. As your first and only action, use a file-editing tool to set package.json description to exactly 'Contree setup hook verification'. Then immediately reply done so the freshly loaded project save hooks have run before you continue. Do not invoke hook scripts manually and make no other changes."
     elif [ "$pass" -eq 1 ]; then
-      hook_verification_prompt="Verify the project hooks through the actual edit and Stop turn required by the setup skill. Use a file-editing tool to set package.json description to exactly 'Contree setup hook verification', make no other project changes, and stop so the freshly loaded project hooks run. Do not invoke the hook scripts manually and do not create tests."
+      hook_verification_prompt="Verify the project save hooks through the actual edit required by the setup skill. Use a file-editing tool to set package.json description to exactly 'Contree setup hook verification', make no other project changes, and confirm the freshly loaded save hooks run before continuing. Do not invoke the hook scripts manually and do not create tests."
     else
-      hook_verification_prompt="The functional setup verification found that test-changed did not correctly establish or use its machine-local baseline. Diagnose and fix that setup output. Then verify the project hooks through an actual edit and Stop turn: use a file-editing tool to set package.json description to exactly 'Contree setup hook verification' and stop so the freshly loaded project hooks run. Do not create tests."
+      hook_verification_prompt="The functional setup verification found that test-changed did not correctly establish or use its machine-local baseline. Diagnose and fix that setup output. Then verify the project save hooks through an actual edit: use a file-editing tool to set package.json description to exactly 'Contree setup hook verification' and confirm the freshly loaded save hooks run before continuing. Do not create tests."
     fi
     run_agent "$hook_verification_prompt"
 
@@ -452,11 +452,11 @@ case "$TEST_NAME" in
 
     printf '%s\n' "export const alpha = () => 'wrong'" > "$PROJECT_DIR/src/alpha.js"
     set +e
-    (cd "$PROJECT_DIR" && printf '%s\n' '{"stop_hook_active":false}' | bash .contree/hooks/test-changed.sh) > "$failure_output" 2>&1
+    (cd "$PROJECT_DIR" && bash .contree/hooks/test-changed.sh) > "$failure_output" 2>&1
     failure_status=$?
     set -e
     if [ "$failure_status" -ne 2 ] || ! grep -Eq 'FAIL|AssertionError|expected.*alpha' "$failure_output"; then
-      echo "repaired test-changed Stop hook did not preserve failure output and exit 2" >&2
+      echo "repaired test-changed save hook did not preserve failure output and exit 2" >&2
       cat "$failure_output" >&2
       pass=0
     fi
@@ -495,7 +495,7 @@ case "$TEST_NAME" in
     for config in .claude/settings.json .codex/hooks.json; do
       if [ -f "$PROJECT_DIR/$config" ] && ! jq -e '
         ([.hooks.PostToolUse[]?.hooks[]?.command] | any(contains(".contree/hooks/lint-on-save.sh"))) and
-        ([.hooks.Stop[]?.hooks[]?.command] | any(contains(".contree/hooks/test-changed.sh"))) and
+        ([.hooks.PostToolUse[]? | select(.matcher == "Edit|Write") | .hooks[]?.command] | any(contains(".contree/hooks/test-changed.sh"))) and
         ([.hooks.Stop[]?.hooks[]?.command] | any(contains(".contree/hooks/architecture-on-stop.sh")))
       ' "$PROJECT_DIR/$config" >/dev/null; then
         echo "Setup did not configure every project hook in $config" >&2
