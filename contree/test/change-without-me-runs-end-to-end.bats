@@ -27,10 +27,11 @@ SKILL="$PROJECT_ROOT/skills/change-without-me/SKILL.md"
   assert_output --partial "Mutation testing validates Domain and Use-case tests"
 }
 
-@test "when mutation testing is skipped, unavailable, or not proven to pass then the incomplete gate is reported and completion sync, second-opinion, and DONE do not run" {
+@test "when the operator explicitly instructs change-without-me to skip mutation testing then the skip is recorded without claiming mutation passed and completion sync continues" {
   run cat "$SKILL"
-  assert_output --partial "skipped, unavailable, or not proven to pass"
-  assert_output --partial "Do not run completion sync, second-opinion, or DONE"
+  assert_output --partial "explicitly instructs you to skip mutation testing"
+  assert_output --partial "Do not claim mutation passed"
+  assert_output --partial "proceed to completion sync"
 }
 
 @test "when change-without-me is run with an idea then change runs without pausing for a phase transition when change completes then sync runs immediately without pausing when sync identifies gaps then tdd implements every gap immediately without pausing when tdd closes the identified gaps then mutation testing validates Domain and Use-case tests when mutation testing passes then sync reruns its complete audit and full suite" {
@@ -70,6 +71,7 @@ SKILL="$PROJECT_ROOT/skills/change-without-me/SKILL.md"
   run cat "$SKILL"
   assert_output --partial "no actionable findings"
   assert_output --partial "verified, independently reviewed working software"
+  assert_output --partial "explicitly skipped"
 }
 
 @test "if a phase fails then its complete error is surfaced and no later phase or completion claim runs" {

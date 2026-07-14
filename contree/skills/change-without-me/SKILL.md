@@ -31,7 +31,7 @@ For every gap identified by sync, run the `tdd` skill process without pausing. C
 
 Run mutation testing at the end of the TDD phase. Mutation testing validates Domain and Use-case tests. Strengthen the responsible tests and rerun the affected mutation scope until the configured threshold passes.
 
-Mutation is a hard gate. If mutation testing is skipped, unavailable, or not proven to pass, report the incomplete gate and stop. Do not run completion sync, second-opinion, or DONE.
+If the operator explicitly instructs you to skip mutation testing, record the skip and proceed to completion sync. Do not claim mutation passed. Otherwise mutation must pass before completion sync.
 
 ### 4. COMPLETION SYNC — prove agreement
 
@@ -51,4 +51,4 @@ If second-opinion terminates without a usable review, surface the review failure
 
 ### 6. DONE — intent and implementation are one
 
-Report verified, independently reviewed working software only after every tree has a faithful passing test and fulfilling implementation, mutation testing passes, completion sync proves agreement, the full suite passes, and second-opinion has no actionable findings.
+Report verified, independently reviewed working software only after every tree has a faithful passing test and fulfilling implementation, mutation testing passes or was explicitly skipped, completion sync proves agreement, the full suite passes, and second-opinion has no actionable findings. State any explicitly skipped mutation gate in the completion report.

@@ -437,9 +437,9 @@ Use-case: change-without-me-runs-end-to-end (src: skills/change-without-me/SKILL
             then tdd implements every gap immediately without pausing
               when tdd closes the identified gaps
                 then mutation testing validates Domain and Use-case tests
-                  if mutation testing is skipped, unavailable, or not proven to pass
-                    then change-without-me reports the incomplete gate and does not run completion sync, second-opinion, or DONE
-                  when mutation testing passes
+                  if the operator explicitly instructs change-without-me to skip mutation testing
+                    then the skip is recorded without claiming mutation passed
+                  when mutation testing passes or the operator explicitly skips it
                     then sync reruns its complete audit and full suite
                       if the completion audit finds drift or gaps
                         then the finding is routed through change, sync, or tdd and the mutation and completion gates repeat
@@ -452,7 +452,7 @@ Use-case: change-without-me-runs-end-to-end (src: skills/change-without-me/SKILL
                           if second-opinion terminates without a usable review
                             then change-without-me surfaces the review failure and does not advance to DONE
                           when second-opinion has no actionable findings
-                            then change-without-me reports verified, independently reviewed working software
+                            then change-without-me reports verified, independently reviewed working software and any explicit mutation skip
   if a phase fails
     then its complete error is surfaced and no later phase or completion claim runs
   if a consequential choice cannot be resolved from the rules, mental model, trees, tests, code, and operator intention
