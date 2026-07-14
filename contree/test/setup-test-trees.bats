@@ -61,7 +61,7 @@ SKILL="$PROJECT_ROOT/skills/setup-test-trees/SKILL.md"
 
 @test "when an operator asks to set up test trees for a new project then the skill creates an empty test-tree home without inventing behaviour" {
   run cat "$SKILL"
-  assert_output --partial "empty `TEST_TREES.md`"
+  assert_output --partial 'empty `TEST_TREES.md`'
   assert_output --partial "Do not invent behaviour"
   assert_output --partial "Do not create test files"
 }
