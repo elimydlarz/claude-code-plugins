@@ -1,6 +1,6 @@
 ---
 name: setup-test-feedback
-description: "Set up fast test feedback for coding agents by configuring normal, functional, and impacted-test commands plus project save hooks. TRIGGER when: an operator asks to configure a test framework, test commands, test output, changed-test selection, test hooks, or Docker-backed tests."
+description: "Set up fast test feedback for coding agents by configuring normal, journey, and impacted-test commands plus project save hooks. TRIGGER when: an operator asks to configure a test framework, test commands, test output, changed-test selection, test hooks, or Docker-backed tests."
 ---
 
 # Setup Test Feedback
@@ -9,7 +9,7 @@ Build the project's test feedback loop with the operator. Configure tests; do no
 
 ## Outcome
 
-Coding agents receive fast normal-test feedback after each file edit, while the operator retains a separate production-like functional command. Existing project choices survive unless the operator agrees to change them.
+Coding agents receive fast normal-test feedback after each file edit, while the operator retains a separate production-like journey command. Existing project choices survive unless the operator agrees to change them.
 
 ## 1. Inspect and agree
 
@@ -17,36 +17,34 @@ Inspect the existing project before changing files:
 
 - language, ecosystem, package manager, workspaces, and native command conventions
 - source layout, existing tests, test suffixes, and test framework configuration
-- current normal, functional, CI, and project-hook commands
-- external services required by Adapter, System, or Journey tests
+- current normal, journey, CI, and project-hook commands
+- external services required by Integration, Component, or Journey tests
 - framework-native related-test or impact-selection support
 
 Read the latest official framework documentation through Context7 before configuring an API or plugin.
 
-Present the detected framework, evidence, tree-output quality, exact normal and functional mapping, changed-test mechanism, and any Docker lifecycle to the operator. Agree the framework choice and command mapping with the operator before changing files. If choosing or replacing the main application framework would be necessary, resolve that consequential decision separately.
+Present the detected framework, evidence, tree-output quality, exact normal and journey mapping, changed-test mechanism, and any Docker lifecycle to the operator. Agree the framework choice and command mapping with the operator before changing files. If choosing or replacing the main application framework would be necessary, resolve that consequential decision separately.
 
 ## 2. Merge the test configuration
 
 Merge existing test configuration. Never replace a project-owned configuration file or discard its reporters, coverage, CI, timeouts, setup files, or plugins.
 
-Configure tree-shaped output for both normal and functional commands where the ecosystem supports it. When the ecosystem only produces flat output, configure its strongest native grouping and tell the operator the exact limitation.
+Configure tree-shaped output for both normal and journey commands where the ecosystem supports it. When the ecosystem only produces flat output, configure its strongest native grouping and tell the operator the exact limitation.
 
 Map the fixed Contree strategy:
 
-- the normal command runs Unit, Port contract, Adapter, and Component tests
-- a separate functional command runs System and Journey tests
-- Domain tests are colocated with source as `*.domain.test.*`
-- Use-case tests are colocated with the use-case as `*.use-case.test.*`
-- Adapter tests for both driving and driven adapters are colocated with the adapter as `*.adapter.test.*`
+- the normal command runs Unit, Integration, and Component tests
+- a separate journey command runs Journey tests
+- Unit tests are colocated with their subjects as `*.unit.test.*`
+- Integration tests are colocated with their highest-level subjects as `*.integration.test.*`
 - Component tests live under `test/component/` as `*.component.test.*`
-- System tests live under `test/system/` as `*.system.test.*`
 - Journey tests live under `test/journey/` as `*.journey.test.*`
-- Component tests cover one capability in-process through real driving and driven adapters, with an in-memory database and stubbed outbound HTTP at the external edges
-- System tests use real driven adapters at the highest tolerable realism
-- Journey tests exercise real everything across the multi-capability arc at max realism
-- exhaustive single-capability breadth belongs at the Use-case and Component layers
+- Journey is a broad, production-like test of a curated user arc across capabilities, with external services replaced by test doubles only if unavoidable
+- Component is a deep in-process test of one capability through the whole app, with external services replaced by test doubles
+- Integration starts from the highest-level subject and mocks everything except the subjects you are integrating to see if they really work together as expected
+- Unit tests cover every public surface with native unit tests, and every dependency outside the subject is mocked
 
-Use native project commands such as package scripts, Make targets, task aliases, build-tool tasks, or ecosystem equivalents. Do not create separate commands for every test layer.
+Use native project commands such as package scripts, Make targets, task aliases, build-tool tasks, or ecosystem equivalents. Do not create separate commands for every test kind.
 
 ## 3. Configure impacted tests
 
@@ -90,7 +88,7 @@ Require each coding harness to load and trust its project hook. A hook present o
 
 When tests need external services, make the relevant test command own a self-contained Docker lifecycle. It starts the services, waits for readiness, runs its tests, and uses an exit trap to always tear test artefacts down. Never depend on services already running. Pass secrets and external connection details through environment variables; do not use environment variables as test/runtime behaviour switches.
 
-Adapter tests remain in the normal command even when that command must own Docker. System and Journey infrastructure remains owned by the functional command.
+Integration and Component tests remain in the normal command even when that command must own Docker. Journey infrastructure remains owned by the journey command.
 
 ## 5. Verify and fix
 
@@ -102,6 +100,6 @@ Run both test commands and preserve their tree-shaped output. Then verify the ch
 4. Exercise each project save hook through an actual coding-agent file edit and prove its result reaches the agent before it continues.
 5. Restore only the deliberate verification edit while preserving all project changes that existed before setup.
 
-Fix failed test commands and hooks, then rerun the complete verification until the feedback path works. Fail visibly with the complete native output if an external dependency, unavailable tool, or consequential operator decision prevents repair. Do not report completion until the normal command, functional command, baseline, impact selection, and both project hooks work.
+Fix failed test commands and hooks, then rerun the complete verification until the feedback path works. Fail visibly with the complete native output if an external dependency, unavailable tool, or consequential operator decision prevents repair. Do not report completion until the normal command, journey command, baseline, impact selection, and both project hooks work.
 
-Report the agreed framework, normal command, functional command, changed-test command, installed save hooks, Docker-owned commands, and verification results to the operator.
+Report the agreed framework, normal command, journey command, changed-test command, installed save hooks, Docker-owned commands, and verification results to the operator.
