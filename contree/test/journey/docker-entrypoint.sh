@@ -675,11 +675,8 @@ VERIFY
     ;;
 
   second-opinion)
-    # Verifies the user-invoked /contree:second-opinion skill end to end against a
-    # mocked Z.AI GLM 5.2 endpoint. Nothing real is billed.
     seed_project "greenfield"
 
-    # A test-tree contract for the skill to send as the review's context.
     cat > "$PROJECT_DIR/TEST_TREES.md" <<'TT'
 ## adder
 
@@ -689,15 +686,12 @@ Unit: adder (src: index.js; unit: none)
     then their sum is returned
 ```
 TT
-    # Completed work for the skill to review.
     cat > "$PROJECT_DIR/index.js" <<'JS'
 export function add(a, b) {
   return a + b
 }
 JS
     (cd "$PROJECT_DIR" && git add -A)
-    # An untracked new file, left unstaged — the skill must include files not yet
-    # tracked by git in the work it reviews, so this marker must reach the request.
     UNTRACKED_MARKER="CONTREE-UNTRACKED-MARKER"
     cat > "$PROJECT_DIR/subtract.js" <<JS
 export function subtract(a, b) {
@@ -705,33 +699,40 @@ export function subtract(a, b) {
 }
 JS
 
-    start_zai_review_stub
+    start_openai_review_stub
 
     run_agent \
-      "Use the contree:second-opinion skill to get an independent review of the current change. Read the skill's SKILL.md and follow its Z.AI GLM 5.2 curl recipe exactly: gather git diff plus untracked files, include TEST_TREES.md as the contract, call the chat/completions endpoint with model glm-5.2, and surface GLM 5.2's returned review. Do not perform your own local review instead."
+      "Use the contree:second-opinion skill to get an independent review of the current worktree. Read the skill's SKILL.md and follow its OpenAI Responses API recipe exactly: gather the current worktree including untracked files, include TEST_TREES.md as the contract, call the responses endpoint with model gpt-5.6-sol and high reasoning effort, and surface gpt-5.6-sol's returned review. Do not perform your own local review instead."
 
-    kill "$ZAI_STUB_PID" 2>/dev/null || true
+    kill "$OPENAI_REVIEW_STUB_PID" 2>/dev/null || true
 
-    # Deterministic verification — no AI eval. Two observable outcomes: the
-    # mocked GLM 5.2 chat/completions endpoint was called with the glm-5.2 model,
-    # and the review it returned surfaced in the agent's output.
     pass=1
-    if grep -q "chat/completions" "$ZAI_HITS" && grep -q "glm-5.2" "$ZAI_HITS"; then
-      called="PASS — mocked GLM 5.2 chat/completions call recorded"
+    if grep -q "/responses" "$OPENAI_REVIEW_HITS" \
+      && grep -q '"model":"gpt-5.6-sol"' "$OPENAI_REVIEW_HITS" \
+      && grep -q '"effort":"high"' "$OPENAI_REVIEW_HITS"; then
+      called="PASS — mocked OpenAI Responses API call recorded with gpt-5.6-sol and high reasoning effort"
     else
-      called="FAIL — no mocked GLM 5.2 chat/completions call recorded"
+      called="FAIL — no valid mocked OpenAI Responses API call recorded"
       pass=0
     fi
-    if grep -qF "$ZAI_MARKER" "$TRANSCRIPT_FILE"; then
-      surfaced="PASS — GLM 5.2's returned review surfaced in the agent output"
+    if grep -qF "$OPENAI_REVIEW_MARKER" "$TRANSCRIPT_FILE"; then
+      surfaced="PASS — gpt-5.6-sol's returned review surfaced in the agent output"
     else
-      surfaced="FAIL — GLM 5.2's returned review did not surface in the agent output"
+      surfaced="FAIL — gpt-5.6-sol's returned review did not surface in the agent output"
       pass=0
     fi
-    if grep -qF "$UNTRACKED_MARKER" "$ZAI_HITS"; then
-      untracked="PASS — the untracked new file reached the GLM 5.2 review request"
+    if grep -qF "$UNTRACKED_MARKER" "$OPENAI_REVIEW_HITS"; then
+      untracked="PASS — the untracked new file reached the gpt-5.6-sol review request"
     else
-      untracked="FAIL — the untracked new file did not reach the GLM 5.2 review request"
+      untracked="FAIL — the untracked new file did not reach the gpt-5.6-sol review request"
+      pass=0
+    fi
+    if grep -q "database schema" "$OPENAI_REVIEW_HITS" \
+      && grep -q "API contract" "$OPENAI_REVIEW_HITS" \
+      && grep -q "impacts on other systems" "$OPENAI_REVIEW_HITS"; then
+      review_scope="PASS — the review covers database schemas, API contracts, and impacts on other systems"
+    else
+      review_scope="FAIL — the review request omitted required review concerns"
       pass=0
     fi
 
@@ -741,13 +742,12 @@ second-opinion — deterministic verification (no AI eval):
   $called
   $surfaced
   $untracked
+  $review_scope
 
-These cover the second-opinion-reviews-completed-work paths for the GLM 5.2 review
-call, the surfaced review, and that the work it gathers includes new files not yet
-tracked by git. The remaining paths — determines the work from any natural-language
-indication; absent one reviews the last non-trivial, naturally grouped changes;
-reads the test trees as the contract; stops without calling the API when there are
-no non-trivial changes; fails loudly — are covered by the unit test
+These cover the second-opinion-reviews-completed-work paths for the OpenAI Responses
+API call, model and reasoning effort, review concerns, surfaced review, and untracked
+files. The remaining paths — natural-language work selection, current-worktree
+default, test-tree contract, no-work stop, and loud failure — are covered by the unit test
 test/second-opinion-reviews-completed-work.bats.
 VERIFY
 
