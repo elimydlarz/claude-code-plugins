@@ -66,12 +66,11 @@ SKILL="$PROJECT_ROOT/skills/second-opinion/SKILL.md"
   assert_output --partial "stop"
 }
 
-@test "second-opinion skill surfaces a failed review request as an error and fabricates no review" {
+@test "second-opinion skill surfaces a failed review request caused by missing OPENAI_API_KEY, an API error or non-2xx response, or a response containing no review, and fabricates no review" {
   run cat "$SKILL"
-  assert_output --partial "fails"
+  assert_output --partial "OPENAI_API_KEY"
   assert_output --partial "error"
+  assert_output --partial "non-2xx"
+  assert_output --partial "no review"
   assert_output --partial "fabricate"
-  assert_output --partial "missing both"
-  assert_output --partial "ZAI_API_KEY"
-  assert_output --partial "DEEPSEEK_API_KEY"
 }
