@@ -5,7 +5,7 @@ This repository is the **elimydlarz monorepo** — several independent products 
 Each product owns its mental model in its own `MENTAL_MODEL.md`:
 
 - [trunk-sync](trunk-sync/MENTAL_MODEL.md) — multi-agent continuous integration via a git hook, plus the seance/timeclock CLI.
-- [contree](contree/MENTAL_MODEL.md) — test trees as living requirements; outside-in layered TDD (Journey → System → hex inner layers).
+- [contree](contree/MENTAL_MODEL.md) — test trees as living requirements; outside-in TDD across Journey, Component, Integration, and Unit tests.
 
 ## Why this file only references — and must stay that way
 
