@@ -91,4 +91,4 @@ Run autofix across the whole existing project. Then run the non-fixing lint comm
 
 Fix remaining violations directly. Do not merely list them or transfer the repair work to the operator. Preserve intended behavior and project-owned rules. Rerun lint after every repair batch until it passes.
 
-Verify the CI gate and verify the hook through an actual coding-agent edit. Do not report completion until lint passes and the save-time feedback path has been exercised successfully.
+Verify the CI gate and verify both coding-harness hooks through an actual Claude Code edit and an actual Codex edit. Do not report completion until lint passes and both save-time feedback paths have been exercised successfully.

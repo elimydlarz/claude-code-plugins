@@ -39,7 +39,7 @@ Reconcile the evidence with the operator through `change` into consumer-driven E
 
 Every discovered behaviour is expressed at its consumer-visible seam. Describe principles rather than examples and include observable errors, side effects, and prevented effects. Do not invent unsupported behaviour.
 
-Name every applicable `src`, `unit`, `integration`, `component`, and `journey` coverage path. Use `none` where a test is expected but absent and omit only inapplicable test kinds. Existing tests count as coverage only when their hierarchy and assertions actually reify the tree.
+Name every applicable `src`, `domain`, `use-case`, `adapter`, `component`, `system`, and `journey` coverage path. Use `none` where a test is expected but absent and omit only inapplicable layers. Existing tests count as coverage only when their hierarchy and assertions actually reify the tree.
 
 Present the complete reconciled trees to the operator and obtain agreement before installing steering. Do not implement tests, create placeholder tests, or change production behaviour. Test implementation belongs to `tdd` after setup.
 
@@ -69,12 +69,12 @@ cat <<'EOF'
 - Write trees before tests or implementation.
 - Use EARS paths at consumer-visible seams.
 - One tree maps to exactly one test file, whose hierarchy mirrors the tree verbatim.
-- Name honest src, unit, integration, component, and journey coverage; use none for expected gaps and omit only inapplicable test kinds.
+- Name honest src, domain, use-case, adapter, component, system, and journey coverage; use none for expected gaps and omit only inapplicable layers.
 - Route contract changes through contree:change and test or implementation gaps through contree:tdd.
 EOF
 ```
 
-The script loads `TEST_TREES.md` and the tree-writing rules before coding agents work. It fails visibly if the repository root or tree contract cannot be read.
+The script loads `TEST_TREES.md` and the tree-writing rules before coding agents work. It fails visibly with complete native output if the repository root or tree contract cannot be read.
 
 Merge this synchronous project-local `SessionStart` entry into both `.claude/settings.json` and `.codex/hooks.json` without replacing existing settings or hooks:
 
@@ -115,7 +115,7 @@ printf '%s\n' 'TEST TREES: Before finishing, reconcile drift between trees, test
 exit 2
 ```
 
-The project Stop hook asks the coding agent to reconcile drift between trees, tests, and implementation before it finishes. The `stop_hook_active` guard prevents the hook's follow-up Stop turn from creating a loop.
+The project Stop hook asks the coding agent to reconcile drift between trees, tests, and implementation before it finishes. The `stop_hook_active` guard prevents the hook's follow-up Stop turn from creating a loop. It fails visibly with complete native output when it cannot read its input or repository root.
 
 Merge this synchronous project-local `Stop` entry into both `.claude/settings.json` and `.codex/hooks.json` without replacing existing settings or hooks:
 
