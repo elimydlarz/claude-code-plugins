@@ -41,10 +41,13 @@ SKILL="$PROJECT_ROOT/skills/setup-linter/SKILL.md"
   refute_output --partial '"async": true'
 }
 
-@test "when an operator asks to set up code linting then the skill runs autofix and lint across the existing project before reporting completion" {
+@test "when an operator asks to set up code linting and the skill runs autofix and lint across the existing project and proves the CI gate and both coding-harness hooks before reporting completion" {
   run cat "$SKILL"
   assert_output --partial "Run autofix across the whole existing project"
   assert_output --partial "run the non-fixing lint command"
+  assert_output --partial "Verify the CI gate"
+  assert_output --partial "actual Claude Code edit"
+  assert_output --partial "actual Codex edit"
   assert_output --partial "Do not report completion until lint passes"
 }
 
