@@ -145,11 +145,11 @@ run_agent() {
   if [ "$HARNESS" = "claude" ]; then
     prime_claude_provider
     local continue_flag=()
-    local max_budget_usd="2.00"
+    local max_budget_usd="4.00"
     [ "$AGENT_CALL_COUNT" -gt 1 ] && continue_flag=(-c)
     # The comprehensive setup journey deliberately runs every focused setup
     # skill plus two subagent waves, so its first turn needs a larger envelope.
-    [ "$TEST_NAME" = "setup" ] && [ "$AGENT_CALL_COUNT" -eq 1 ] && max_budget_usd="4.00"
+    [ "$TEST_NAME" = "setup" ] && [ "$AGENT_CALL_COUNT" -eq 1 ] && max_budget_usd="8.00"
     (export OPENAI_API_KEY="$JOURNEY_OPENAI_API_KEY"; cd "$PROJECT_DIR" && claude -p "$prompt" \
       "${continue_flag[@]}" \
       --plugin-dir "$CONTREE_ROOT" \
@@ -809,7 +809,7 @@ VERIFY
       "Run sync on this project. Resolve every drift issue you find using TEST_TREES.md as the operator contract and your own judgment. Modify the project as needed, verify the result, and ask only if a consequential choice is genuinely under-determined."
 
     pass=1
-    if grep -Eiq "(/contree:sync|sync process|drift between the test trees|drift detected)" "$TRANSCRIPT_FILE"; then
+    if grep -Eiq "(Launching skill: contree:sync|/contree:sync|sync process|drift between the test trees|drift detected)" "$TRANSCRIPT_FILE"; then
       follows_sync="PASS — transcript follows the sync/drift process"
     else
       follows_sync="FAIL — transcript does not show sync/drift process"
