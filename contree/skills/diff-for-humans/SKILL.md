@@ -43,18 +43,27 @@ The image is an editorial choice, not a transcription of the diff. Decide what t
 Call OpenAI's images generations API with the `gpt-image-2` model (pinned id `gpt-image-2-2026-04-21`), authenticated with `OPENAI_API_KEY`. Write a prompt that captures your step-2 decisions. gpt-image-2 always returns base64 in `data[0].b64_json` — do not send a `response_format` parameter, the API rejects it. Decode the base64 and save the returned image as a `.png` file in the project.
 
 ```bash
-OPENAI_BASE_URL="${OPENAI_BASE_URL:-https://api.openai.com/v1}"
+set -euo pipefail
 
-curl -sS -X POST "$OPENAI_BASE_URL/images/generations" \
-  -H "Authorization: Bearer $OPENAI_API_KEY" \
+OPENAI_BASE_URL="${OPENAI_BASE_URL:-https://api.openai.com/v1}"
+OUTPUT_IMAGE="diff.png"
+TEMP_IMAGE=$(mktemp "${OUTPUT_IMAGE}.XXXXXX")
+trap 'rm -f "$TEMP_IMAGE"' EXIT
+
+RESPONSE=$(curl -sS -f -X POST "$OPENAI_BASE_URL/images/generations" \
+  -H "Authorization: Bearer ${OPENAI_API_KEY:?OPENAI_API_KEY is required}" \
   -H "Content-Type: application/json" \
   -d "$(jq -n --arg prompt "$PROMPT" '{
         model: "gpt-image-2-2026-04-21",
         prompt: $prompt,
         size: "1024x1024",
         quality: "high"
-      }')" \
-  | jq -r '.data[0].b64_json' | base64 --decode > diff.png
+      }')")
+IMAGE_DATA=$(printf '%s' "$RESPONSE" | jq -er '.data[0].b64_json | select(type == "string" and length > 0)')
+printf '%s' "$IMAGE_DATA" | base64 --decode > "$TEMP_IMAGE"
+[ -s "$TEMP_IMAGE" ]
+mv "$TEMP_IMAGE" "$OUTPUT_IMAGE"
+trap - EXIT
 ```
 
 ### 4. Surface your choices
@@ -63,4 +72,4 @@ Show the saved image's path and surface the choices you made for the user to rev
 
 ## Failure is loud
 
-If the gpt-image-2 request fails — missing `OPENAI_API_KEY`, an API error, a non-2xx response, or empty `data` — surface the failure as an error and stop. Never fabricate an image, write a placeholder file, or report success you did not get. A missing image is an honest outcome; a fake one is not.
+If the gpt-image-2 request fails — missing `OPENAI_API_KEY`, an API error or non-2xx response, empty `data`, invalid base64, or an empty decoded image — surface the failure as an error and stop. Never fabricate an image, leave a partial output file, write a placeholder file, or report success you did not get. A missing image is an honest outcome; a fake one is not.

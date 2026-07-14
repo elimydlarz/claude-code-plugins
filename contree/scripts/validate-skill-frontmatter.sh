@@ -11,6 +11,12 @@ fi
 offenders=()
 
 while IFS= read -r -d '' skill_file; do
+  first_line=$(sed -n '1p' "$skill_file")
+  if [ "$first_line" != "---" ]; then
+    offenders+=("$skill_file: missing or unclosed frontmatter")
+    continue
+  fi
+
   marker_count=$(awk '/^---$/ { count++ } END { print count+0 }' "$skill_file")
   if [ "$marker_count" -lt 2 ]; then
     offenders+=("$skill_file: missing or unclosed frontmatter")
@@ -31,6 +37,8 @@ while IFS= read -r -d '' skill_file; do
     /^name:[[:space:]]*/ {
       sub(/^name:[[:space:]]*/, "")
       gsub(/^"|"$/, "")
+      sub(/^[[:space:]]+/, "")
+      sub(/[[:space:]]+$/, "")
       print
       exit
     }
@@ -39,6 +47,8 @@ while IFS= read -r -d '' skill_file; do
     /^description:[[:space:]]*/ {
       sub(/^description:[[:space:]]*/, "")
       gsub(/^"|"$/, "")
+      sub(/^[[:space:]]+/, "")
+      sub(/[[:space:]]+$/, "")
       print
       exit
     }
