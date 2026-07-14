@@ -211,17 +211,20 @@ Unit: setup-linter (src: skills/setup-linter/SKILL.md; unit: test/setup-linter.b
 ## setup-architecture-linter
 
 ```
-Unit: setup-architecture-linter (src: skills/setup-architecture-linter/SKILL.md; unit: test/setup-architecture-linter.bats)
+Use-case: setup-architecture-linter (src: skills/setup-architecture-linter/SKILL.md; use-case: test/setup-architecture-linter.bats)
   when an operator asks to set up architecture linting
     then the skill maps the project's actual domain, use-case, port, adapter, and composition-root locations with the operator
     and it installs and configures rules that keep domain code pure, dependencies pointing inward, adapters reachable only from the composition root, and dependency cycles absent
+    and it preserves project-owned lint configuration, commands, CI steps, and coding-harness hooks while merging architecture feedback
     and it creates a native architecture command, combines it with the project lint command, and adds the combined gate to CI
     and project Stop hooks run every architecture rule from the project root before the coding agent finishes
     and the skill runs every architecture rule before reporting completion
+    and the skill proves the project Stop hook through an actual coding-agent Stop turn before reporting completion
   if the project's ecosystem cannot enforce every required boundary
     then the skill fails visibly without claiming architecture feedback is configured
   if architecture violations are found during setup
     then the skill invokes fix-architecture with the complete violations
+    and it reruns the native architecture command and combined lint command until both pass
   if the architecture linter cannot run from a project Stop hook
     then the hook reports the execution error and fails visibly
   when the project Stop hook receives its own follow-up Stop task
@@ -231,12 +234,13 @@ Unit: setup-architecture-linter (src: skills/setup-architecture-linter/SKILL.md;
 ## fix-architecture
 
 ```
-Unit: fix-architecture (src: skills/fix-architecture/SKILL.md; unit: test/fix-architecture.bats)
+Use-case: fix-architecture (src: skills/fix-architecture/SKILL.md; use-case: test/fix-architecture.bats)
   when an operator asks to fix architecture violations
     then the skill runs the architecture linter and partitions the reported violations into non-overlapping work for subagents
-    and subagents fix violations without disabling rules, weakening boundaries, or adding exemptions
+    and subagents preserve observable behaviour while fixing violations without disabling rules, weakening boundaries, adding exemptions, or deleting behaviour
     and the coding agent reconciles their changes and reruns every architecture rule
     and repeated violations are repartitioned and fixed until architecture lint passes
+    and affected normal tests pass before the skill reports completion
   if a violation conflicts with the operator's intended architecture
     then the skill resolves the architecture and mental-model decision with the operator before changing the enforced boundary
 ```
@@ -244,34 +248,39 @@ Unit: fix-architecture (src: skills/fix-architecture/SKILL.md; unit: test/fix-ar
 ## setup-mutation-testing
 
 ```
-Unit: setup-mutation-testing (src: skills/setup-mutation-testing/SKILL.md; unit: test/setup-mutation-testing.bats)
+Use-case: setup-mutation-testing (src: skills/setup-mutation-testing/SKILL.md; use-case: test/setup-mutation-testing.bats)
   when an operator asks to set up mutation testing
     then the skill inspects the source and test layout and agrees the mutation scope and useful feedback threshold with the operator
     and it configures the ecosystem's mutation tool to mutate production source while explicitly excluding every colocated test pattern
-    and mutation test runners select only Unit tests when the framework supports test selection
+    and mutation test runners select only Domain and Use-case tests when the framework supports test selection
     and incremental mode and a native mutation command provide the fastest available repeat feedback
-    and project Stop hooks run incremental mutation feedback only when relevant Unit subjects or tests changed
+    and project Stop hooks run incremental mutation feedback only when relevant Domain or Use-case subjects or tests changed
+    and mutation configuration and Stop hooks preserve project-owned configuration and coexist with every previously installed feedback hook
     and the hook preserves complete surviving-mutant output and fails visibly when the agreed threshold is missed
     and the skill runs mutation testing before reporting completion
+    and the skill proves irrelevant changes skip mutation, relevant changes run mutation, and threshold or tool failures remain visible through actual Stop turns in both coding harnesses
+    and the skill reports the mutation command, scope, exclusions, selected tests, incremental state, threshold, duration, score, and remaining survivors
   if surviving mutants keep the agreed threshold from passing
-    then the skill strengthens the responsible Unit tests and reruns only the affected mutation scope until it passes
+    then the skill routes missing contract behaviour through change, strengthens the responsible Domain or Use-case tests through tdd, and reruns only the affected mutation scope until it passes
 ```
 
 ## setup-prepares-project
 
 ```
-Unit: setup-prepares-project (src: skills/setup/SKILL.md; unit: test/setup-prepares-project.bats; journey: test/journey/docker-entrypoint.sh)
+Use-case: setup-prepares-project (src: skills/setup/SKILL.md; use-case: test/setup-prepares-project.bats)
   when an operator asks for comprehensive Contree setup
     then setup inspects the project and presents a dynamic setup workflow shaped by the steering that is missing
-    and setup engages the operator at each consequential framework, architecture, behavioural-scope, and mutation-threshold decision
+    and setup engages the operator only when project evidence cannot settle a consequential framework, architecture, behavioural-scope, or mutation-threshold decision
     and setup orchestrates setup-test-feedback, setup-linter, setup-architecture-linter, bootstrap-test-trees, and setup-mutation-testing while bootstrap composes setup-mental-model and setup-test-trees
+    and setup invokes fix-architecture when architecture feedback reports violations
+    and setup orders dependent phases so test feedback precedes bootstrap, mental-model setup precedes test-tree setup, conventional lint precedes architecture lint, architecture repair precedes bootstrap, and bootstrap precedes mutation testing
     and each completed setup phase expands project-local hooks so later coding agents receive progressively richer steering while they work
     and setup uses subagents for independent setup work that can safely run in parallel and reconciles their results
     and setup keeps focused-skill orchestration in the coordinator instead of delegating an entire focused skill to an unattended background agent
     and setup waits for every selected phase and its subagents to finish before starting a dependent phase or reporting completion
     and setup proves each phase from its required commands and retained artifacts rather than accepting a subagent summary as proof
     and setup proves bootstrap retained consumer-driven EARS trees with exactly one test file per tree before mutation setup begins
-    and setup runs every configured feedback command, verifies impacted tests through synchronous project save hooks after file edits, and fixes failures before reporting the project prepared
+    and setup runs every configured feedback command, proves save hooks through file edits and Stop hooks through actual Stop turns, and fixes failures before reporting the project prepared
     and setup reports the installed commands, automatic hooks, test-tree coverage, and mutation result to the operator
   if any specialised setup skill cannot establish its feedback loop
     then setup fails visibly and does not claim that the project is prepared
@@ -280,24 +289,21 @@ Unit: setup-prepares-project (src: skills/setup/SKILL.md; unit: test/setup-prepa
 ## change-writes-trees
 
 ```
-Unit: change-writes-trees (src: skills/change/SKILL.md; unit: test/change-writes-trees.bats; journey: test/journey/docker-entrypoint.sh)
+Use-case: change-writes-trees (src: skills/change/SKILL.md; use-case: test/change-writes-trees.bats)
   when a behaviour change is needed
     then the change is discussed with the user before modifying trees
     and EARS patterns are chosen to match each requirement's nature
     and every then clause asserts something the when clause does not already imply
-    and the test kind is chosen from Journey, Component, Integration, and Unit according to the observable scope under test
+    and the layer is chosen from Journey, System, Component, Adapter, Use-case, Domain, and Port according to the observable seam under test
     and every tree's paths map verbatim to a describe/it hierarchy in one test file
-  when a Journey or Component tree is written
+  when a Journey, System, Component, or Adapter tree is written
     then paths use the consumer's vocabulary, not implementation internals
     and paths describe principles, not enumerated cases
-  when an Integration tree is written
-    then the tree names the highest-level subject and the other subjects whose real collaboration is being verified
-    and every dependency outside those integrated subjects is mocked
-  when a Unit tree is written
-    then the tree describes what the consumer needs to observe from one public surface on one subject
+  when a Domain, Use-case, or Port tree is written
+    then the tree describes what its consumer needs to observe at that subject's public seam
     and pure functions are still described from the caller's need to observe their result or error
   when a tree is written
-    then its coverage is named in parenthesised semicolon-separated pairs at the end of the tree-name line, labelled src / unit / integration / component / journey
+    then its coverage is named in parenthesised semicolon-separated pairs at the end of the tree-name line, labelled src / domain / use-case / adapter / component / system / journey
     and gaps are declared explicitly — "none" for expected-but-uncovered categories, omission for not-applicable ones
     and if naming a tree's paths reveals a mismatch between the consumer need and the file boundaries, the tree or implementation is adjusted until the mapping is honest
   when planning a change to an area that already has a tree and implementation
@@ -319,8 +325,8 @@ Unit: change-writes-trees (src: skills/change/SKILL.md; unit: test/change-writes
     then they are presented to the user for alignment
     and the user is suggested to run sync
   when a tree is named
-    then its first line is exactly `<Test-kind>: <Subject>`
-    and the test-kind prefix lets readers and sync detect duplication across trees that share a subject at different test kinds
+    then its first line is exactly `<Layer>: <Subject>`
+    and the layer prefix lets readers and sync detect duplication across trees that share a subject at different layers
   when a when-trigger can only occur as a consequence of a prior then-outcome
     then it is nested as a child of that outcome, not written as a sibling
 ```
@@ -328,44 +334,45 @@ Unit: change-writes-trees (src: skills/change/SKILL.md; unit: test/change-writes
 ## change-chooses-test-kinds
 
 ```
-Unit: change-chooses-test-kinds (src: skills/change/SKILL.md; unit: test/change-chooses-test-kinds.bats; journey: test/journey/docker-entrypoint.sh)
+Use-case: change-chooses-test-layers (src: skills/change/SKILL.md; use-case: test/change-chooses-test-kinds.bats)
   when a behaviour change is planned
-    then the outermost tree is captured — a Journey tree for a broad user arc, or a Component tree for one whole-app capability
-    and that outermost tree is the only tree written up front — Integration and Unit trees are added only as a failing consumer test reveals the need for them
-    and trees are named for the highest-level subject with observable behaviour at their test kind
+    then the outermost tree is captured — a Journey tree for a new user arc, or a System tree for a capability under an existing journey
+    and that outermost tree is the only tree written up front — inner-layer trees are added only as a failing consumer test reveals the need for them
+    and trees are named for the subject with observable behaviour at their natural layer
     and every tree reifies exactly one test file
-  when choosing a test kind
+  when choosing a test layer
     then Journey covers a broad production-like user arc across capabilities, replacing external services with test doubles only when unavoidable
     and Component covers one capability deeply through the whole app in-process, replacing external services with test doubles
-    and Integration verifies that some but not all pieces work together from the highest-level subject, mocking everything except the subjects being integrated
-    and Unit covers one public surface on one subject, mocking every dependency outside that subject
-    and every public surface receives native Unit tests
-  when an Integration or Unit tree is added
-    then it exists because the failing consumer test revealed collaboration or subject behaviour that needs direct verification
+    and System covers one capability deeply through the whole app with real driven adapters and infrastructure
+    and Adapter covers one concrete boundary implementation against the real boundary it adapts
+    and Domain and Use-case describe Unit tests at their respective hexagonal positions
+    and Port describes a shared contract suite that every implementation passes
+  when an inner-layer tree is added
+    then it exists because the failing consumer test revealed substantive behaviour at that layer that needs direct verification
     and it is never designed up front from speculation about decomposition
   when a side effect is identified
     then it becomes an outbound port named for capability, not technology
     and the port ships in two flavours: an in-memory adapter and a real adapter
     and a shared behavioural suite is written for the port
-    and both adapters must pass the shared suite through their Unit tests
-  when a domain object, use-case, adapter, port implementation, or other subject has a public surface
-    then that public surface receives a Unit tree and native Unit test
-    and dependencies outside that subject are mocked
+    and both adapters must pass the shared Port contract suite
+  when a potential inner subject has only trivial delegation or value behaviour
+    then it does not receive a speculative tree
   when an app-level invariant applies across slices rather than to one
-    then it is captured at the highest test kind whose subject exposes the policy, not folded into an unrelated capability's tree
+    then it is captured in a System tree named for the policy, not folded into an unrelated capability's tree
 ```
 
 ## sync-audits-and-resolves
 
 ```
-Unit: sync-audits-and-resolves (src: skills/sync/SKILL.md; unit: test/sync-audits-and-resolves.bats; journey: test/journey/docker-entrypoint.sh)
+Use-case: sync-audits-and-resolves (src: skills/sync/SKILL.md; use-case: test/sync-audits-and-resolves.bats)
   if the project's test trees do not exist or are empty
     then sync stops and suggests running setup first
   when sync is run
-    then TEST_TREES.md is treated as the operator's expected behaviour and the coding agent's contract with the operator
+    then the full suite runs before review and every failure is treated as drift
+    and TEST_TREES.md is treated as the operator's expected behaviour and the coding agent's contract with the operator
     and the EARS forms bare then, while/then, when/then, where/then, and if/then are used to identify every leaf
     and causal behaviour nests beneath the outcome that makes it possible
-    and labelled src / unit / integration / component / journey paths are verified against the filesystem
+    and labelled src / domain / use-case / adapter / component / system / journey paths are verified against the filesystem
     and each test file's describe/it hierarchy is parsed and compared with its tree verbatim
     and every "none" value is treated as a gap to close
   when test-tree leaves are reviewed
@@ -380,16 +387,16 @@ Unit: sync-audits-and-resolves (src: skills/sync/SKILL.md; unit: test/sync-audit
     then each of its seven headings is reviewed with subagents
     and each heading's representation is checked for fit and usefulness against the codebase
     and the codebase is checked for whether it honours the representation
-  when a public surface revealed by TDD has no Unit tree and native Unit test
-    then the missing Unit coverage is closed immediately through TDD
-    and existing coverage for applicable test-kind concerns is retained
-    and every applicable test kind verifies its distinct concern at its own seam
+  when a substantive Domain, Use-case, or Port public seam revealed by TDD lacks native coverage
+    then the missing native coverage is closed immediately through TDD
+    and existing coverage for applicable layers is retained
+    and every applicable layer verifies its distinct concern at its own seam
   when the project is in sync
     then every identified issue has been resolved proactively
     and all tests pass
     and the trees, tests, implementation, and mental model agree
     and the user is suggested to run second-opinion for an independent review of the completed work
-  when a Unit tree is checked
+  when a Domain, Use-case, or Port tree is checked
     then every observable branch in the subject's public surface corresponds to a tree path, and every tree path corresponds to a branch
     and YAGNI is evaluated separately from branch parity
   when drift is identified
@@ -397,32 +404,33 @@ Unit: sync-audits-and-resolves (src: skills/sync/SKILL.md; unit: test/sync-audit
     and operator intention remains the guiding principle
     and only a consequential genuinely under-determined choice is escalated to the operator
     and contract changes are handled through change while test and implementation gaps are handled through tdd
+    and implementation with no consumer or operator intention is removed
 ```
 
 ## change-without-me-runs-end-to-end
 
 ```
-Unit: change-without-me-runs-end-to-end (src: skills/change-without-me/SKILL.md; unit: test/change-without-me-runs-end-to-end.bats; journey: test/journey/docker-entrypoint.sh)
+Use-case: change-without-me-runs-end-to-end (src: skills/change-without-me/SKILL.md; use-case: test/change-without-me-runs-end-to-end.bats)
   when change-without-me is run with an idea
-    then change, sync, and tdd run in sequence without pausing
-  when change completes
-    then sync runs immediately
-  when sync identifies gaps
-    then tdd implements each gap immediately
-  when all gaps are implemented
-    then all test trees have passing tests
-  when the work is synced and implemented
-    then second-opinion reviews the completed work with an independent model
-  when tdd closes all gaps
-    then mutation testing runs at the end of the tdd phase
-  when second-opinion finds drift or gaps
-    then they are routed back through change, sync, or tdd
+    then change runs without pausing for a phase transition
+      when change completes
+        then sync runs immediately without pausing
+          when sync identifies gaps
+            then tdd implements each gap immediately without pausing
+              when tdd closes all gaps
+                then mutation testing runs at the end of the tdd phase
+                  when mutation testing passes
+                    then all test trees have passing tests
+                      when the work is synced and implemented
+                        then second-opinion reviews the completed work with an independent model
+                          when second-opinion finds drift or gaps
+                            then they are routed back through change, sync, or tdd
 ```
 
 ## skill-discoverability
 
 ```
-Unit: skill-discoverability (src: hooks/session-start.sh; unit: test/skill-discoverability.bats; journey: test/journey/docker-entrypoint.sh)
+Adapter: skill-discoverability (src: hooks/session-start.sh, skills/change/SKILL.md, skills/sync/SKILL.md, skills/setup-test-feedback/SKILL.md, skills/setup-linter/SKILL.md, skills/setup-architecture-linter/SKILL.md, skills/fix-architecture/SKILL.md, skills/bootstrap-test-trees/SKILL.md, skills/setup-mental-model/SKILL.md, skills/setup-test-trees/SKILL.md, skills/setup-mutation-testing/SKILL.md, skills/setup/SKILL.md, skills/tdd/SKILL.md, skills/change-without-me/SKILL.md, skills/second-opinion/SKILL.md, skills/diff-for-humans/SKILL.md; adapter: test/skill-discoverability.bats)
   when a user describes a behaviour change without naming a skill
     then the change skill is triggered
   when a user asks about drift between code and requirements without naming a skill
@@ -449,6 +457,10 @@ Unit: skill-discoverability (src: hooks/session-start.sh; unit: test/skill-disco
     then the tdd skill is triggered
   when a user asks to take an idea through the full workflow without naming a skill
     then the change-without-me skill is triggered
+  when a user asks for an independent review without naming a skill
+    then the second-opinion skill is triggered
+  when a user asks to visualise the current change without naming a skill
+    then the diff-for-humans skill is triggered
 ```
 
 ## composable-testing
