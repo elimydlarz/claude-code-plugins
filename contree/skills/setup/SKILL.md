@@ -53,7 +53,7 @@ Run every configured feedback command from the project root:
 
 - normal tests
 - functional tests
-- impacted tests through the native `test-changed` command and the actual project Stop hooks
+- impacted tests through the native `test-changed` command and the actual synchronous project save hooks
 - conventional lint and its autofix command
 - architecture lint and the actual project Stop hook
 - mutation testing and its relevant-change project Stop hook
