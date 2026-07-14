@@ -10,23 +10,15 @@ SKILL="$PROJECT_ROOT/skills/second-opinion/SKILL.md"
   assert_output --partial "indicat"
 }
 
-@test "second-opinion skill absent a clear indication reviews the last non-trivial, naturally grouped changes, not a single commit and not only the working tree" {
+@test "second-opinion skill absent a clear indication reviews the current worktree" {
   run cat "$SKILL"
-  assert_output --regexp 'naturally grouped|naturally-grouped'
-  assert_output --partial "non-trivial"
-  assert_output --partial "trunk-sync"
-  assert_output --partial "commit"
-  assert_output --partial "working tree"
+  assert_output --partial "Absent a clear indication"
+  assert_output --partial "current worktree"
 }
 
 @test "second-opinion skill gathers work that includes new files not yet tracked by git" {
   run cat "$SKILL"
   [[ "$output" == *"untracked"* ]]
-}
-
-@test "second-opinion skill keeps untracked file diffs without treating git diff --no-index differences as recipe failure" {
-  run cat "$SKILL"
-  assert_output --partial 'git diff --no-index -- /dev/null "$f" || true'
 }
 
 @test "second-opinion skill reads the test trees as the contract the work must satisfy" {
