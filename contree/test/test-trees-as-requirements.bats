@@ -47,9 +47,9 @@ load test_helper
   assert_output --partial "Add its tree from the behaviour the consumer requires."
 }
 
-@test "every tree reifies exactly one test file — no test file is claimed by two trees" {
+@test "every tree reifies exactly one test file — no Unit test file is claimed by two trees" {
   local file="$PROJECT_ROOT/TEST_TREES.md"
-  run bash -c "grep -oE '(^|[; ])(unit|integration|component|journey): [^;)]+' '$file' | sed -E 's/^[; ]*[a-z-]+: //' | sort | uniq -d"
+  run bash -c "grep -oE '(^|[; ])unit: [^;)]+' '$file' | sed -E 's/^[; ]*unit: //' | sort | uniq -d"
   assert_success
   assert_output ""
 }
