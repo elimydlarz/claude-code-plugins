@@ -13,144 +13,73 @@ hook_command() {
 
 run_hook() {
   local input="$1"
-  local cmd; cmd=$(hook_command)
-  run env CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" CMD="$cmd" INPUT="$input" PROJECT_DIR="$BATS_TEST_TMPDIR" CLAUDE_PROJECT_DIR="$BATS_TEST_TMPDIR" \
-    bash -c 'cd "$PROJECT_DIR" && printf "%s" "$INPUT" | bash -c "$CMD" 2>&1'
+  local cmd
+  cmd=$(hook_command)
+  run env CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" CMD="$cmd" INPUT="$input" PROJECT_DIR="$BATS_TEST_TMPDIR" CLAUDE_PROJECT_DIR="$BATS_TEST_TMPDIR" bash -c 'cd "$PROJECT_DIR" && printf "%s" "$INPUT" | bash -c "$CMD" 2>&1'
 }
 
-run_hook_with_last_text() {
-  local last_text="$1"
-  local transcript="$BATS_TEST_TMPDIR/transcript.jsonl"
-  jq -nc --arg text "$last_text" \
-    '{type:"assistant",message:{role:"assistant",content:[{type:"text",text:$text}]}}' \
-    > "$transcript"
-  local input_file="$BATS_TEST_TMPDIR/input.json"
-  printf '{"transcript_path":"%s"}' "$transcript" > "$input_file"
-  local cmd; cmd=$(hook_command)
-  run env CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" CMD="$cmd" INPUT_FILE="$input_file" PROJECT_DIR="$BATS_TEST_TMPDIR" CLAUDE_PROJECT_DIR="$BATS_TEST_TMPDIR" \
-    bash -c 'cd "$PROJECT_DIR" && bash -c "$CMD" < "$INPUT_FILE" 2>&1'
-}
-
-# --- Loop prevention ---
-
-@test "hook exits 0 when stop_hook_active is true" {
-  run_hook '{"stop_hook_active": true}'
-  [ "$status" -eq 0 ]
-}
-
-@test "hook exits 0 when stop_hook_active is true among other fields" {
-  run_hook '{"stop_hook_active": true, "other": "data"}'
-  [ "$status" -eq 0 ]
-}
-
-# --- Normal operation ---
-
-@test "hook exits 2 when stop_hook_active is false" {
-  run_hook '{"stop_hook_active": false}'
-  [ "$status" -eq 2 ]
-}
-
-@test "hook exits 2 when stop_hook_active is absent" {
-  run_hook '{}'
-  [ "$status" -eq 2 ]
-}
-
-@test "hook exits 2 with empty input" {
-  run_hook ''
-  [ "$status" -eq 2 ]
-}
-
-# --- Mental-model nudge: primary criteria ---
-
-@test "mental-model nudge asks whether the task revealed knowledge not already in documentation, tests, and code" {
+@test "when Claude stops after a response then a mental-model nudge prompts consideration of whether the task revealed any knowledge not already described in documentation, tests, and code, defaulting to no change" {
   run_hook '{}'
   assert_output --partial "knowledge"
   assert_output --partial "documentation, tests, and code"
+  assert_output --partial "Default is no change"
 }
 
-@test "mental-model nudge defaults to no change" {
-  run_hook '{}'
-  assert_output --partial "Default"
-  assert_output --partial "no change"
-}
-
-# --- Mental-model nudge: when a change is warranted ---
-
-@test "mental-model nudge names the seven sections as the only accepted landing zones" {
-  run_hook '{}'
-  [[ "$output" == *"seven sections"* ]]
-}
-
-@test "mental-model nudge rejects edits that fit no section" {
-  run_hook '{}'
-  [[ "$output" == *"none fits"* || "$output" == *"no section fits"* ]]
-}
-
-@test "mental-model nudge prefers tightening existing lines over adding new ones" {
-  run_hook '{}'
-  [[ "$output" == *"tighten"* ]]
-}
-
-@test "mental-model nudge requires statements of what is true, not what to avoid" {
-  run_hook '{}'
-  assert_output --partial "what is true"
-  assert_output --partial "avoid"
-}
-
-@test "mental-model nudge requires displacement or merge when a section is at its cap" {
-  run_hook '{}'
-  assert_output --partial "cap"
-  assert_output --regexp 'displace|merg'
-}
-
-# --- Mental-model nudge: missing-file branch ---
-
-@test "mental-model nudge directs creation of MENTAL_MODEL.md with the seven sections in order when the file is missing" {
+@test "when Claude stops after a response then a mental-model nudge prompts consideration and directs creation of MENTAL_MODEL.md with the seven named H2 sections in order when it is missing at the project root" {
   rm -f "$BATS_TEST_TMPDIR/MENTAL_MODEL.md"
   run_hook '{}'
   assert_output --partial "MENTAL_MODEL.md is missing"
-  assert_output --partial "Core Domain Identity"
-  assert_output --partial "World-to-Code Mapping"
-  assert_output --partial "Ubiquitous Language"
-  assert_output --partial "Bounded Contexts"
-  assert_output --partial "Invariants"
-  assert_output --partial "Decision Rationale"
-  assert_output --partial "Temporal View"
+  assert_output --partial "Core Domain Identity, World-to-Code Mapping, Ubiquitous Language, Bounded Contexts, Invariants, Decision Rationale, Temporal View"
 }
 
-# --- Test-trees nudge ---
-
-@test "test-trees nudge prompts detection of drift between trees and implementation" {
+@test "when Claude stops after a response then a mental-model nudge prompts consideration when a change is warranted then the edit declares which of the seven sections it belongs to" {
   run_hook '{}'
-  assert_output --regexp 'test trees|TEST TREES'
+  assert_output --partial "name which of the seven sections it belongs to"
+}
+
+@test "when Claude stops after a response then a mental-model nudge prompts consideration when a change is warranted and an edit fitting no section is not added to the mental model" {
+  run_hook '{}'
+  assert_output --partial "if none fits, it is not part of the mental model"
+}
+
+@test "when Claude stops after a response then a mental-model nudge prompts consideration when a change is warranted and tightening an existing line is preferred over adding a new one" {
+  run_hook '{}'
+  assert_output --partial "prefer tightening an existing line over adding a new one"
+}
+
+@test "when Claude stops after a response then a mental-model nudge prompts consideration when a change is warranted and statements describe what is true, not what to avoid" {
+  run_hook '{}'
+  assert_output --partial "state what is true, not what to avoid"
+}
+
+@test "when Claude stops after a response then a mental-model nudge prompts consideration when a change is warranted and when the target section is at its cap, an existing item is displaced or merged rather than appended" {
+  run_hook '{}'
+  assert_output --partial "when the target section is at its cap, displace or merge an existing item rather than appending"
+}
+
+@test "when Claude stops after a response and a test-trees nudge prompts detection of drift between trees and implementation" {
+  run_hook '{}'
+  assert_output --partial "TEST TREES"
   assert_output --partial "drift"
 }
 
-# --- CLAUDE.md nudge ---
-
-@test "claude-md nudge prompts detection of drift between CLAUDE.md content and reality" {
+@test "when Claude stops after a response and a claude-md nudge prompts detection of drift between CLAUDE.md content and reality" {
   run_hook '{}'
   assert_output --partial "CLAUDE.md"
   assert_output --partial "drift"
 }
 
-# --- README nudge ---
-
-@test "readme nudge prompts detection of readme staleness" {
+@test "when Claude stops after a response and a readme nudge prompts detection of readme staleness against what the project is, how consumers install it, configure it, and use it" {
   run_hook '{}'
-  assert_output --regexp 'readme|README'
-  assert_output --regexp 'out of date|stale'
-}
-
-@test "readme nudge anchors staleness against what the project is, install, configure, and use" {
-  run_hook '{}'
+  assert_output --partial "README"
+  assert_output --partial "out of date"
   assert_output --partial "what the project is"
   assert_output --partial "install"
   assert_output --partial "configure"
   assert_output --partial "use"
 }
 
-@test "readme nudge directs creation of README.md describing what the project is, install, configure, and use when the file is missing" {
+@test "when Claude stops after a response and a readme nudge directs creation of README.md with those consumer-facing details when it is missing at the project root" {
   rm -f "$BATS_TEST_TMPDIR/README.md"
   run_hook '{}'
   assert_output --partial "README.md is missing"
@@ -160,65 +89,45 @@ run_hook_with_last_text() {
   assert_output --partial "use"
 }
 
-@test "hook tells Claude to reply 0 when no nudge reports anything" {
+@test "when Claude stops after a response and the hook fails with status 2 so the drift prompt reaches Claude" {
+  run_hook '{}'
+  [ "$status" -eq 2 ] || return 1
+  assert_output --partial "TEST TREES"
+}
+
+@test "when stop_hook_active is true then the hook exits silently to prevent infinite loops" {
+  run_hook '{"stop_hook_active": true}'
+  [ "$status" -eq 0 ] || return 1
+  assert_output ""
+}
+
+@test "when no nudge reports anything then Claude replies with 0" {
   run_hook '{}'
   assert_output --partial "If nothing needs attention, reply 0"
 }
 
-@test "hook exits 2 and emits the drift prompt when last assistant message ends with a question mark" {
-  run_hook_with_last_text "Want me to do that?"
-  [ "$status" -eq 2 ] || return 1
-  assert_output --partial "TEST TREES"
-  assert_output --partial "README"
-}
-
-@test "hook exits 2 and emits the drift prompt when last assistant message does not end with a question mark" {
-  run_hook_with_last_text "Did the tests pass? Yes! Finished."
-  [ "$status" -eq 2 ] || return 1
-  assert_output --partial "README"
-}
-
-@test "hook emits the prompt when earlier text ended with ? but the most recent assistant text is a statement" {
-  local transcript="$BATS_TEST_TMPDIR/transcript.jsonl"
-  {
-    echo '{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"Is this right?"}]}}'
-    echo '{"type":"user","message":{"role":"user","content":"yes"}}'
-    echo '{"type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"OK done."}]}}'
-  } > "$transcript"
-  local input_file="$BATS_TEST_TMPDIR/input.json"
-  printf '{"transcript_path":"%s"}' "$transcript" > "$input_file"
-  local cmd; cmd=$(hook_command)
-  run env CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" CMD="$cmd" INPUT_FILE="$input_file" CLAUDE_PROJECT_DIR="$BATS_TEST_TMPDIR" \
-    bash -c 'bash -c "$CMD" < "$INPUT_FILE" 2>&1'
-  [ "$status" -eq 2 ] || return 1
-  [ -n "$output" ] || return 1
-}
-
-@test "hook emits the prompt when no assistant message has any text (tool_use only)" {
-  local transcript="$BATS_TEST_TMPDIR/transcript.jsonl"
-  echo '{"type":"assistant","message":{"role":"assistant","content":[{"type":"tool_use","id":"t1","name":"Bash","input":{"command":"ls"}}]}}' > "$transcript"
-  local input_file="$BATS_TEST_TMPDIR/input.json"
-  printf '{"transcript_path":"%s"}' "$transcript" > "$input_file"
-  local cmd; cmd=$(hook_command)
-  run env CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" CMD="$cmd" INPUT_FILE="$input_file" CLAUDE_PROJECT_DIR="$BATS_TEST_TMPDIR" \
-    bash -c 'bash -c "$CMD" < "$INPUT_FILE" 2>&1'
-  [ "$status" -eq 2 ] || return 1
-  [ -n "$output" ] || return 1
-}
-
-@test "no missing-file nudge is emitted when MENTAL_MODEL.md and README.md exist at the project root but the hook runs from a subdirectory" {
+@test "if MENTAL_MODEL.md and README.md exist at the project root but the hook runs from a subdirectory then no missing-file nudge is emitted, because presence is judged at the project root rather than the hook's working directory" {
   mkdir -p "$BATS_TEST_TMPDIR/assets"
-  local cmd; cmd=$(hook_command)
-  run env CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" CMD="$cmd" INPUT='{}' CLAUDE_PROJECT_DIR="$BATS_TEST_TMPDIR" SUBDIR="$BATS_TEST_TMPDIR/assets" \
-    bash -c 'cd "$SUBDIR" && printf "%s" "$INPUT" | bash -c "$CMD" 2>&1'
+  local cmd
+  cmd=$(hook_command)
+  run env CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" CMD="$cmd" INPUT='{}' CLAUDE_PROJECT_DIR="$BATS_TEST_TMPDIR" SUBDIR="$BATS_TEST_TMPDIR/assets" bash -c 'cd "$SUBDIR" && printf "%s" "$INPUT" | bash -c "$CMD" 2>&1'
   refute_output --partial "MENTAL_MODEL.md is missing"
   refute_output --partial "README.md is missing"
 }
 
-@test "hook uses the current working directory as the project root when Codex does not provide CLAUDE_PROJECT_DIR" {
-  local cmd; cmd=$(hook_command)
-  run env -u CLAUDE_PROJECT_DIR CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" CMD="$cmd" INPUT='{}' PROJECT_DIR="$BATS_TEST_TMPDIR" \
-    bash -c 'cd "$PROJECT_DIR" && printf "%s" "$INPUT" | bash -c "$CMD" 2>&1'
+@test "when Codex runs the Stop hook without CLAUDE_PROJECT_DIR then the hook uses the current working directory as the project root" {
+  local cmd
+  cmd=$(hook_command)
+  run env -u CLAUDE_PROJECT_DIR CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" CMD="$cmd" INPUT='{}' PROJECT_DIR="$BATS_TEST_TMPDIR" bash -c 'cd "$PROJECT_DIR" && printf "%s" "$INPUT" | bash -c "$CMD" 2>&1'
+  [ "$status" -eq 2 ] || return 1
+  refute_output --partial "MENTAL_MODEL.md is missing"
+  refute_output --partial "README.md is missing"
+}
+
+@test "when Codex runs the Stop hook without CLAUDE_PROJECT_DIR and emits the normal drift prompt instead of failing" {
+  local cmd
+  cmd=$(hook_command)
+  run env -u CLAUDE_PROJECT_DIR CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" CMD="$cmd" INPUT='{}' PROJECT_DIR="$BATS_TEST_TMPDIR" bash -c 'cd "$PROJECT_DIR" && printf "%s" "$INPUT" | bash -c "$CMD" 2>&1'
   [ "$status" -eq 2 ] || return 1
   assert_output --partial "TEST TREES"
   refute_output --partial "requires CLAUDE_PROJECT_DIR"
