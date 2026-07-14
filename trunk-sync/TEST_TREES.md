@@ -351,6 +351,40 @@ System: hook-sync (src: hooks/hooks.json; system: test/system/hook-sync.system.t
 ## Journey: agent-hook-compatibility
 
 ```
+Journey: agent-hook-compatibility (journey: test/journey/agent-hook-compatibility.journey.test.sh)
+
+  when Claude Code uses the published plugin in a consumer repository
+    when its session starts without a timecard
+      then a dedicated worktree is automatically created and selected for the session
+      and its shared timecard records that worktree's identifier
+    when a disrupted session resumes from its existing timecard
+      then the worktree identified by the timecard is selected without creating another
+    if its session worktree cannot be created or selected
+      then session start fails before Claude Code can edit from the wrong worktree
+    if it attempts a write-side git command
+      then the command is rejected with instructions to edit file content instead
+    when it edits a file after the rejection
+      then the edit is committed and pushed to the consumer repository's shared `agents` branch
+      and the commit records the Claude session and agent provenance
+    when the session ends
+      then its presence is removed from the shared branch
+
+  when Codex uses the published plugin in a consumer repository
+    when its session starts without a timecard
+      then a dedicated worktree is automatically created and selected for the session
+      and its shared timecard records that worktree's identifier
+    when a disrupted session resumes from its existing timecard
+      then the worktree identified by the timecard is selected without creating another
+    if its session worktree cannot be created or selected
+      then session start fails before Codex can edit from the wrong worktree
+    if it attempts a write-side git command
+      then the command is rejected with instructions to edit file content instead
+    when it edits a file after the rejection
+      then the edit is committed and pushed to the consumer repository's shared `agents` branch
+      and the commit records the Codex session and agent provenance
+    when the session ends
+      then its presence is removed from the shared branch
+```
 
 ## Adapter: plugin-version-bump
 
@@ -363,24 +397,4 @@ Adapter: plugin-version-bump (src: scripts/bump-plugin-manifests.js; adapter: te
     then the bump fails without modifying the existing manifest
   if the plugin manifests have different versions
     then the bump fails without modifying either manifest
-```
-Journey: agent-hook-compatibility (journey: test/journey/agent-hook-compatibility.journey.test.sh)
-
-  when Claude Code uses the published plugin in a consumer repository
-    if it attempts a write-side git command
-      then the command is rejected with instructions to edit file content instead
-    when it edits a file after the rejection
-      then the edit is committed and pushed to the consumer repository's shared `agents` branch
-      and the commit records the Claude session and agent provenance
-    when the session ends
-      then its presence is removed from the shared branch
-
-  when Codex uses the published plugin in a consumer repository
-    if it attempts a write-side git command
-      then the command is rejected with instructions to edit file content instead
-    when it edits a file after the rejection
-      then the edit is committed and pushed to the consumer repository's shared `agents` branch
-      and the commit records the Codex session and agent provenance
-    when the session ends
-      then its presence is removed from the shared branch
 ```
