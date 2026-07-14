@@ -52,9 +52,9 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
 
 @test "when an operator asks for comprehensive Contree setup then setup orders dependent phases so test feedback precedes bootstrap, mental-model setup precedes test-tree setup, conventional lint precedes architecture lint, architecture repair precedes bootstrap, and bootstrap precedes mutation testing" {
   run cat "$SKILL"
-  assert_output --partial "setup-test-feedback` before `bootstrap-test-trees"
-  assert_output --partial "setup-mental-model` runs before `setup-test-trees"
-  assert_output --partial "setup-linter` before `setup-architecture-linter"
+  assert_output --partial 'setup-test-feedback` before `bootstrap-test-trees'
+  assert_output --partial 'setup-mental-model` runs before `setup-test-trees'
+  assert_output --partial 'setup-linter` before `setup-architecture-linter'
   assert_output --partial "finish that repair before bootstrap"
   assert_output --partial "before mutation setup begins"
 }
