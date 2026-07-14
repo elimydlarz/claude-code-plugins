@@ -147,16 +147,11 @@ load test_helper
   assert_success
 }
 
-@test "and Claude journey runs fail fast without Claude provider auth" {
-  run grep -F "Claude harness requires DEEPSEEK_API_KEY" "$PROJECT_ROOT/test/journey/docker-run.sh"
-  assert_success
-}
-
-@test "and Codex journey runs fail fast without DeepSeek provider auth" {
-  run grep -F "Codex harness requires DEEPSEEK_API_KEY" "$PROJECT_ROOT/test/journey/docker-run.sh"
+@test "then it fails before starting the coding agent" {
+  run grep -F "Functional journey runs require OPENAI_API_KEY" "$PROJECT_ROOT/test/journey/docker-run.sh"
   assert_success
 
-  run grep -F "Codex harness requires DEEPSEEK_API_KEY" "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
+  run grep -F "Functional journey runs require OPENAI_API_KEY" "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
   assert_success
 }
 
