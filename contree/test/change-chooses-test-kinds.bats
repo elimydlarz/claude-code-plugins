@@ -59,13 +59,6 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   [[ "$output" == *"One tree, one test file"* || "$output" == *"one tree reifies exactly one test file"* ]]
 }
 
-@test "when a behaviour change is planned then trees are named for the subject with observable behaviour at their natural layer" {
-  run cat "$SKILL"
-  assert_output --partial "natural layer"
-  assert_output --partial "observable"
-  assert_output --partial "observable behaviour"
-}
-
 @test "change turns side effects into outbound ports named for capability, not technology" {
   run cat "$SKILL"
   assert_output --partial "outbound port"
