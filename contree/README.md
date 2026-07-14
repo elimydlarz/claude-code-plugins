@@ -16,14 +16,16 @@ It is a foundation, not the whole house. You are still expected to **build your 
 
 **Test trees become requirements.** Instead of separate requirement documents and test code, contree puts `when/then` test trees directly in your project's `TEST_TREES.md` at the project root. Every test you write reifies exactly one tree.
 
-Thirteen skills:
+Focused skills:
 
 - **`/contree:setup-test-feedback`** — Configures and verifies normal, functional, and impact-selected test feedback.
 - **`/contree:setup-linter`** — Installs strong conventional linting, runs autofix, repairs remaining violations, and adds save-time feedback.
 - **`/contree:setup-architecture-linter`** — Maps the project's real hexagonal boundaries, enforces them in CI and Stop hooks, and runs the rules immediately.
 - **`/contree:fix-architecture`** — Partitions architecture violations across subagents, reconciles their fixes, and reruns every rule until green.
-- **`/contree:bootstrap-test-trees`** — Uses one subagent wave to discover current behaviour with you, then a fresh wave to implement and run the agreed trees as tests.
-- **`/contree:setup-mutation-testing`** — Configures fast Domain and Use-case mutation feedback, runs it, and strengthens tests until the agreed threshold passes.
+- **`/contree:setup-mental-model`** — Discovers and reconciles the seven-section project theory with you, then installs project-local SessionStart and Stop steering so later agents work from it and keep it current.
+- **`/contree:setup-test-trees`** — Discovers and reconciles the behavioural contract with you, then installs project-local SessionStart and Stop steering without implementing the tests.
+- **`/contree:bootstrap-test-trees`** — Composes mental-model and test-tree setup, then uses a fresh TDD subagent wave to implement and run exactly one test file per agreed tree.
+- **`/contree:setup-mutation-testing`** — Configures fast Domain and Use-case mutation feedback, installs relevant-change incremental Stop feedback, runs the full quality gate, and strengthens tests until the agreed threshold passes.
 - **`/contree:setup`** — The comprehensive setup: dynamically orchestrates every missing feedback loop, engages you at consequential decisions, uses subagents for independent work, and verifies the whole steering system before reporting success.
 - **`/contree:change`** — Write or modify test trees in `TEST_TREES.md` before any code is written. Auto-triggers when planning behaviour changes.
 - **`/contree:tdd`** — Auto-triggers when implementing behaviour. Runs one observable behaviour through RED, GREEN, and REFACTOR; excessive branching moves behind a passing mock and throwing stub, signalling a new TDD cycle for that unit.
@@ -32,7 +34,7 @@ Thirteen skills:
 - **`/contree:second-opinion`** — Sends the current change and your test-tree contract to Z.AI's GLM 5.2 with `ZAI_API_KEY`, or to DeepSeek with `DEEPSEEK_API_KEY`, for an independent review of completed work, then surfaces its critique. Fails loudly rather than fabricating a review.
 - **`/contree:diff-for-humans`** — Generates a single image explaining the current change to a human with OpenAI's gpt-image-2 model, foregrounding the technical substance it touches (contracts, databases, behaviour, test trees) and choosing what to depict from the nature of the change, its key details, and its audience, then surfaces those choices for review. Run on demand; requires `OPENAI_API_KEY`.
 
-Plus a **stop hook** that prompts Claude to keep test trees, mental model, CLAUDE.md, and README.md current after every response. A **session-start header** with skill directions and coding rules, so the agent starts every session knowing when to reach for each skill.
+Plus plugin-wide lifecycle hooks and setup-generated project hooks. Contree progressively expands into a project: every focused setup phase preserves earlier hooks and adds another fast feedback loop, so coding agents receive increasingly complete steering while they work.
 
 
 **Codex CLI:**
@@ -60,7 +62,7 @@ Skills run automatically once installed. Hooks require the feature flags above. 
 
 ## How it works
 
-1. Run the focused setup skill for the feedback you need, or `/contree:setup` for the comprehensive operator-guided workflow across tests, lint, architecture, test-tree bootstrap, and mutation testing
+1. Run the focused setup skill for the feedback you need, or `/contree:setup` for the comprehensive operator-guided workflow across tests, lint, architecture, mental-model steering, test-tree steering and bootstrap, and mutation testing
 2. When you plan a behaviour change, `/contree:change` writes or modifies test trees first
 3. `/contree:tdd` auto-triggers during implementation — outside-in TDD against test trees
 4. The stop hook keeps `CLAUDE.md` and `README.md` current after every response

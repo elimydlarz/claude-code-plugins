@@ -13,7 +13,7 @@ Mechanisms:
 
 - **Directions** — skill routing printed by the SessionStart hook. Names each skill (`change`, `tdd`, `sync`, `setup`, `change-without-me`) with a one-line trigger so the agent reaches for skills eagerly rather than relying on skill-frontmatter discovery alone. Lives inline in `hooks/session-start.sh`.
 - **Rules** — coding principles printed by the SessionStart hook (simplicity, expressiveness, fail-fast, no fake code, etc.). The rules list lives inline in `hooks/session-start.sh` so it ships with the plugin install.
-- **focused setup skills** — independently install and verify test feedback, conventional lint, architecture lint and repair, test-tree bootstrap, and mutation feedback. Each runs and fixes the feedback it establishes; bootstrap uses separate subagent discovery and test-implementation waves.
+- **focused setup skills** — independently install and verify test feedback, conventional lint, architecture lint and repair, mental-model steering, test-tree steering, test-tree bootstrap, and mutation feedback. Each expands durable project-local hooks and fixes the feedback it establishes; bootstrap composes mental-model and tree setup before its separate test-implementation wave.
 - **setup skill** — dynamically orchestrates the comprehensive operator-guided setup suite, using subagents for independent work and completing only after every configured feedback loop passes.
 - **change skill** — set expected behaviour. Talks through the change, writes or modifies test trees before code exists.
 - **sync skill** — identify gaps and cruft. Compares test trees against implementation in both directions — surfaces drift, staleness, and missing coverage.
@@ -45,8 +45,10 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `skills/setup-linter/SKILL.md` — strong conventional lint, automatic repair, CI, and save-time feedback
 - `skills/setup-architecture-linter/SKILL.md` — architecture rules, combined lint, CI, and Stop feedback
 - `skills/fix-architecture/SKILL.md` — subagent-partitioned architecture repair until every rule passes
-- `skills/bootstrap-test-trees/SKILL.md` — subagent discovery, operator-aligned trees, and a second test-implementation wave
-- `skills/setup-mutation-testing/SKILL.md` — fast mutation feedback and test strengthening to the agreed threshold
+- `skills/setup-mental-model/SKILL.md` — operator-reconciled seven-section model plus project-local SessionStart and Stop steering
+- `skills/setup-test-trees/SKILL.md` — operator-reconciled layered EARS contract plus project-local SessionStart and Stop steering
+- `skills/bootstrap-test-trees/SKILL.md` — composes both steering skills, then runs the required test-implementation wave
+- `skills/setup-mutation-testing/SKILL.md` — full mutation gate, relevant-change incremental Stop feedback, and test strengthening to the agreed threshold
 - `skills/setup/SKILL.md` — comprehensive dynamic orchestration of every focused setup skill
 - `skills/change/SKILL.md` — set expected behaviour: write or modify test trees before code exists
 - `skills/sync/SKILL.md` — identify gaps and cruft: test trees vs implementation in both directions

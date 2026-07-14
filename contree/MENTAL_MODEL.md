@@ -14,7 +14,7 @@
 - Hexagonal seams → inner layers: Adapter (`*.adapter.test.*`), Use-case (`*.use-case.test.*`), Domain (`*.domain.test.*`).
 - A tree's implementation and overlapping test coverage on disk → parenthesised labelled paths: `src`, `domain`, `use-case`, `adapter`, `component`, `system`, `journey`; `none` marks expected coverage not yet fulfilled, while inapplicable labels are omitted.
 - An outbound capability → a Port with an in-memory twin and real adapter, both passing one shared Port-contract suite.
-- Project steering → focused setup skills for test feedback, conventional lint, architecture lint and repair, test-tree bootstrap, and mutation feedback; `setup` orchestrates the complete suite.
+- Project steering → focused setup skills for test feedback, conventional lint, architecture lint and repair, mental-model steering, test-tree steering, test-tree bootstrap, and mutation feedback; `setup` orchestrates the complete suite.
 - Behaviour responsibility → `change` owns the operator contract; `tdd` owns tests and implementation; `sync` audits and resolves agreement across intention, trees, tests, code, and mental model; `second-opinion` reviews independently; `change-without-me` composes the arc.
 - Lifecycle hooks → SessionStart injects rules, mental model, and trees; Stop prompts review of the model, tree/implementation drift, CLAUDE.md, and README.
 - The product's theory → `MENTAL_MODEL.md` (this file); its behaviour → `TEST_TREES.md`; its operating discipline → the rules.
@@ -41,9 +41,9 @@
 
 - Tree language — EARS syntax, causal nesting, one-tree-one-file, leaf granularity; the grammar of the contract.
 - Test seams — Journey owns a multi-capability arc; System and Component own one capability at different realism; Adapter and Port contract own boundaries; Use-case and Domain own unit interfaces.
-- Setup suite — focused skills establish test, lint, architecture, behavioural-contract, and mutation feedback independently; `setup` dynamically orchestrates the comprehensive operator-guided workflow.
+- Setup suite — focused skills establish test, lint, architecture, mental-model, behavioural-contract, and mutation feedback independently; bootstrap composes mental-model and tree setup before implementing tests, and `setup` dynamically orchestrates the comprehensive operator-guided workflow.
 - Skill ownership — `change` owns trees; `tdd` owns tests and implementation; `sync` audits and resolves agreement across operator intention, trees, tests, code, and mental model; `second-opinion` reviews independently; `change-without-me` composes them.
-- Enforcement hooks — plugin SessionStart injects discipline and plugin Stop prompts documentation reconciliation; setup-generated project save hooks run impacted normal tests and lint autofix after file edits, while architecture checks run at Stop.
+- Enforcement hooks — plugin SessionStart injects discipline and plugin Stop prompts documentation reconciliation; each focused setup skill expands durable project-local steering, including model and tree context at SessionStart, lint autofix after edits, and impacted tests, architecture, relevant incremental mutation, model reconciliation, and tree reconciliation at Stop.
 - Hexagonal architecture — domain pure, I/O in adapters, dependencies inward, a boundary linter holding the line.
 - Dual-harness packaging — one source directory, parallel `.claude-plugin` / `.codex-plugin` manifests, `CLAUDE_PLUGIN_ROOT` shared by both.
 
@@ -59,6 +59,7 @@
 - Drift is resolved toward operator intention with `TEST_TREES.md` its authoritative expression; only consequential conflicts that project evidence cannot settle return to the operator.
 - Consumer-driven, not internals-driven: each tree describes what its consumer observes; outside-in tests create the consumer before the consumed unit is implemented.
 - Sync delegates three exhaustive audits to subagents and reconciles their evidence: every leaf through faithful test to fulfilling implementation, all production code back toward the trees, and every mental-model heading for useful fit and code compliance.
+- Setup accumulates steering monotonically: every focused phase preserves earlier project hooks, proves its own feedback through actual agent turns, and leaves later agents with richer in-project guidance.
 
 ## Decision Rationale
 
@@ -68,12 +69,12 @@
 - Trees live in `TEST_TREES.md` as the single operator-owned behaviour contract rather than a second requirements document; one-tree/one-test structure makes drift inspectable and Sync resolves it.
 - Literal green assertions are insufficient for an operator contract, so Sync checks the intention shared by leaf, test, and implementation, resolves evidence-settled drift proactively, and escalates only genuinely under-determined conflicts.
 - One source directory and lifecycle hooks serve both harnesses: parallel manifests avoid duplicated skills, `$CLAUDE_PLUGIN_ROOT` resolves shared hooks, SessionStart injects context, and Stop prompts reconciliation.
-- Setup is split by feedback loop so each steering mechanism can be installed, run, repaired, and verified independently; comprehensive setup composes only the work the project needs.
+- Setup is split by feedback loop so each steering mechanism can be installed, run, repaired, and verified independently; mental-model and test-tree setup are distinct, bootstrap composes them before implementing tests, and comprehensive setup composes only the work the project needs.
 - The mental model uses seven fixed, bounded sections with merge and displacement discipline so it remains a theory rather than a dumping ground.
 
 ## Temporal View
 
-- Per project: focused setup skills evolve individual steering loops and `setup` composes the comprehensive harness; thereafter each behaviour skill runs when triggered, while `change-without-me` composes `change` → `sync` → `tdd` → `second-opinion` without pausing.
+- Per project: each focused setup skill expands project-local hooks and proves the newly installed steering; bootstrap orders mental-model setup → test-tree setup → test implementation; `setup` composes the comprehensive harness; thereafter each behaviour skill runs when triggered, while `change-without-me` composes `change` → `sync` → `tdd` → `second-opinion` without pausing.
 - Per behaviour: select one contracted tree leaf → write one test → RED → implement to GREEN → REFACTOR excessive branching behind a mock and throwing stub → add the revealed unit's tree → repeat from RED at that unit's public seam.
 - Per sync: run the full suite → partition every leaf, all production code, and all seven mental-model headings across subagents → reconcile evidence → resolve every finding → rerun affected tests and the full suite until contract, tests, implementation, and mental model agree.
 - Per turn: the Stop hook prompts reconciliation after each response, with `stop_hook_active` preventing it from reviewing its own follow-up turn.
