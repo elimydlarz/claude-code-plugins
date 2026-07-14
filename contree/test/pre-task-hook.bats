@@ -8,116 +8,122 @@ hook_command() {
 
 run_hook_in() {
   local project_dir="$1"
-  local cmd; cmd=$(hook_command)
-  run env CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" CMD="$cmd" PROJECT_DIR="$project_dir" \
-    bash -c 'cd "$PROJECT_DIR" && bash -c "$CMD"'
+  local cmd
+  cmd=$(hook_command)
+  run env CLAUDE_PLUGIN_ROOT="$PROJECT_ROOT" CMD="$cmd" PROJECT_DIR="$project_dir" bash -c 'cd "$PROJECT_DIR" && bash -c "$CMD"'
 }
 
-# --- File interpolation ---
-
-@test "session start displays MENTAL_MODEL.md contents when file exists" {
+@test "when a session starts then MENTAL_MODEL.md contents are displayed" {
   local project="$BATS_TEST_TMPDIR/project"
   mkdir -p "$project"
   printf 'UNIQUE_MENTAL_MODEL_MARKER_STRING\n' > "$project/MENTAL_MODEL.md"
   run_hook_in "$project"
-  [[ "$output" == *"UNIQUE_MENTAL_MODEL_MARKER_STRING"* ]]
+  assert_output --partial "UNIQUE_MENTAL_MODEL_MARKER_STRING"
 }
 
-@test "session start displays TEST_TREES.md contents when file exists" {
+@test "when a session starts and TEST_TREES.md contents are displayed" {
   local project="$BATS_TEST_TMPDIR/project"
   mkdir -p "$project"
   printf 'UNIQUE_TEST_TREES_MARKER_STRING\n' > "$project/TEST_TREES.md"
   run_hook_in "$project"
-  [[ "$output" == *"UNIQUE_TEST_TREES_MARKER_STRING"* ]]
+  assert_output --partial "UNIQUE_TEST_TREES_MARKER_STRING"
 }
 
-# --- Agent direction ---
-
-@test "session start directs the agent to use existing mental-model concepts, vocabulary, and decisions" {
+@test "when a session starts and the agent is directed to use the mental model's existing concepts, vocabulary, and decisions rather than inventing parallel ones" {
   run_hook_in "$BATS_TEST_TMPDIR"
   assert_output --partial "concepts, vocabulary, and decisions"
   assert_output --partial "inventing parallel"
 }
 
-@test "session start directs the agent to preserve invariants and surface conflict rather than route around" {
+@test "when a session starts and the agent is directed to preserve the mental model's invariants, surfacing conflict when a task appears to require breaking one rather than routing around it" {
   run_hook_in "$BATS_TEST_TMPDIR"
   assert_output --partial "invariants"
   assert_output --partial "surface"
   assert_output --partial "routing around"
 }
 
-@test "session start directs the agent to flag the mental model as wrong, incomplete, or misleading rather than silently reshaping it" {
+@test "when a session starts and the agent is directed to flag the mental model as wrong, incomplete, or misleading rather than silently reshaping it through code" {
   run_hook_in "$BATS_TEST_TMPDIR"
   assert_output --partial "wrong, incomplete, or misleading"
   assert_output --partial "silently reshaping"
 }
 
-@test "session start directs the agent that trees are the contract" {
+@test "when a session starts and the agent is directed that trees are the contract — every observable behaviour and side effect belongs in TEST_TREES.md, every tree maps to one test file, and every test file's describe/it hierarchy mirrors its tree verbatim" {
   run_hook_in "$BATS_TEST_TMPDIR"
   assert_output --partial "Trees are the contract"
-  assert_output --partial "TEST_TREES.md"
   assert_output --partial "every observable behaviour and side effect"
+  assert_output --partial "every tree maps to one test file"
   assert_output --partial "describe/it hierarchy mirrors its tree verbatim"
 }
 
-@test "session start directs the agent to describe each level's observable behaviour at its interface, not the implementation inside it" {
+@test "when a session starts and the agent is directed to describe each level's observable behaviour at its interface — inputs, outputs, and side-effects — not the implementation inside it" {
   run_hook_in "$BATS_TEST_TMPDIR"
   assert_output --partial "Behaviour, not internals"
-  assert_output --partial "test subject's interface"
-  assert_output --partial "never the implementation inside"
+  assert_output --partial "interface"
+  assert_output --partial "not the implementation inside"
 }
 
-@test "session start explains the test kinds" {
+@test "when a session starts and the agent is directed that Journey, System, Component, Adapter, Port contract, and Unit are the test kinds" {
   run_hook_in "$BATS_TEST_TMPDIR"
-  assert_output --partial "Test kinds"
-  assert_output --partial "Journey: broad, production-like test of a curated user arc across capabilities, with external services replaced by test doubles only if unavoidable."
+  assert_output --partial "Journey: broad, production-like test of a curated user arc across capabilities."
+  assert_output --partial "System: deep, production-like test of one capability through the whole app."
   assert_output --partial "Component: deep in-process test of one capability through the whole app, with external services replaced by test doubles."
-  assert_output --partial "Integration: when concerned integration of some (but not all) pieces, test from the highest-level subject and mock everything except the subjects you are integrating to see if they really work together as expected"
-  assert_output --partial "Unit: test of one public surface on one subject; every public surface gets native unit tests, and every dependency outside the subject is mocked."
-  refute_output --partial "System:"
-  refute_output --partial "Adapter: test"
-  refute_output --partial "Port contract: tests"
+  assert_output --partial "Adapter: test of one concrete boundary implementation against the real boundary it adapts"
+  assert_output --partial "Port contract: tests for an application interface"
+  assert_output --partial "Unit: test of one public surface on one subject"
+  refute_output --partial "Integration:"
 }
 
-@test "session start directs recursive outside-in consumer-driven tdd" {
+@test "when a session starts and the agent is directed to work outside-in and consumer-driven from the behaviour in the current tree" {
   run_hook_in "$BATS_TEST_TMPDIR"
   assert_output --partial "Outside-in TDD"
   assert_output --partial "current tree"
+  assert_output --partial "consumer"
+}
+
+@test "when a session starts and the agent is directed to write a test, observe RED, implement GREEN, then notice too much branching in the test or tree during REFACTOR" {
+  run_hook_in "$BATS_TEST_TMPDIR"
   assert_output --partial "RED"
   assert_output --partial "GREEN"
   assert_output --partial "REFACTOR"
   assert_output --partial "too much branching"
+}
+
+@test "when a session starts and the agent is directed to extract some branching into a new unit with a mock and a stub that throws NotImplemented" {
+  run_hook_in "$BATS_TEST_TMPDIR"
   assert_output --partial "mock"
   assert_output --partial "stub"
   assert_output --partial "NotImplemented"
+}
+
+@test "when a session starts and the agent is directed that the mock makes consumer tests pass while the stub makes running code fail loudly, signalling that the TDD process repeats from step 1 for the new unit" {
+  run_hook_in "$BATS_TEST_TMPDIR"
   assert_output --partial "mock makes the consumer tests pass"
   assert_output --partial "stub makes running code fail loudly"
   assert_output --partial "repeat the TDD process from step 1 for the new unit"
 }
 
-@test "session start directs the agent to decide obvious questions itself rather than asking the user" {
+@test "when a session starts and the agent is directed to decide obvious questions itself rather than asking the user — consulting these rules and the mental model first, then its own best judgment from the code in front of it, escalating to the user only a consequential, genuinely under-determined choice that neither resolves" {
   run_hook_in "$BATS_TEST_TMPDIR"
   assert_output --partial "Decide, don't ask"
   assert_output --partial "Run the ladder before asking"
   assert_output --partial "only escalate"
 }
 
-@test "session start directs the agent not to manufacture flags, applying the same ladder before surfacing anything" {
+@test "when a session starts and the agent is directed to apply the same ladder to anything it would flag, caveat, or surface — fixing it where these rules or the mental model direct, else using its judgment, else staying silent rather than reporting it" {
   run_hook_in "$BATS_TEST_TMPDIR"
   assert_output --partial "Don't manufacture flags"
   assert_output --partial "same ladder"
   assert_output --partial "stay silent"
 }
 
-# --- Skill directions ---
-
-@test "session start points skill routing to frontmatter and names the skills" {
+@test "when a session starts and the agent is directed to use Contree skills as directed by skill frontmatter" {
   run_hook_in "$BATS_TEST_TMPDIR"
   assert_output --partial "Use Contree skills as directed by their frontmatter"
-  assert_output --partial "change"
-  assert_output --partial "tdd"
-  assert_output --partial "sync"
-  assert_output --partial "setup"
+}
+
+@test "when a session starts and the agent is shown every focused setup skill alongside change, tdd, sync, setup, and change-without-me" {
+  run_hook_in "$BATS_TEST_TMPDIR"
   assert_output --partial "setup-test-feedback"
   assert_output --partial "setup-linter"
   assert_output --partial "setup-architecture-linter"
@@ -126,5 +132,9 @@ run_hook_in() {
   assert_output --partial "setup-test-trees"
   assert_output --partial "bootstrap-test-trees"
   assert_output --partial "setup-mutation-testing"
+  assert_output --partial "change"
+  assert_output --partial "tdd"
+  assert_output --partial "sync"
+  assert_output --partial "setup"
   assert_output --partial "change-without-me"
 }
