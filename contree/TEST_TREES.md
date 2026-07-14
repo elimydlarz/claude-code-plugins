@@ -154,7 +154,7 @@ System: setup-test-feedback (src: skills/setup-test-feedback/SKILL.md; system: t
     and it merges existing test configuration instead of replacing it
     and it configures tree-shaped normal and functional test output where the ecosystem supports it
     and the normal command runs Unit, Port contract, Adapter, and Component tests while the functional command separately runs System and Journey tests
-    and a native test-changed command plus project Stop hooks give coding agents the impacted normal-test result after each turn
+    and a native test-changed command plus synchronous project save hooks give coding agents the impacted normal-test result after each file edit
     and it runs both test commands and verifies the test-changed baseline and impact selection before reporting completion
   if a configured test command or project hook fails verification
     then the skill fixes the configuration and reruns verification until the feedback path works
@@ -238,7 +238,7 @@ System: setup-prepares-project (src: skills/setup/SKILL.md; system: test/setup-p
     and setup waits for every selected phase and its subagents to finish before starting a dependent phase or reporting completion
     and setup proves each phase from its required commands and retained artifacts rather than accepting a subagent summary as proof
     and setup proves bootstrap retained layered EARS trees with exactly one test file per tree before mutation setup begins
-    and setup runs every configured feedback command and fixes failures before reporting the project prepared
+    and setup runs every configured feedback command, verifies impacted tests through synchronous project save hooks after file edits, and fixes failures before reporting the project prepared
     and setup reports the installed commands, automatic hooks, test-tree coverage, and mutation result to the operator
   if any specialised setup skill cannot establish its feedback loop
     then setup fails visibly and does not claim that the project is prepared

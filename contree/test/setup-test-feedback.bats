@@ -30,13 +30,15 @@ SKILL="$PROJECT_ROOT/skills/setup-test-feedback/SKILL.md"
   assert_output --partial "separate functional command"
 }
 
-@test "when an operator asks to set up test feedback and a native test-changed command plus project Stop hooks give coding agents the impacted normal-test result after each turn" {
+@test "when an operator asks to set up test feedback and a native test-changed command plus synchronous project save hooks give coding agents the impacted normal-test result after each file edit" {
   run cat "$SKILL"
   assert_output --partial 'native `test-changed` command'
-  assert_output --partial 'project-level `Stop` hooks'
-  assert_output --partial "impacted normal-test result after each turn"
+  assert_output --partial 'synchronous `PostToolUse` hooks'
+  assert_output --partial '"matcher": "Edit|Write"'
+  assert_output --partial "impacted normal-test result after each file edit"
   assert_output --partial ".claude/settings.json"
   assert_output --partial ".codex/hooks.json"
+  refute_output --partial 'project-level `Stop` hooks'
 }
 
 @test "when an operator asks to set up test feedback and it runs both test commands and verifies the test-changed baseline and impact selection before reporting completion" {

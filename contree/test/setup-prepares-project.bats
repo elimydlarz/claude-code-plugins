@@ -46,7 +46,7 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "before mutation setup begins"
 }
 
-@test "when an operator asks for comprehensive Contree setup then setup verifies and fixes every configured feedback command" {
+@test "when an operator asks for comprehensive Contree setup then setup runs every configured feedback command, verifies impacted tests through synchronous project save hooks after file edits, and fixes failures before reporting the project prepared" {
   run cat "$SKILL"
   assert_output --partial "test"
   assert_output --partial "lint"
@@ -54,6 +54,8 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "mutation"
   assert_output --partial "fix"
   assert_output --partial "verify"
+  assert_output --partial "synchronous project save hook"
+  assert_output --partial "actual file edit"
 }
 
 @test "when comprehensive Contree setup completes then setup reports the steering installed for the operator" {
