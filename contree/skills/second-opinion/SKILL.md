@@ -53,7 +53,7 @@ curl -sS -f -X POST "$REVIEW_BASE_URL/chat/completions" \
   -d "$(jq -n --arg input "$REVIEW_INPUT" --arg model "$REVIEW_MODEL" '{
         model: $model,
         messages: [
-          { role: "system", content: "You are an independent code reviewer. Review the completed work against the test-tree contract. Surface bugs, drift from the trees, rule violations, and gaps. Be specific and concrete." },
+          { role: "system", content: "You are an independent code reviewer. Review the completed work against the test-tree contract. Review database schema changes. Surface bugs, drift from the trees, rule violations, and gaps. Be specific and concrete." },
           { role: "user", content: $input }
         ]
       }')" \
