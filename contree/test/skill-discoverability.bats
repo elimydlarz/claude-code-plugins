@@ -48,6 +48,18 @@ load test_helper
   assert_output --partial "bootstrap"
 }
 
+@test "setup-mental-model skill's frontmatter TRIGGERs on establishing project domain knowledge" {
+  run sed -n '/^---$/,/^---$/p' "$PROJECT_ROOT/skills/setup-mental-model/SKILL.md"
+  assert_output --partial "TRIGGER"
+  assert_output --partial "mental model"
+}
+
+@test "setup-test-trees skill's frontmatter TRIGGERs on establishing a behavioural contract without tests" {
+  run sed -n '/^---$/,/^---$/p' "$PROJECT_ROOT/skills/setup-test-trees/SKILL.md"
+  assert_output --partial "TRIGGER"
+  assert_output --partial "test trees"
+}
+
 @test "setup-mutation-testing skill's frontmatter TRIGGERs on mutation feedback setup" {
   run sed -n '/^---$/,/^---$/p' "$PROJECT_ROOT/skills/setup-mutation-testing/SKILL.md"
   assert_output --partial "TRIGGER"
