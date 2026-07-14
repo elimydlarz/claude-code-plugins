@@ -831,8 +831,8 @@ VERIFY
       mirrors_tree="FAIL — test hierarchy does not mirror the tree"
       pass=0
     fi
-    if grep -q "expect" "$PROJECT_DIR/src/bookmark.unit.test.js" \
-      && grep -Eq "toBe|toEqual" "$PROJECT_DIR/src/bookmark.unit.test.js" \
+    if grep -Eq "expect|assert" "$PROJECT_DIR/src/bookmark.unit.test.js" \
+      && grep -Eq "toBe|toEqual|assert\.equal" "$PROJECT_DIR/src/bookmark.unit.test.js" \
       && grep -Eq "toThrow|InvalidUrl" "$PROJECT_DIR/src/bookmark.unit.test.js"; then
       tests_intention="PASS — tests assert the intention expressed by both leaves"
     else
