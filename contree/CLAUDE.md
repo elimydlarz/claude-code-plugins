@@ -39,14 +39,14 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `hooks/hooks.json` — wires SessionStart (rules) and Stop (drift check)
 - `hooks/session-start.sh` — SessionStart hook: prints the skill Directions block and the inline rules list to stdout
 - `hooks/stop-drift-check.sh` — Stop hook: injects the drift-check prompt after each response
-- `website/index.html` — self-contained explainer site (no build step) pitching contree to developers new to TDD: bridges from test-first to test-trees, living requirements, the layered architecture, the workflow, and the Claude Code hook mechanics (SessionStart and Stop). Published to GitHub Pages at https://elimydlarz.github.io/claude-code-plugins/contree/ by the repo-root `.github/workflows/pages.yml` workflow, which stages `contree/website/` into `_site/contree/` (one subdir per plugin, so other plugins can add their own pages) and deploys on push to main
+- `website/index.html` — self-contained explainer site (no build step) pitching contree to developers new to TDD: bridges from test-first to test-trees, living requirements, the four test kinds, hexagonal architecture, the workflow, and the Claude Code hook mechanics (SessionStart and Stop). Published to GitHub Pages at https://elimydlarz.github.io/claude-code-plugins/contree/ by the repo-root `.github/workflows/pages.yml` workflow, which stages `contree/website/` into `_site/contree/` (one subdir per plugin, so other plugins can add their own pages) and deploys on push to main
 - `scripts/validate-skill-frontmatter.sh` — bats-only utility: asserts every `skills/*/SKILL.md` has non-empty `name` and `description`
 - `skills/setup-test-feedback/SKILL.md` — normal, journey, and impact-selected test feedback
 - `skills/setup-linter/SKILL.md` — strong conventional lint, automatic repair, CI, and save-time feedback
 - `skills/setup-architecture-linter/SKILL.md` — architecture rules, combined lint, CI, and Stop feedback
 - `skills/fix-architecture/SKILL.md` — subagent-partitioned architecture repair until every rule passes
 - `skills/setup-mental-model/SKILL.md` — operator-reconciled seven-section model plus project-local SessionStart and Stop steering
-- `skills/setup-test-trees/SKILL.md` — operator-reconciled layered EARS contract plus project-local SessionStart and Stop steering
+- `skills/setup-test-trees/SKILL.md` — operator-reconciled consumer-driven EARS contract plus project-local SessionStart and Stop steering
 - `skills/bootstrap-test-trees/SKILL.md` — composes both steering skills, then runs the required test-implementation wave
 - `skills/setup-mutation-testing/SKILL.md` — full mutation gate, relevant-change incremental Stop feedback, and test strengthening to the agreed threshold
 - `skills/setup/SKILL.md` — comprehensive dynamic orchestration of every focused setup skill

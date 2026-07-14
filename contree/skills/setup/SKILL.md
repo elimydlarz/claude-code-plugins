@@ -45,7 +45,7 @@ Keep ownership of the dynamic workflow in this coordinator. Do not delegate an e
 
 Run `setup-test-feedback` before `bootstrap-test-trees` so the second bootstrap wave has working normal and journey commands. Within bootstrap, `setup-mental-model` runs before `setup-test-trees`, and both project-local steering hooks must work before the test implementation wave. Run `setup-linter` before `setup-architecture-linter` so the combined lint command has a stable conventional-lint half. When architecture setup invokes `fix-architecture`, finish that repair before bootstrap records the project architecture.
 
-Gate dependent phases on retained evidence. Never accept a subagent summary as proof. After every focused skill, inspect its changed files and run its owning command. After `bootstrap-test-trees`, require at least one retained layered EARS tree for an existing project and exactly one retained test file for each tree, with its hierarchy mirrored, before mutation setup begins. If those artifacts are absent, resume or repair bootstrap instead of moving on.
+Gate dependent phases on retained evidence. Never accept a subagent summary as proof. After every focused skill, inspect its changed files and run its owning command. After `bootstrap-test-trees`, require at least one retained consumer-driven EARS tree for an existing project and exactly one retained test file for each tree, with its hierarchy mirrored, before mutation setup begins. If those artifacts are absent, resume or repair bootstrap instead of moving on.
 
 ## Verify
 

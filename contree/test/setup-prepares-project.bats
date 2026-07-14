@@ -51,7 +51,7 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
 @test "when a focused setup phase reports completion then setup proves its retained artifacts before continuing" {
   run cat "$SKILL"
   assert_output --partial "Never accept a subagent summary as proof"
-  assert_output --partial "layered EARS tree"
+  assert_output --partial "consumer-driven EARS tree"
   assert_output --partial "exactly one retained test file"
   assert_output --partial "before mutation setup begins"
 }

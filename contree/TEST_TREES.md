@@ -59,7 +59,7 @@ Unit: setup-test-trees (src: skills/setup-test-trees/SKILL.md; unit: test/setup-
   when an operator asks to set up test trees for an existing project
     then the skill explains the behavioural evidence it will gather and agrees complete non-overlapping scope with the operator
     and discovery subagents inspect every area for observable behaviour, existing tests, public seams, errors, side effects, and contradictions
-    and the coding agent reconciles the evidence with the operator through change into layered EARS trees with honest coverage
+    and the coding agent reconciles the evidence with the operator through change into consumer-driven EARS trees with honest coverage
     and every discovered behaviour is expressed at its consumer-visible seam without inventing unsupported behaviour
     and project SessionStart hooks load TEST_TREES.md and the tree-writing rules before coding agents work
     and project Stop hooks ask the coding agent to reconcile drift between trees, tests, and implementation before it finishes
@@ -270,7 +270,7 @@ Unit: setup-prepares-project (src: skills/setup/SKILL.md; unit: test/setup-prepa
     and setup keeps focused-skill orchestration in the coordinator instead of delegating an entire focused skill to an unattended background agent
     and setup waits for every selected phase and its subagents to finish before starting a dependent phase or reporting completion
     and setup proves each phase from its required commands and retained artifacts rather than accepting a subagent summary as proof
-    and setup proves bootstrap retained layered EARS trees with exactly one test file per tree before mutation setup begins
+    and setup proves bootstrap retained consumer-driven EARS trees with exactly one test file per tree before mutation setup begins
     and setup runs every configured feedback command, verifies impacted tests through synchronous project save hooks after file edits, and fixes failures before reporting the project prepared
     and setup reports the installed commands, automatic hooks, test-tree coverage, and mutation result to the operator
   if any specialised setup skill cannot establish its feedback loop
@@ -319,8 +319,8 @@ Unit: change-writes-trees (src: skills/change/SKILL.md; unit: test/change-writes
     then they are presented to the user for alignment
     and the user is suggested to run sync
   when a tree is named
-    then its first line is exactly `<Layer>: <Subject>`
-    and the layer prefix lets readers and sync detect duplication across trees that share a subject at different layers
+    then its first line is exactly `<Test-kind>: <Subject>`
+    and the test-kind prefix lets readers and sync detect duplication across trees that share a subject at different test kinds
   when a when-trigger can only occur as a consequence of a prior then-outcome
     then it is nested as a child of that outcome, not written as a sibling
 ```
@@ -346,8 +346,8 @@ Unit: change-chooses-test-kinds (src: skills/change/SKILL.md; unit: test/change-
   when a side effect is identified
     then it becomes an outbound port named for capability, not technology
     and the port ships in two flavours: an in-memory adapter and a real adapter
-    and a shared contract suite is written for the port
-    and both adapters must pass the shared suite
+    and a shared behavioural suite is written for the port
+    and both adapters must pass the shared suite through their Unit tests
   when a domain object, use-case, adapter, port implementation, or other subject has a public surface
     then that public surface receives a Unit tree and native Unit test
     and dependencies outside that subject are mocked
@@ -380,10 +380,10 @@ Unit: sync-audits-and-resolves (src: skills/sync/SKILL.md; unit: test/sync-audit
     then each of its seven headings is reviewed with subagents
     and each heading's representation is checked for fit and usefulness against the codebase
     and the codebase is checked for whether it honours the representation
-  when a substantive unit revealed by TDD has no tree and test at its natural lowest layer
-    then the missing native coverage is closed immediately through TDD
+  when a public surface revealed by TDD has no Unit tree and native Unit test
+    then the missing Unit coverage is closed immediately through TDD
     and existing coverage for applicable test-kind concerns is retained
-    and every applicable layer tests the behaviour at its own seam
+    and every applicable test kind verifies its distinct concern at its own seam
   when the project is in sync
     then every identified issue has been resolved proactively
     and all tests pass

@@ -17,11 +17,11 @@ SKILL="$PROJECT_ROOT/skills/setup-test-trees/SKILL.md"
   assert_output --partial "every agreed area exactly once"
 }
 
-@test "when an operator asks to set up test trees for an existing project then the coding agent reconciles the evidence with the operator through change into layered EARS trees with honest coverage" {
+@test "when an operator asks to set up test trees for an existing project then the coding agent reconciles the evidence with the operator through change into consumer-driven EARS trees with honest coverage" {
   run cat "$SKILL"
   assert_output --partial "Reconcile the evidence"
   assert_output --partial 'through `change`'
-  assert_output --partial "layered EARS trees"
+  assert_output --partial "consumer-driven EARS trees"
   assert_output --partial "honest coverage"
 }
 
