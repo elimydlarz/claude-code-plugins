@@ -446,7 +446,7 @@ Use-case: change-without-me-runs-end-to-end (src: skills/change-without-me/SKILL
                       when the completion audit proves intention, trees, tests, implementation, and mental model agree
                         then second-opinion reviews the completed work with an independent model
                           while the review request is pending
-                            then change-without-me waits for its terminal result without reporting it unavailable or advancing to DONE
+                            then change-without-me polls the same in-progress command or session to a terminal tool event without reporting it unavailable, ending the turn, or advancing to DONE
                           if second-opinion finds actionable drift or gaps
                             then every finding is routed through change, sync, or tdd and all completion gates repeat before another independent review
                           if second-opinion terminates without a usable review

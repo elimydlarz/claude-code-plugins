@@ -51,10 +51,13 @@ SKILL="$PROJECT_ROOT/skills/change-without-me/SKILL.md"
   assert_output --partial 'run the `second-opinion` skill process'
 }
 
-@test "while the second-opinion review request is pending change-without-me waits for its terminal result without reporting it unavailable or advancing to DONE" {
+@test "while the second-opinion review request is pending change-without-me polls the same in-progress command or session to a terminal tool event without reporting it unavailable, ending the turn, or advancing to DONE" {
   run cat "$SKILL"
-  assert_output --partial "While the review request is pending"
+  assert_output --partial "status `in_progress` or returns a session identifier"
+  assert_output --partial "poll that same command or session until the tool reports its terminal event"
+  assert_output --partial "An assistant message is not a terminal result"
   assert_output --partial "Do not report it unavailable"
+  assert_output --partial "end the turn"
   assert_output --partial "advance to DONE"
 }
 
