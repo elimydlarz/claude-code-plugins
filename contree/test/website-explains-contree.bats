@@ -11,15 +11,13 @@ SITE="$PROJECT_ROOT/website/index.html"
   assert_output --partial "test trees as living requirements"
 }
 
-@test "the page explains the layered testing architecture from Journey down to Domain" {
+@test "the page explains the four test kinds" {
   run cat "$SITE"
   assert_output --partial "hexagonal"
   assert_output --partial "Journey <small>test/journey</small>"
-  assert_output --partial "System <small>test/system</small>"
   assert_output --partial "Component <small>test/component</small>"
-  assert_output --partial "Adapter <small>*.adapter.test</small>"
-  assert_output --partial "Use-case <small>*.use-case.test</small>"
-  assert_output --partial "Domain <small>*.domain.test</small>"
+  assert_output --partial "Integration <small>*.integration.test</small>"
+  assert_output --partial "Unit <small>*.unit.test</small>"
 }
 
 @test "the page walks the skill workflow — setup, change, sync, tdd, second-opinion" {

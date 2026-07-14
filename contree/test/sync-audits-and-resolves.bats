@@ -31,11 +31,10 @@ SKILL="$PROJECT_ROOT/skills/sync/SKILL.md"
 
 @test "sync verifies current coverage labels and test hierarchy" {
   run cat "$SKILL"
-  assert_output --partial 'src`, `domain`, `use-case`, `adapter`, `component`, `system`, and `journey`'
+  assert_output --partial 'src`, `unit`, `integration`, `component`, and `journey`'
   assert_output --partial "describe/it hierarchy"
   assert_output --partial "verbatim"
   assert_output --partial "none"
-  refute_output --partial "integration"
   refute_output --partial "functional"
 }
 
@@ -66,19 +65,20 @@ SKILL="$PROJECT_ROOT/skills/sync/SKILL.md"
   assert_output --partial "codebase honours"
 }
 
-@test "sync closes missing native coverage while retaining applicable overlapping coverage" {
+@test "sync verifies every public surface has Unit coverage and only adds other test kinds when their concern applies" {
   run cat "$SKILL"
-  assert_output --partial "substantive unit"
-  assert_output --partial "natural lowest layer"
+  assert_output --partial "every public surface"
+  assert_output --partial "Unit"
   assert_output --partial "gap to close immediately"
-  assert_output --partial "higher-layer coverage"
-  assert_output --partial "every applicable layer"
-  assert_output --partial "Do not invent inner units"
+  assert_output --partial "Integration"
+  assert_output --partial "Component"
+  assert_output --partial "Journey"
+  assert_output --partial "Do not add one test of every kind"
 }
 
 @test "sync checks observable branch parity separately from YAGNI" {
   run cat "$SKILL"
-  assert_output --partial "Domain, Use-case, and Port"
+  assert_output --partial "Unit"
   assert_output --partial "observable branch"
   assert_output --partial "Internal control flow"
   assert_output --partial "YAGNI"

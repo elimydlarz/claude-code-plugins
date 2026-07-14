@@ -45,10 +45,10 @@ SKILL="$PROJECT_ROOT/skills/bootstrap-test-trees/SKILL.md"
   assert_output --partial "hierarchy mirrors it verbatim"
 }
 
-@test "when existing-project bootstrap completes then the coordinator reconciles implementations and runs normal and functional commands" {
+@test "when existing-project bootstrap completes then the coordinator reconciles implementations and runs normal and journey commands" {
   run cat "$SKILL"
   assert_output --partial "Reconcile the implementations yourself"
-  assert_output --partial "normal and functional test commands"
+  assert_output --partial "normal and journey test commands"
   assert_output --partial "leave it visible"
   assert_output --partial '`change`'
   assert_output --partial '`tdd`'

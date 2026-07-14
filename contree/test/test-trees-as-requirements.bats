@@ -47,16 +47,16 @@ load test_helper
   assert_output --partial "Add its tree from the behaviour the consumer requires."
 }
 
-@test "every tree reifies exactly one test file — no system-category test file is claimed by two trees" {
+@test "every tree reifies exactly one test file — no test file is claimed by two trees" {
   local file="$PROJECT_ROOT/TEST_TREES.md"
-  run bash -c "grep -oE '(^|[; ])system: [^;)]+' '$file' | sed -E 's/^[; ]*system: //' | sort | uniq -d"
+  run bash -c "grep -oE '(^|[; ])(unit|integration|component|journey): [^;)]+' '$file' | sed -E 's/^[; ]*[a-z-]+: //' | sort | uniq -d"
   assert_success
   assert_output ""
 }
 
 @test "gaps are declared explicitly — every coverage value is one or more paths or the literal none" {
   local file="$PROJECT_ROOT/TEST_TREES.md"
-  run bash -c "grep -oE '(src|domain|use-case|adapter|component|system|journey): [^;)]+' '$file' | sed -E 's/^[a-z-]+: //'"
+  run bash -c "grep -oE '(src|unit|integration|component|journey): [^;)]+' '$file' | sed -E 's/^[a-z-]+: //'"
   assert_success
   local bad=()
   while IFS= read -r value; do
@@ -69,8 +69,6 @@ load test_helper
 }
 
 @test "every tree in TEST_TREES.md names its coverage in parenthesised labelled pairs" {
-  # Tree name line must contain (...) with at least one recognised label,
-  # drawn from: src, domain, use-case, adapter, component, system, journey.
   local file="$PROJECT_ROOT/TEST_TREES.md"
   local missing=()
   while IFS= read -r tree; do
@@ -85,7 +83,7 @@ load test_helper
       missing+=("$tree (no parens)")
       continue
     fi
-    if ! [[ "$first_line" =~ \((src|domain|use-case|adapter|component|system|journey):[[:space:]] ]]; then
+    if ! [[ "$first_line" =~ \((src|unit|integration|component|journey):[[:space:]] ]]; then
       missing+=("$tree (no labelled pair)")
     fi
   done < <(grep -E "^## [a-z-]+" "$file" | sed 's/^## //')
