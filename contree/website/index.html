@@ -460,45 +460,37 @@
 <section id="architecture">
   <div class="wrap">
     <p class="eyebrow">Where each test belongs</p>
-    <h2>One standardised architecture, layered outside-in</h2>
+    <h2>Four test kinds for a hexagonal app</h2>
     <p class="lede" style="max-width:64ch">
       The question that stumps most people new to TDD is <em>“what kind of test should this be?”</em>
-      contree answers it the same way for every project: a <strong>hexagonal</strong> structure with five
-      test layers. You start at the outside and let each failing test pull the next layer into being.
+      contree answers it the same way for every project: keep the <strong>hexagonal</strong> architecture,
+      and classify tests only by the scope they actually exercise.
     </p>
 
     <div class="layers">
       <div class="layer l-journey">
         <div class="lname">Journey <small>test/journey</small></div>
-        <div class="ldesc">One curated, max-realism arc across several features — real everything, under 5 minutes. The outside-in entry point for new user-visible work.</div>
-      </div>
-      <div class="layer l-system">
-        <div class="lname">System <small>test/system</small></div>
-        <div class="ldesc">A single capability, wired as the whole app against real infrastructure — the same surface a Component test covers, validated for real. Selective, not exhaustive.</div>
+        <div class="ldesc">A broad, production-like test of a curated user arc across capabilities, with external services replaced by test doubles only if unavoidable.</div>
       </div>
       <div class="layer l-component">
         <div class="lname">Component <small>test/component</small></div>
-        <div class="ldesc">That same single capability with real adapters, but externals doubled at the edge — an in-memory database, stubbed outbound HTTP. In-process and cheap, so it carries the exhaustive behaviour coverage.</div>
+        <div class="ldesc">A deep in-process test of one capability through the whole app, with external services replaced by test doubles.</div>
       </div>
       <div class="layer l-adapter">
-        <div class="lname">Adapter <small>*.adapter.test</small></div>
-        <div class="ldesc">One adapter against the real infrastructure it fronts — a database, an HTTP API, the filesystem.</div>
-      </div>
-      <div class="layer l-usecase">
-        <div class="lname">Use-case <small>*.use-case.test</small></div>
-        <div class="ldesc">Orchestration logic over fast in-memory stand-ins for its dependencies.</div>
+        <div class="lname">Integration <small>*.integration.test</small></div>
+        <div class="ldesc">When some but not all pieces must work together, test from the highest-level subject and mock everything except the subjects being integrated.</div>
       </div>
       <div class="layer l-domain">
-        <div class="lname">Domain <small>*.domain.test</small></div>
-        <div class="ldesc">The pure core — rules and calculations with no I/O at all. Fast and deterministic.</div>
+        <div class="lname">Unit <small>*.unit.test</small></div>
+        <div class="ldesc">One public surface on one subject. Every public surface gets native unit tests, with every dependency outside the subject mocked.</div>
       </div>
     </div>
 
     <p class="layers-note">
       <strong>Hexagonal</strong> means the domain stays pure, all I/O lives in adapters, and dependencies point inward.
       Each outbound dependency is a <strong>port</strong> shipping two versions — a fast in-memory twin and the real adapter —
-      both held to one shared contract, so the stand-in your fast tests use never lies about the real thing.
-      Higher layers never excuse a missing lower one: you implement only once there's a failing test at the behaviour's own layer.
+      both held to one shared behavioural suite, so the stand-in your fast tests use never lies about the real thing.
+      Domain, use-case, adapter, and port remain architecture vocabulary; they do not create more test kinds.
     </p>
   </div>
 </section>
@@ -637,15 +629,12 @@ Eagerly use these skills to fulfil operator requests, where applicable:
 - <span class="nm">Act, don't ask</span> — if your reasoning or response already includes the right answer, act on it rather than externalising the decision
 - <span class="nm">pnpm</span> — use pnpm, not npm, for JS/TS
 - <span class="nm">Trees are the contract</span> — every expected behaviour and side effect goes in `## Test Trees`; every tree is verified by a test; every test drives the real implementation. File writes, external calls, state mutations, and cleanup all count as behaviour — if it's observable anywhere (filesystem, network, logs, next invocation), it belongs in the tree. If you're wondering whether an expectation belongs in the trees, the answer is yes.
-- <span class="nm">Behaviour, not internals</span> — every tree describes what crosses its level's interface (inputs, outputs, side-effects). Never the implementation inside. Journey/System/Adapter speak the consumer's vocabulary; Domain/Use-case/Port-contract speak the unit's own functions, types, and errors — both only as observable at the seam.
+- <span class="nm">Behaviour, not internals</span> — every tree describes what crosses its test subject's interface (inputs, outputs, side-effects), never the implementation inside.
 - <span class="nm">Debugging means a test gap</span> — if you're debugging, the tests weren't good enough. Before fixing, find the tree path that should have caught the bug (add it if it's missing), write the failing test, then fix the code.
 - <span class="nm">Hexagonal</span> — domain pure; I/O in adapters; dependencies point inward; each driven port ships with an in-memory twin
-- <span class="nm">Functional first</span> — the outermost layer is real, max-validity functional testing at the highest tolerable realism: real driving and driven adapters, real infrastructure, real boundaries. The floor and the outside-in entry point is the <span class="nm">journey</span> — one expansive max-realism arc that spans multiple capabilities, establishes and works with the contexts they touch, passes through representative error paths (not every one — generic error handling is proven at lower layers), and eventually succeeds. The journey is <span class="nm">curated, never exhaustive</span>: keep it runnable in <span class="nm">under 5 minutes</span>, and when it runs longer, trim it — retain the highest-impact steps (most damaging if broken) and the most-recent steps (most likely to break); everything trimmed stays covered at lower layers. Re-evaluate and trim it whenever you work in it. <span class="nm">System</span> tests sit interior to the journey: the whole app wired with real driven adapters for a single capability. When breadth at max realism is unaffordable, lean on the journey and push combinatorial detail down to inner layers — never a broad in-memory-wired System suite. Inner layers exist only because a failing functional test demands them.
-- <span class="nm">Outside-in</span> — start each capability from its outermost failing test at max realism — a <span class="nm">Journey</span> test for a new user-visible arc, otherwise a <span class="nm">System</span> test; it pulls the inner layers into being. Each discovered piece gets its own tree, TDD'd at its native layer with its own failing tests. The journey is curated, not auto-extended per capability. A green Journey or System test is not the goal — completeness at every layer is. Journey covers the user-visible arc across capabilities; System covers a single capability; inner trees own the combinatorial detail neither of them does.
-- <span class="nm">Layer completeness</span> — every layer owns complete coverage of its own behaviour at its own seam. <span class="nm">Journey and functional coverage is never coverage of the layers beneath them.</span> A higher-layer test — green or red — never excuses a missing lower-layer test: implement only once a failing test exists at the behaviour's own ground layer, sitting <em>under</em> the journey/functional failure that motivated it. When a Journey or System test surfaces inner behaviour, that inner unit gets its own tree path and its own failing test before any code lands. Overlap across layers is intentional, not waste. "Already covered by X" is never a reason to skip Y, nor to implement off X's failure alone.
-- <span class="nm">Descend to the lowest level, then fold back up</span> — run the failing higher-layer test, read its failure, and let it guide the next failing test one layer down: Journey → System → Component → Adapter → Use-case → Domain/Port. Keep descending to the lowest layer the behaviour reaches; never stop descending because the behaviour looks already covered above. Write the full ladder of tests down to the lowest level. Once the lowest-layer test passes, the layers fold back up — each higher-layer test passing in turn as the layers beneath it are satisfied, up to the Journey. A higher-layer test still failing means a layer beneath it lacks coverage: write another lower failing test before retrying upward.
-- <span class="nm">Test layers</span> — Journey (curated user arc across capabilities and contexts, kept under 5 min, real everything, representative error paths, eventually succeeds), System (one capability wired whole-app against real infrastructure — the same surface Component covers, validated for real; selective), Component (one capability wired whole-app with real adapters, externals doubled at the edge — in-memory database, stubbed outbound HTTP, in-process; exhaustive), Adapter (driving mocks app, driven hits real infra), Use-case (in-memory adapters), Domain (pure). <span class="nm">Use-case is to Component as Journey is to System</span>: behaviour-oriented (Use-case, Journey) vs system-oriented (Component, System); the cheap tier doubles what it can and is exhaustive, the real tier integrates everything affordable and is selective
-- <span class="nm">Shared port contract</span> — one `*.contract.ts` suite per port, imported by both in-memory-adapter and real-adapter test files
+- <span class="nm">Test kinds</span> — Journey is a broad production-like user arc across capabilities with external services doubled only if unavoidable; Component is one capability deeply through the whole app in-process with external services doubled; Integration starts from the highest-level subject and mocks everything except the subjects being integrated; Unit covers one public surface on one subject, and every public surface gets native unit tests with outside dependencies mocked.
+- <span class="nm">Outside-in</span> — start from the current tree's consumer. Write one test, observe RED, implement GREEN, and let branching during REFACTOR reveal another subject that needs its own Integration or Unit tree.
+- <span class="nm">Shared port behaviour</span> — each in-memory and real port implementation passes the same behavioural suite through its Unit tests.
 - <span class="nm">One tree, one test file</span> — each tree in `## Test Trees` reifies exactly one test file; the test file's describe/it hierarchy mirrors the tree verbatim (framework-agnostic contract)</pre>
           <div class="cap">…then the full text of your MENTAL_MODEL.md and TEST_TREES.md is appended below this — the agent starts the session holding all three.</div>
         </details>
