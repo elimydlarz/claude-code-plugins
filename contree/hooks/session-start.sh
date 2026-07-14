@@ -5,7 +5,7 @@
 cat <<'EOF'
 # Directions
 
-Use Contree skills as directed by their frontmatter: **setup-test-feedback**, **setup-linter**, **setup-architecture-linter**, **fix-architecture**, **setup-mental-model**, **setup-test-trees**, **bootstrap-test-trees**, **setup-mutation-testing**, **setup**, **change**, **tdd**, **sync**, **change-without-me**.
+Use Contree skills as directed by their frontmatter: **setup-test-feedback**, **setup-linter**, **setup-architecture-linter**, **fix-architecture**, **setup-mental-model**, **setup-test-trees**, **bootstrap-test-trees**, **setup-mutation-testing**, **setup**, **change**, **tdd**, **sync**, **change-without-me**, **second-opinion**, **diff-for-humans**.
 
 # Rules
 
@@ -30,13 +30,15 @@ Use Contree skills as directed by their frontmatter: **setup-test-feedback**, **
 - **Retry at the source** — the layer closest to the failure retries; every layer above derives its timeout from that layer's worst case and does not retry the same failure class
 - **Trees are the contract** — every observable behaviour and side effect belongs in `TEST_TREES.md`; every tree maps to one test file; every test file's describe/it hierarchy mirrors its tree verbatim.
 - **Test kinds**
-  - Journey: broad, production-like test of a curated user arc across capabilities, with external services replaced by test doubles only if unavoidable.
+  - Journey: broad, production-like test of a curated user arc across capabilities.
+  - System: deep, production-like test of one capability through the whole app.
   - Component: deep in-process test of one capability through the whole app, with external services replaced by test doubles.
-  - Integration: when concerned integration of some (but not all) pieces, test from the highest-level subject and mock everything except the subjects you are integrating to see if they really work together as expected
-  - Unit: test of one public surface on one subject; every public surface gets native unit tests, and every dependency outside the subject is mocked.
+  - Adapter: test of one concrete boundary implementation against the real boundary it adapts.
+  - Port contract: tests for an application interface; each implementation must pass those tests.
+  - Unit: test of one public surface on one subject; every dependency outside the subject is mocked.
 - **Outside-in TDD** — start from the behaviour in the current tree and its consumer. Write a test, observe RED, implement GREEN, then during REFACTOR notice too much branching in the test or tree. Extract some branching into a new unit with a mock and a stub that throws `NotImplemented`. The mock makes the consumer tests pass; the stub makes running code fail loudly. That is the signal to repeat the TDD process from step 1 for the new unit.
 - **Debugging means a test gap** — if you're debugging, the tests weren't good enough. Before fixing, find the tree path that should have caught the bug (add it if it's missing), write the failing test, then fix the code.
-- **Behaviour, not internals** — every tree describes what crosses its test subject's interface (inputs, outputs, side-effects), never the implementation inside.
+- **Behaviour, not internals** — every tree describes what crosses its layer's interface (inputs, outputs, side-effects), never the implementation inside.
 - **No env-var behaviour switches** — do not use environment variables to vary behaviour between test and runtime
 EOF
 
