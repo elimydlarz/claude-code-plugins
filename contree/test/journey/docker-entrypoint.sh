@@ -135,13 +135,17 @@ run_agent() {
 
   if [ "$HARNESS" = "claude" ]; then
     local continue_flag=()
+    local max_budget_usd="2.00"
     [ "$AGENT_CALL_COUNT" -gt 1 ] && continue_flag=(-c)
+    # The comprehensive setup journey deliberately runs every focused setup
+    # skill plus two subagent waves, so its first turn needs a larger envelope.
+    [ "$TEST_NAME" = "setup" ] && [ "$AGENT_CALL_COUNT" -eq 1 ] && max_budget_usd="4.00"
     (cd "$PROJECT_DIR" && claude -p "$prompt" \
       "${continue_flag[@]}" \
       --plugin-dir "$CONTREE_ROOT" \
       --dangerously-skip-permissions \
       --model sonnet \
-      --max-budget-usd 2.00 \
+      --max-budget-usd "$max_budget_usd" \
       --output-format stream-json \
       --verbose \
       2>&1) | tee -a "$TRANSCRIPT_FILE" || true
