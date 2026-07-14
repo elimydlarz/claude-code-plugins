@@ -15,19 +15,25 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   assert_output --partial "consumer is created before the thing it consumes is implemented"
 }
 
-@test "change scopes principles-not-cases to Journey, System, Component, and Adapter layers" {
+@test "change scopes principles-not-cases to Journey and Component tests" {
   run cat "$SKILL"
   assert_output --partial "principles, not cases"
-  assert_output --partial "Journey, System, Component, and Adapter"
+  assert_output --partial "Journey and Component"
 }
 
-@test "change writes Domain, Use-case, and Port trees from the outer consumer's need" {
+@test "change writes Integration trees from the highest-level subject and mocks everything else" {
   run cat "$SKILL"
-  assert_output --partial "Domain"
-  assert_output --partial "Use-case"
-  assert_output --partial "Port"
-  assert_output --partial "outer consumer"
-  assert_output --partial "forced into existence"
+  assert_output --partial "Integration"
+  assert_output --partial "highest-level subject"
+  assert_output --partial "mock"
+  assert_output --partial "subjects"
+}
+
+@test "change writes Unit trees for one public surface on one subject" {
+  run cat "$SKILL"
+  assert_output --partial "Unit"
+  assert_output --partial "public surface"
+  assert_output --partial "one subject"
 }
 
 @test "change treats pure functions as consumer-driven" {
@@ -53,10 +59,13 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   [[ "$output" == *"tautolog"* || "$output" == *"does not already imply"* ]]
 }
 
-@test "change plans System to inner-layer decomposition, one tree per behavioural unit" {
+@test "change chooses Journey Component Integration or Unit from observable scope" {
   run cat "$SKILL"
-  assert_output --regexp "one tree per|one tree, one test file"
-  assert_output --partial "System"
+  assert_output --partial "Journey"
+  assert_output --partial "Component"
+  assert_output --partial "Integration"
+  assert_output --partial "Unit"
+  assert_output --partial "observable"
 }
 
 @test "change only edits affected paths when modifying existing behaviour" {
@@ -85,14 +94,12 @@ SKILL="$PROJECT_ROOT/skills/change/SKILL.md"
   assert_output --partial "labelled"
 }
 
-@test "change specifies the seven coverage categories" {
+@test "change specifies the five coverage categories" {
   run cat "$SKILL"
   assert_output --partial "src"
-  assert_output --partial "domain"
-  assert_output --partial "use-case"
-  assert_output --partial "adapter"
+  assert_output --partial "unit"
+  assert_output --partial "integration"
   assert_output --partial "component"
-  assert_output --partial "system"
   assert_output --partial "journey"
 }
 
