@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Extracts key actions (tool calls) from functional test transcripts.
+# Extracts key actions from journey test transcripts.
 # Usage: ./analyse-transcripts.sh [test-name]
 #   No args: analyse all transcripts
 #   With arg: analyse one transcript
