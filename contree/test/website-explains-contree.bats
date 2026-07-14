@@ -30,6 +30,7 @@ SITE="$PROJECT_ROOT/website/index.html"
   assert_output --partial "/sync"
   assert_output --partial "/tdd"
   assert_output --partial "/second-opinion"
+  assert_output --partial "/change-without-me"
 }
 
 @test "the page explains the Claude Code hook mechanics — the injection channels and the Stop-hook control flow" {

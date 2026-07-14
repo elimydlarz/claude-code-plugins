@@ -576,6 +576,7 @@ website-explains-contree (src: website/index.html; system: test/website-explains
     then the page bridges from test-first practice to test trees as living requirements
     and the page explains the layered testing architecture from Journey down to Domain
     and the page walks the skill workflow — setup, change, sync, tdd, second-opinion
+    and the page offers change-without-me for the full arc
     and the page explains the Claude Code hook mechanics — the stdout, stderr-exit-2, and additionalContext injection channels, and the Stop-hook control flow
     and the page requires no build step
 ```
