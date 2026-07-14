@@ -497,12 +497,24 @@ case "$TEST_NAME" in
       if [ -f "$PROJECT_DIR/$config" ] && ! jq -e '
         ([.hooks.PostToolUse[]?.hooks[]?.command] | any(contains(".contree/hooks/lint-on-save.sh"))) and
         ([.hooks.PostToolUse[]? | select(.matcher == "Edit|Write") | .hooks[]?.command] | any(contains(".contree/hooks/test-changed.sh"))) and
-        ([.hooks.Stop[]?.hooks[]?.command] | any(contains(".contree/hooks/architecture-on-stop.sh")))
+        ([.hooks.SessionStart[]?.hooks[]?.command] | any(contains(".contree/hooks/load-mental-model.sh"))) and
+        ([.hooks.SessionStart[]?.hooks[]?.command] | any(contains(".contree/hooks/test-trees-session-start.sh"))) and
+        ([.hooks.Stop[]?.hooks[]?.command] | any(contains(".contree/hooks/architecture-on-stop.sh"))) and
+        ([.hooks.Stop[]?.hooks[]?.command] | any(contains(".contree/hooks/reconcile-mental-model.sh"))) and
+        ([.hooks.Stop[]?.hooks[]?.command] | any(contains(".contree/hooks/test-trees-on-stop.sh"))) and
+        ([.hooks.Stop[]?.hooks[]?.command] | any(contains(".contree/hooks/mutation-on-stop.sh")))
       ' "$PROJECT_DIR/$config" >/dev/null; then
         echo "Setup did not configure every project hook in $config" >&2
         pass=0
       fi
     done
+
+    if ! grep -q 'MENTAL MODEL: Reconcile newly learned domain knowledge' "$TRANSCRIPT_FILE" ||
+       ! grep -q 'TEST TREES: Before finishing' "$TRANSCRIPT_FILE" ||
+       ! grep -Eq 'Mutation testing|Mutation score|surviving mutant|Stryker' "$TRANSCRIPT_FILE"; then
+      echo "Fresh coding-agent turns did not receive mental-model, test-tree, and mutation Stop feedback" >&2
+      pass=0
+    fi
 
     expected_mental_model_headings=$'## Core Domain Identity\n## World-to-Code Mapping\n## Ubiquitous Language\n## Bounded Contexts\n## Invariants\n## Decision Rationale\n## Temporal View'
     actual_mental_model_headings="$(grep '^## ' "$PROJECT_DIR/MENTAL_MODEL.md" 2>/dev/null || true)"
