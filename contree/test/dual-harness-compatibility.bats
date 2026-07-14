@@ -110,40 +110,23 @@ load test_helper
   assert_failure
 }
 
-@test "and both journey harnesses use DeepSeek auth from DEEPSEEK_API_KEY" {
-  run grep -F 'docker_env_args=("${DOCKER_LLM_ENV[@]}")' "$PROJECT_ROOT/test/journey/docker-run.sh"
+@test "then its coding-agent model calls are sent to OpenAI's Responses API authenticated with OPENAI_API_KEY" {
+  run grep -F 'DOCKER_LLM_ENV=(-e OPENAI_API_KEY)' "$PROJECT_ROOT/test/journey/docker-run.sh"
   assert_success
 
-  run grep -F 'DOCKER_CODEX_ENV=(-e DEEPSEEK_API_KEY)' "$PROJECT_ROOT/test/journey/docker-run.sh"
+  run grep -F 'base_url = "https://api.openai.com/v1"' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
   assert_success
 
-  run grep -F 'env_key = "DEEPSEEK_API_KEY"' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
-  assert_success
-}
-
-@test "and Codex journey model calls reach DeepSeek through a Responses-compatible local boundary" {
-  run grep -F 'base_url = "http://127.0.0.1:$CODEX_DEEPSEEK_PROXY_PORT/v1"' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
+  run grep -F 'env_key = "OPENAI_API_KEY"' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
   assert_success
 
   run grep -F 'wire_api = "responses"' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
   assert_success
 
-  run grep -F 'codex-deepseek-responses-proxy.mjs' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
+  run grep -F 'https://api.openai.com/v1/responses' "$PROJECT_ROOT/test/journey/claude-openai-responses-proxy.mjs"
   assert_success
 
-  run grep -F 'https://api.deepseek.com/v1/chat/completions' "$PROJECT_ROOT/test/journey/codex-deepseek-responses-proxy.mjs"
-  assert_success
-
-  run grep -F 'Bearer ${apiKey}' "$PROJECT_ROOT/test/journey/codex-deepseek-responses-proxy.mjs"
-  assert_success
-
-  run grep -F "role: 'tool'" "$PROJECT_ROOT/test/journey/codex-deepseek-responses-proxy.mjs"
-  assert_success
-
-  run grep -F 'tool_call_id: item.call_id' "$PROJECT_ROOT/test/journey/codex-deepseek-responses-proxy.mjs"
-  assert_success
-
-  run grep -F 'tool_calls: pendingToolCalls' "$PROJECT_ROOT/test/journey/codex-deepseek-responses-proxy.mjs"
+  run grep -F 'Bearer ${apiKey}' "$PROJECT_ROOT/test/journey/claude-openai-responses-proxy.mjs"
   assert_success
 }
 
