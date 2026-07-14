@@ -82,7 +82,7 @@ Merge synchronous `PostToolUse` hooks into both `.claude/settings.json` and `.co
 }
 ```
 
-The project save hooks run after every file edit and give coding agents the complete impacted normal-test result before they continue.
+The project save hooks give coding agents the impacted normal-test result after each file edit and before they continue.
 
 Require each coding harness to load and trust its project hook. A hook present on disk but not exercised by its harness is not verified.
 
