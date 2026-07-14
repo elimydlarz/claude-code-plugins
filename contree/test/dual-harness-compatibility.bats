@@ -164,6 +164,11 @@ load test_helper
   assert_success
 }
 
+@test "then standard functional journey agent turns have a \$5 budget ceiling" {
+  run grep -F 'local max_budget_usd="5.00"' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
+  assert_success
+}
+
 @test "and the describe-it-drift journey verifies drift signals deterministically" {
   run grep -F "describe-it-drift — deterministic verification (no AI eval)" "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
   assert_success

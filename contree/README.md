@@ -153,11 +153,11 @@ Languages marked "flat" don't support nested test output natively — contree us
 
 ## Configuration
 
-Two skills call external APIs and read their credentials from the environment where the coding agent runs (export them in your shell, or whatever launches the agent, so its tools inherit them):
+The functional journey suite and two skills call external APIs and read their credentials from the environment where the coding agent runs (export them in your shell, or whatever launches the agent, so its tools inherit them):
 
-- **`OPENAI_API_KEY`** — required by `/contree:second-opinion` to call OpenAI's gpt-5.6-sol through the Responses API and by `/contree:diff-for-humans` to call OpenAI's gpt-image-2.
+- **`OPENAI_API_KEY`** — required by the functional journey suite to run both coding-agent harnesses with OpenAI's gpt-5.6-luna at medium reasoning effort, by `/contree:second-opinion` to call OpenAI's gpt-5.6-sol through the Responses API, and by `/contree:diff-for-humans` to call OpenAI's gpt-image-2. Standard Claude Code journey turns have a $5 budget ceiling.
 
-The key is only needed when you invoke either skill; the rest of contree works without it.
+The key is only needed when you run the functional journey suite or invoke either external-API skill; the rest of contree works without it. Journey launchers inherit an exported key or load it from `contree/test/journey/.env` or the repository-root `.env`.
 
 ## Dependencies
 

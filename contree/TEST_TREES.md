@@ -497,6 +497,8 @@ Integration: dual-harness-compatibility (src: .claude-plugin/plugin.json, .codex
     and its coding agent uses gpt-5.6-luna with medium reasoning effort
   if a functional journey run under either harness lacks OPENAI_API_KEY
     then it fails before starting the coding agent
+  when Claude Code is the harness
+    then standard functional journey agent turns have a $5 budget ceiling
   when Codex is the harness
     then Codex installations require [features].hooks and [features].plugin_hooks to be true so hooks/hooks.json is loaded
     and the automated journey matrix runs the existing functional cases under Codex
