@@ -11,6 +11,12 @@ SKILL="$PROJECT_ROOT/skills/sync/SKILL.md"
   assert_output --partial "contract with the operator"
 }
 
+@test "when sync is run then the full suite runs before review and every failure is treated as drift" {
+  run cat "$SKILL"
+  assert_output --partial "Run the full suite before reviewing"
+  assert_output --partial "every failure is drift"
+}
+
 @test "sync embeds every EARS form and causal nesting" {
   run cat "$SKILL"
   assert_output --partial "then <ubiquitous outcome>"
@@ -29,9 +35,9 @@ SKILL="$PROJECT_ROOT/skills/sync/SKILL.md"
   assert_output --partial "setup"
 }
 
-@test "sync verifies current coverage labels and test hierarchy" {
+@test "when sync is run then labelled src, domain, use-case, adapter, component, system, and journey paths are verified against the filesystem" {
   run cat "$SKILL"
-  assert_output --partial 'src`, `unit`, `integration`, `component`, and `journey`'
+  assert_output --partial 'src`, `domain`, `use-case`, `adapter`, `component`, `system`, and `journey`'
   assert_output --partial "describe/it hierarchy"
   assert_output --partial "verbatim"
   assert_output --partial "none"
@@ -65,24 +71,27 @@ SKILL="$PROJECT_ROOT/skills/sync/SKILL.md"
   assert_output --partial "codebase honours"
 }
 
-@test "sync verifies every public surface has Unit coverage and only adds other test kinds when their concern applies" {
+@test "when a substantive Domain, Use-case, or Port public seam revealed by TDD lacks native coverage then the missing native coverage is closed immediately through TDD while every applicable layer retains its distinct coverage" {
   run cat "$SKILL"
-  assert_output --partial "every public surface"
-  assert_output --partial "Unit"
-  assert_output --partial "gap to close immediately"
-  assert_output --partial "Integration"
-  assert_output --partial "Component"
-  assert_output --partial "Journey"
-  assert_output --partial "Do not add one test of every kind"
+  assert_output --partial "Domain, Use-case, and Port public seams"
+  assert_output --partial "native coverage"
+  assert_output --partial "Retain higher-layer coverage"
+  assert_output --partial "every applicable layer"
 }
 
-@test "sync checks observable branch parity separately from YAGNI" {
+@test "when a Domain, Use-case, or Port tree is checked then observable branch parity is checked separately from YAGNI" {
   run cat "$SKILL"
-  assert_output --partial "Unit"
+  assert_output --partial "Domain, Use-case, and Port"
   assert_output --partial "observable branch"
   assert_output --partial "Internal control flow"
   assert_output --partial "YAGNI"
   assert_output --partial "separately"
+}
+
+@test "when drift is identified then implementation with no consumer or operator intention is removed" {
+  run cat "$SKILL"
+  assert_output --partial "Remove implementation that has no consumer"
+  assert_output --partial "not part of operator intention"
 }
 
 @test "sync resolves drift proactively through change and tdd using operator intention" {
