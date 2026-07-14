@@ -1,64 +1,29 @@
 ---
 name: bootstrap-test-trees
-description: "Discover an existing project's supported behaviour and establish its mental model, test trees, and tests, or create empty Contree homes for a new project. TRIGGER when: the operator asks to bootstrap, backfill, or establish test trees for a project."
+description: "Compose mental-model and test-tree setup, then implement every existing-project tree through a second subagent wave. TRIGGER when: the operator asks to bootstrap, backfill, discover, or implement a project's existing behaviour as test trees and tests."
 ---
 
 # Bootstrap Test Trees
 
-Establish the contract and its tests from project evidence. Existing projects require operator alignment and two reconciled subagent waves. New projects receive only the empty homes that let the first requested capability pull behaviour into existence.
+Expand Contree into the project in three ordered phases: establish mental-model steering, establish test-tree steering, then make every existing-project tree executable. Keep phase ownership in the coordinator and prove retained artifacts and hooks before advancing.
 
-## Distinguish the Project
+## Distinguish the project
 
 Read the project root, source, tests, configuration, consumer documentation, `MENTAL_MODEL.md`, and `TEST_TREES.md` when present.
 
 A project is existing when it already has consumer-visible behaviour. A project is new when it has no consumer-visible behaviour, even if manifests or empty source directories exist.
 
-## Existing Project
+## Establish the steering
 
-### Agree the Scope
+Run `setup-mental-model` faithfully and wait for its discovery, reconciliation, artifact, SessionStart-hook, and Stop-hook gates to pass.
 
-Explain the evidence that discovery will gather: observable behaviour, existing tests, architecture, and mental-model concepts.
+Run `setup-test-trees` faithfully and wait for its discovery, reconciliation, artifact, SessionStart-hook, and Stop-hook gates to pass.
 
-Propose complete, non-overlapping behavioural areas based on the project evidence. Agree the behavioural scope with the operator before dispatching discovery. Include every area in scope exactly once.
+Invoke both focused skills yourself. Do not delegate either entire skill to an unattended background agent. Inspect the retained `MENTAL_MODEL.md`, `TEST_TREES.md`, project hook scripts, `.claude/settings.json`, and `.codex/hooks.json`; a subagent summary is not proof. Continue only after actual coding-agent turns prove that later agents receive both the mental model and test trees while they work and receive drift feedback before they finish.
 
-### Discover in Parallel
+## Existing project: implement the tests
 
-Dispatch subagents across the agreed non-overlapping areas regardless of project size. A one-file project still receives a discovery subagent. Give each subagent explicit ownership boundaries and require evidence from the files it inspected.
-
-Both subagent waves are required behaviour, not an optimisation. Never replace either wave with your own direct work because the project appears small or obvious.
-
-Each discovery subagent returns:
-
-- behaviour visible to a consumer at the area's public seams
-- inputs, outputs, side effects, prevented effects, and meaningful errors
-- existing tests and the behaviour they prove
-- architecture and dependency boundaries
-- mental-model concepts, vocabulary, decisions, and invariants
-- contradictions or unsupported claims in existing documentation or tests
-
-Discovery is read-only. Subagents do not edit source, tests, `MENTAL_MODEL.md`, or `TEST_TREES.md`.
-
-### Reconcile the Contract
-
-Reconcile all discovery evidence yourself. Resolve overlap, vocabulary differences, and contradictions against direct project evidence.
-
-Reconcile the result into one coherent `MENTAL_MODEL.md` and `TEST_TREES.md` with the operator. When `MENTAL_MODEL.md` is missing, create it with these seven H2 sections in order:
-
-1. `## Core Domain Identity`
-2. `## World-to-Code Mapping`
-3. `## Ubiquitous Language`
-4. `## Bounded Contexts`
-5. `## Invariants`
-6. `## Decision Rationale`
-7. `## Temporal View`
-
-Use `change` to create or modify the test-tree contract. Every tree starts with `<Layer>: <Subject> (<coverage>)` and expresses observable paths through EARS `then`, `while`, `when`, `where`, and `if` forms. Do not write ad-hoc headings, bullets, `File`, or `Coverage` fields as substitutes for a tree. Every discovered behaviour is expressed at its consumer-visible seam. Do not invent unsupported behaviour. Every tree names honest coverage, including `none` for tests that the implementation wave must add.
-
-Present the reconciled mental model and trees to the operator and obtain agreement before tests are implemented.
-
-### Implement the Tests
-
-Start a second wave of subagents only after the operator agrees the contract. Partition complete non-overlapping trees across the second wave of subagents. One tree belongs to exactly one subagent.
+After the operator has agreed the contract, start a second wave of subagents regardless of project size. Partition complete non-overlapping trees across the wave. One tree belongs to exactly one subagent.
 
 Exactly one tree maps to exactly one test file and exactly one test file maps to exactly one tree. Separate behaviours into separate files when they are separate trees; never share one test file across multiple trees.
 
@@ -69,35 +34,19 @@ Each implementation subagent uses `tdd` for its owned trees and:
 - makes each test hierarchy mirror its tree verbatim
 - updates the tree's coverage path when its test file is created
 - creates no placeholder, skipped, or fake tests
-- Do not write comments in test code
+- writes no comments in test code
 - runs the narrowest owning test after every test addition
 
 Subagents do not weaken trees to make tests pass and do not edit trees outside their ownership.
 
-Reconcile the test implementations yourself. Resolve overlaps and ensure each tree maps to exactly one test file and each test file maps to exactly one tree. Run the project's normal and functional test commands.
+Reconcile the implementations yourself. Confirm every retained tree has exactly one retained uncommented test file whose hierarchy mirrors it verbatim. Run the project's normal and functional test commands. If a test exposes disagreement with operator intention, leave it visible and use `change` for a contract correction or `tdd` for an implementation correction.
 
-## New Project
+## New project
 
-Create a seven-section `MENTAL_MODEL.md` containing the seven H2 headings in the exact order listed above, with one concise line under each heading describing what belongs there.
-
-Create an empty `TEST_TREES.md` containing only a heading and one sentence identifying it as the home for the project's test trees.
-
-Do not write behaviour trees or tests. Leave them to be pulled into existence by the first requested capability through `change` and `tdd`.
-
-## Disagreement
-
-If a bootstrapped test exposes behaviour that disagrees with the operator's intended contract, leave the disagreement visible and route it through `change` or `tdd`.
-
-Use `change` when the agreed contract needs correction. Use `tdd` when the implementation must be brought into agreement with the contract. Do not weaken the trees or tests, accept a failing test as supported behaviour, or silently rewrite operator intention.
+Stop after `setup-mental-model` and `setup-test-trees` have created their empty homes and proved the project-local steering hooks. Do not write behaviour trees or tests. Leave them to be pulled into existence by the first requested capability through `change` and `tdd`.
 
 ## Complete
 
-For an existing project, bootstrap is complete only when:
+For an existing project, bootstrap is complete only when both focused setup skills passed, both steering hooks were proved through actual turns, every agreed tree has exactly one passing mirrored test file, and the normal and functional commands pass.
 
-- the operator agreed the behavioural scope and reconciled contract
-- discovery covered every agreed area exactly once
-- `MENTAL_MODEL.md` and `TEST_TREES.md` form one coherent account of the project
-- every tree has one test file whose hierarchy mirrors it verbatim
-- normal and functional test commands pass
-
-For a new project, bootstrap is complete when the seven-section mental-model home and empty test-tree home exist and no behaviour tree or test was created.
+For a new project, bootstrap is complete only when both empty homes exist, both steering hooks were proved through actual turns, and no behaviour tree or test was created.

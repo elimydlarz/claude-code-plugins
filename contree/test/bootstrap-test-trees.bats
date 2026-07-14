@@ -4,71 +4,60 @@ load test_helper
 
 SKILL="$PROJECT_ROOT/skills/bootstrap-test-trees/SKILL.md"
 
-@test "when an operator asks to bootstrap test trees for an existing project then the skill explains the evidence it will gather and agrees the behavioural scope with the operator" {
+@test "when an operator bootstraps an existing project then focused mental-model and test-tree setup run before test implementation" {
   run cat "$SKILL"
-  assert_output --partial "Explain the evidence"
-  assert_output --partial "Agree the behavioural scope with the operator"
+  assert_output --partial 'Run `setup-mental-model` faithfully'
+  assert_output --partial 'Run `setup-test-trees` faithfully'
+  assert_output --partial "SessionStart-hook"
+  assert_output --partial "Stop-hook"
+  assert_output --partial "before advancing"
 }
 
-@test "when an operator asks to bootstrap test trees for an existing project then subagents inspect non-overlapping areas of the project for observable behaviour, tests, architecture, and mental-model concepts" {
+@test "when bootstrap composes focused setup then the coordinator proves retained steering instead of abandoning a whole skill in the background" {
   run cat "$SKILL"
-  assert_output --partial "non-overlapping areas"
-  assert_output --partial "observable behaviour, existing tests, architecture, and mental-model concepts"
-  assert_output --partial "regardless of project size"
-  assert_output --partial "Never replace either wave with your own direct work"
+  assert_output --partial "Invoke both focused skills yourself"
+  assert_output --partial "unattended background agent"
+  assert_output --partial "subagent summary is not proof"
+  assert_output --partial ".claude/settings.json"
+  assert_output --partial ".codex/hooks.json"
 }
 
-@test "when an operator asks to bootstrap test trees for an existing project then the coding agent reconciles their evidence into one coherent MENTAL_MODEL.md and TEST_TREES.md with the operator" {
+@test "when focused steering is established then later coding agents receive the model and trees while working plus drift feedback before finishing" {
   run cat "$SKILL"
-  assert_output --partial "Reconcile"
-  assert_output --partial 'one coherent `MENTAL_MODEL.md` and `TEST_TREES.md`'
-  assert_output --partial "with the operator"
+  assert_output --partial "actual coding-agent turns"
+  assert_output --partial "receive both the mental model and test trees while they work"
+  assert_output --partial "drift feedback before they finish"
 }
 
-@test "when an operator asks to bootstrap test trees for an existing project then every discovered behaviour is expressed at its consumer-visible seam without inventing unsupported behaviour" {
+@test "when an existing project is bootstrapped then a required second subagent wave implements non-overlapping trees through tdd" {
   run cat "$SKILL"
-  assert_output --partial "consumer-visible seam"
-  assert_output --partial "Do not invent unsupported behaviour"
-}
-
-@test "when an operator asks to bootstrap test trees for an existing project then a second wave of subagents implements non-overlapping test trees as tests whose hierarchy mirrors each tree verbatim" {
-  run cat "$SKILL"
-  assert_output --partial "second wave of subagents"
+  assert_output --partial "second wave of subagents regardless of project size"
   assert_output --partial "non-overlapping trees"
-  assert_output --partial "each test hierarchy mirror its tree verbatim"
+  assert_output --partial 'uses `tdd`'
+  assert_output --partial "observes RED"
+}
+
+@test "when test implementation completes then every tree owns exactly one uncommented mirrored test file" {
+  run cat "$SKILL"
   assert_output --partial "one tree maps to exactly one test file"
-  assert_output --partial "Do not write comments"
+  assert_output --partial "one test file maps to exactly one tree"
+  assert_output --partial "writes no comments"
+  assert_output --partial "hierarchy mirrors it verbatim"
 }
 
-@test "when an existing project is bootstrapped then change owns valid layered EARS trees with honest coverage" {
+@test "when existing-project bootstrap completes then the coordinator reconciles implementations and runs normal and functional commands" {
   run cat "$SKILL"
-  assert_output --partial 'Use `change`'
-  assert_output --partial '`<Layer>: <Subject> (<coverage>)`'
-  assert_output --partial "EARS"
-  assert_output --partial 'Do not write ad-hoc headings, bullets, `File`, or `Coverage` fields'
-}
-
-@test "when an operator asks to bootstrap test trees for an existing project then the coding agent reconciles the test implementations and runs the normal and functional test commands" {
-  run cat "$SKILL"
-  assert_output --partial "Reconcile the test implementations"
+  assert_output --partial "Reconcile the implementations yourself"
   assert_output --partial "normal and functional test commands"
+  assert_output --partial "leave it visible"
+  assert_output --partial '`change`'
+  assert_output --partial '`tdd`'
 }
 
-@test "when an operator asks to bootstrap test trees for a new project then the skill creates the seven-section mental-model home and an empty test-tree home" {
+@test "when a new project is bootstrapped then focused setup creates empty homes and steering without inventing behaviour" {
   run cat "$SKILL"
-  assert_output --partial 'seven-section `MENTAL_MODEL.md`'
-  assert_output --partial 'empty `TEST_TREES.md`'
-}
-
-@test "when an operator asks to bootstrap test trees for a new project then it leaves behaviour trees and tests to be pulled into existence by the first requested capability" {
-  run cat "$SKILL"
+  assert_output --partial "created their empty homes"
+  assert_output --partial "project-local steering hooks"
   assert_output --partial "Do not write behaviour trees or tests"
   assert_output --partial "first requested capability"
-}
-
-@test "if bootstrapped tests expose behaviour that disagrees with the operator's intended contract then the disagreement is left visible and routed through change or tdd rather than weakened in the trees or tests" {
-  run cat "$SKILL"
-  assert_output --partial "leave the disagreement visible"
-  assert_output --partial 'route it through `change` or `tdd`'
-  assert_output --partial "Do not weaken the trees or tests"
 }
