@@ -46,7 +46,3 @@ If the review finds actionable drift or gaps, route every finding through `chang
 ### 6. DONE — intent and implementation are one
 
 Report verified, independently reviewed working software only after every tree has a faithful passing test and fulfilling implementation, mutation testing passes, completion sync proves agreement, the full suite passes, and second-opinion has no actionable findings.
-
-If a phase fails: Surface the complete error. Do not run a later phase or claim completion.
-
-Consult the operator only if a consequential choice cannot be resolved from the rules, mental model, trees, tests, code, and operator intention. Do not add routine phase-transition pauses.
