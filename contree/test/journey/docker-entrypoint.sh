@@ -81,7 +81,7 @@ prime_codex_plugin() {
 
   cat > "$CODEX_TEST_HOME/config.toml" <<CONFIG
 model = "gpt-5.6-luna"
-model_provider = "openai"
+model_provider = "openai-custom"
 model_reasoning_effort = "medium"
 
 [features]
@@ -94,7 +94,7 @@ inherit = "all"
 [plugins."contree@local-marketplace"]
 enabled = true
 
-[model_providers.openai]
+[model_providers.openai-custom]
 name = "OpenAI"
 base_url = "https://api.openai.com/v1"
 env_key = "OPENAI_API_KEY"
