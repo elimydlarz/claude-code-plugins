@@ -84,7 +84,7 @@ run_pair() {
   if docker run --rm \
     --name "contree-test-${name}-${harness}-$$" \
     "${docker_env_args[@]}" \
-    -e "ZAI_API_KEY=${ZAI_API_KEY:-}" \
+    -e "OPENAI_API_KEY=${OPENAI_API_KEY:-}" \
     -v "$REPO_ROOT:/repo:ro" \
     -v "$SCRIPT_DIR:/output" \
     "$IMAGE_NAME" \
