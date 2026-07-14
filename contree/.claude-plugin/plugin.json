@@ -15,7 +15,7 @@
   "interface": {
     "displayName": "Contree",
     "shortDescription": "Test trees as the contract: change → sync → tdd, agent-driven.",
-    "longDescription": "Contree treats test trees as living requirements. Skills set expected behaviour (change), fulfil the contract across trees, code, and the mental model (sync), close gaps with one failing test at a time (tdd), bootstrap a project (setup), or run the full arc end-to-end (workflow).",
+    "longDescription": "Contree treats test trees as living requirements. Skills set expected behaviour (change), fulfil the contract across trees, code, and the mental model (sync), close gaps with one failing test at a time (tdd), bootstrap a project (setup), or run the full arc end-to-end (change-without-me).",
     "developerName": "Eli Mydlarz",
     "category": "Coding",
     "capabilities": [
