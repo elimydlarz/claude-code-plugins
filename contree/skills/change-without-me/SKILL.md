@@ -35,7 +35,7 @@ Run mutation testing at the end.
 
 ### 4. SECOND OPINION — review completed work
 
-Once the work is synced and implemented, run the `second-opinion` skill process: send the change and the test-tree contract to Z.AI's GLM 5.2 and surface its independent review. A second model catches what a single perspective misses. Where it finds drift or gaps, route them back through `change`, `sync`, or `tdd`.
+Once the work is synced and implemented, run the `second-opinion` skill process and surface its independent review. A second model catches what a single perspective misses. Where it finds drift or gaps, route them back through `change`, `sync`, or `tdd`.
 
 ### 5. DONE — intent and implementation are one
 
