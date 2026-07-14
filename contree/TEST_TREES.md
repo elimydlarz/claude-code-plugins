@@ -530,16 +530,17 @@ Unit: diff-images-the-change (src: skills/diff-for-humans/SKILL.md; unit: test/d
 Unit: second-opinion-reviews-completed-work (src: skills/second-opinion/SKILL.md; unit: test/second-opinion-reviews-completed-work.bats; journey: test/journey/docker-entrypoint.sh)
   when the second-opinion skill is invoked
     then it determines the work to review from any natural-language indication the user gave
-    and absent a clear indication it reviews the last non-trivial, naturally grouped changes — not a single commit, since trunk-sync commits continuously, and not only the working tree
+    and absent a clear indication it reviews the current worktree
     and the work it gathers includes new files not yet tracked by git
-    and untracked file diffs do not make the recipe fail when git diff --no-index reports differences
     and it reads the test trees as the contract the work must satisfy
-    and it sends the change and the test trees to Z.AI's GLM 5.2 via the chat completions API authenticated with ZAI_API_KEY, with ZAI_BASE_URL selecting the API root
-    and it sends the change and the test trees to DeepSeek via the DeepSeek chat completions API authenticated with DEEPSEEK_API_KEY when ZAI_API_KEY is absent, with DEEPSEEK_BASE_URL selecting the API root
-    and it surfaces the independent model's review to the user attributed to the model that reviewed it
-  when there are no non-trivial changes to review
+    and it directs the independent model to review database-schema changes
+    and it directs the independent model to review API-contract changes
+    and it directs the independent model to review impacts on other systems
+    and it sends the work and test trees to OpenAI's Responses API authenticated with OPENAI_API_KEY, using gpt-5.6-sol with high reasoning effort
+    and it surfaces the independent model's review to the user attributed to gpt-5.6-sol
+  when the current worktree contains no non-trivial work to review
     then it says so and stops without calling the API
-  if the review request fails — missing both ZAI_API_KEY and DEEPSEEK_API_KEY, an API error, a non-2xx response, or empty content
+  if the review request fails — OPENAI_API_KEY is missing, the API returns an error or non-2xx response, or the response contains no review
     then the failure is surfaced as an error and no review is fabricated
 ```
 
