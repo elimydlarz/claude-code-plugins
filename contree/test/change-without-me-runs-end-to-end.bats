@@ -24,7 +24,7 @@ SKILL="$PROJECT_ROOT/skills/change-without-me/SKILL.md"
 
 @test "when change-without-me is run with an idea then change runs without pausing for a phase transition when change completes then sync runs immediately without pausing when sync identifies gaps then tdd implements every gap immediately without pausing when tdd closes the identified gaps then mutation testing validates Domain and Use-case tests" {
   run cat "$SKILL"
-  assert_output --partial "mutation testing validates Domain and Use-case tests"
+  assert_output --partial "Mutation testing validates Domain and Use-case tests"
 }
 
 @test "when change-without-me is run with an idea then change runs without pausing for a phase transition when change completes then sync runs immediately without pausing when sync identifies gaps then tdd implements every gap immediately without pausing when tdd closes the identified gaps then mutation testing validates Domain and Use-case tests when mutation testing passes then sync reruns its complete audit and full suite" {
@@ -39,13 +39,13 @@ SKILL="$PROJECT_ROOT/skills/change-without-me/SKILL.md"
 
 @test "when change-without-me is run with an idea then change runs without pausing for a phase transition when change completes then sync runs immediately without pausing when sync identifies gaps then tdd implements every gap immediately without pausing when tdd closes the identified gaps then mutation testing validates Domain and Use-case tests when mutation testing passes then sync reruns its complete audit and full suite when the completion audit proves intention, trees, tests, implementation, and mental model agree then second-opinion reviews the completed work with an independent model" {
   run cat "$SKILL"
-  assert_output --partial "### 4. SECOND OPINION"
+  assert_output --partial "### 5. SECOND OPINION"
   assert_output --partial 'run the `second-opinion` skill process'
 }
 
 @test "when change-without-me is run with an idea then change runs without pausing for a phase transition when change completes then sync runs immediately without pausing when sync identifies gaps then tdd implements every gap immediately without pausing when tdd closes the identified gaps then mutation testing validates Domain and Use-case tests when mutation testing passes then sync reruns its complete audit and full suite when the completion audit proves intention, trees, tests, implementation, and mental model agree then second-opinion reviews the completed work with an independent model if second-opinion finds actionable drift or gaps then every finding is routed through change, sync, or tdd and all completion gates repeat before another independent review" {
   run cat "$SKILL"
-  assert_output --partial "repeat every completion gate before requesting another independent review"
+  assert_output --partial "Repeat every completion gate before requesting another independent review"
 }
 
 @test "when change-without-me is run with an idea then change runs without pausing for a phase transition when change completes then sync runs immediately without pausing when sync identifies gaps then tdd implements every gap immediately without pausing when tdd closes the identified gaps then mutation testing validates Domain and Use-case tests when mutation testing passes then sync reruns its complete audit and full suite when the completion audit proves intention, trees, tests, implementation, and mental model agree then second-opinion reviews the completed work with an independent model when second-opinion has no actionable findings then change-without-me reports verified, independently reviewed working software" {
@@ -56,7 +56,7 @@ SKILL="$PROJECT_ROOT/skills/change-without-me/SKILL.md"
 
 @test "if a phase fails then its complete error is surfaced and no later phase or completion claim runs" {
   run cat "$SKILL"
-  assert_output --partial "Surface the complete error"
+  assert_output --partial "surface the complete error"
   assert_output --partial "Do not run a later phase or claim completion"
 }
 
