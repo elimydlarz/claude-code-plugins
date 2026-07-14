@@ -63,7 +63,8 @@ run_hook_in() {
 @test "session start directs the agent to describe each level's observable behaviour at its interface, not the implementation inside it" {
   run_hook_in "$BATS_TEST_TMPDIR"
   assert_output --partial "Behaviour, not internals"
-  assert_output --partial "observable at the seam"
+  assert_output --partial "test subject's interface"
+  assert_output --partial "never the implementation inside"
 }
 
 @test "session start explains the test kinds" {
