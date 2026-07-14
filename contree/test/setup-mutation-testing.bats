@@ -30,6 +30,29 @@ SKILL="$PROJECT_ROOT/skills/setup-mutation-testing/SKILL.md"
   assert_output --partial "fastest available repeat feedback"
 }
 
+@test "when an operator asks to set up mutation testing and project Stop hooks run incremental mutation feedback only when relevant Domain or Use-case source or tests changed" {
+  run cat "$SKILL"
+  assert_output --partial "project-local incremental mutation command"
+  assert_output --partial "Domain or Use-case production and test files"
+  assert_output --partial "does not invoke the mutation tool"
+  assert_output --partial ".claude/settings.json"
+  assert_output --partial ".codex/hooks.json"
+  assert_output --partial ".contree/hooks/mutation-on-stop.sh"
+  assert_output --partial "stop_hook_active"
+  assert_output --partial "before invoking mutation feedback"
+  assert_output --partial "synchronous"
+}
+
+@test "when an operator asks to set up mutation testing and the hook preserves complete surviving-mutant output and fails visibly when the agreed threshold is missed" {
+  run cat "$SKILL"
+  assert_output --partial "complete mutation output"
+  assert_output --partial "surviving mutants"
+  assert_output --partial "tool failure"
+  assert_output --partial "stderr"
+  assert_output --partial "exit 2"
+  assert_output --partial "actual coding-agent Stop turns"
+}
+
 @test "when an operator asks to set up mutation testing and the skill runs mutation testing before reporting completion" {
   run cat "$SKILL"
   assert_output --partial "Run mutation testing before reporting completion"
