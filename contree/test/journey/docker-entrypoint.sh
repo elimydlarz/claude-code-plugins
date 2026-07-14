@@ -22,6 +22,10 @@ if [ -f "$ENV_FILE" ]; then
   . "$ENV_FILE"
   set +a
 fi
+if [ -z "${OPENAI_API_KEY:-}" ]; then
+  echo "Functional journey runs require OPENAI_API_KEY" >&2
+  exit 1
+fi
 FIXTURES="$CONTREE_ROOT/test/fixtures"
 PROJECT_DIR="/tmp/contree-test-project"
 CODEX_TEST_HOME="$PROJECT_DIR/.codex-home"

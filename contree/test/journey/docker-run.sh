@@ -20,6 +20,11 @@ for env_file in "$SCRIPT_DIR/.env" "$REPO_ROOT/.env"; do
   [ -f "$env_file" ] && set -a && . "$env_file" && set +a
 done
 
+if [ -z "${OPENAI_API_KEY:-}" ]; then
+  echo "Functional journey runs require OPENAI_API_KEY" >&2
+  exit 1
+fi
+
 DOCKER_LLM_ENV=(-e OPENAI_API_KEY)
 
 # (test-name, harness) pairs run by `all`.
