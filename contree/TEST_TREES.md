@@ -25,7 +25,7 @@ Domain: test-trees-as-requirements (src: CLAUDE.md, skills/change/SKILL.md, skil
 ```
 Use-case: bootstrap-test-trees (src: skills/bootstrap-test-trees/SKILL.md; use-case: test/bootstrap-test-trees.bats)
   when the skill classifies a project
-    then consumer-visible behaviour or domain decisions make it existing while their absence makes it new
+    then consumer-visible behaviour makes it existing while its absence makes it new
   when an operator asks to bootstrap test trees for an existing project
     then the skill runs setup-mental-model and setup-test-trees as focused prerequisite phases
     and it proves both project-local steering hooks are active before implementing tests
