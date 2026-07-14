@@ -1,7 +1,7 @@
 ## test-trees-as-requirements
 
 ```
-Unit: test-trees-as-requirements (unit: test/test-trees-as-requirements.bats)
+Domain: test-trees-as-requirements (src: CLAUDE.md, skills/change/SKILL.md, skills/tdd/SKILL.md; domain: test/test-trees-as-requirements.bats)
   when a project uses contree
     then CLAUDE.md identifies TEST_TREES.md as the definition of functional and cross-functional requirements
     and TEST_TREES.md defines functional requirements using EARS syntax
@@ -9,8 +9,10 @@ Unit: test-trees-as-requirements (unit: test/test-trees-as-requirements.bats)
     and trees are flat subsections — not grouped by kind or layer
     and every tree reifies exactly one test file
     and every test file reifies exactly one tree
-    and every tree names its coverage in parenthesised labelled pairs on the tree-name line, covering the categories src, unit, integration, component, journey
+    and every tree begins with a Journey, System, Component, Adapter, Use-case, Domain, or Port layer
+    and every tree names its coverage in parenthesised labelled pairs on the tree-name line, covering the categories src, domain, use-case, adapter, component, system, journey
     and gaps are declared explicitly — "none" for expected-but-uncovered categories, omission for not-applicable ones
+    and every declared coverage path exists on disk unless its value is none
     and the EARS rule is embedded where trees are written
   when a behaviour change is needed
     then the tree must exist before implementation starts
@@ -21,11 +23,15 @@ Unit: test-trees-as-requirements (unit: test/test-trees-as-requirements.bats)
 ## bootstrap-test-trees
 
 ```
-Unit: bootstrap-test-trees (src: skills/bootstrap-test-trees/SKILL.md; unit: test/bootstrap-test-trees.bats)
+Use-case: bootstrap-test-trees (src: skills/bootstrap-test-trees/SKILL.md; use-case: test/bootstrap-test-trees.bats)
+  when the skill classifies a project
+    then consumer-visible behaviour or domain decisions make it existing while their absence makes it new
   when an operator asks to bootstrap test trees for an existing project
     then the skill runs setup-mental-model and setup-test-trees as focused prerequisite phases
     and it proves both project-local steering hooks are active before implementing tests
+    and operator agreement on the contract is required before test implementation starts
     and a second wave of subagents implements non-overlapping test trees as tests whose hierarchy mirrors each tree verbatim
+    and each implementation subagent uses tdd at the tree's native seam, observes RED, updates coverage, and writes one uncommented real test at a time
     and every tree maps to exactly one uncommented test file
     and the coding agent reconciles the test implementations and runs the normal and journey test commands
   when an operator asks to bootstrap test trees for a new project
@@ -38,32 +44,42 @@ Unit: bootstrap-test-trees (src: skills/bootstrap-test-trees/SKILL.md; unit: tes
 ## setup-mental-model
 
 ```
-Unit: setup-mental-model (src: skills/setup-mental-model/SKILL.md; unit: test/setup-mental-model.bats)
+Use-case: setup-mental-model (src: skills/setup-mental-model/SKILL.md; use-case: test/setup-mental-model.bats)
+  when the skill classifies a project
+    then consumer-visible behaviour or evidenced domain decisions make it existing while their absence makes it new
   when an operator asks to set up a mental model for an existing project
     then the skill agrees the evidence and non-overlapping discovery areas with the operator
     and discovery subagents report domain identity, world-to-code mapping, language, boundaries, invariants, rationale, temporal knowledge, and contradictions from inspected files
     and the coding agent reconciles the evidence with the operator into exactly the seven mental-model sections
     and unsupported claims and consequential disagreements remain visible rather than being silently invented or resolved
+    and operator agreement on the reconciled mental model is required before steering is installed
     and project SessionStart hooks load the mental model before coding agents work
     and project Stop hooks ask the coding agent to reconcile newly learned domain knowledge before it finishes
-    and the skill proves both hooks through actual coding-agent turns before reporting completion
+    and both project configurations preserve existing hooks while receiving each mental-model hook exactly once
+    and hook failures preserve complete output and fail visibly
+    and the skill proves both hooks through actual Claude Code and Codex turns before reporting completion
   when an operator asks to set up a mental model for a new project
-    then the skill creates the seven-section mental-model home without inventing domain knowledge
+    then the skill creates the seven-section mental-model home with one evidence-guiding line per section without inventing domain knowledge
     and it installs and proves the same project-local steering hooks
 ```
 
 ## setup-test-trees
 
 ```
-Unit: setup-test-trees (src: skills/setup-test-trees/SKILL.md; unit: test/setup-test-trees.bats)
+Use-case: setup-test-trees (src: skills/setup-test-trees/SKILL.md; use-case: test/setup-test-trees.bats)
+  when the skill classifies a project
+    then consumer-visible behaviour makes it existing while its absence makes it new
   when an operator asks to set up test trees for an existing project
     then the skill explains the behavioural evidence it will gather and agrees complete non-overlapping scope with the operator
     and discovery subagents inspect every area for observable behaviour, existing tests, public seams, errors, side effects, and contradictions
     and the coding agent reconciles the evidence with the operator through change into consumer-driven EARS trees with honest coverage
     and every discovered behaviour is expressed at its consumer-visible seam without inventing unsupported behaviour
+    and operator agreement on the trees is required before steering is installed without creating tests or production behaviour
     and project SessionStart hooks load TEST_TREES.md and the tree-writing rules before coding agents work
     and project Stop hooks ask the coding agent to reconcile drift between trees, tests, and implementation before it finishes
-    and the skill proves both hooks through actual coding-agent turns before reporting completion
+    and both project configurations preserve existing hooks while receiving each test-tree hook exactly once
+    and hook failures fail visibly without hiding their native output
+    and the skill proves both hooks through actual Claude Code and Codex turns before reporting completion
   when an operator asks to set up test trees for a new project
     then the skill creates an empty test-tree home without inventing behaviour
     and it installs and proves the same project-local steering hooks
@@ -72,13 +88,13 @@ Unit: setup-test-trees (src: skills/setup-test-trees/SKILL.md; unit: test/setup-
 ## outside-in-tdd
 
 ```
-Unit: outside-in-tdd (src: skills/tdd/SKILL.md; unit: test/outside-in-tdd.bats; journey: test/journey/docker-entrypoint.sh)
+Use-case: outside-in-tdd (src: skills/tdd/SKILL.md; use-case: test/outside-in-tdd.bats)
   when TDD starts
     then the current test tree is read before tests or implementation
     and one observable behaviour is selected
     and development proceeds outside-in from that behaviour's consumer
   when choosing a test kind
-    then Journey, Component, Integration, and Unit are defined in the same concise terms as the session rules
+    then Journey, System, Component, Adapter, Port contract, and Unit are defined in the same concise terms as the session rules
     and the test kind describes the current test rather than a predetermined implementation order
   when setting up mocks for a Unit test
     then the agent first identifies the observable result and intentional side effects that the test asserts
@@ -127,7 +143,7 @@ Unit: outside-in-tdd (src: skills/tdd/SKILL.md; unit: test/outside-in-tdd.bats; 
 ## pre-task-hook
 
 ```
-Unit: pre-task-hook (src: hooks/session-start.sh; unit: test/pre-task-hook.bats; journey: test/journey/docker-entrypoint.sh)
+Adapter: pre-task-hook (src: hooks/session-start.sh; adapter: test/pre-task-hook.bats)
   when a session starts
     then MENTAL_MODEL.md contents are displayed
     and TEST_TREES.md contents are displayed
@@ -136,7 +152,7 @@ Unit: pre-task-hook (src: hooks/session-start.sh; unit: test/pre-task-hook.bats;
     and the agent is directed to flag the mental model as wrong, incomplete, or misleading rather than silently reshaping it through code
     and the agent is directed that trees are the contract — every observable behaviour and side effect belongs in TEST_TREES.md, every tree maps to one test file, and every test file's describe/it hierarchy mirrors its tree verbatim
     and the agent is directed to describe each level's observable behaviour at its interface — inputs, outputs, and side-effects — not the implementation inside it
-    and the agent is directed that Journey, Component, Integration, and Unit are the test kinds
+    and the agent is directed that Journey, System, Component, Adapter, Port contract, and Unit are the test kinds
     and the agent is directed to work outside-in and consumer-driven from the behaviour in the current tree
     and the agent is directed to write a test, observe RED, implement GREEN, then notice too much branching in the test or tree during REFACTOR
     and the agent is directed to extract some branching into a new unit with a mock and a stub that throws NotImplemented
@@ -150,7 +166,7 @@ Unit: pre-task-hook (src: hooks/session-start.sh; unit: test/pre-task-hook.bats;
 ## post-task-hook
 
 ```
-Unit: post-task-hook (src: hooks/stop-drift-check.sh; unit: test/post-task-hook.bats; journey: test/journey/docker-entrypoint.sh)
+Adapter: post-task-hook (src: hooks/stop-drift-check.sh; adapter: test/post-task-hook.bats)
   when Claude stops after a response
     then a mental-model nudge prompts consideration of whether the task revealed any knowledge not already described in documentation, tests, and code, defaulting to no change
       and directs creation of MENTAL_MODEL.md with the seven named H2 sections in order when it is missing at the project root
@@ -164,6 +180,7 @@ Unit: post-task-hook (src: hooks/stop-drift-check.sh; unit: test/post-task-hook.
     and a claude-md nudge prompts detection of drift between CLAUDE.md content and reality
     and a readme nudge prompts detection of readme staleness against what the project is, how consumers install it, configure it, and use it
       and directs creation of README.md with those consumer-facing details when it is missing at the project root
+    and the hook fails with status 2 so the drift prompt reaches Claude
   when stop_hook_active is true
     then the hook exits silently to prevent infinite loops
   when no nudge reports anything
@@ -178,30 +195,31 @@ Unit: post-task-hook (src: hooks/stop-drift-check.sh; unit: test/post-task-hook.
 ## setup-test-feedback
 
 ```
-Unit: setup-test-feedback (src: skills/setup-test-feedback/SKILL.md; unit: test/setup-test-feedback.bats)
+Use-case: setup-test-feedback (src: skills/setup-test-feedback/SKILL.md; use-case: test/setup-test-feedback.bats)
   when an operator asks to set up test feedback
     then the skill inspects the existing project and agrees the framework choice and command mapping with the operator before changing files
     and it merges existing test configuration instead of replacing it
     and it configures tree-shaped normal and journey test output where the ecosystem supports it
-    and the normal command runs Unit, Integration, and Component tests while the journey command separately runs Journey tests
-    and a native test-changed command plus synchronous project save hooks give coding agents the impacted normal-test result after each file edit
-    and it runs both test commands and verifies the test-changed baseline and impact selection before reporting completion
+    and the normal command runs Domain, Use-case, Adapter, Port, Component, and System coverage while the journey command separately runs Journey tests
+    and a native test-changed command selects changed and dependent normal tests from the last successful baseline
+    and synchronous project save hooks preserve complete output and give coding agents the impacted normal-test result after each file edit
+    and it runs both test commands and verifies the test-changed baseline, impact selection, and both coding-harness hooks before reporting completion
   if a configured test command or project hook fails verification
     then the skill fixes the configuration and reruns verification until the feedback path works
   when tests need external services
-    then the relevant command owns a self-contained Docker lifecycle and always tears its test artefacts down
+    then the relevant command owns a self-contained Docker lifecycle that waits for readiness and always tears its test artefacts down
 ```
 
 ## setup-linter
 
 ```
-Unit: setup-linter (src: skills/setup-linter/SKILL.md; unit: test/setup-linter.bats)
+Use-case: setup-linter (src: skills/setup-linter/SKILL.md; use-case: test/setup-linter.bats)
   when an operator asks to set up code linting
     then the skill inspects the ecosystem and existing configuration and agrees the strong conventional rules with the operator
     and it installs and merges the conventional linter without replacing project-owned rules
     and it creates a native lint command and CI gate
     and synchronous project save hooks run the linter's autofix command from the project root before the coding agent continues
-    and the skill runs autofix and lint across the existing project before reporting completion
+    and the skill runs autofix and lint across the existing project and proves the CI gate and both coding-harness hooks before reporting completion
   if lint violations remain after automatic fixes
     then the skill fixes the remaining violations and reruns lint until it passes
   if a save-time autofix cannot complete
