@@ -69,12 +69,13 @@ run_hook_in() {
 @test "session start explains the test kinds" {
   run_hook_in "$BATS_TEST_TMPDIR"
   assert_output --partial "Test kinds"
-  assert_output --partial "Journey: broad, production-like test of a curated user arc across capabilities"
-  assert_output --partial "System: deep, production-like test of one capability through the whole app"
-  assert_output --partial "Component: deep in-process test of one capability through the whole app"
-  assert_output --partial "Adapter: test of one concrete boundary implementation"
-  assert_output --partial "Port contract: tests for an application interface"
-  assert_output --partial "Unit: test of one public surface on one subject"
+  assert_output --partial "Journey: broad, production-like test of a curated user arc across capabilities, with external services replaced by test doubles only if unavoidable."
+  assert_output --partial "Component: deep in-process test of one capability through the whole app, with external services replaced by test doubles."
+  assert_output --partial "Integration: when concerned integration of some (but not all) pieces, test from the highest-level subject and mock everything except the subjects you are integrating to see if they really work together as expected"
+  assert_output --partial "Unit: test of one public surface on one subject; every public surface gets native unit tests, and every dependency outside the subject is mocked."
+  refute_output --partial "System:"
+  refute_output --partial "Adapter: test"
+  refute_output --partial "Port contract: tests"
 }
 
 @test "session start directs recursive outside-in consumer-driven tdd" {

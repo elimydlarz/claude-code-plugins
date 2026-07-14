@@ -14,12 +14,13 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
 
 @test "when choosing a test kind then the concise test-kind definitions are present without prescribing an order" {
   run cat "$SKILL"
-  assert_output --partial "Journey: broad, production-like test of a curated user arc across capabilities."
-  assert_output --partial "System: deep, production-like test of one capability through the whole app."
+  assert_output --partial "Journey: broad, production-like test of a curated user arc across capabilities, with external services replaced by test doubles only if unavoidable."
   assert_output --partial "Component: deep in-process test of one capability through the whole app, with external services replaced by test doubles."
-  assert_output --partial "Adapter: test of one concrete boundary implementation against the real boundary it adapts: HTTP, CLI, database, filesystem, queue, third-party API, etc."
-  assert_output --partial "Port contract: tests for an application interface such as a repository, gateway, or store; each implementation of that interface must pass those tests."
+  assert_output --partial "Integration: when concerned integration of some (but not all) pieces, test from the highest-level subject and mock everything except the subjects you are integrating to see if they really work together as expected"
   assert_output --partial "Unit: test of one public surface on one subject; every public surface gets native unit tests, and every dependency outside the subject is mocked."
+  refute_output --partial "System:"
+  refute_output --partial "Adapter: test"
+  refute_output --partial "Port contract: tests"
   assert_output --partial "not an implementation order"
 }
 
