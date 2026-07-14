@@ -1,9 +1,19 @@
 # Project
-- Contree skills should recommend Codex Spark when running large numbers of subagents for simple work
-- Simplify Contree test layering: unit, intergration, functional, journey
+- Simplify Contree test layering: unit, component, journey
+
 - Async: optimistic feedback
+
 - Create behaviour trees from artefacts
-- Improve second opinion to also review behaviour trees
+
+- Improve setup test trees to work from expected inputs
+    - Cross-Functional Requirements (CFRs)
+    - Concept Doc
+    - Business Metrics
+    - JTBD
+    - Product Metrics
+    - Existing code
+
+- Improve second opinion to review:
     - Database schema
     - API contracts
     - Impact to other systems
