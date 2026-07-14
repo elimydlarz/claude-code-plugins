@@ -35,7 +35,7 @@ If the operator explicitly instructs you to skip mutation testing, record the sk
 
 ### 4. COMPLETION SYNC — prove agreement
 
-Rerun the complete `sync` audit and its full suite after mutation testing passes. Require intention, trees, tests, implementation, and the mental model to agree.
+Rerun the complete `sync` audit and its full suite after mutation testing passes or the explicit skip is recorded. Require intention, trees, tests, implementation, and the mental model to agree.
 
 If the completion audit finds drift or gaps, route each finding through `change`, `sync`, or `tdd`, then repeat mutation testing and the complete sync audit. Continue until the completion audit proves agreement.
 
@@ -45,7 +45,7 @@ Once completion sync proves agreement, run the `second-opinion` skill process an
 
 Keep exactly one review request active. While the review request is pending, wait for its terminal tool result—success, error, or timeout—and inspect the returned review before making a phase decision. Do not report it unavailable, start a duplicate request, or advance to DONE while it is still running; an actionable result that arrives after an interim status is still the review result and must be closed.
 
-If the review finds actionable drift or gaps, route expectation drift through `change`, audit drift through `sync`, and missing tests or implementation through `tdd`; use the required sequence when a finding spans them. Then rerun mutation testing, the complete sync audit, and the full suite before requesting another independent review. Continue until the independent review has no actionable findings.
+If the review finds actionable drift or gaps, route expectation drift through `change`, audit drift through `sync`, and missing tests or implementation through `tdd`; use the required sequence when a finding spans them. Then rerun mutation testing unless it was explicitly skipped, followed by the complete sync audit and full suite, before requesting another independent review. Continue until the independent review has no actionable findings.
 
 If second-opinion terminates without a usable review, surface the review failure. Do not advance to DONE.
 

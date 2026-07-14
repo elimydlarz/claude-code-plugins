@@ -53,12 +53,15 @@ SKILL="$PROJECT_ROOT/skills/change-without-me/SKILL.md"
 @test "while the second-opinion review request is pending change-without-me waits for its terminal result without reporting it unavailable or advancing to DONE" {
   run cat "$SKILL"
   assert_output --partial "While the review request is pending"
-  assert_output --partial "Do not report it unavailable or advance to DONE"
+  assert_output --partial "Do not report it unavailable"
+  assert_output --partial "advance to DONE"
 }
 
 @test "when change-without-me is run with an idea then change runs without pausing for a phase transition when change completes then sync runs immediately without pausing when sync identifies gaps then tdd implements every gap immediately without pausing when tdd closes the identified gaps then mutation testing validates Domain and Use-case tests when mutation testing passes then sync reruns its complete audit and full suite when the completion audit proves intention, trees, tests, implementation, and mental model agree then second-opinion reviews the completed work with an independent model if second-opinion finds actionable drift or gaps then every finding is routed through change, sync, or tdd and all completion gates repeat before another independent review" {
   run cat "$SKILL"
-  assert_output --partial "Repeat every completion gate before requesting another independent review"
+  assert_output --partial "rerun mutation testing unless it was explicitly skipped"
+  assert_output --partial "complete sync audit and full suite"
+  assert_output --partial "before requesting another independent review"
 }
 
 @test "if second-opinion terminates without a usable review then change-without-me surfaces the review failure and does not advance to DONE" {
