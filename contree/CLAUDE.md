@@ -27,7 +27,16 @@ Mechanisms:
 
 ## Mental Model
 
-The mental model lives in [MENTAL_MODEL.md](./MENTAL_MODEL.md) — Core Domain Identity, World-to-Code Mapping, Ubiquitous Language, Bounded Contexts, Invariants, Decision Rationale, and Temporal View. It defines the seven observable layers and the outside-in flow: RED, GREEN, then REFACTOR excessive branching behind a mock and `NotImplemented` stub; passing consumer tests plus the throwing stub signal a new TDD cycle for that unit.
+The mental model lives in [MENTAL_MODEL.md](./MENTAL_MODEL.md) — Core Domain Identity, World-to-Code Mapping, Ubiquitous Language, Bounded Contexts, Invariants, Decision Rationale, and Temporal View. It defines the four operator-facing test layers, the native Use-case, Domain, and Port seams, and the outside-in flow: RED, GREEN, then REFACTOR excessive branching behind a mock and `NotImplemented` stub; passing consumer tests plus the throwing stub signal a new TDD cycle for that unit.
+
+The operator-facing test layers are:
+
+- **Journey** — broad, production-like test of a curated user arc across capabilities.
+- **System** — deep, production-like test of one capability through the whole app.
+- **Component** — deep in-process test of one capability through the whole app, with external services replaced by test doubles.
+- **Adapter** — test of one concrete boundary implementation against the real boundary it adapts.
+
+Use-case and Domain identify native Unit seams. Port identifies the shared contract suite that every implementation of an outbound application interface passes.
 
 Flow: `setup` prepares the project for test-tree-driven development → `change` sets expected behaviour → `sync` identifies gaps and cruft → `tdd` closes gaps → `second-opinion` gets an independent review of the completed work from a different model. Or use `change-without-me` for the full arc without pausing. The stop hook guards the contract throughout. Rules apply always.
 
@@ -41,7 +50,7 @@ Flow: `setup` prepares the project for test-tree-driven development → `change`
 - `hooks/hooks.json` — wires SessionStart (rules) and Stop (drift check)
 - `hooks/session-start.sh` — SessionStart hook: prints the skill Directions block and the inline rules list to stdout
 - `hooks/stop-drift-check.sh` — Stop hook: injects the drift-check prompt after each response
-- `website/index.html` — self-contained explainer site (no build step) pitching contree to developers new to TDD: bridges from test-first to test-trees, living requirements, the seven observable layers, hexagonal architecture, the workflow, and the Claude Code hook mechanics (SessionStart and Stop). Published to GitHub Pages at https://elimydlarz.github.io/claude-code-plugins/contree/ by the repo-root `.github/workflows/pages.yml` workflow, which stages `contree/website/` into `_site/contree/` (one subdir per plugin, so other plugins can add their own pages) and deploys on push to main
+- `website/index.html` — self-contained explainer site (no build step) pitching contree to developers new to TDD: bridges from test-first to test-trees, living requirements, the four operator-facing test layers and three native hexagonal seams, hexagonal architecture, the workflow, and the Claude Code hook mechanics (SessionStart and Stop). Published to GitHub Pages at https://elimydlarz.github.io/claude-code-plugins/contree/ by the repo-root `.github/workflows/pages.yml` workflow, which stages `contree/website/` into `_site/contree/` (one subdir per plugin, so other plugins can add their own pages) and deploys on push to main
 - `scripts/validate-skill-frontmatter.sh` — bats-only utility: asserts every `skills/*/SKILL.md` has non-empty `name` and `description`
 - `skills/setup-test-feedback/SKILL.md` — normal, journey, and impact-selected test feedback
 - `skills/setup-linter/SKILL.md` — strong conventional lint, automatic repair, CI, and save-time feedback
