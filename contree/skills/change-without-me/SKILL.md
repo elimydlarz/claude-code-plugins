@@ -39,4 +39,4 @@ Once the work is synced and implemented, run the `second-opinion` skill process 
 
 ### 5. DONE — intent and implementation are one
 
-All test trees in `## Test Trees` should now have passing tests and working implementation, and an independent model has reviewed the result.
+All test trees in `TEST_TREES.md` should now have passing tests and working implementation, and an independent model has reviewed the result.
