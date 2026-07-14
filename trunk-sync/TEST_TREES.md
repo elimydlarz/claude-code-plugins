@@ -326,7 +326,7 @@ System: hook-sync (src: hooks/hooks.json; system: test/system/hook-sync.system.t
       then it is allowed through
     if the git command can change repository, worktree, configuration, or remote state
       then it is rejected with the same feedback as Bash
-  every session start
+  every session start from a dedicated linked worktree
     then the starting agent is clocked in without adding its own internal session id to agent context
     when other sessions have stale cards
       then they are omitted because timecards represent presence, not session summaries
@@ -351,21 +351,16 @@ System: hook-sync (src: hooks/hooks.json; system: test/system/hook-sync.system.t
 ## Journey: isolated-agent-sessions
 
 ```
-Journey: isolated-agent-sessions (src: README.md; journey: none)
+Journey: isolated-agent-sessions (src: README.md, hooks/hooks.json, src/lib/session-start-entry.ts; journey: none)
 
-  when an operator prepares any agent session to use trunk-sync
-    then the guidance requires that session to start in its own dedicated worktree, including when it is currently the only session
-    and explains that separate working directories and indexes prevent one session from observing another session's uncommitted files or committing them through its own hook
-    and explains that trunk-sync shares committed changes through the configured integration branch
+  when an agent session starts from a dedicated linked worktree
+    then startup proceeds through normal clock-in and active-session reporting
 
-  when an operator prepares a Claude Code session
-    then the guidance provides `claude --worktree` and its `claude -w` shorthand as the supported launch commands
-
-  when an operator prepares a Codex session
-    then the guidance provides commands that create a dedicated Git worktree before Codex starts and select it with `codex -C <worktree-path>`
-
-  if an agent session was launched in a working tree used by another session
-    then the guidance directs the operator to stop it and relaunch it in its own worktree before editing
+  if an agent session starts from the repository's primary working tree
+    then startup is blocked before a timecard is created or the agent can edit files
+    and the error explains that a dedicated worktree prevents sessions from observing or committing each other's uncommitted files
+    and the error directs Claude Code operators to relaunch with `claude --worktree` or `claude -w`
+    and the error directs Codex operators to create a worktree with `git worktree add -b <session-branch> <worktree-path> HEAD` and launch it with `codex -C <worktree-path>`
 ```
 
 ## Journey: agent-hook-compatibility
