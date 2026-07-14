@@ -4,45 +4,45 @@ load test_helper
 
 SKILL="$PROJECT_ROOT/skills/second-opinion/SKILL.md"
 
-@test "second-opinion skill determines the work to review from any natural-language indication the user gave" {
+@test "when the second-opinion skill is invoked then it determines the work to review from any natural-language indication the user gave" {
   run cat "$SKILL"
   assert_output --regexp 'natural-language|natural language'
   assert_output --partial "indicat"
 }
 
-@test "second-opinion skill absent a clear indication reviews the current worktree" {
+@test "when the second-opinion skill is invoked and absent a clear indication it reviews the current worktree" {
   run cat "$SKILL"
   assert_output --partial "Absent a clear indication"
   assert_output --partial "current worktree"
 }
 
-@test "second-opinion skill gathers work that includes new files not yet tracked by git" {
+@test "when the second-opinion skill is invoked and the work it gathers includes new files not yet tracked by git" {
   run cat "$SKILL"
   [[ "$output" == *"untracked"* ]]
 }
 
-@test "second-opinion skill reads the test trees as the contract the work must satisfy" {
+@test "when the second-opinion skill is invoked and it reads the test trees as the contract the work must satisfy" {
   run cat "$SKILL"
   assert_output --regexp 'Test Trees|TEST_TREES\.md'
   assert_output --partial "contract"
 }
 
-@test "second-opinion skill directs the independent model to review database-schema changes" {
+@test "when the second-opinion skill is invoked and it directs the independent model to review database-schema changes" {
   run cat "$SKILL"
   assert_output --partial "database schema"
 }
 
-@test "second-opinion skill directs the independent model to review API-contract changes" {
+@test "when the second-opinion skill is invoked and it directs the independent model to review API-contract changes" {
   run cat "$SKILL"
   assert_output --partial "API contract"
 }
 
-@test "second-opinion skill directs the independent model to review impacts on other systems" {
+@test "when the second-opinion skill is invoked and it directs the independent model to review impacts on other systems" {
   run cat "$SKILL"
   assert_output --partial "impacts on other systems"
 }
 
-@test "second-opinion skill sends the work and test trees to OpenAI's Responses API authenticated with OPENAI_API_KEY, using gpt-5.6-sol with high reasoning effort" {
+@test "when the second-opinion skill is invoked and it sends the work and test trees to OpenAI's Responses API authenticated with OPENAI_API_KEY, using gpt-5.6-sol with high reasoning effort" {
   run cat "$SKILL"
   assert_output --partial "api.openai.com/v1/responses"
   assert_output --partial "OPENAI_API_KEY"
@@ -53,21 +53,21 @@ SKILL="$PROJECT_ROOT/skills/second-opinion/SKILL.md"
   refute_output --partial "chat/completions"
 }
 
-@test "second-opinion skill surfaces the independent model's review to the user attributed to gpt-5.6-sol" {
+@test "when the second-opinion skill is invoked and it surfaces the independent model's review to the user attributed to gpt-5.6-sol" {
   run cat "$SKILL"
   assert_output --regexp 'surface|Surface'
   assert_output --partial "attribut"
   assert_output --partial "gpt-5.6-sol"
 }
 
-@test "second-opinion skill says so and stops without calling the API when the current worktree contains no non-trivial work to review" {
+@test "when the current worktree contains no non-trivial work to review then it says so and stops without calling the API" {
   run cat "$SKILL"
   assert_output --partial "current worktree"
   assert_output --regexp 'no non-trivial work|nothing to review'
   assert_output --partial "stop"
 }
 
-@test "second-opinion skill surfaces a failed review request caused by missing OPENAI_API_KEY, an API error or non-2xx response, or a response containing no review, and fabricates no review" {
+@test "if the review request fails — OPENAI_API_KEY is missing, the API returns an error or non-2xx response, or the response contains no review then the failure is surfaced as an error and no review is fabricated" {
   run cat "$SKILL"
   assert_output --partial "OPENAI_API_KEY"
   assert_output --partial "error"

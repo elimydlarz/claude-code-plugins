@@ -4,13 +4,13 @@ load test_helper
 
 SKILL="$PROJECT_ROOT/skills/diff-for-humans/SKILL.md"
 
-@test "diff-for-humans skill determines the change to depict from any natural-language indication the user gave" {
+@test "when the diff-for-humans skill is invoked then it determines the change to depict from any natural-language indication the user gave" {
   run cat "$SKILL"
   assert_output --regexp 'natural-language|natural language'
   assert_output --partial "indicat"
 }
 
-@test "diff-for-humans skill absent a clear indication depicts the last non-trivial, naturally grouped changes, not a single commit and not only the working tree" {
+@test "when the diff-for-humans skill is invoked and absent a clear indication it depicts the last non-trivial, naturally grouped changes — not a single commit, since trunk-sync commits continuously, and not only the working tree" {
   run cat "$SKILL"
   assert_output --regexp 'naturally grouped|naturally-grouped'
   assert_output --partial "non-trivial"
@@ -19,31 +19,31 @@ SKILL="$PROJECT_ROOT/skills/diff-for-humans/SKILL.md"
   assert_output --partial "working tree"
 }
 
-@test "diff-for-humans skill gathers a change that includes new files not yet tracked by git" {
+@test "when the diff-for-humans skill is invoked and the change it gathers includes new files not yet tracked by git" {
   run cat "$SKILL"
   [[ "$output" == *"untracked"* ]]
 }
 
-@test "diff-for-humans skill keeps untracked file diffs without treating git diff --no-index differences as recipe failure" {
+@test "when the diff-for-humans skill is invoked and untracked file diffs do not make the recipe fail when git diff --no-index reports differences" {
   run cat "$SKILL"
   assert_output --partial 'git diff --no-index -- /dev/null "$f" || true'
 }
 
-@test "diff-for-humans skill generates an image of the change using OpenAI gpt-image-2 via the images generations API" {
+@test "when the diff-for-humans skill is invoked and it generates an image representing that change using OpenAI's gpt-image-2 model via the images generations API, with OPENAI_BASE_URL selecting the API root" {
   run cat "$SKILL"
   assert_output --partial "gpt-image-2"
   assert_output --partial "images generations"
   assert_output --partial "OPENAI_BASE_URL"
 }
 
-@test "diff-for-humans skill chooses what the image depicts from the nature of the change, its important details, and its audience" {
+@test "when the diff-for-humans skill is invoked and it chooses what the image depicts from the nature of the change, its important details, and its intended audience" {
   run cat "$SKILL"
   assert_output --partial "nature of the change"
   assert_output --partial "important details"
   assert_output --partial "audience"
 }
 
-@test "diff-for-humans skill foregrounds the technical substance of the change — contracts, databases, behaviour, test trees — as concrete technical elements rather than only an abstract metaphor" {
+@test "when the diff-for-humans skill is invoked and it foregrounds the technical substance the change touches — contracts, data and databases, behaviour, and test trees — as concrete technical elements rather than only an abstract metaphor" {
   run cat "$SKILL"
   assert_output --partial "technical"
   assert_output --partial "contract"
@@ -53,19 +53,19 @@ SKILL="$PROJECT_ROOT/skills/diff-for-humans/SKILL.md"
   assert_output --partial "abstract metaphor"
 }
 
-@test "diff-for-humans skill saves the returned image as a .png file" {
+@test "when the diff-for-humans skill is invoked and it saves the returned image as a .png file" {
   run cat "$SKILL"
   assert_output --partial "save"
   assert_output --partial ".png"
 }
 
-@test "diff-for-humans skill surfaces those choices to the user for review" {
+@test "when the diff-for-humans skill is invoked and it surfaces those choices to the user for review" {
   run cat "$SKILL"
   assert_output --partial "surface"
   assert_output --partial "review"
 }
 
-@test "diff-for-humans skill says so and stops without calling the API when there are no non-trivial changes to depict" {
+@test "when there are no non-trivial changes to depict then it says so and stops without calling the API" {
   run cat "$SKILL"
   assert_output --regexp 'no non-trivial change|nothing to depict'
   assert_output --partial "stop"

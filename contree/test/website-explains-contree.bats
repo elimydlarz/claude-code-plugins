@@ -4,14 +4,14 @@ load test_helper
 
 SITE="$PROJECT_ROOT/website/index.html"
 
-@test "the page bridges from test-first practice to test trees as living requirements" {
+@test "when a visitor loads the contree website then the page bridges from test-first practice to test trees as living requirements" {
   run cat "$SITE"
   assert_output --partial "You already write the test first"
   assert_output --partial "Start from what you know"
   assert_output --partial "test trees as living requirements"
 }
 
-@test "the page explains the four test kinds" {
+@test "when a visitor loads the contree website and the page explains the four test kinds Journey, Component, Integration, and Unit" {
   run cat "$SITE"
   assert_output --partial "hexagonal"
   assert_output --partial "Journey <small>test/journey</small>"
@@ -20,7 +20,7 @@ SITE="$PROJECT_ROOT/website/index.html"
   assert_output --partial "Unit <small>*.unit.test</small>"
 }
 
-@test "the page walks the skill workflow — setup, change, sync, tdd, second-opinion" {
+@test "when a visitor loads the contree website and the page walks the skill workflow — setup, change, sync, tdd, second-opinion" {
   run cat "$SITE"
   assert_output --partial "Six skills carry you from idea to verified, reviewed code"
   assert_output --partial "/setup"
@@ -28,10 +28,14 @@ SITE="$PROJECT_ROOT/website/index.html"
   assert_output --partial "/sync"
   assert_output --partial "/tdd"
   assert_output --partial "/second-opinion"
+}
+
+@test "when a visitor loads the contree website and the page offers change-without-me for the full arc" {
+  run cat "$SITE"
   assert_output --partial "/change-without-me"
 }
 
-@test "the page explains the Claude Code hook mechanics — the injection channels and the Stop-hook control flow" {
+@test "when a visitor loads the contree website and the page explains the Claude Code hook mechanics — the stdout, stderr-exit-2, and additionalContext injection channels, and the Stop-hook control flow" {
   run cat "$SITE"
   assert_output --partial "stdout · exit 0"
   assert_output --partial "stderr · exit 2"
@@ -41,7 +45,7 @@ SITE="$PROJECT_ROOT/website/index.html"
   assert_output --partial "four reconciliation prompts"
 }
 
-@test "the page requires no build step" {
+@test "when a visitor loads the contree website and the page requires no build step" {
   run cat "$SITE"
   refute_output --partial "<script"
   assert_output --partial "<style>"
