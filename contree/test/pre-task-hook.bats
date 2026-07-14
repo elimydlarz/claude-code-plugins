@@ -122,5 +122,5 @@ run_hook_in() {
   assert_output --partial "fix-architecture"
   assert_output --partial "bootstrap-test-trees"
   assert_output --partial "setup-mutation-testing"
-  assert_output --partial "workflow"
+  assert_output --partial "change-without-me"
 }

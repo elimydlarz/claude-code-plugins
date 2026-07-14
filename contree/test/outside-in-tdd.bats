@@ -118,6 +118,6 @@ SKILL="$PROJECT_ROOT/skills/tdd/SKILL.md"
 }
 
 @test "the narrow TDD skill does not explain architecture or other skills" {
-  run grep -Ei 'hexagonal|skills/(change|sync|setup|workflow)|`(change|sync|setup|workflow)`' "$SKILL"
+  run grep -Ei 'hexagonal|skills/(change|sync|setup|change-without-me)|`(change|sync|setup|change-without-me)`' "$SKILL"
   assert_failure
 }
