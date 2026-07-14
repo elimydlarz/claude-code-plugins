@@ -145,7 +145,7 @@ run_agent() {
   if [ "$HARNESS" = "claude" ]; then
     prime_claude_provider
     local continue_flag=()
-    local max_budget_usd="4.00"
+    local max_budget_usd="5.00"
     [ "$AGENT_CALL_COUNT" -gt 1 ] && continue_flag=(-c)
     # The comprehensive setup journey deliberately runs every focused setup
     # skill plus two subagent waves, so its first turn needs a larger envelope.
