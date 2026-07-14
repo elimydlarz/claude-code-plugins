@@ -319,7 +319,7 @@ case "$TEST_NAME" in
   setup)
     seed_project "setup-existing"
 
-    setup_prompt="Run /contree:setup for the comprehensive luxury setup of this existing pure JavaScript project. The operator agrees that the existing Vitest choice, documented hexagonal architecture, current short-code behaviour, and mutation break threshold of 50 are the intended consequential decisions. Dynamically run every missing focused setup skill, use subagents for independent work, bootstrap the current production behaviour into test trees and tests, integrate the maintained changed-test runner and both coding-harness hooks, and run and fix every configured feedback command including mutation testing. Do not create Docker configuration."
+    setup_prompt="Run /contree:setup for the comprehensive luxury setup of this existing pure JavaScript project. The operator agrees that the existing Vitest choice, documented hexagonal architecture, current short-code behaviour, and mutation break threshold of 50 are the intended consequential decisions. Dynamically run every missing focused setup skill, including setup-mental-model and setup-test-trees through bootstrap-test-trees. Use the required discovery and implementation subagent waves, bootstrap the current production behaviour into test trees and tests, and progressively expand both coding harnesses with project-local SessionStart, PostToolUse, and Stop steering for the mental model, test trees, impacted tests, lint, architecture, and relevant incremental mutation feedback. Run and fix every configured feedback command including mutation testing. Do not create Docker configuration."
     run_agent "$setup_prompt"
 
     bootstrap_pass=1
