@@ -10,8 +10,18 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   assert_output --partial "setup-test-feedback"
   assert_output --partial "setup-linter"
   assert_output --partial "setup-architecture-linter"
+  assert_output --partial "setup-mental-model"
+  assert_output --partial "setup-test-trees"
   assert_output --partial "bootstrap-test-trees"
   assert_output --partial "setup-mutation-testing"
+}
+
+@test "when comprehensive setup advances then each skill progressively expands project-local agent steering without replacing earlier hooks" {
+  run cat "$SKILL"
+  assert_output --partial "Contree progressively expanding into the project"
+  assert_output --partial "prove its project-local hooks before continuing"
+  assert_output --partial "receives all steering installed by the earlier phases"
+  assert_output --partial "Preserve and merge earlier hooks"
 }
 
 @test "when an operator asks for comprehensive Contree setup then setup engages the operator at consequential setup decisions" {
@@ -62,6 +72,7 @@ SKILL="$PROJECT_ROOT/skills/setup/SKILL.md"
   run cat "$SKILL"
   assert_output --partial "installed commands"
   assert_output --partial "automatic hooks"
+  assert_output --partial "mental-model and test-tree steering"
   assert_output --partial "test-tree coverage"
   assert_output --partial "mutation result"
 }
