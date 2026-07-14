@@ -130,6 +130,23 @@ load test_helper
   assert_success
 }
 
+@test "and its coding agent uses gpt-5.6-luna with medium reasoning effort" {
+  run grep -F 'model = "gpt-5.6-luna"' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
+  assert_success
+
+  run grep -F 'model_reasoning_effort = "medium"' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
+  assert_success
+
+  run grep -F 'CLAUDE_CODE_EFFORT_LEVEL="medium"' "$PROJECT_ROOT/test/journey/docker-entrypoint.sh"
+  assert_success
+
+  run grep -F "model: 'gpt-5.6-luna'" "$PROJECT_ROOT/test/journey/claude-openai-responses-proxy.mjs"
+  assert_success
+
+  run grep -F "reasoning: { effort: 'medium' }" "$PROJECT_ROOT/test/journey/claude-openai-responses-proxy.mjs"
+  assert_success
+}
+
 @test "and Claude journey runs fail fast without Claude provider auth" {
   run grep -F "Claude harness requires DEEPSEEK_API_KEY" "$PROJECT_ROOT/test/journey/docker-run.sh"
   assert_success
