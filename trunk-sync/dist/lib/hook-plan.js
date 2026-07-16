@@ -1,77 +1,91 @@
+import { isInputObject, parseInputObject } from "./entry-input.js";
 export function parseHookInput(json) {
-    const raw = JSON.parse(json);
+    const raw = parseInputObject(json);
+    const toolInput = raw.tool_input ?? {};
+    if (!isInputObject(toolInput))
+        throw new Error("tool_input must be a JSON object.");
+    const filePath = optionalString(toolInput, "file_path");
     return {
-        tool_name: raw.tool_name ?? null,
-        tool_input: raw.tool_input ?? {},
-        turn_id: raw.turn_id ?? null,
-        session_id: raw.session_id ?? null,
-        transcript_path: raw.transcript_path ?? null,
-        cwd: raw.cwd ?? null,
+        tool_name: optionalString(raw, "tool_name"),
+        tool_input: filePath === null ? {} : { file_path: filePath },
+        turn_id: optionalString(raw, "turn_id"),
+        session_id: optionalString(raw, "session_id"),
+        transcript_path: optionalString(raw, "transcript_path"),
+        cwd: optionalString(raw, "cwd"),
     };
+}
+function optionalString(record, key) {
+    const value = record[key];
+    if (value === undefined || value === null)
+        return null;
+    if (typeof value !== "string")
+        throw new Error(`${key} must be a string when provided.`);
+    return value;
 }
 export function planHook(input, state) {
     const filePath = input.tool_input.file_path ?? null;
-    const sync = buildSyncPlan(state);
-    if (!filePath &&
-        state.deletedFiles.length === 0 &&
-        state.modifiedFiles.length === 0 &&
-        state.untrackedFiles.length === 0) {
-        return { action: "skip" };
-    }
     if (filePath && !state.insideRepo) {
         return { action: "skip" };
     }
     if (filePath && state.gitignored) {
         return { action: "skip" };
     }
+    const sync = buildSyncPlan(state);
     if (state.inMerge) {
-        const relPath = filePath ? state.relPath : summarizeDeletions(state.deletedFiles);
-        const sessionPrefix = buildSessionPrefix(input.session_id);
-        const message = `${sessionPrefix}resolve merge conflict in ${relPath}`;
         return {
             action: "commit-merge",
-            message,
+            commit: buildMergeCommitPlan(input, state),
             sync,
         };
     }
+    if (!filePath &&
+        state.deletedFiles.length === 0 &&
+        state.modifiedFiles.length === 0 &&
+        state.untrackedFiles.length === 0) {
+        return { action: "skip" };
+    }
     const commit = buildCommitPlan(input, state);
     return { action: "commit-and-sync", commit, sync };
+}
+function buildMergeCommitPlan(input, state) {
+    const changedPaths = changedPathsFor(input, state);
+    const summary = state.relPath ?? (summarizeDeletions(changedPaths) || "resolved files");
+    return {
+        changedPaths,
+        subject: `${buildSessionPrefix(input.session_id)}resolve merge conflict in ${summary}`,
+        body: buildCommitBody(input, null),
+    };
 }
 function buildSyncPlan(state) {
     if (!state.hasRemote)
         return null;
     return {
-        targetBranch: state.targetBranch,
         currentBranch: state.currentBranch,
     };
 }
 function buildCommitPlan(input, state) {
     const filePath = input.tool_input.file_path ?? null;
     const changed = [...state.modifiedFiles, ...state.untrackedFiles];
-    const filesToStage = filePath ? [filePath] : changed;
-    const filesToRemove = filePath ? [] : state.deletedFiles;
+    const changedPaths = changedPathsFor(input, state);
     let action;
     let relPath;
     if (filePath) {
         action = (input.tool_name ?? "update").toLowerCase();
         relPath = state.relPath;
     }
-    else if (changed.length > 0 && state.deletedFiles.length === 0) {
-        action = "update";
-        relPath = summarizeDeletions(changed);
-    }
-    else if (state.deletedFiles.length > 0 && changed.length === 0) {
-        action = "delete";
-        relPath = summarizeDeletions(state.deletedFiles);
-    }
     else {
-        action = "update";
+        action = changed.length === 0 ? "delete" : "update";
         relPath = summarizeDeletions([...changed, ...state.deletedFiles]);
     }
     const sessionPrefix = buildSessionPrefix(input.session_id);
     const subject = `${sessionPrefix}${action} ${relPath}`;
     const body = buildCommitBody(input, filePath ? relPath : null);
-    return { filesToStage, filesToRemove, subject, body };
+    return { changedPaths, subject, body };
+}
+function changedPathsFor(input, state) {
+    if (input.tool_input.file_path)
+        return [state.relPath];
+    return [...state.modifiedFiles, ...state.untrackedFiles, ...state.deletedFiles];
 }
 export function buildCommitPlanWithTask(input, state, task) {
     const base = buildCommitPlan(input, state);
@@ -143,7 +157,14 @@ function extractTextContent(content) {
     if (typeof content === "string")
         return [content];
     if (Array.isArray(content)) {
-        return content.filter((item) => typeof item === "string");
+        return content.flatMap((item) => {
+            if (typeof item === "string")
+                return [item];
+            if (typeof item !== "object" || item === null)
+                return [];
+            const block = item;
+            return block.type === "text" && typeof block.text === "string" ? [block.text] : [];
+        });
     }
     return [];
 }
@@ -157,7 +178,7 @@ function filterTaskLine(text) {
             return null;
         if (trimmed === "Implement the following plan:")
             continue;
-        if (trimmed.startsWith("<"))
+        if (/^<[^>]+>$/.test(trimmed))
             continue;
         const stripped = trimmed.replace(/^#{1,}\s+/, "");
         if (stripped)

@@ -2,12 +2,17 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc",
-    "test": "node --test --test-reporter spec 'dist/**/*.test.js' test/adapter/plugin-version-bump.adapter.test.mjs",
-    "test:e2e": "node test/system/hook-sync.system.test.mjs",
-    "test:functional": "bash test/journey/docker-run.sh"
+    "build": "rm -rf dist && tsc",
+    "test": "pnpm run build && node --test --test-reporter spec 'dist/**/*.test.js' 'test/adapter/*.test.mjs'",
+    "test:e2e": "pnpm run build && node test/system/hook-sync.system.test.mjs",
+    "test:functional": "pnpm run build && bash test/journey/docker-run.sh",
+    "test:functional:installed": "pnpm run build && bash test/journey/docker-run.sh all installed",
+    "test:mutation": "stryker run"
   },
   "devDependencies": {
+    "@stryker-mutator/core": "^9.6.1",
+    "@stryker-mutator/tap-runner": "^9.6.1",
+    "@stryker-mutator/typescript-checker": "^9.6.1",
     "@types/node": "^22",
     "typescript": "^5"
   }

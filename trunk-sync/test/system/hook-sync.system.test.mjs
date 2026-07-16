@@ -42,7 +42,7 @@ describe("System: hook-sync", () => {
       "codex local_shell: Agent provenance in body",
     ))
     describe("when a remote is configured", () => {
-      it("then HEAD is pushed to the consumer repository's shared `agents` branch after the commit", verifies(
+      it("then the checked-out branch is pulled from and pushed to its branch of the same name on the consumer repository", verifies(
         "commit reached remote",
         "codex apply_patch add: new file reached the remote",
       ))
@@ -52,8 +52,17 @@ describe("System: hook-sync", () => {
     })
   })
 
-  describe("every Bash tool use whose command starts with `git`", () => {
-    describe("when the command is git clone or only inspects repository, worktree, or history state", () => {
+  describe("every Bash tool use", () => {
+    describe("when the command contains no Git invocation", () => {
+      it("then it is allowed through", verifies(
+        "git-block: non-git command passes through",
+        "git-block: time non-git command passes through",
+        "git-block: negated non-git command passes through",
+        "git-block: embedded expansion in non-git argument passes through",
+        "git-block: redirection to a file named git passes through",
+      ))
+    })
+    describe("when the command is standalone git clone or only standalone Git inspection", () => {
       it("then it is allowed through", verifies(
         "git-block: git clone is allowed",
         "git-block: git diff is allowed",
@@ -75,6 +84,37 @@ describe("System: hook-sync", () => {
         "git-block: git -C <path> clone is allowed",
       ))
     })
+    describe("if a Git invocation is composed with another shell command", () => {
+      it("then it is rejected with feedback directing the agent to run inspection as a standalone Git command", verifies(
+        "git-block: compound git commit is blocked",
+        "git-block: chained git push is blocked",
+        "git-block: parenthesized git push is blocked",
+        "git-block: command-prefixed git push is blocked",
+        "git-block: command -p git push is blocked",
+        "git-block: time git push is blocked",
+        "git-block: negated git push is blocked",
+        "git-block: embedded executable expansion git push is blocked",
+      ))
+      it("and shell command-string wrappers with absolute paths or combined options, `eval`, escaped executable, quoted assignment, command-position expansion, and nested substitution bypasses are rejected", verifies(
+        "git-block: absolute shell -c git push is blocked",
+        "git-block: combined shell options git push is blocked",
+        "git-block: combined shell options with tracing git push is blocked",
+        "git-block: escaped shell -c git push is blocked",
+        "git-block: wrapped shell -c git push is blocked",
+        "git-block: assignment-prefixed shell -c git push is blocked",
+        "git-block: eval git push is blocked",
+        "git-block: escaped eval git push is blocked",
+        "git-block: quoted assignment git push is blocked",
+        "git-block: command-position expansion git push is blocked",
+        "git-block: unquoted parameter expansion git push is blocked",
+        "git-block: quoted parameter expansion git push is blocked",
+        "git-block: quoted braced parameter expansion git push is blocked",
+        "git-block: quoted parameter path expansion git push is blocked",
+        "git-block: quoted braced parameter path expansion git push is blocked",
+        "git-block: defaulted parameter expansion git push is blocked",
+        "git-block: nested substitution git push is blocked",
+      ))
+    })
     describe("if the git command can change repository, worktree, configuration, or remote state", () => {
       it("then it is rejected with feedback directing the agent to edit files and leave git writes to trunk-sync", verifies(
         "git-block: git push is blocked",
@@ -88,14 +128,19 @@ describe("System: hook-sync", () => {
     })
   })
 
-  describe("every local_shell tool use whose command starts with `git`", () => {
-    describe("when the command is git clone or only inspects repository, worktree, or history state", () => {
+  describe("every local_shell tool use", () => {
+    describe("when the command is standalone git clone or only standalone Git inspection", () => {
       it("then it is allowed through", verifies(
         "local_shell git-block: array git diff allowed",
         "local_shell git-block: array git log allowed",
         "local_shell git-block: array git -C <path> diff allowed",
         "local_shell git-block: array git status allowed",
         "local_shell git-block: array git branch inspection allowed",
+      ))
+    })
+    describe("if a Git invocation is composed with another shell command", () => {
+      it("then it is rejected with feedback directing the agent to run inspection as a standalone Git command", verifies(
+        "local_shell git-block: compound git commit blocked",
       ))
     })
     describe("if the git command can change repository, worktree, configuration, or remote state", () => {
@@ -107,10 +152,13 @@ describe("System: hook-sync", () => {
     })
   })
 
-  describe("every session start", () => {
+  describe("every session start from a checked-out branch", () => {
     it("then the starting agent is clocked in without adding its own internal session id to agent context", verifies(
       "session-start: A is clocked in without own session context",
       "timecard: sessionId written",
+      "session-start isolation: lifecycle commit contains only the target card",
+      "session-start isolation: unrelated staged paths remain staged",
+      "session-start isolation: unrelated unstaged paths remain uncommitted",
     ))
     describe("when other sessions have stale cards", () => {
       it("then they are omitted because timecards represent presence, not session summaries", verifies(
@@ -130,6 +178,12 @@ describe("System: hook-sync", () => {
         "session-start reapable-only: no active roster is surfaced",
       ))
     })
+    describe("if clock-in cannot be pushed", () => {
+      it("then local presence is retained and a local-only warning is reported", verifies(
+        "session-start failure: local timecard is retained",
+        "session-start failure: local-only warning is reported",
+      ))
+    })
   })
 
   describe("every end of task", () => {
@@ -137,10 +191,20 @@ describe("System: hook-sync", () => {
       "stop: clock-out is committed",
       "stop: local timecard is removed",
       "stop: timecard removal is synced to the remote",
+      "stop isolation: lifecycle commit contains only the target card",
+      "stop isolation: unrelated staged paths remain staged",
+      "stop isolation: unrelated unstaged paths remain uncommitted",
     ))
     it("and the agent is never forced to act — the stop hook always exits 0", verifies(
       "stop: the stop hook always exits 0 — the agent is never forced to act",
     ))
+    describe("if clock-out cannot be pushed", () => {
+      it("then the local removal is committed and stale-remote warning is reported", verifies(
+        "stop failure: the stop hook still exits 0",
+        "stop failure: local clock-out is committed",
+        "stop failure: stale-remote warning is reported",
+      ))
+    })
   })
 
   describe("when an agent is disrupted mid-task and a new session starts", () => {
@@ -161,9 +225,32 @@ describe("System: hook-sync", () => {
         "merge commit subject contains resolve merge conflict",
       ))
     })
+    describe("when Claude edits a conflicted file but leaves conflict markers or otherwise remains unconfirmed", () => {
+      it("then the path remains unmerged and no merge commit or push occurs", verifies(
+        "claude unresolved merge: hook exits 2",
+        "claude unresolved merge: path remains unmerged",
+        "claude unresolved merge: no merge commit is created",
+        "claude unresolved merge: guidance is marker-neutral",
+        "claude markerless unresolved merge: hook exits 2",
+        "claude markerless unresolved merge: path remains unmerged",
+        "claude markerless unresolved merge: no merge commit is created",
+        "claude markerless unresolved merge: no push occurs",
+      ))
+    })
+    describe("when Codex resolves the conflicted file through apply_patch without a file_path", () => {
+      it("then the resolved path is staged and the merge is committed and pushed with Codex provenance", verifies(
+        "codex conflict recovery: hook exits 0",
+        "codex conflict recovery: merge reached remote",
+        "codex conflict recovery: merge records Codex provenance",
+      ))
+    })
   })
 
   describe("when a push is rejected", () => {
-    it("then a single pull-and-push retry is attempted", verifies("push retry succeeds after non-conflicting pull"))
+    it("then the bare remote observes exactly two push attempts and the retry succeeds", verifies(
+      "push retry: hook exits 0 after one rejection",
+      "push retry: bare remote observes exactly two attempts",
+      "push retry: commit reaches remote",
+    ))
   })
 })

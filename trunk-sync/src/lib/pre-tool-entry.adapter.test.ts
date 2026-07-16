@@ -39,18 +39,52 @@ describe("Adapter: command-guard", () => {
       assert.match(result.stderr, /Read-only git inspection is allowed/);
       assert.match(result.stderr, /Trunk-sync handles git writes/);
     });
+
+    it("and shell command-string wrappers, eval, command-position substitutions, and command-position parameter expansions cannot bypass the guard", () => {
+      for (const command of [
+        "/bin/sh -c 'git push'",
+        "bash -lc 'git push'",
+        "/bin/sh -xec 'git push'",
+        "/bin/sh -c 'g\\it push'",
+        "eval 'git push'",
+        "eval 'g\\it push'",
+        "command -p git push",
+        "time git push",
+        "! git push",
+        "G=it; g$G push",
+        "FOO='x y' git push",
+        "$(printf git) push",
+        "G=git; $G push",
+        "G=git; \"$G\" push",
+        "G=git; \"${G}\" push",
+        "G=/usr/bin; \"$G\"/git push",
+        "G=/usr/bin; \"${G}\"/git push",
+        "${GIT:-git} push",
+        "git status \"$(eval 'git push')\"",
+      ]) {
+        const result = spawnSync(process.execPath, [entryPath.pathname], {
+          input: JSON.stringify({ tool_name: "Bash", tool_input: { command } }),
+          encoding: "utf-8",
+        });
+
+        assert.equal(result.status, 2, `${command}\n${result.stderr}`);
+        assert.match(result.stderr, /standalone Git inspection/, command);
+      }
+    });
   });
 
   describe("when the command is allowed", () => {
     it("then exit 0 is returned without feedback", () => {
-      const result = spawnSync(process.execPath, [entryPath.pathname], {
-        input: JSON.stringify({ tool_name: "Bash", tool_input: { command: "pnpm test" } }),
-        encoding: "utf-8",
-      });
+      for (const command of ["pnpm test", "time pnpm test", "! false", "printf 'g$G push'", "printf value > git"]) {
+        const result = spawnSync(process.execPath, [entryPath.pathname], {
+          input: JSON.stringify({ tool_name: "Bash", tool_input: { command } }),
+          encoding: "utf-8",
+        });
 
-      assert.equal(result.status, 0);
-      assert.equal(result.stderr, "");
-      assert.equal(result.stdout, "");
+        assert.equal(result.status, 0, command);
+        assert.equal(result.stderr, "", command);
+        assert.equal(result.stdout, "", command);
+      }
     });
   });
 });

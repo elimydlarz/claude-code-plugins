@@ -4,14 +4,14 @@
 
 > Each product's own mental model lives in its `MENTAL_MODEL.md`, indexed at [MENTAL_MODEL.md](MENTAL_MODEL.md). That index only references the per-product models and explains why the mental model is decomposed (do not centralize it). This section is the monorepo-level overview — what's here and how it's published — not a per-product model.
 
-This is the **elimydlarz** monorepo — source code, plugin marketplace, and documentation for all Claude Code plugins and packages. The individual repos (`elimydlarz/trunk-sync`, `elimydlarz/req-mod-sync`, `elimydlarz/test-trees`, `elimydlarz/eli-rules`) are deprecated and point here.
+This is the **elimydlarz** monorepo — source code, plugin marketplace, and documentation for Claude Code and Codex plugins and packages. The individual repos (`elimydlarz/trunk-sync`, `elimydlarz/req-mod-sync`, `elimydlarz/test-trees`, `elimydlarz/eli-rules`) are deprecated and point here.
 
 Products in this repo:
 
-- **trunk-sync** — multi-agent sync hook (Claude Code plugin)
+- **trunk-sync** — branch-scoped multi-agent sync hooks for Claude Code and Codex
 - **contree** — test trees as living requirements: setup, change, sync, and TDD skills with stop hook + coding rules. Ships as both a Claude Code plugin and a Codex CLI plugin from one `contree/` directory: shared `skills/` and `hooks/` referenced by parallel `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json` manifests. Codex sets `CLAUDE_PLUGIN_ROOT` in hook env, while Codex-specific payload and transcript differences are documented in [CODEX_INTERFACE.md](CODEX_INTERFACE.md).
 
-Users add this repo as a marketplace (`claude plugin marketplace add elimydlarz/claude-code-plugins`), then install individual plugins. The marketplace uses relative paths (`"source": "./trunk-sync"`) so plugins are installed directly from this repo.
+Users add this repo as a marketplace with `claude plugin marketplace add elimydlarz/claude-code-plugins` or `codex plugin marketplace add elimydlarz/claude-code-plugins`, then install individual plugins. The marketplace uses relative paths (`"source": "./trunk-sync"`) so plugins are installed directly from this repo.
 
 ## Repo Map
 
@@ -40,11 +40,11 @@ git log <prev-tag>..HEAD -- <plugin>/    # review and draft notes to /tmp/notes.
 pnpm publish:contree patch --notes-file /tmp/notes.md    # or minor, major
 ```
 
-Invoking a publish script without `--notes-file` fails fast and prints the exact `git log` command to use for review. Each script checks for clean source, requires a semantic version change kind, bumps the version, commits, tags, and creates a GitHub release from the supplied notes file. Trunk Sync owns pushing commits and tags. Building and testing remain the maintainer's responsibility before release.
+Invoking a publish script without `--notes-file` fails fast and prints the exact `git log` command to use for review. Each script checks for clean source, requires a semantic version change kind, bumps the version, commits, tags, atomically pushes its release commit and tag, and then creates a GitHub release from the supplied notes file. If the atomic push is rejected, the script restores the pre-release local commit, tag, artifacts, manifests, and index so the same bump can be retried. Trunk Sync builds and commits its tracked marketplace runtime; Contree has no build step. Testing remains the maintainer's responsibility before release.
 
 ## Updating the marketplace
 
-To add or update a plugin listing, edit `.claude-plugin/marketplace.json` and push to GitHub. Users pick up changes on their next `claude plugin marketplace update`.
+To add or update a plugin listing, edit `.claude-plugin/marketplace.json` and push to GitHub. Users pick up changes when their plugin manager refreshes the marketplace.
 
 Each plugin entry needs `name` and `source` at minimum. For plugins in this repo, use relative paths:
 

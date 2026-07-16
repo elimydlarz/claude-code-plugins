@@ -1,49 +1,23 @@
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, realpathSync, mkdirSync, writeFileSync, readdirSync, unlinkSync } from "node:fs";
-import { join } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { homedir, hostname } from "node:os";
-import type { HookInput, RepoState, HookPlan, SyncPlan, Timecard, RuntimeContext } from "./hook-types.js";
+import type { HookInput, RepoState, HookPlan, CommitPlan, SyncPlan, Timecard, RuntimeContext } from "./hook-types.js";
 import { HOOK_EXPLAINER } from "./hook-types.js";
 import { extractTaskFromTranscript, buildCommitPlanWithTask, classifyTimecards, formatClockInMessage, formatSessionStartSummary } from "./hook-plan.js";
+import { assertSafeSessionId } from "./entry-input.js";
 
-const DEFAULT_TARGET_BRANCH = "agents";
-
-function readTargetBranch(repoRoot: string): string | null {
-  let content: string;
-  try {
-    content = readFileSync(join(repoRoot, ".trunk-sync", "config"), "utf-8");
-  } catch {
-    return null;
-  }
-
-  for (const line of content.split("\n")) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) continue;
-    const separator = trimmed.indexOf("=");
-    if (separator === -1) continue;
-    if (trimmed.slice(0, separator) === "target-branch") {
-      return trimmed.slice(separator + 1) || null;
-    }
-  }
-
-  return null;
-}
-
-/**
- * Gather the current git repo state needed for planning.
- * Runs git commands — this is the I/O boundary.
- */
 export function gatherRepoState(input: HookInput): RepoState | null {
   const filePath = input.tool_input.file_path ?? null;
 
   let repoRoot: string;
   let gitDir: string;
   try {
-    const [toplevel, dir] = execSync("git rev-parse --show-toplevel --git-dir", { encoding: "utf-8" }).trim().split("\n");
+    const [toplevel, dir] = execFileSync("git", ["rev-parse", "--show-toplevel", "--git-dir"], { encoding: "utf-8" }).trim().split("\n");
     repoRoot = toplevel;
     gitDir = dir;
   } catch {
-    return null; // not in a git repo
+    return null;
   }
 
   let insideRepo = true;
@@ -51,13 +25,12 @@ export function gatherRepoState(input: HookInput): RepoState | null {
   let relPath: string | null = null;
 
   if (filePath) {
-    // Resolve symlinks so /var/... matches /private/var/... on macOS
     const resolvedFile = existsSync(filePath) ? realpathSync(filePath) : filePath;
     insideRepo = resolvedFile.startsWith(repoRoot + "/");
     if (insideRepo) {
       relPath = resolvedFile.slice(repoRoot.length + 1);
       try {
-        execSync(`git check-ignore -q -- "${filePath}"`, { stdio: "ignore" });
+        execFileSync("git", ["check-ignore", "-q", "--", relPath], { cwd: repoRoot, stdio: "ignore" });
         gitignored = true;
       } catch {
         gitignored = false;
@@ -67,15 +40,9 @@ export function gatherRepoState(input: HookInput): RepoState | null {
 
   let hasRemote = false;
   try {
-    execSync("git remote get-url origin", { stdio: "ignore" });
+    execFileSync("git", ["remote", "get-url", "origin"], { stdio: "ignore" });
     hasRemote = true;
   } catch {
-    // no remote
-  }
-
-  let targetBranch = "";
-  if (hasRemote) {
-    targetBranch = readTargetBranch(repoRoot) ?? DEFAULT_TARGET_BRANCH;
   }
 
   let currentBranch = "";
@@ -85,40 +52,17 @@ export function gatherRepoState(input: HookInput): RepoState | null {
   }
 
   const inMerge = existsSync(join(gitDir, "MERGE_HEAD"));
-
   let deletedFiles: string[] = [];
   let modifiedFiles: string[] = [];
   let untrackedFiles: string[] = [];
   if (!filePath) {
-    try {
-      const deleted = execSync(`git -C "${repoRoot}" ls-files --deleted`, {
-        encoding: "utf-8",
-      }).trim();
-      if (deleted) deletedFiles = deleted.split("\n");
-    } catch {
-      // ignore
-    }
-    try {
-      const modified = execSync(`git -C "${repoRoot}" diff --name-only`, {
-        encoding: "utf-8",
-      }).trim();
-      if (modified) {
-        // Exclude files already in deletedFiles (diff --name-only includes deletions)
-        const deletedSet = new Set(deletedFiles);
-        modifiedFiles = modified.split("\n").filter((f) => !deletedSet.has(f));
-      }
-    } catch {
-      // ignore
-    }
-    try {
-      const untracked = execSync(
-        `git -C "${repoRoot}" ls-files --others --exclude-standard`,
-        { encoding: "utf-8" },
-      ).trim();
-      if (untracked) untrackedFiles = untracked.split("\n");
-    } catch {
-      // ignore
-    }
+    deletedFiles = gitPathList(repoRoot, ["ls-files", "--deleted", "-z"]);
+    const deletedSet = new Set(deletedFiles);
+    const unmergedSet = new Set(gitPathList(repoRoot, ["diff", "--name-only", "--diff-filter=U", "-z"]));
+    modifiedFiles = [...new Set(gitPathList(repoRoot, ["diff", "--name-only", "-z"]))]
+      .filter((path) => !deletedSet.has(path))
+      .filter((path) => !unmergedSet.has(path) || mergePathIsResolved(repoRoot, path));
+    untrackedFiles = gitPathList(repoRoot, ["ls-files", "--others", "--exclude-standard", "-z"]);
   }
 
   return {
@@ -128,7 +72,6 @@ export function gatherRepoState(input: HookInput): RepoState | null {
     insideRepo,
     gitignored,
     hasRemote,
-    targetBranch,
     currentBranch,
     inMerge,
     deletedFiles,
@@ -137,21 +80,41 @@ export function gatherRepoState(input: HookInput): RepoState | null {
   };
 }
 
+function gitPathList(repoRoot: string, args: string[]): string[] {
+  const output = execFileSync("git", ["-C", repoRoot, ...args], { encoding: "utf-8" });
+  return output.split("\0").filter((path) => path.length > 0);
+}
+
+function mergePathIsResolved(repoRoot: string, path: string): boolean {
+  const filePath = join(repoRoot, path);
+  if (!existsSync(filePath)) return true;
+  const content = readFileSync(filePath);
+  if (/^(?:<{7}|={7}|>{7})(?: |$)/m.test(content.toString("utf-8"))) return false;
+  const conflictBlobs = execFileSync("git", ["-C", repoRoot, "--literal-pathspecs", "ls-files", "-u", "-z", "--", path], { encoding: "utf-8" })
+    .split("\0")
+    .filter(Boolean)
+    .map((record) => record.slice(0, record.indexOf("\t")).split(" ")[1]);
+  const worktreeBlob = execFileSync("git", ["-C", repoRoot, "hash-object", "--stdin"], {
+    input: content,
+    encoding: "utf-8",
+  }).trim();
+  return !conflictBlobs.includes(worktreeBlob);
+}
+
 export function getRuntimeContext(): RuntimeContext {
   return { hostname: hostname() };
 }
 
 export function clockIn(repoRoot: string, timecard: Timecard): void {
-  const dir = join(repoRoot, ".trunk-sync", "timeclock");
+  const filePath = timecardPath(repoRoot, timecard.sessionId);
+  const dir = dirname(filePath);
   mkdirSync(dir, { recursive: true });
-  const filePath = join(dir, `${timecard.sessionId}.json`);
   let nextTimecard = { ...timecard };
-  try {
-    const existing = JSON.parse(readFileSync(filePath, "utf-8")) as Timecard;
+  if (existsSync(filePath)) {
+    const existing = parseTimecard(readFileSync(filePath, "utf-8"), filePath, timecard.sessionId);
     if (existing.clockedInAt) {
       nextTimecard = { ...nextTimecard, clockedInAt: existing.clockedInAt };
     }
-  } catch {
   }
   writeFileSync(filePath, JSON.stringify(nextTimecard, null, 2) + "\n");
 }
@@ -162,50 +125,123 @@ export function readTimecards(repoRoot: string): Timecard[] {
   const files = readdirSync(dir).filter((f) => f.endsWith(".json"));
   const timecards: Timecard[] = [];
   for (const file of files) {
-    try {
-      const content = readFileSync(join(dir, file), "utf-8");
-      timecards.push(JSON.parse(content) as Timecard);
-    } catch {
-    }
+    const filePath = join(dir, file);
+    const expectedSessionId = file.slice(0, -".json".length);
+    timecards.push(parseTimecard(readFileSync(filePath, "utf-8"), filePath, expectedSessionId));
   }
   return timecards;
 }
 
-export function runSessionStart(state: RepoState, ownSessionId: string | null, runtime: RuntimeContext): string | null {
-  if (!ownSessionId) return null;
+function parseTimecard(content: string, filePath: string, expectedSessionId = basename(filePath, ".json")): Timecard {
+  let value: unknown;
+  try {
+    value = JSON.parse(content);
+  } catch {
+    throw new Error(`Malformed timecard: ${filePath}`);
+  }
+  if (typeof value !== "object" || value === null) throw new Error(`Malformed timecard: ${filePath}`);
+  const card = value as Record<string, unknown>;
+  const identityFields = ["sessionId", "hostname", "branch"] as const;
+  const timestampFields = ["clockedInAt", "lastActiveAt"] as const;
+  if (identityFields.some((field) => typeof card[field] !== "string" || card[field].trim().length === 0)) {
+    throw new Error(`Malformed timecard: ${filePath}`);
+  }
+  if (timestampFields.some((field) => typeof card[field] !== "string" || Number.isNaN(Date.parse(card[field])))) {
+    throw new Error(`Malformed timecard: ${filePath}`);
+  }
+  try {
+    assertSafeSessionId(expectedSessionId);
+    assertSafeSessionId(card.sessionId as string);
+  } catch {
+    throw new Error(`Malformed timecard: ${filePath}`);
+  }
+  if (card.sessionId !== expectedSessionId) throw new Error(`Malformed timecard: ${filePath}`);
+  return {
+    sessionId: card.sessionId as string,
+    hostname: card.hostname as string,
+    clockedInAt: card.clockedInAt as string,
+    lastActiveAt: card.lastActiveAt as string,
+    branch: card.branch as string,
+  };
+}
+
+export interface SessionStartResult {
+  message: string | null;
+  warning: string | null;
+}
+
+export interface StopResult {
+  warning: string | null;
+}
+
+export function runSessionStart(state: RepoState, ownSessionId: string | null, runtime: RuntimeContext): SessionStartResult {
+  if (!ownSessionId) return { message: null, warning: null };
+  if (!state.currentBranch) {
+    return { message: null, warning: "TRUNK-SYNC FAILED: A branch must be checked out before session presence can be synchronized." };
+  }
   clockIn(state.repoRoot, buildTimecard(ownSessionId, state, runtime));
-  commitTimecardChange(state, `auto: clock-in ${ownSessionId.slice(0, 8)}`);
-  syncBestEffort(state);
+  const cardPath = `.trunk-sync/timeclock/${ownSessionId}.json`;
+  const commitFailure = commitTimecardChange(state, `auto: clock-in ${ownSessionId.slice(0, 8)}`, cardPath);
+  const syncFailure = commitFailure !== null ? null : syncBestEffort(state);
 
   const now = new Date();
   const { active } = classifyTimecards(ownSessionId, readTimecards(state.repoRoot), now);
-  return formatSessionStartSummary(active, now);
+  const failure = commitFailure ?? syncFailure;
+  return {
+    message: formatSessionStartSummary(active, now),
+    warning: failure !== null
+      ? `TRUNK-SYNC WARNING: Session presence is local-only because clock-in could not reach the remote. Remote collaborators cannot see it yet.\n\n${failure}`
+      : null,
+  };
 }
 
-export function runStop(state: RepoState, sessionId: string | null): void {
-  if (!sessionId) return;
-  const cardPath = join(state.repoRoot, ".trunk-sync", "timeclock", `${sessionId}.json`);
+export function runStop(state: RepoState, sessionId: string | null): StopResult {
+  if (!sessionId) return { warning: null };
+  const cardPath = timecardPath(state.repoRoot, sessionId);
   try {
+    parseTimecard(readFileSync(cardPath, "utf-8"), cardPath, sessionId);
     unlinkSync(cardPath);
-  } catch {
-    return;
+  } catch (error: unknown) {
+    if (isMissingFile(error)) return { warning: null };
+    return { warning: clockOutWarning(failureOutput(error, "TRUNK-SYNC FAILED: Clock-out could not remove the local timecard.")) };
   }
 
-  commitTimecardChange(state, `auto: clock-out ${sessionId.slice(0, 8)}`);
-  syncBestEffort(state);
+  const commitFailure = commitTimecardChange(state, `auto: clock-out ${sessionId.slice(0, 8)}`, `.trunk-sync/timeclock/${sessionId}.json`);
+  const syncFailure = commitFailure !== null ? null : syncBestEffort(state);
+  const failure = commitFailure ?? syncFailure;
+  return {
+    warning: failure !== null ? clockOutWarning(failure) : null,
+  };
 }
 
 export function reapCards(repoRoot: string, ids: string[]): string[] {
+  const filePaths = ids.map((id) => timecardPath(repoRoot, id));
   const removed: string[] = [];
-  for (const id of ids) {
-    const filePath = join(repoRoot, ".trunk-sync", "timeclock", `${id}.json`);
+  for (const filePath of filePaths) {
     try {
       unlinkSync(filePath);
       removed.push(filePath);
-    } catch {
+    } catch (error: unknown) {
+      if (!isMissingFile(error)) throw error;
     }
   }
   return removed;
+}
+
+function isMissingFile(error: unknown): boolean {
+  return typeof error === "object" && error !== null && "code" in error && error.code === "ENOENT";
+}
+
+function timecardPath(repoRoot: string, sessionId: string): string {
+  assertSafeSessionId(sessionId);
+  const timeclockDir = resolve(repoRoot, ".trunk-sync", "timeclock");
+  const filePath = resolve(timeclockDir, `${sessionId}.json`);
+  if (dirname(filePath) !== timeclockDir) throw new Error("session id must remain inside the timeclock directory.");
+  return filePath;
+}
+
+function clockOutWarning(failure: string): string {
+  return `TRUNK-SYNC WARNING: Clock-out remains local; the remote may still show this session as active.\n\n${failure}`;
 }
 
 function buildTimecard(sessionId: string, state: RepoState, runtime: RuntimeContext): Timecard {
@@ -221,40 +257,41 @@ function buildTimecard(sessionId: string, state: RepoState, runtime: RuntimeCont
 
 function touchTimecard(state: RepoState, sessionId: string | null): void {
   if (!sessionId) return;
-  const cardPath = join(state.repoRoot, ".trunk-sync", "timeclock", `${sessionId}.json`);
-  let card: Timecard;
-  try {
-    card = JSON.parse(readFileSync(cardPath, "utf-8")) as Timecard;
-  } catch {
-    return;
-  }
+  const cardPath = timecardPath(state.repoRoot, sessionId);
+  if (!existsSync(cardPath)) return;
+  const card = parseTimecard(readFileSync(cardPath, "utf-8"), cardPath, sessionId);
 
   card.lastActiveAt = new Date().toISOString();
   card.branch = state.currentBranch || "detached";
   writeFileSync(cardPath, JSON.stringify(card, null, 2) + "\n");
-  execSync(`git -C "${state.repoRoot}" add -- ".trunk-sync/timeclock/${sessionId}.json"`, { stdio: "ignore" });
+  execFileSync("git", ["-C", state.repoRoot, "--literal-pathspecs", "add", "--", `.trunk-sync/timeclock/${sessionId}.json`], { stdio: "ignore" });
 }
 
 function reapOldTimecards(state: RepoState, ownSessionId: string | null): void {
   const { reapable } = classifyTimecards(ownSessionId, readTimecards(state.repoRoot), new Date());
   if (reapable.length === 0) return;
-  reapCards(state.repoRoot, reapable.map((tc) => tc.sessionId));
-  execSync(`git add -- "${join(state.repoRoot, ".trunk-sync", "timeclock")}"`, { cwd: state.repoRoot, stdio: "ignore" });
+  const removed = reapCards(state.repoRoot, reapable.map((tc) => tc.sessionId));
+  if (removed.length === 0) return;
+  execFileSync("git", ["--literal-pathspecs", "add", "-A", "--", ...removed], { cwd: state.repoRoot, stdio: "ignore" });
 }
 
-function commitTimecardChange(state: RepoState, message: string): void {
+function commitTimecardChange(state: RepoState, message: string, cardPath: string): string | null {
   try {
-    execSync(`git add -- "${join(state.repoRoot, ".trunk-sync", "timeclock")}"`, { cwd: state.repoRoot, stdio: "ignore" });
-    execSync(`git -C "${state.repoRoot}" commit -m "${escapeForShell(message)}"`, { stdio: "ignore" });
-  } catch {
+    execFileSync("git", ["--literal-pathspecs", "add", "-A", "--", cardPath], { cwd: state.repoRoot, stdio: "ignore" });
+    execFileSync("git", ["-C", state.repoRoot, "--literal-pathspecs", "commit", "-m", message, "--", cardPath], { encoding: "utf-8" });
+    return null;
+  } catch (e: unknown) {
+    return failureOutput(e, "TRUNK-SYNC FAILED: Lifecycle commit failed.");
   }
 }
 
-function syncBestEffort(state: RepoState): void {
-  if (!state.hasRemote) return;
+function syncBestEffort(state: RepoState): string | null {
+  if (!state.hasRemote) return null;
   try {
-    executeSync({ targetBranch: state.targetBranch, currentBranch: state.currentBranch });
-  } catch {
+    const result = executeSync({ currentBranch: state.currentBranch });
+    return result.exitCode === 0 ? null : result.stderr ?? "TRUNK-SYNC FAILED: Lifecycle sync failed.";
+  } catch (e: unknown) {
+    return getStdout(e);
   }
 }
 
@@ -264,10 +301,6 @@ function formatConflictRoster(state: RepoState, ownSessionId: string | null): st
   return formatClockInMessage(active, now);
 }
 
-/**
- * Execute a hook plan: stage files, commit, sync.
- * Returns exit code and optional stderr for agent feedback.
- */
 export function executePlan(
   plan: HookPlan,
   input: HookInput,
@@ -276,16 +309,18 @@ export function executePlan(
   if (plan.action === "skip") return { exitCode: 0 };
 
   if (plan.action === "commit-merge") {
-    // Stage the file if provided
-    const filePath = input.tool_input.file_path;
-    if (filePath) {
-      execSync(`git add -- "${filePath}"`, { cwd: state.repoRoot });
+    const unmerged = new Set(unmergedPaths(state.repoRoot));
+    const unresolved = plan.commit.changedPaths.filter(
+      (path) => unmerged.has(path) && !mergePathIsResolved(state.repoRoot, path),
+    );
+    if (unresolved.length > 0) {
+      return conflictExit("The edited path is still unresolved.", state.currentBranch, state.repoRoot);
     }
+    stageChangedPaths(plan.commit, state);
     touchTimecard(state, input.session_id);
     try {
-      execSync(`git commit -m "${escapeForShell(plan.message)}"`, { cwd: state.repoRoot });
+      commitChanges(plan.commit, state);
     } catch (e: unknown) {
-      // Let git's exit code pass through (e.g. 128 for unresolved merge paths)
       const code = getExitCode(e);
       return { exitCode: code, stderr: getStdout(e) };
     }
@@ -297,37 +332,18 @@ export function executePlan(
     return { exitCode: 0 };
   }
 
-  // commit-and-sync
   const { commit, sync } = plan;
+  stageChangedPaths(commit, state);
 
-  // Stage deletions
-  for (const file of commit.filesToRemove) {
-    try {
-      execSync(`git -C "${state.repoRoot}" rm --cached --quiet -- "${file}"`, {
-        stdio: "ignore",
-      });
-    } catch {
-      // ignore
-    }
-  }
-
-  // Stage file edits
-  for (const file of commit.filesToStage) {
-    execSync(`git add -- "${file}"`, { cwd: state.repoRoot });
-  }
-
-  // Check if there's anything staged (may have been a no-op)
   try {
-    execSync("git diff --cached --quiet", { cwd: state.repoRoot, stdio: "ignore" });
-    return { exitCode: 0 }; // nothing to commit
+    execFileSync("git", ["diff", "--cached", "--quiet"], { cwd: state.repoRoot, stdio: "ignore" });
+    return { exitCode: 0 };
   } catch {
-    // has staged changes — continue
   }
 
   touchTimecard(state, input.session_id);
   reapOldTimecards(state, input.session_id);
 
-  // Try to enrich commit message with task from transcript
   let finalCommit = commit;
   if (input.transcript_path) {
     const expanded = input.transcript_path.replace(/^~/, homedir());
@@ -338,19 +354,10 @@ export function executePlan(
         finalCommit = buildCommitPlanWithTask(input, state, task);
       }
     } catch {
-      // best-effort
     }
   }
 
-  // Commit
-  if (finalCommit.body) {
-    execSync(
-      `git commit -m "${escapeForShell(finalCommit.subject)}" -m "${escapeForShell(finalCommit.body)}"`,
-      { cwd: state.repoRoot },
-    );
-  } else {
-    execSync(`git commit -m "${escapeForShell(finalCommit.subject)}"`, { cwd: state.repoRoot });
-  }
+  commitChanges(finalCommit, state);
 
   if (sync) {
     const syncResult = executeSync(sync);
@@ -358,6 +365,17 @@ export function executePlan(
     return syncResult;
   }
   return { exitCode: 0 };
+}
+
+function stageChangedPaths(commit: CommitPlan, state: RepoState): void {
+  if (commit.changedPaths.length === 0) return;
+  execFileSync("git", ["--literal-pathspecs", "add", "-A", "--", ...commit.changedPaths], { cwd: state.repoRoot });
+}
+
+function commitChanges(commit: CommitPlan, state: RepoState): void {
+  const args = ["commit", "-m", commit.subject];
+  if (commit.body) args.push("-m", commit.body);
+  execFileSync("git", args, { cwd: state.repoRoot });
 }
 
 function appendConflictRoster(
@@ -374,108 +392,91 @@ function appendConflictRoster(
 }
 
 export function executeSync(sync: SyncPlan): { exitCode: number; stderr?: string } {
-  const { targetBranch, currentBranch } = sync;
-
-  // Pull from origin
-  let targetBranchExistsUpstream = true;
-  try {
-    execSync(`git pull origin "${targetBranch}" --no-rebase 2>&1`, { encoding: "utf-8" });
-  } catch (e: unknown) {
-    const output = getStdout(e);
-    if (!/couldn't find remote ref/.test(output)) {
-      return conflictExit(output, targetBranch);
-    }
-    // Target branch doesn't exist on the remote yet — nothing to pull; the push below creates it.
-    targetBranchExistsUpstream = false;
+  const { currentBranch } = sync;
+  if (!currentBranch) {
+    return {
+      exitCode: 2,
+      stderr: "TRUNK-SYNC FAILED: A branch must be checked out before trunk-sync can pull or push.",
+    };
   }
 
-  // Merge local target branch into worktree branch
-  if (targetBranchExistsUpstream && currentBranch && currentBranch !== targetBranch) {
-    try {
-      execSync(`git merge "${targetBranch}" --no-edit 2>&1`, { encoding: "utf-8" });
-    } catch (e: unknown) {
-      return conflictExit(getStdout(e), targetBranch);
-    }
+  const initialRemoteBranch = remoteBranchExists(currentBranch);
+  if (typeof initialRemoteBranch !== "boolean") return initialRemoteBranch;
+  if (initialRemoteBranch) {
+    const pullResult = pullRemoteBranch(currentBranch);
+    if (pullResult) return pullResult;
   }
 
-  // Push, retry once on failure
   try {
-    execSync(`git push origin "HEAD:${targetBranch}" 2>&1`, { encoding: "utf-8" });
+    execFileSync("git", ["push", "origin", `HEAD:${currentBranch}`], { encoding: "utf-8" });
   } catch {
-    // Retry: pull then push
-    try {
-      execSync(`git pull origin "${targetBranch}" --no-rebase 2>&1`, { encoding: "utf-8" });
-    } catch (e: unknown) {
-      return conflictExit(getStdout(e), targetBranch);
+    const retryRemoteBranch = remoteBranchExists(currentBranch);
+    if (typeof retryRemoteBranch !== "boolean") return retryRemoteBranch;
+    if (retryRemoteBranch) {
+      const pullResult = pullRemoteBranch(currentBranch);
+      if (pullResult) return pullResult;
     }
     try {
-      execSync(`git push origin "HEAD:${targetBranch}" 2>&1`, { encoding: "utf-8" });
+      execFileSync("git", ["push", "origin", `HEAD:${currentBranch}`], { encoding: "utf-8" });
     } catch (e: unknown) {
-      return pushExit(getStdout(e), targetBranch);
-    }
-  }
-
-  // Keep local target branch in sync
-  try {
-    execSync(`git fetch origin "${targetBranch}:${targetBranch}" 2>/dev/null`);
-  } catch {
-    // If fetch fails (branch checked out), try ff-merge in the worktree
-    try {
-      const wtOutput = execSync(
-        `git worktree list --porcelain`,
-        { encoding: "utf-8" },
-      );
-      const mainWt = findWorktreeForBranch(wtOutput, targetBranch);
-      if (mainWt) {
-        try {
-          execSync(
-            `git -C "${mainWt}" merge --ff-only "origin/${targetBranch}" 2>/dev/null`,
-          );
-        } catch {
-          // best-effort
-        }
-      }
-    } catch {
-      // ignore
+      return pushExit(getStdout(e), currentBranch);
     }
   }
 
   return { exitCode: 0 };
 }
 
-export function findWorktreeForBranch(porcelainOutput: string, branch: string): string | null {
-  const blocks = porcelainOutput.split("\n\n");
-  for (const block of blocks) {
-    const lines = block.split("\n");
-    let worktreePath = "";
-    let branchRef = "";
-    for (const line of lines) {
-      if (line.startsWith("worktree ")) worktreePath = line.slice(9);
-      if (line.startsWith("branch ")) branchRef = line.slice(7);
-    }
-    if (branchRef === `refs/heads/${branch}` && worktreePath) {
-      return worktreePath;
-    }
+function remoteBranchExists(branch: string): boolean | { exitCode: number; stderr: string } {
+  try {
+    execFileSync("git", ["ls-remote", "--exit-code", "--heads", "origin", `refs/heads/${branch}`], {
+      encoding: "utf-8",
+    });
+    return true;
+  } catch (e: unknown) {
+    if (getExitCode(e) === 2) return false;
+    return remoteFailureExit(getStdout(e));
   }
-  return null;
 }
 
-function conflictExit(output: string, _targetBranch: string): { exitCode: number; stderr: string } {
+function pullRemoteBranch(branch: string): { exitCode: number; stderr: string } | null {
+  try {
+    execFileSync("git", ["pull", "origin", branch, "--no-rebase"], { encoding: "utf-8" });
+    return null;
+  } catch (e: unknown) {
+    const output = getStdout(e);
+    return hasUnmergedPaths() ? conflictExit(output, branch) : remoteFailureExit(output);
+  }
+}
+
+function unmergedPaths(repoRoot = process.cwd()): string[] {
+  return gitPathList(repoRoot, ["diff", "--name-only", "--diff-filter=U", "-z"]);
+}
+
+function hasUnmergedPaths(): boolean {
+  return unmergedPaths().length > 0;
+}
+
+function conflictExit(output: string, _branch: string, repoRoot = process.cwd()): { exitCode: number; stderr: string } {
+  const paths = unmergedPaths(repoRoot);
+  const pathList = paths.length > 0 ? paths.map((path) => `- ${path}`).join("\n") : "- Inspect with standalone `git diff --name-only --diff-filter=U`.";
   return {
     exitCode: 2,
-    stderr: `TRUNK-SYNC CONFLICT: ${HOOK_EXPLAINER} Another agent changed the same file, creating a merge conflict. The file now contains git conflict markers (<<<<<<< / ======= / >>>>>>>).\n\ngit output:\n${output}\n\nTo resolve:\n1. Read the conflicting file\n2. Edit it to the correct content (remove the <<<<<<< / ======= / >>>>>>> markers)\n3. Done — this hook will detect the merge state and complete the sync automatically on your next edit\n\nDo NOT run write-side git commands. Read-only git inspection is allowed. The hook handles git writes — your only job is to fix the file contents using Edit.`,
+    stderr: `TRUNK-SYNC CONFLICT: ${HOOK_EXPLAINER} Another agent changed overlapping content, leaving unmerged paths. Conflicts may be marker-based or markerless.\n\nUnmerged paths:\n${pathList}\n\ngit output:\n${output}\n\nTo resolve:\n1. Read each unmerged path\n2. Edit it to the correct final content, removing conflict markers when present\n3. Done — this hook will verify the resolution and complete the sync automatically on your next edit\n\nDo NOT run write-side git commands. Read-only git inspection is allowed. The hook handles git writes — your only job is to edit the file contents.`,
   };
 }
 
-function pushExit(output: string, targetBranch: string): { exitCode: number; stderr: string } {
+function pushExit(output: string, branch: string): { exitCode: number; stderr: string } {
   return {
     exitCode: 2,
-    stderr: `TRUNK-SYNC FAILED: ${HOOK_EXPLAINER} The push to remote failed.\n\ngit output:\n${output}\n\nTo resolve: run "git pull origin ${targetBranch} --no-rebase" then "git push origin HEAD:${targetBranch}". If there are conflicts, read the conflicting files and edit them to remove the conflict markers — the hook will complete the sync on your next edit.`,
+    stderr: `TRUNK-SYNC FAILED: ${HOOK_EXPLAINER} The push to remote branch ${branch} failed after one automatic retry.\n\ngit output:\n${output}\n\nRetry after the underlying condition is corrected; trunk-sync will perform the sync automatically.`,
   };
 }
 
-function escapeForShell(s: string): string {
-  return s.replace(/"/g, '\\"');
+function remoteFailureExit(output: string): { exitCode: number; stderr: string } {
+  return {
+    exitCode: 2,
+    stderr: `TRUNK-SYNC REMOTE FAILURE: ${HOOK_EXPLAINER} The remote operation failed without leaving unmerged paths.\n\ngit output:\n${output}\n\nCorrect the reported remote or working-tree condition, then retry the file operation; trunk-sync will perform the sync automatically.`,
+  };
 }
 
 function getExitCode(e: unknown): number {
@@ -487,9 +488,15 @@ function getExitCode(e: unknown): number {
 }
 
 function getStdout(e: unknown): string {
-  if (typeof e === "object" && e !== null && "stdout" in e) {
-    return String((e as { stdout: unknown }).stdout);
+  if (typeof e === "object" && e !== null) {
+    const output = e as { stdout?: unknown; stderr?: unknown };
+    return `${output.stdout ? String(output.stdout) : ""}${output.stderr ? String(output.stderr) : ""}`;
   }
   if (e instanceof Error) return e.message;
   return String(e);
+}
+
+function failureOutput(error: unknown, fallback: string): string {
+  const output = getStdout(error).trim();
+  return output.length > 0 ? output : fallback;
 }

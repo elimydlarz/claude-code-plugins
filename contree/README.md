@@ -1,14 +1,28 @@
 # contree
 
-**[Read the visual intro →](https://elimydlarz.github.io/claude-code-plugins/contree/)** — a one-page explainer aimed at developers new to TDD.
-
 Test trees as living requirements. Combines test-driven development with automatic requirements synchronisation — your test trees in `TEST_TREES.md` ARE the specification, always up to date.
+
+## Install
+
+With Claude Code:
+
+```sh
+claude plugin marketplace add elimydlarz/claude-code-plugins
+claude plugin install contree@elimydlarz
+```
+
+Or with Codex CLI:
+
+```sh
+codex plugin marketplace add elimydlarz/claude-code-plugins
+codex plugin add contree@elimydlarz
+```
 
 ## Not a software factory
 
 contree does not turn a prompt into shipped software while you watch. **You stay in the loop**, working mainly at the level of test trees — the place where intent lives. You start from a vision, not a spec, and discover the exact requirements iteratively: each tree you write or refine sharpens what the system should do, and the implementation follows from it. The trees are where you think and decide; the code is downstream.
 
-What contree gives you is a **very strong harness, bootstrapped for you**: outside-in testing, the trees-as-contract invariant, the skills that route you through change → sync → tdd → second-opinion, and the hooks that keep everything honest. That harness is a general way of working with AI — not tied to any one stack or domain.
+What contree gives you is a **very strong harness, bootstrapped for you**: outside-in testing, the trees-as-contract invariant, the skills that route you through change → sync → tdd → mutation → completion sync → second-opinion, and the hooks that keep everything honest. That harness is a general way of working with AI — not tied to any one stack or domain.
 
 It is a foundation, not the whole house. You are still expected to **build your project-level harness on top** — your own fixtures, runners, conventions, and domain detail. contree gets you a rigorous starting point and keeps you honest as you go; the specifics of your project remain yours to develop. Trees name the observable test kind they contract: Journey, System, Component, Adapter, Use-case, Domain, or Port. Journey, System, Component, and Adapter are the operator-facing test layers; Use-case and Domain identify native Unit seams, while Port identifies a shared contract suite. TDD starts outside-in from the current tree's consumer: write one test, observe RED, implement GREEN, then during REFACTOR notice too much branching in the test or tree. Extract some branching into a new unit with a mock and a stub that throws `NotImplemented`. The mock makes the consumer tests pass; the stub makes running code fail loudly. That is the signal to give the unit its own tree and repeat the TDD process from step 1 for it.
 
@@ -30,35 +44,26 @@ Focused skills:
 - **`/contree:change`** — Write or modify test trees in `TEST_TREES.md` before any code is written. Auto-triggers when planning behaviour changes.
 - **`/contree:tdd`** — Auto-triggers when implementing behaviour. Runs one observable behaviour through RED, GREEN, and REFACTOR; excessive branching moves behind a passing mock and throwing stub, signalling a new TDD cycle for that unit.
 - **`/contree:sync`** — Uses subagents to audit every tree leaf, production code area, and mental-model heading, then proactively resolves drift according to operator intention. Suggests `second-opinion` once everything agrees.
-- **`/contree:change-without-me`** — Runs change → sync → tdd → second-opinion end-to-end without pausing.
+- **`/contree:change-without-me`** — Runs change → sync → tdd → mutation → completion sync → second-opinion end-to-end without routine phase pauses, repairing independent-review findings through the same completion gates.
 - **`/contree:second-opinion`** — Sends the selected work, or the current worktree by default, and your test-tree contract to OpenAI's gpt-5.6-sol with high reasoning effort for an independent review of database schemas, API contracts, impacts on other systems, and contract compliance. Requires `OPENAI_API_KEY` and fails loudly rather than fabricating a review.
 - **`/contree:diff-for-humans`** — Generates a single image explaining the current change to a human with OpenAI's gpt-image-2 model, foregrounding the technical substance it touches (contracts, databases, behaviour, test trees) and choosing what to depict from the nature of the change, its key details, and its audience, then surfaces those choices for review. Run on demand; requires `OPENAI_API_KEY`.
 
 Plus plugin-wide lifecycle hooks and setup-generated project hooks. Contree progressively expands into a project: every focused setup phase preserves earlier hooks and adds another fast feedback loop, so coding agents receive increasingly complete steering while they work.
 
+## Codex hook configuration
 
-**Codex CLI:**
+Contree's session-start and stop hooks only fire in Codex when plugin hooks are enabled. Add to `~/.codex/config.toml`:
 
-1. **Enable hooks** — contree ships with hook scripts (session-start, stop-drift-check, etc.) that only fire if you opt in. Add to `~/.codex/config.toml`:
-   ```toml
-   [features]
-   hooks = true
-   plugin_hooks = true
+```toml
+[features]
+hooks = true
+plugin_hooks = true
 
-   [shell_environment_policy]
-   inherit = "all"
+[shell_environment_policy]
+inherit = "all"
+```
 
-   [plugins."contree@local-marketplace"]
-   enabled = true
-   ```
-2. **Install the plugin** — copy it into Codex's local marketplace cache:
-   ```sh
-   VERSION=$(jq -r .version contree/.codex-plugin/plugin.json)
-   mkdir -p ~/.codex/plugins/cache/local-marketplace/contree/$VERSION
-   rsync -a --exclude='.git' contree/ ~/.codex/plugins/cache/local-marketplace/contree/$VERSION/
-   ```
-
-Skills run automatically once installed. Hooks require the feature flags above. Codex sets `CLAUDE_PLUGIN_ROOT` in hook command environment so shared scripts run in the same plugin root as Claude Code.
+Skills run automatically once installed. Codex sets `CLAUDE_PLUGIN_ROOT` in hook command environment so shared scripts run in the same plugin root as Claude Code.
 
 ## How it works
 

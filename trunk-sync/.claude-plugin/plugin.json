@@ -5,7 +5,7 @@
   "author": {
     "name": "Eli Mydlarz"
   },
-  "repository": "https://github.com/elimydlarz/trunk-sync",
+  "repository": "https://github.com/elimydlarz/claude-code-plugins",
   "license": "MIT",
   "keywords": [
     "hooks",

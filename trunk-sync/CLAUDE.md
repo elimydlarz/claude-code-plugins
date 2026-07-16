@@ -4,15 +4,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Mental Model
 
-The mental model lives in [MENTAL_MODEL.md](./MENTAL_MODEL.md) — Core Domain Identity, World-to-Code Mapping, Ubiquitous Language, Bounded Contexts, Invariants, Decision Rationale, and Temporal View. It covers the hook, configurable target branch (`agents` by default), and the timeclock.
+The mental model lives in [MENTAL_MODEL.md](./MENTAL_MODEL.md) — Core Domain Identity, World-to-Code Mapping, Ubiquitous Language, Bounded Contexts, Invariants, Decision Rationale, and Temporal View. It covers current-branch synchronization and the timeclock.
 
 ## Repo Map
 
 ```
 .claude-plugin/plugin.json    — plugin manifest (name, version)
-.claude-plugin/marketplace.json — marketplace definition (name: elimydlarz, lists plugins)
+.codex-plugin/plugin.json     — Codex plugin manifest kept at the same version
+../.claude-plugin/marketplace.json — monorepo marketplace definition (name: elimydlarz, lists plugins)
 dist/                         — compiled JS (tracked in git — marketplace installs from repo)
-hooks/hooks.json              — hook registration (PostToolUse Edit|Write|Bash → trunk-sync.sh; SessionStart → trunk-sync-session-start.sh; Stop → trunk-sync-stop.sh)
+hooks/hooks.json              — hook registration (PreToolUse Bash|local_shell → command guard; PostToolUse Edit|Write|Bash|apply_patch|local_shell → trunk-sync.sh; SessionStart → trunk-sync-session-start.sh; Stop → trunk-sync-stop.sh)
 scripts/trunk-sync.sh         — 4-line bash wrapper: exec node dist/lib/hook-entry.js
 scripts/trunk-sync-session-start.sh — SessionStart wrapper: exec node dist/lib/session-start-entry.js
 scripts/trunk-sync-stop.sh    — Stop wrapper: exec node dist/lib/stop-entry.js
@@ -27,14 +28,14 @@ src/lib/hook-execute.ts       — gathers git state, executes the plan; incl. ru
 src/lib/hook-execute.adapter.test.ts — adapter tests against real temp git repos
 src/lib/pre-tool-entry.ts     — PreToolUse command-guard adapter
 src/lib/pre-tool-entry.adapter.test.ts — command-guard protocol tests
+src/lib/entry-input.ts        — shared hook stdin parsing and malformed-input feedback
 src/lib/hook-entry.ts         — PostToolUse entry point: reads stdin, wires layers, exits
 src/lib/session-start-entry.ts — SessionStart entry point: creates/syncs own timecard and prints active peers to stdout
 src/lib/stop-entry.ts         — Stop entry point: removes the session timecard + syncs; never forces
+src/lib/hook-entry.adapter.test.ts — entry-point malformed/empty-input tests against real temp repos
 
 test/system/hook-sync.system.test.mjs — hook System contract over real shell scenarios with temp repos and a bare remote
 test/journey/                 — Dockerized real-agent Journey for Claude Code and Codex
-test/local-setup.sh           — manual test setup
-test/local-cleanup.sh         — manual test teardown
 ```
 
 ## Behaviour Contract
@@ -45,55 +46,37 @@ Behavioural requirements live as test trees in [`TEST_TREES.md`](./TEST_TREES.md
 
 - **version-sync**: the release helper bumps both plugin manifests together from their shared version
 - **dist-tracked**: `dist/` is committed to git (excluding tests and `.d.ts`) so marketplace plugin installs have the compiled hook entry point
-- **doc-alignment**: user-facing docs and rules must stay consistent with the trees — worktree mode is optional (for multi-agent), not required for single-agent use
+- **doc-alignment**: user-facing docs and rules must stay consistent with the trees — agents sharing work synchronize the same checked-out branch from independent clones
 
 ## Development
 
 ### Tests
 
 ```bash
-# TypeScript tests (node:test)
-pnpm run build && pnpm test
+# Build plus Domain and Adapter tests (node:test)
+pnpm test
 
 # Hook e2e tests (shell, TAP output)
 pnpm run test:e2e
 
-# Real Claude Code and Codex functional journey (Docker + DEEPSEEK_API_KEY)
+# Mutation threshold for the pure command and planning core
+pnpm run test:mutation
+
+# Real Claude Code and Codex source-bundle journey (Docker + OPENAI_API_KEY)
 pnpm run test:functional
+
+# Real plugin-manager installation and host journey (Docker + OPENAI_API_KEY)
+pnpm run test:functional:installed
 ```
 
-Hook tests create isolated temp repos with worktrees and a bare remote. Safe to run anywhere — no network access needed.
+Hook tests create isolated temp repos, independent clones, and a bare remote. Safe to run anywhere — no network access needed except the functional agent journeys.
+
+The functional runner loads `test/journey/.env` and then the repository-root `.env`; set `OPENAI_API_KEY` in the root file before running it.
 
 ### Building
 
 ```bash
 pnpm run build        # compile TypeScript → dist/
-```
-
-### Manual testing
-
-Scripts for testing the hook live against origin with real worktrees. The hook targets `agents` by default; repositories can override it with `.trunk-sync/config`'s `target-branch`.
-
-```bash
-# 1. Setup
-bash test/local-setup.sh
-
-# 2. Launch two agents in worktrees
-#    Terminal 1:
-claude -w
-#    Terminal 2:
-claude -w
-
-# 3. Give each agent a task that edits test/battlefield.txt
-#    They will conflict on the same file and the hook will handle it.
-
-# 4. Verify
-git log --oneline origin/agents # should have auto-commits + local-only commit
-git status
-cat test/battlefield.txt         # should reflect the resolved content
-
-# 5. Cleanup
-bash test/local-cleanup.sh
 ```
 
 ### Publishing
@@ -104,7 +87,7 @@ Publish from the repository root through the release script:
 pnpm publish:trunk-sync patch --notes-file /tmp/trunk-sync-notes.md
 ```
 
-Choose `patch`, `minor`, or `major`. The notes file is required; omitting it prints the exact command for reviewing changes since the previous Trunk Sync tag. The script requires clean source, bumps both plugin manifests together, commits and tags the release, and creates the GitHub release. Trunk Sync owns pushing commits and tags. Building and testing remain the maintainer's responsibility before release.
+Choose `patch`, `minor`, or `major`. The notes file is required; omitting it prints the exact command for reviewing changes since the previous Trunk Sync tag. The script requires clean source and a checked-out branch, builds the tracked marketplace runtime, bumps both plugin manifests together, commits the runtime and manifests, tags the release, atomically pushes both refs, and then creates the GitHub release. If the atomic push is rejected, it restores the pre-release commit, tag, runtime, manifests, and index so the same bump can be retried. Testing remains the maintainer's responsibility before release.
 
 GitHub is the distribution source: the marketplace installs directly from this repository. `dist/` is tracked because consumers have no build step. Test files and `.d.ts` are gitignored.
 
@@ -113,13 +96,13 @@ GitHub is the distribution source: the marketplace installs directly from this r
 
 - Hook no longer requires `jq` at runtime (TypeScript handles JSON parsing)
 - All TypeScript imports use `.js` extensions (Node16 ESM requirement)
-- Hook exit codes: 0 = success/no-op, 2 = conflict/failure with agent feedback on stderr
+- Hook exit codes: 0 = success/no-op (including operational warnings); 2 = rejected commands, invalid hook input, or unresolved sync state with agent feedback on stderr
 
 ### Testing conventions
 
 - Every exported function must have tests — when adding a new export, add tests in the same PR
 - Three-layer rule: pure logic → unit tests; git/fs callers → integration tests (real temp repos); shell E2E as safety net
-- Test file placement: `foo.ts` → `foo.test.ts`
+- Test file placement: pure behavior uses `*.domain.test.ts`; I/O boundaries use `*.adapter.test.ts`; system and journey tests live under `test/`
 - Reuse helpers: `initRepo()`, `makeInput()`, `makeState()`, `setupRepoWithRemote()`
 - No mocks for git — use real temp repos with `mkdtempSync`
 - Execution functions (`executePlan`, `executeSync`) require tests covering changed behavior

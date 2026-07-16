@@ -14,7 +14,6 @@ import {
   formatSessionStartSummary,
 } from "./hook-plan.js";
 
-// ── Helpers ──────────────────────────────────────────────────────────
 
 function makeInput(overrides: Partial<HookInput> = {}): HookInput {
   return {
@@ -35,7 +34,6 @@ function makeState(overrides: Partial<RepoState> = {}): RepoState {
     insideRepo: true,
     gitignored: false,
     hasRemote: true,
-    targetBranch: "main",
     currentBranch: "main",
     inMerge: false,
     deletedFiles: [],
@@ -45,7 +43,6 @@ function makeState(overrides: Partial<RepoState> = {}): RepoState {
   };
 }
 
-// ── parseHookInput ───────────────────────────────────────────────────
 
 describe("parseHookInput", () => {
   it("parses complete input", () => {
@@ -74,14 +71,30 @@ describe("parseHookInput", () => {
     assert.equal(result.session_id, null);
     assert.equal(result.transcript_path, null);
     assert.equal(result.cwd, null);
+
+    const explicitNulls = parseHookInput(JSON.stringify({
+      tool_name: null,
+      tool_input: null,
+      turn_id: null,
+      session_id: null,
+      transcript_path: null,
+      cwd: null,
+    }));
+    assert.deepEqual(explicitNulls, result);
   });
 
-  it("throws on invalid JSON", () => {
-    assert.throws(() => parseHookInput("not json"));
+  it("throws on invalid or non-object JSON", () => {
+    for (const input of [
+      "not json",
+      "42",
+      "[]",
+      JSON.stringify({ session_id: 42 }),
+      JSON.stringify({ tool_input: 42 }),
+      JSON.stringify({ tool_input: { file_path: 42 } }),
+    ]) assert.throws(() => parseHookInput(input));
   });
 });
 
-// ── planHook: skip conditions ────────────────────────────────────────
 
 describe("planHook skip conditions", () => {
   it("skips when no file_path and no deleted, modified, or untracked files", () => {
@@ -93,59 +106,117 @@ describe("planHook skip conditions", () => {
 
   it("skips when file is outside the repo", () => {
     const input = makeInput({ tool_input: { file_path: "/other/file.ts" } });
-    const state = makeState({ insideRepo: false });
-    const plan = planHook(input, state);
-    assert.equal(plan.action, "skip");
+    for (const inMerge of [false, true]) {
+      const state = makeState({ insideRepo: false, inMerge });
+      const plan = planHook(input, state);
+      assert.equal(plan.action, "skip");
+    }
   });
 
   it("skips when file is gitignored", () => {
     const input = makeInput();
-    const state = makeState({ gitignored: true });
-    const plan = planHook(input, state);
-    assert.equal(plan.action, "skip");
+    for (const inMerge of [false, true]) {
+      const state = makeState({ gitignored: true, inMerge });
+      const plan = planHook(input, state);
+      assert.equal(plan.action, "skip");
+    }
   });
 });
 
-// ── planHook: merge state ────────────────────────────────────────────
 
 describe("planHook merge state", () => {
   describe("while a merge is in progress", () => {
-    it("produces commit-merge with session prefix", () => {
+    it("produces commit-merge with session prefix and provenance", () => {
       const input = makeInput();
       const state = makeState({ inMerge: true });
       const plan = planHook(input, state);
       assert.equal(plan.action, "commit-merge");
-      if (plan.action !== "commit-merge") return;
-      assert.equal(plan.message, "auto(abcdef12): resolve merge conflict in src/main.ts");
+      assert.equal(plan.commit.subject, "auto(abcdef12): resolve merge conflict in src/main.ts");
+      assert.equal(plan.commit.body, "Session: abcdef12-3456-7890-abcd-ef1234567890\nAgent: claude");
     });
 
     it("produces commit-merge without session prefix", () => {
       const input = makeInput({ session_id: null });
       const state = makeState({ inMerge: true });
       const plan = planHook(input, state);
-      if (plan.action !== "commit-merge") return;
-      assert.equal(plan.message, "auto: resolve merge conflict in src/main.ts");
+      assert.equal(plan.action, "commit-merge");
+      assert.equal(plan.commit.subject, "auto: resolve merge conflict in src/main.ts");
+    });
+
+    it("includes every detected resolved path for Codex merge recovery", () => {
+      const input = makeInput({
+        tool_name: "apply_patch",
+        tool_input: { input: "patch" } as unknown as { file_path?: string },
+      });
+      const state = makeState({
+        inMerge: true,
+        relPath: null,
+        modifiedFiles: ["resolved.txt"],
+        untrackedFiles: ["new.txt"],
+        deletedFiles: ["deleted.txt"],
+      });
+
+      const plan = planHook(input, state);
+
+      assert.equal(plan.action, "commit-merge");
+      assert.deepEqual(plan.commit.changedPaths, ["resolved.txt", "new.txt", "deleted.txt"]);
+      assert.match(plan.commit.body ?? "", /^Agent: codex$/m);
+    });
+
+    it("summarizes detected resolved paths when no file_path is available", () => {
+      const input = makeInput({ tool_name: "apply_patch", tool_input: {} });
+      const state = makeState({ inMerge: true, relPath: null, modifiedFiles: ["first.txt"], untrackedFiles: ["second.txt"] });
+
+      const plan = planHook(input, state);
+
+      assert.equal(plan.action, "commit-merge");
+      assert.equal(plan.commit.subject, "auto(abcdef12): resolve merge conflict in first.txt (+1 more)");
+    });
+
+    it("uses resolved files when an already-staged merge has no detected path", () => {
+      const input = makeInput({ tool_name: "apply_patch", tool_input: {} });
+      const state = makeState({ inMerge: true, relPath: null, modifiedFiles: [], untrackedFiles: [], deletedFiles: [] });
+
+      const plan = planHook(input, state);
+
+      assert.equal(plan.action, "commit-merge");
+      assert.equal(plan.commit.subject, "auto(abcdef12): resolve merge conflict in resolved files");
+    });
+
+    it("plans an already-staged merge before the ordinary skip", () => {
+      const input = makeInput({ tool_name: "apply_patch", tool_input: {} });
+      const state = makeState({
+        inMerge: true,
+        relPath: null,
+        modifiedFiles: [],
+        untrackedFiles: [],
+        deletedFiles: [],
+      });
+
+      const plan = planHook(input, state);
+
+      assert.equal(plan.action, "commit-merge");
+      assert.deepEqual(plan.commit.changedPaths, []);
     });
 
     it("includes sync plan when remote exists", () => {
       const input = makeInput();
       const state = makeState({ inMerge: true, hasRemote: true });
       const plan = planHook(input, state);
-      if (plan.action !== "commit-merge") return;
-      assert.deepEqual(plan.sync, { targetBranch: "main", currentBranch: "main" });
+      assert.equal(plan.action, "commit-merge");
+      assert.deepEqual(plan.sync, { currentBranch: "main" });
     });
 
     it("sync is null when no remote", () => {
       const input = makeInput();
       const state = makeState({ inMerge: true, hasRemote: false });
       const plan = planHook(input, state);
-      if (plan.action !== "commit-merge") return;
+      assert.equal(plan.action, "commit-merge");
       assert.equal(plan.sync, null);
     });
   });
 });
 
-// ── planHook: normal commit ──────────────────────────────────────────
 
 describe("planHook normal commit", () => {
   it("produces commit-and-sync for a file edit", () => {
@@ -153,9 +224,7 @@ describe("planHook normal commit", () => {
     const state = makeState();
     const plan = planHook(input, state);
     assert.equal(plan.action, "commit-and-sync");
-    if (plan.action !== "commit-and-sync") return;
-    assert.deepEqual(plan.commit.filesToStage, ["/repo/src/main.ts"]);
-    assert.deepEqual(plan.commit.filesToRemove, []);
+    assert.deepEqual(plan.commit.changedPaths, ["src/main.ts"]);
     assert.equal(plan.commit.subject, "auto(abcdef12): write src/main.ts");
     assert.equal(
       plan.commit.body,
@@ -167,7 +236,7 @@ describe("planHook normal commit", () => {
     const input = makeInput({ tool_name: "Edit" });
     const state = makeState();
     const plan = planHook(input, state);
-    if (plan.action !== "commit-and-sync") return;
+    assert.equal(plan.action, "commit-and-sync");
     assert.match(plan.commit.subject, /^auto\(abcdef12\): edit src\/main\.ts$/);
   });
 
@@ -175,7 +244,7 @@ describe("planHook normal commit", () => {
     const input = makeInput({ tool_name: null });
     const state = makeState();
     const plan = planHook(input, state);
-    if (plan.action !== "commit-and-sync") return;
+    assert.equal(plan.action, "commit-and-sync");
     assert.match(plan.commit.subject, /update src\/main\.ts/);
   });
 
@@ -186,9 +255,8 @@ describe("planHook normal commit", () => {
       relPath: null,
     });
     const plan = planHook(input, state);
-    if (plan.action !== "commit-and-sync") return;
-    assert.deepEqual(plan.commit.filesToStage, []);
-    assert.deepEqual(plan.commit.filesToRemove, ["old.ts", "stale.ts", "gone.ts"]);
+    assert.equal(plan.action, "commit-and-sync");
+    assert.deepEqual(plan.commit.changedPaths, ["old.ts", "stale.ts", "gone.ts"]);
     assert.match(plan.commit.subject, /delete old\.ts \(\+2 more\)/);
   });
 
@@ -200,9 +268,7 @@ describe("planHook normal commit", () => {
     });
     const plan = planHook(input, state);
     assert.equal(plan.action, "commit-and-sync");
-    if (plan.action !== "commit-and-sync") return;
-    assert.deepEqual(plan.commit.filesToStage, ["script.sh"]);
-    assert.deepEqual(plan.commit.filesToRemove, []);
+    assert.deepEqual(plan.commit.changedPaths, ["script.sh"]);
     assert.match(plan.commit.subject, /update script\.sh/);
   });
 
@@ -215,9 +281,7 @@ describe("planHook normal commit", () => {
     });
     const plan = planHook(input, state);
     assert.equal(plan.action, "commit-and-sync");
-    if (plan.action !== "commit-and-sync") return;
-    assert.deepEqual(plan.commit.filesToStage, ["newfile.txt"]);
-    assert.deepEqual(plan.commit.filesToRemove, []);
+    assert.deepEqual(plan.commit.changedPaths, ["newfile.txt"]);
     assert.match(plan.commit.subject, /update newfile\.txt/);
   });
 
@@ -229,8 +293,8 @@ describe("planHook normal commit", () => {
       relPath: null,
     });
     const plan = planHook(input, state);
-    if (plan.action !== "commit-and-sync") return;
-    assert.deepEqual(plan.commit.filesToStage, ["changed.sh", "brand-new.txt"]);
+    assert.equal(plan.action, "commit-and-sync");
+    assert.deepEqual(plan.commit.changedPaths, ["changed.sh", "brand-new.txt"]);
   });
 
   it("handles both deletions and modifications together", () => {
@@ -242,32 +306,30 @@ describe("planHook normal commit", () => {
     });
     const plan = planHook(input, state);
     assert.equal(plan.action, "commit-and-sync");
-    if (plan.action !== "commit-and-sync") return;
-    assert.deepEqual(plan.commit.filesToStage, ["changed.sh"]);
-    assert.deepEqual(plan.commit.filesToRemove, ["gone.ts"]);
+    assert.deepEqual(plan.commit.changedPaths, ["changed.sh", "gone.ts"]);
   });
 
   it("sync is null when no remote", () => {
     const input = makeInput();
     const state = makeState({ hasRemote: false });
     const plan = planHook(input, state);
-    if (plan.action !== "commit-and-sync") return;
+    assert.equal(plan.action, "commit-and-sync");
     assert.equal(plan.sync, null);
   });
 
-  it("includes sync plan on worktree branch", () => {
+  it("includes sync plan on the current branch", () => {
     const input = makeInput();
     const state = makeState({ currentBranch: "trunk-sync-abc" });
     const plan = planHook(input, state);
-    if (plan.action !== "commit-and-sync") return;
-    assert.deepEqual(plan.sync, { targetBranch: "main", currentBranch: "trunk-sync-abc" });
+    assert.equal(plan.action, "commit-and-sync");
+    assert.deepEqual(plan.sync, { currentBranch: "trunk-sync-abc" });
   });
 
   it("body is null when no session or transcript", () => {
     const input = makeInput({ session_id: null, transcript_path: null });
     const state = makeState();
     const plan = planHook(input, state);
-    if (plan.action !== "commit-and-sync") return;
+    assert.equal(plan.action, "commit-and-sync");
     assert.equal(plan.commit.body, null);
   });
 
@@ -279,8 +341,7 @@ describe("planHook normal commit", () => {
     const state = makeState({ modifiedFiles: ["foo.ts"], relPath: null });
     const plan = planHook(input, state);
     assert.equal(plan.action, "commit-and-sync");
-    if (plan.action !== "commit-and-sync") return;
-    assert.deepEqual(plan.commit.filesToStage, ["foo.ts"]);
+    assert.deepEqual(plan.commit.changedPaths, ["foo.ts"]);
     assert.match(plan.commit.subject, /update foo\.ts/);
   });
 
@@ -292,13 +353,11 @@ describe("planHook normal commit", () => {
     const state = makeState({ modifiedFiles: ["foo.ts"], relPath: null });
     const plan = planHook(input, state);
     assert.equal(plan.action, "commit-and-sync");
-    if (plan.action !== "commit-and-sync") return;
-    assert.deepEqual(plan.commit.filesToStage, ["foo.ts"]);
+    assert.deepEqual(plan.commit.changedPaths, ["foo.ts"]);
   });
 
 });
 
-// ── buildCommitPlanWithTask ──────────────────────────────────────────
 
 describe("buildCommitPlanWithTask", () => {
   it("uses task as subject when provided", () => {
@@ -320,6 +379,17 @@ describe("buildCommitPlanWithTask", () => {
     );
   });
 
+  it("summarizes every detected path in an enriched commit without file_path or session provenance", () => {
+    const input = makeInput({ session_id: null, transcript_path: null, tool_input: {} });
+    const state = makeState({ relPath: null, modifiedFiles: ["first.txt"], deletedFiles: ["second.txt"] });
+
+    const commit = buildCommitPlanWithTask(input, state, "Reconcile files");
+
+    assert.equal(commit.subject, "auto: Reconcile files");
+    assert.equal(commit.body, "File: first.txt (+1 more)");
+    assert.deepEqual(commit.changedPaths, ["first.txt", "second.txt"]);
+  });
+
   it("falls back to default plan when task is null", () => {
     const input = makeInput();
     const state = makeState();
@@ -328,7 +398,6 @@ describe("buildCommitPlanWithTask", () => {
   });
 });
 
-// ── buildSessionPrefix ──────────────────────────────────────────────
 
 describe("buildSessionPrefix", () => {
   it("includes short session id", () => {
@@ -340,7 +409,6 @@ describe("buildSessionPrefix", () => {
   });
 });
 
-// ── buildCommitBody ──────────────────────────────────────────────────
 
 describe("buildCommitBody", () => {
   it("includes session and agent", () => {
@@ -380,7 +448,6 @@ describe("buildCommitBody", () => {
   });
 });
 
-// ── extractTaskFromTranscript ────────────────────────────────────────
 
 describe("extractTaskFromTranscript", () => {
   it("extracts first user message", () => {
@@ -404,12 +471,18 @@ describe("extractTaskFromTranscript", () => {
     assert.equal(extractTaskFromTranscript(content), "Do the thing");
   });
 
-  it("skips XML tags", () => {
+  it("skips only a standalone XML tag line", () => {
     const content = jsonl({
       type: "user",
       message: { role: "user", content: "<context>\nActual task" },
     });
     assert.equal(extractTaskFromTranscript(content), "Actual task");
+
+    const inline = jsonl({
+      type: "user",
+      message: { role: "user", content: "<Component> Fix the task" },
+    });
+    assert.equal(extractTaskFromTranscript(inline), "<Component> Fix the task");
   });
 
   it("strips markdown headers", () => {
@@ -427,11 +500,16 @@ describe("extractTaskFromTranscript", () => {
   });
 
   it("handles array content", () => {
-    const content = jsonl({
-      type: "user",
-      message: { role: "user", content: ["First part", "Second part"] },
-    });
-    assert.equal(extractTaskFromTranscript(content), "First part");
+    for (const messageContent of [
+      ["First part", "Second part"],
+      [{ type: "text", text: "First part" }, { type: "text", text: "Second part" }],
+    ]) {
+      const content = jsonl({
+        type: "user",
+        message: { role: "user", content: messageContent },
+      });
+      assert.equal(extractTaskFromTranscript(content), "First part");
+    }
   });
 
   it("skips non-user messages", () => {
@@ -458,7 +536,6 @@ describe("extractTaskFromTranscript", () => {
 
 });
 
-// ── summarizeDeletions ───────────────────────────────────────────────
 
 describe("summarizeDeletions", () => {
   it("returns empty for no files", () => {
@@ -474,7 +551,6 @@ describe("summarizeDeletions", () => {
   });
 });
 
-// ── classifyTimecards ───────────────────────────────────────────────────
 
 describe("classifyTimecards", () => {
   const now = new Date("2026-03-27T10:05:00.000Z");
@@ -500,7 +576,7 @@ describe("classifyTimecards", () => {
   it("classifies a card whose heartbeat is within the display window as active", () => {
     const result = classifyTimecards(
       "my-session",
-      [makeTimecard({ lastActiveAt: "2026-03-27T09:30:00.000Z" })], // 35 min ago
+      [makeTimecard({ lastActiveAt: "2026-03-27T09:30:00.000Z" })],
       now,
     );
     assert.equal(result.active.length, 1);
@@ -511,7 +587,7 @@ describe("classifyTimecards", () => {
   it("classifies a card past the display window but within the reap ttl as stale", () => {
     const result = classifyTimecards(
       "my-session",
-      [makeTimecard({ lastActiveAt: "2026-03-27T08:00:00.000Z" })], // 2h5m ago
+      [makeTimecard({ lastActiveAt: "2026-03-27T08:00:00.000Z" })],
       now,
     );
     assert.equal(result.stale.length, 1);
@@ -522,7 +598,7 @@ describe("classifyTimecards", () => {
   it("classifies a card past the reap ttl as reapable", () => {
     const result = classifyTimecards(
       "my-session",
-      [makeTimecard({ lastActiveAt: "2026-03-10T10:00:00.000Z" })], // 17 days ago
+      [makeTimecard({ lastActiveAt: "2026-03-10T10:00:00.000Z" })],
       now,
     );
     assert.equal(result.reapable.length, 1);
@@ -531,7 +607,6 @@ describe("classifyTimecards", () => {
   });
 });
 
-// ── formatClockInMessage ──────────────────────────────────────────────
 
 describe("formatClockInMessage", () => {
   const now = new Date("2026-03-27T10:05:00.000Z");
@@ -609,7 +684,6 @@ describe("formatSessionStartSummary", () => {
   });
 });
 
-// ── Helper ───────────────────────────────────────────────────────────
 
 function jsonl(...objects: unknown[]): string {
   return objects.map((o) => JSON.stringify(o)).join("\n");

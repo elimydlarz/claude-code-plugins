@@ -6,22 +6,50 @@ import type {
   SyncPlan,
   Timecard,
 } from "./hook-types.js";
+import { isInputObject, parseInputObject } from "./entry-input.js";
 
 export function parseHookInput(json: string): HookInput {
-  const raw = JSON.parse(json);
+  const raw = parseInputObject(json);
+  const toolInput = raw.tool_input ?? {};
+  if (!isInputObject(toolInput)) throw new Error("tool_input must be a JSON object.");
+  const filePath = optionalString(toolInput, "file_path");
   return {
-    tool_name: raw.tool_name ?? null,
-    tool_input: raw.tool_input ?? {},
-    turn_id: raw.turn_id ?? null,
-    session_id: raw.session_id ?? null,
-    transcript_path: raw.transcript_path ?? null,
-    cwd: raw.cwd ?? null,
+    tool_name: optionalString(raw, "tool_name"),
+    tool_input: filePath === null ? {} : { file_path: filePath },
+    turn_id: optionalString(raw, "turn_id"),
+    session_id: optionalString(raw, "session_id"),
+    transcript_path: optionalString(raw, "transcript_path"),
+    cwd: optionalString(raw, "cwd"),
   };
+}
+
+function optionalString(record: Record<string, unknown>, key: string): string | null {
+  const value = record[key];
+  if (value === undefined || value === null) return null;
+  if (typeof value !== "string") throw new Error(`${key} must be a string when provided.`);
+  return value;
 }
 
 export function planHook(input: HookInput, state: RepoState): HookPlan {
   const filePath = input.tool_input.file_path ?? null;
+
+  if (filePath && !state.insideRepo) {
+    return { action: "skip" };
+  }
+
+  if (filePath && state.gitignored) {
+    return { action: "skip" };
+  }
+
   const sync = buildSyncPlan(state);
+
+  if (state.inMerge) {
+    return {
+      action: "commit-merge",
+      commit: buildMergeCommitPlan(input, state),
+      sync,
+    };
+  }
 
   if (
     !filePath &&
@@ -32,43 +60,31 @@ export function planHook(input: HookInput, state: RepoState): HookPlan {
     return { action: "skip" };
   }
 
-  if (filePath && !state.insideRepo) {
-    return { action: "skip" };
-  }
-
-  if (filePath && state.gitignored) {
-    return { action: "skip" };
-  }
-
-  if (state.inMerge) {
-    const relPath = filePath ? state.relPath! : summarizeDeletions(state.deletedFiles);
-    const sessionPrefix = buildSessionPrefix(input.session_id);
-    const message = `${sessionPrefix}resolve merge conflict in ${relPath}`;
-    return {
-      action: "commit-merge",
-      message,
-      sync,
-    };
-  }
-
   const commit = buildCommitPlan(input, state);
   return { action: "commit-and-sync", commit, sync };
+}
+
+function buildMergeCommitPlan(input: HookInput, state: RepoState): CommitPlan {
+  const changedPaths = changedPathsFor(input, state);
+  const summary = state.relPath ?? (summarizeDeletions(changedPaths) || "resolved files");
+  return {
+    changedPaths,
+    subject: `${buildSessionPrefix(input.session_id)}resolve merge conflict in ${summary}`,
+    body: buildCommitBody(input, null),
+  };
 }
 
 function buildSyncPlan(state: RepoState): SyncPlan | null {
   if (!state.hasRemote) return null;
   return {
-    targetBranch: state.targetBranch,
     currentBranch: state.currentBranch,
   };
 }
 
 function buildCommitPlan(input: HookInput, state: RepoState): CommitPlan {
   const filePath = input.tool_input.file_path ?? null;
-
   const changed = [...state.modifiedFiles, ...state.untrackedFiles];
-  const filesToStage = filePath ? [filePath] : changed;
-  const filesToRemove = filePath ? [] : state.deletedFiles;
+  const changedPaths = changedPathsFor(input, state);
 
   let action: string;
   let relPath: string;
@@ -76,14 +92,8 @@ function buildCommitPlan(input: HookInput, state: RepoState): CommitPlan {
   if (filePath) {
     action = (input.tool_name ?? "update").toLowerCase();
     relPath = state.relPath!;
-  } else if (changed.length > 0 && state.deletedFiles.length === 0) {
-    action = "update";
-    relPath = summarizeDeletions(changed);
-  } else if (state.deletedFiles.length > 0 && changed.length === 0) {
-    action = "delete";
-    relPath = summarizeDeletions(state.deletedFiles);
   } else {
-    action = "update";
+    action = changed.length === 0 ? "delete" : "update";
     relPath = summarizeDeletions([...changed, ...state.deletedFiles]);
   }
 
@@ -91,7 +101,12 @@ function buildCommitPlan(input: HookInput, state: RepoState): CommitPlan {
   const subject = `${sessionPrefix}${action} ${relPath}`;
   const body = buildCommitBody(input, filePath ? relPath : null);
 
-  return { filesToStage, filesToRemove, subject, body };
+  return { changedPaths, subject, body };
+}
+
+function changedPathsFor(input: HookInput, state: RepoState): string[] {
+  if (input.tool_input.file_path) return [state.relPath!];
+  return [...state.modifiedFiles, ...state.untrackedFiles, ...state.deletedFiles];
 }
 
 export function buildCommitPlanWithTask(
@@ -168,7 +183,12 @@ function isUserMessage(obj: unknown): boolean {
 function extractTextContent(content: unknown): string[] {
   if (typeof content === "string") return [content];
   if (Array.isArray(content)) {
-    return content.filter((item): item is string => typeof item === "string");
+    return content.flatMap((item): string[] => {
+      if (typeof item === "string") return [item];
+      if (typeof item !== "object" || item === null) return [];
+      const block = item as Record<string, unknown>;
+      return block.type === "text" && typeof block.text === "string" ? [block.text] : [];
+    });
   }
   return [];
 }
@@ -180,7 +200,7 @@ function filterTaskLine(text: string): string | null {
     if (!trimmed) continue;
     if (trimmed.startsWith("Stop hook feedback:")) return null;
     if (trimmed === "Implement the following plan:") continue;
-    if (trimmed.startsWith("<")) continue;
+    if (/^<[^>]+>$/.test(trimmed)) continue;
     const stripped = trimmed.replace(/^#{1,}\s+/, "");
     if (stripped) return stripped;
   }

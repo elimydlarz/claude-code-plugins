@@ -1,5 +1,5 @@
 import assert from "node:assert/strict"
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
+import { chmodSync, cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -15,26 +15,42 @@ afterEach(() => {
 
 describe("Adapter: plugin-version-bump", () => {
   describe("when a release bump runs", () => {
-    it("then the Claude Code and Codex plugin manifests advance together from their shared version", () => {
-      const directory = createPlugin("1.2.3", "1.2.3")
+    describe("when the bump is patch, minor, or major", () => {
+      it("then the Claude Code and Codex plugin manifests advance together from their shared version", () => {
+        for (const [bump, expected] of [["patch", "1.2.4"], ["minor", "1.3.0"], ["major", "2.0.0"]]) {
+          const directory = createPlugin("1.2.3", "1.2.3")
 
-      const result = spawnSync(process.execPath, ["scripts/bump-plugin-manifests.js", "minor"], { cwd: directory, encoding: "utf-8" })
+          const result = spawnSync(process.execPath, ["scripts/bump-plugin-manifests.js", bump], { cwd: directory, encoding: "utf-8" })
 
-      assert.equal(result.status, 0, result.stderr)
-      assert.equal(manifestVersion(directory, ".claude-plugin"), "1.3.0")
-      assert.equal(manifestVersion(directory, ".codex-plugin"), "1.3.0")
-      assert.equal(result.stdout.trim(), "1.3.0")
+          assert.equal(result.status, 0, `${bump}: ${result.stderr}`)
+          assert.equal(manifestVersion(directory, ".claude-plugin"), expected)
+          assert.equal(manifestVersion(directory, ".codex-plugin"), expected)
+          assert.equal(result.stdout.trim(), expected)
+        }
+      })
+
+      it("and numeric components advance without precision loss", () => {
+        const directory = createPlugin("9007199254740993.2.3", "9007199254740993.2.3")
+
+        const result = spawnSync(process.execPath, ["scripts/bump-plugin-manifests.js", "major"], { cwd: directory, encoding: "utf-8" })
+
+        assert.equal(result.status, 0, result.stderr)
+        assert.equal(manifestVersion(directory, ".claude-plugin"), "9007199254740994.0.0")
+        assert.equal(manifestVersion(directory, ".codex-plugin"), "9007199254740994.0.0")
+      })
     })
   })
 
-  describe("if either required plugin manifest is missing", () => {
+  describe("if the Claude Code or Codex plugin manifest is missing", () => {
     it("then the bump fails without modifying the existing manifest", () => {
-      const directory = createPluginWithClaudeManifest("1.2.3")
+      for (const existingManifest of [".claude-plugin", ".codex-plugin"]) {
+        const directory = createPluginWithOneManifest(existingManifest, "1.2.3")
 
-      const result = spawnSync(process.execPath, ["scripts/bump-plugin-manifests.js", "patch"], { cwd: directory, encoding: "utf-8" })
+        const result = spawnSync(process.execPath, ["scripts/bump-plugin-manifests.js", "patch"], { cwd: directory, encoding: "utf-8" })
 
-      assert.notEqual(result.status, 0)
-      assert.equal(manifestVersion(directory, ".claude-plugin"), "1.2.3")
+        assert.notEqual(result.status, 0)
+        assert.equal(manifestVersion(directory, existingManifest), "1.2.3")
+      }
     })
   })
 
@@ -49,6 +65,37 @@ describe("Adapter: plugin-version-bump", () => {
       assert.equal(manifestVersion(directory, ".codex-plugin"), "1.2.4")
     })
   })
+
+  describe("if the shared version is not a canonical three-number semantic version", () => {
+    it("then the bump fails without modifying either manifest", () => {
+      for (const version of ["1.2", "01.2.3", "1.02.3", "1.2.03"]) {
+        const directory = createPlugin(version, version)
+
+        const result = spawnSync(process.execPath, ["scripts/bump-plugin-manifests.js", "patch"], { cwd: directory, encoding: "utf-8" })
+
+        assert.notEqual(result.status, 0, version)
+        assert.equal(manifestVersion(directory, ".claude-plugin"), version)
+        assert.equal(manifestVersion(directory, ".codex-plugin"), version)
+      }
+    })
+  })
+
+  describe("if either bumped manifest cannot be written", () => {
+    it("then the bump fails and both manifests retain their original contents", () => {
+      for (const readOnlyManifest of [".claude-plugin", ".codex-plugin"]) {
+        const directory = createPlugin("1.2.3", "1.2.3")
+        const readOnlyPath = join(directory, readOnlyManifest, "plugin.json")
+        chmodSync(readOnlyPath, 0o444)
+
+        const result = spawnSync(process.execPath, ["scripts/bump-plugin-manifests.js", "patch"], { cwd: directory, encoding: "utf-8" })
+
+        chmodSync(readOnlyPath, 0o644)
+        assert.notEqual(result.status, 0, readOnlyManifest)
+        assert.equal(manifestVersion(directory, ".claude-plugin"), "1.2.3")
+        assert.equal(manifestVersion(directory, ".codex-plugin"), "1.2.3")
+      }
+    })
+  })
 })
 
 function createPlugin(claudeVersion, codexVersion) {
@@ -61,12 +108,12 @@ function createPlugin(claudeVersion, codexVersion) {
   return directory
 }
 
-function createPluginWithClaudeManifest(version) {
+function createPluginWithOneManifest(manifestDirectory, version) {
   const directory = mkdtempSync(join(tmpdir(), "trunk-sync-version-"))
   directories.push(directory)
   mkdirSync(join(directory, "scripts"), { recursive: true })
   cpSync(source, join(directory, "scripts", "bump-plugin-manifests.js"))
-  writeManifest(directory, ".claude-plugin", version)
+  writeManifest(directory, manifestDirectory, version)
   return directory
 }
 

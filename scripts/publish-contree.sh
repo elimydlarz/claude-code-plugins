@@ -32,7 +32,6 @@ fi
 
 cd "$REPO_ROOT/contree"
 
-# Source changes must be committed
 DIRTY=$(git -C "$REPO_ROOT" status --porcelain -- 'contree/')
 if [ -n "$DIRTY" ]; then
   echo "Uncommitted changes — commit or stash first:" >&2
@@ -40,14 +39,39 @@ if [ -n "$DIRTY" ]; then
   exit 1
 fi
 
-# Bump version in both plugin.json files (Claude + Codex manifests stay in lockstep)
+BRANCH=$(git -C "$REPO_ROOT" branch --show-current)
+if [ -z "$BRANCH" ]; then
+  echo "A checked-out branch is required to publish." >&2
+  exit 1
+fi
+
+PRE_RELEASE_HEAD=$(git -C "$REPO_ROOT" rev-parse HEAD)
+GIT_DIR=$(git -C "$REPO_ROOT" rev-parse --absolute-git-dir)
+INDEX_PATH="$GIT_DIR/index"
+ROLLBACK_DIR=$(mktemp -d "${TMPDIR:-/tmp}/contree-release.XXXXXX")
+trap 'rm -rf "$ROLLBACK_DIR"' EXIT
+cp "$INDEX_PATH" "$ROLLBACK_DIR/index"
+cp .claude-plugin/plugin.json "$ROLLBACK_DIR/claude-plugin.json"
+cp .codex-plugin/plugin.json "$ROLLBACK_DIR/codex-plugin.json"
+
 echo "==> Version bump ($BUMP)"
-VERSION=$(node "$REPO_ROOT/scripts/bump-plugin-version.js" .claude-plugin/plugin.json "$BUMP")
-node "$REPO_ROOT/scripts/bump-plugin-version.js" .codex-plugin/plugin.json "$BUMP" >/dev/null
+VERSION=$(node "$REPO_ROOT/scripts/bump-plugin-version.js" .claude-plugin/plugin.json .codex-plugin/plugin.json "$BUMP")
 
 git -C "$REPO_ROOT" add contree/.claude-plugin/plugin.json contree/.codex-plugin/plugin.json
-git -C "$REPO_ROOT" commit -m "contree v$VERSION"
+git -C "$REPO_ROOT" commit --only -m "contree v$VERSION" -- contree/.claude-plugin/plugin.json contree/.codex-plugin/plugin.json
+RELEASE_COMMIT=$(git -C "$REPO_ROOT" rev-parse HEAD)
 git -C "$REPO_ROOT" tag -a "contree-v$VERSION" -m "contree v$VERSION"
+if git -C "$REPO_ROOT" push --atomic origin "HEAD:$BRANCH" "refs/tags/contree-v$VERSION"; then
+  :
+else
+  PUSH_STATUS=$?
+  git -C "$REPO_ROOT" tag -d "contree-v$VERSION" >/dev/null
+  git -C "$REPO_ROOT" update-ref "refs/heads/$BRANCH" "$PRE_RELEASE_HEAD" "$RELEASE_COMMIT"
+  cp "$ROLLBACK_DIR/index" "$INDEX_PATH"
+  cp "$ROLLBACK_DIR/claude-plugin.json" .claude-plugin/plugin.json
+  cp "$ROLLBACK_DIR/codex-plugin.json" .codex-plugin/plugin.json
+  exit "$PUSH_STATUS"
+fi
 
 echo "==> Create GitHub release"
 gh release create "contree-v$VERSION" --title "contree v$VERSION" --notes-file "$NOTES_FILE"

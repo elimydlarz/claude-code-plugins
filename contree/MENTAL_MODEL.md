@@ -78,9 +78,8 @@
 
 ## Temporal View
 
-- Per project: each focused setup skill expands project-local hooks and proves the newly installed steering; bootstrap orders mental-model setup → test-tree setup → test implementation; `setup` composes the comprehensive harness; thereafter each behaviour skill runs when triggered, while `change-without-me` composes `change` → `sync` → `tdd` → `second-opinion` without pausing.
+- Per project: each focused setup skill expands project-local hooks and proves the newly installed steering; bootstrap orders mental-model setup → test-tree setup → test implementation; `setup` composes the comprehensive harness; thereafter each behaviour skill runs when triggered, while `change-without-me` composes `change` → `sync` → `tdd` → Domain/Use-case mutation validation unless explicitly skipped → completion sync → `second-opinion`, repeating the completion gates for actionable review findings without routine phase pauses.
 - Per behaviour: select one contracted tree leaf → write one test → RED → implement to GREEN → REFACTOR excessive branching behind a mock and throwing stub → add the revealed unit's tree → repeat from RED at that unit's public seam.
 - Per sync: run the full suite → partition every leaf, all production code, and all seven mental-model headings across subagents → reconcile evidence → resolve every finding → rerun affected tests and the full suite until contract, tests, implementation, and mental model agree.
 - Per turn: the Stop hook prompts reconciliation after each response, with `stop_hook_active` preventing it from reviewing its own follow-up turn.
-- At the end of `change-without-me`'s TDD phase: mutation testing validates Domain and Use-case tests before independent review.
 - Across sessions: SessionStart injects rules, mental model, and trees so every session starts in-context.

@@ -1,4 +1,3 @@
-/** Raw JSON from Claude's PostToolUse hook stdin */
 export interface HookInput {
   tool_name: string | null;
   tool_input: { file_path?: string };
@@ -8,40 +7,26 @@ export interface HookInput {
   cwd?: string | null;
 }
 
-/** Git state gathered before planning */
 export interface RepoState {
   repoRoot: string;
   gitDir: string;
-  /** file_path relative to repoRoot, or null if no file_path */
   relPath: string | null;
-  /** true when file_path is inside the repo */
   insideRepo: boolean;
-  /** true when file_path is gitignored */
   gitignored: boolean;
-  /** true when origin remote exists */
   hasRemote: boolean;
-  /** shared agents branch, empty when no remote */
-  targetBranch: string;
-  /** current branch name */
   currentBranch: string;
-  /** true when MERGE_HEAD exists */
   inMerge: boolean;
-  /** tracked files that have been deleted from the working tree */
   deletedFiles: string[];
-  /** tracked files with modifications (content or permissions) in the working tree */
   modifiedFiles: string[];
-  /** untracked new files (not gitignored) in the working tree — e.g. created by Bash or Codex apply_patch */
   untrackedFiles: string[];
 }
 
 export interface SyncPlan {
-  targetBranch: string;
   currentBranch: string;
 }
 
 export interface CommitPlan {
-  filesToStage: string[];
-  filesToRemove: string[];
+  changedPaths: string[];
   subject: string;
   body: string | null;
 }
@@ -49,7 +34,7 @@ export interface CommitPlan {
 export type HookPlan =
   | { action: "skip" }
   | { action: "commit-and-sync"; commit: CommitPlan; sync: SyncPlan | null }
-  | { action: "commit-merge"; message: string; sync: SyncPlan | null };
+  | { action: "commit-merge"; commit: CommitPlan; sync: SyncPlan | null };
 
 export interface Timecard {
   sessionId: string;
@@ -59,7 +44,6 @@ export interface Timecard {
   branch: string;
 }
 
-/** Runtime context not available in RepoState (I/O-derived) */
 export interface RuntimeContext {
   hostname: string;
 }

@@ -1,10 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 
-# Test suite for trunk-sync.sh PostToolUse hook.
-# Uses git worktrees (not separate clones) to simulate multi-agent scenarios.
-# Output: TAP (Test Anything Protocol)
-
 HOOK="$(cd "$(dirname "$0")/../../scripts" && pwd)/trunk-sync.sh"
 HOOKS_JSON="$(cd "$(dirname "$0")/../../hooks" && pwd)/hooks.json"
 DIST_DIR="$(cd "$(dirname "$HOOK")/.." && pwd)/dist"
@@ -121,7 +117,7 @@ last_body() {
 
 TMPDIR_BASE=$(cd "$(mktemp -d)" && pwd -P)
 trap 'rm -rf "$TMPDIR_BASE"' EXIT
-SYNC_BRANCH=agents
+SYNC_BRANCH=collaboration
 
 # Isolate hook temp files to this run's temp dir.
 export TMPDIR="$TMPDIR_BASE"
@@ -149,15 +145,15 @@ setup_repos() {
   git -C "$PROJECT" checkout -b "$SYNC_BRANCH" >/dev/null 2>&1
   git -C "$PROJECT" push origin "$SYNC_BRANCH" >/dev/null 2>&1
 
-  # Worktree A — agent A's isolated working directory
   WT_A="$TMPDIR_BASE/wt-a"
-  git -C "$PROJECT" worktree add "$WT_A" -b trunk-sync/agent-a "origin/$SYNC_BRANCH" >/dev/null 2>&1
+  git clone "$REMOTE" "$WT_A" >/dev/null 2>&1
+  git -C "$WT_A" checkout "$SYNC_BRANCH" >/dev/null 2>&1
   git -C "$WT_A" config user.email "agent-a@test.com"
   git -C "$WT_A" config user.name "Agent A"
 
-  # Worktree B — agent B's isolated working directory
   WT_B="$TMPDIR_BASE/wt-b"
-  git -C "$PROJECT" worktree add "$WT_B" -b trunk-sync/agent-b "origin/$SYNC_BRANCH" >/dev/null 2>&1
+  git clone "$REMOTE" "$WT_B" >/dev/null 2>&1
+  git -C "$WT_B" checkout "$SYNC_BRANCH" >/dev/null 2>&1
   git -C "$WT_B" config user.email "agent-b@test.com"
   git -C "$WT_B" config user.name "Agent B"
 }
@@ -168,11 +164,11 @@ setup_repos
 
 # --- Early exits ---
 
-# 1. Empty file_path → exit 0, no commit
+# 1. Empty Edit file_path → input error, no commit
 BEFORE=$(commit_count "$WT_A")
 cd "$WT_A"
 run_hook "$(make_input "" "" "Edit" "")"
-assert_exit 0 "empty file_path exits 0"
+assert_exit 2 "empty Edit file_path exits 2"
 AFTER=$(commit_count "$WT_A")
 assert_equals "$BEFORE" "$AFTER" "empty file_path creates no commit"
 
@@ -293,6 +289,42 @@ cd "$WT_A"
 run_hook "$(make_input "$WT_A/file1.txt" "" "Edit" "")"
 assert_exit 128 "partial merge resolution exits 128 — git refuses commit with unresolved paths"
 
+# 6b. A sole Claude file_path that still contains conflict markers stays unmerged.
+setup_repos
+echo "remote side" > "$WT_B/seed.txt"
+git -C "$WT_B" add seed.txt
+git -C "$WT_B" commit -m "remote conflict side" >/dev/null 2>&1
+git -C "$WT_B" push origin HEAD:"$SYNC_BRANCH" >/dev/null 2>&1
+echo "local side" > "$WT_A/seed.txt"
+git -C "$WT_A" add seed.txt
+git -C "$WT_A" commit -m "local conflict side" >/dev/null 2>&1
+git -C "$WT_A" pull origin "$SYNC_BRANCH" --no-rebase >/dev/null 2>&1 || true
+CLAUDE_UNRESOLVED_HEAD=$(git -C "$WT_A" rev-parse HEAD)
+cd "$WT_A"
+run_hook "$(make_input "$WT_A/seed.txt" "claude-unresolved" "Edit" "")"
+assert_exit 2 "claude unresolved merge: hook exits 2"
+assert_equals "seed.txt" "$(git -C "$WT_A" diff --name-only --diff-filter=U)" "claude unresolved merge: path remains unmerged"
+assert_equals "$CLAUDE_UNRESOLVED_HEAD" "$(git -C "$WT_A" rev-parse HEAD)" "claude unresolved merge: no merge commit is created"
+assert_contains "$HOOK_STDERR" "marker-based or markerless" "claude unresolved merge: guidance is marker-neutral"
+
+setup_repos
+echo "remote modified side" > "$WT_B/seed.txt"
+git -C "$WT_B" add seed.txt
+git -C "$WT_B" commit -m "remote markerless side" >/dev/null 2>&1
+git -C "$WT_B" push origin HEAD:"$SYNC_BRANCH" >/dev/null 2>&1
+rm "$WT_A/seed.txt"
+git -C "$WT_A" add -A
+git -C "$WT_A" commit -m "local deletion side" >/dev/null 2>&1
+git -C "$WT_A" pull origin "$SYNC_BRANCH" --no-rebase >/dev/null 2>&1 || true
+CLAUDE_MARKERLESS_HEAD=$(git -C "$WT_A" rev-parse HEAD)
+CLAUDE_MARKERLESS_REMOTE_HEAD=$(git -C "$REMOTE" rev-parse "$SYNC_BRANCH")
+cd "$WT_A"
+run_hook "$(make_input "$WT_A/seed.txt" "claude-markerless" "Edit" "")"
+assert_exit 2 "claude markerless unresolved merge: hook exits 2"
+assert_equals "seed.txt" "$(git -C "$WT_A" diff --name-only --diff-filter=U)" "claude markerless unresolved merge: path remains unmerged"
+assert_equals "$CLAUDE_MARKERLESS_HEAD" "$(git -C "$WT_A" rev-parse HEAD)" "claude markerless unresolved merge: no merge commit is created"
+assert_equals "$CLAUDE_MARKERLESS_REMOTE_HEAD" "$(git -C "$REMOTE" rev-parse "$SYNC_BRANCH")" "claude markerless unresolved merge: no push occurs"
+
 # --- Normal commit path ---
 
 # 7. No changes → exit 0, no new commit
@@ -358,9 +390,9 @@ assert_not_contains "$BODY" "File:" "no File line when transcript missing"
 FIRST_LINE=$(head -1 <<< "$BODY")
 assert_equals "Session: sess5678" "$FIRST_LINE" "no blank lines before Session"
 
-# --- Sync path (worktree-to-worktree via origin/agents) ---
+# --- Sync path (independent clones on the same branch) ---
 
-# 14. Clean sync — push to origin/agents succeeds from worktree branch
+# 14. Clean sync — push to the current branch succeeds
 setup_repos
 echo "new content" > "$WT_A/seed.txt"
 cd "$WT_A"
@@ -382,13 +414,13 @@ echo "A edited seed" > "$WT_A/seed.txt"
 cd "$WT_A"
 run_hook "$(make_input "$WT_A/seed.txt" "agent-a" "Edit" "")"
 assert_exit 0 "agent A sync exits 0"
-# B's file should now exist in A's worktree
+# B's file should now exist in A's checkout
 TEST_NUM=$((TEST_NUM + 1))
 if [[ -f "$WT_A/new-file.txt" ]]; then
-  echo "ok $TEST_NUM - agent B's file visible in agent A's worktree after sync"
+  echo "ok $TEST_NUM - agent B's file visible in agent A's checkout after sync"
   PASS=$((PASS + 1))
 else
-  echo "not ok $TEST_NUM - agent B's file visible in agent A's worktree after sync"
+  echo "not ok $TEST_NUM - agent B's file visible in agent A's checkout after sync"
   FAIL=$((FAIL + 1))
 fi
 
@@ -406,78 +438,30 @@ run_hook "$(make_input "$WT_A/seed.txt" "" "Edit" "")"
 assert_exit 2 "pull conflict exits 2"
 assert_contains "$HOOK_STDERR" "TRUNK-SYNC CONFLICT" "stderr contains TRUNK-SYNC CONFLICT"
 
-# 17. Push retry — agents modify different files, push fails then retries
+# 17. Push retry
 setup_repos
-# Agent B pushes a different file
-echo "B's file" > "$WT_B/other.txt"
-cd "$WT_B"
-run_hook "$(make_input "$WT_B/other.txt" "" "Edit" "")"
+PUSH_ATTEMPTS="$REMOTE/push-attempts"
+cat > "$REMOTE/hooks/pre-receive" <<EOF
+#!/bin/sh
+count=0
+if [ -f "$PUSH_ATTEMPTS" ]; then count=\$(cat "$PUSH_ATTEMPTS"); fi
+count=\$((count + 1))
+printf '%s' "\$count" > "$PUSH_ATTEMPTS"
+if [ "\$count" -eq 1 ]; then exit 1; fi
+EOF
+chmod +x "$REMOTE/hooks/pre-receive"
 
-# Agent A modifies a different file — push fails (behind), pull merges cleanly, retry succeeds
-echo "A modifies seed" > "$WT_A/seed.txt"
+echo "A retry" > "$WT_A/retry.txt"
 cd "$WT_A"
-run_hook "$(make_input "$WT_A/seed.txt" "" "Edit" "")"
-assert_exit 0 "push retry succeeds after non-conflicting pull"
+run_hook "$(make_input "$WT_A/retry.txt" "retry-session" "Edit" "")"
+assert_exit 0 "push retry: hook exits 0 after one rejection"
+ATTEMPT_COUNT=$(cat "$PUSH_ATTEMPTS")
+assert_equals "2" "$ATTEMPT_COUNT" "push retry: bare remote observes exactly two attempts"
 REMOTE_LOG=$(git -C "$REMOTE" log --oneline "$SYNC_BRANCH")
-assert_contains "$REMOTE_LOG" "auto:" "remote has agent commits"
+assert_contains "$REMOTE_LOG" "auto(retry-se" "push retry: commit reaches remote"
 
-# 18. Both worktrees converge — after sync, both have the same files
-CONTENT_A=$(cat "$WT_A/other.txt")
-assert_equals "B's file" "$CONTENT_A" "agent A has agent B's file content after sync"
-
-# --- Local target branch sync ---
-
-# 19. Local target branch is fast-forwarded after worktree push
-setup_repos
-echo "from worktree" > "$WT_A/seed.txt"
-cd "$WT_A"
-run_hook "$(make_input "$WT_A/seed.txt" "" "Edit" "")"
-assert_exit 0 "worktree push exits 0"
-# PROJECT has the target branch checked out, so the hook should fast-forward it
-PROJECT_CONTENT=$(cat "$PROJECT/seed.txt")
-assert_equals "from worktree" "$PROJECT_CONTENT" "local target working tree updated after worktree push"
-
-# 20. Local target branch tracks multiple agents — B pushes, target updates, A pushes, target updates again
-setup_repos
-echo "B first" > "$WT_B/seed.txt"
-cd "$WT_B"
-run_hook "$(make_input "$WT_B/seed.txt" "" "Edit" "")"
-PROJECT_CONTENT=$(cat "$PROJECT/seed.txt")
-assert_equals "B first" "$PROJECT_CONTENT" "local target branch has B's content"
-
-echo "A second" > "$WT_A/newfile.txt"
-cd "$WT_A"
-run_hook "$(make_input "$WT_A/newfile.txt" "" "Write" "")"
-TEST_NUM=$((TEST_NUM + 1))
-if [[ -f "$PROJECT/newfile.txt" ]]; then
-  echo "ok $TEST_NUM - local target branch has A's new file after A pushes"
-  PASS=$((PASS + 1))
-else
-  echo "not ok $TEST_NUM - local target branch has A's new file after A pushes"
-  FAIL=$((FAIL + 1))
-fi
-
-# 21. Local commits on the target branch are incorporated — user commits on the target branch, agent picks them up
-setup_repos
-# User commits directly on the target branch in the project
-echo "user's local work" > "$PROJECT/user-file.txt"
-git -C "$PROJECT" add user-file.txt
-git -C "$PROJECT" commit -m "user commit on target branch" >/dev/null 2>&1
-# This commit is NOT on origin — only on the local target branch
-
-# Agent edits in worktree — the hook should merge the local target branch, push everything
-echo "agent work" > "$WT_A/agent-file.txt"
-cd "$WT_A"
-run_hook "$(make_input "$WT_A/agent-file.txt" "" "Write" "")"
-assert_exit 0 "agent push exits 0 with local-only commits on target branch"
-
-# User's file should now be on origin (the hook pushed it along)
-REMOTE_FILES=$(git -C "$REMOTE" ls-tree --name-only -r "$SYNC_BRANCH")
-assert_contains "$REMOTE_FILES" "user-file.txt" "user's local commit reached origin via agent push"
-
-# Local target branch should be up to date
-PROJECT_FILES=$(ls "$PROJECT")
-assert_contains "$PROJECT_FILES" "agent-file.txt" "local target branch has agent's file after sync"
+# 18. Both clones converge — after sync, both have the same files
+assert_equals "A retry" "$(cat "$WT_A/retry.txt")" "agent A retains retry content"
 
 # --- File deletion sync ---
 
@@ -604,7 +588,7 @@ fi
 
 # --- Concurrent push race ---
 
-# 26. Concurrent push — two worktrees push different files simultaneously,
+# 26. Concurrent push — two clones push different files simultaneously,
 #     at least one needs to retry; both succeed
 setup_repos
 
@@ -612,7 +596,7 @@ setup_repos
 echo "A's content" > "$WT_A/a-file.txt"
 echo "B's content" > "$WT_B/b-file.txt"
 
-# Run both hooks concurrently — they race to push to origin/agents
+# Run both hooks concurrently — they race to push to their shared branch
 cd "$WT_A"
 HOOK_EXIT_A=0
 STDERR_A=""
@@ -652,7 +636,7 @@ assert_contains "$REMOTE_FILES" "b-file.txt" "concurrent push: agent B's file on
 
 # The agent that retried will have pulled the other's file.
 # The first-pusher won't have the other's file yet (no pull after its own push).
-# Verify at least one worktree has the other's file (the retrier).
+# Verify at least one clone has the other's file (the retrier).
 TEST_NUM=$((TEST_NUM + 1))
 if [[ -f "$WT_A/b-file.txt" ]] || [[ -f "$WT_B/a-file.txt" ]]; then
   echo "ok $TEST_NUM - concurrent push: retrier pulled the other agent's file"
@@ -664,7 +648,7 @@ else
   FAIL=$((FAIL + 1))
 fi
 
-# 27. Concurrent push conflict — two worktrees edit the same file simultaneously,
+# 27. Concurrent push conflict — two clones edit the same file simultaneously,
 #     one succeeds, the other gets a conflict (exit 2)
 setup_repos
 
@@ -826,9 +810,96 @@ assert_exit 2 "git-block: git stash is blocked"
 run_git_block "$(make_bash_input "git stash pop")"
 assert_exit 2 "git-block: git stash pop is blocked"
 
+run_git_block "$(make_bash_input "cd /tmp && git commit -m forbidden")"
+assert_exit 2 "git-block: compound git commit is blocked"
+
+run_git_block "$(make_bash_input "git status && git push")"
+assert_exit 2 "git-block: chained git push is blocked"
+
+run_git_block "$(make_bash_input "(git push)")"
+assert_exit 2 "git-block: parenthesized git push is blocked"
+
+run_git_block "$(make_bash_input "command git push")"
+assert_exit 2 "git-block: command-prefixed git push is blocked"
+
+run_git_block "$(make_bash_input "command -p git push")"
+assert_exit 2 "git-block: command -p git push is blocked"
+
+run_git_block "$(make_bash_input "time git push")"
+assert_exit 2 "git-block: time git push is blocked"
+
+run_git_block "$(make_bash_input "! git push")"
+assert_exit 2 "git-block: negated git push is blocked"
+
+run_git_block "$(make_bash_input 'G=it; g$G push')"
+assert_exit 2 "git-block: embedded executable expansion git push is blocked"
+
+run_git_block "$(make_bash_input "/bin/sh -c 'git push'")"
+assert_exit 2 "git-block: absolute shell -c git push is blocked"
+
+run_git_block "$(make_bash_input "bash -lc 'git push'")"
+assert_exit 2 "git-block: combined shell options git push is blocked"
+
+run_git_block "$(make_bash_input "/bin/sh -xec 'git push'")"
+assert_exit 2 "git-block: combined shell options with tracing git push is blocked"
+
+run_git_block "$(make_bash_input "/bin/sh -c 'g\\it push'")"
+assert_exit 2 "git-block: escaped shell -c git push is blocked"
+
+run_git_block "$(make_bash_input "sudo /bin/sh -c 'git push'")"
+assert_exit 2 "git-block: wrapped shell -c git push is blocked"
+
+run_git_block "$(make_bash_input "FOO=x /bin/sh -c 'git push'")"
+assert_exit 2 "git-block: assignment-prefixed shell -c git push is blocked"
+
+run_git_block "$(make_bash_input "eval 'git push'")"
+assert_exit 2 "git-block: eval git push is blocked"
+
+run_git_block "$(make_bash_input "eval 'g\\it push'")"
+assert_exit 2 "git-block: escaped eval git push is blocked"
+
+run_git_block "$(make_bash_input "FOO='x y' git push")"
+assert_exit 2 "git-block: quoted assignment git push is blocked"
+
+run_git_block "$(make_bash_input '$(printf git) push')"
+assert_exit 2 "git-block: command-position expansion git push is blocked"
+
+run_git_block "$(make_bash_input 'G=git; $G push')"
+assert_exit 2 "git-block: unquoted parameter expansion git push is blocked"
+
+run_git_block "$(make_bash_input 'G=git; "$G" push')"
+assert_exit 2 "git-block: quoted parameter expansion git push is blocked"
+
+run_git_block "$(make_bash_input 'G=git; "${G}" push')"
+assert_exit 2 "git-block: quoted braced parameter expansion git push is blocked"
+
+run_git_block "$(make_bash_input 'G=/usr/bin; "$G"/git push')"
+assert_exit 2 "git-block: quoted parameter path expansion git push is blocked"
+
+run_git_block "$(make_bash_input 'G=/usr/bin; "${G}"/git push')"
+assert_exit 2 "git-block: quoted braced parameter path expansion git push is blocked"
+
+run_git_block "$(make_bash_input '${GIT:-git} push')"
+assert_exit 2 "git-block: defaulted parameter expansion git push is blocked"
+
+run_git_block "$(make_bash_input 'git status \"\$(eval '\''git push'\'')\"')"
+assert_exit 2 "git-block: nested substitution git push is blocked"
+
 # 28l. non-git command passes through
 run_git_block "$(make_bash_input "ls -la")"
 assert_exit 0 "git-block: non-git command passes through"
+
+run_git_block "$(make_bash_input "time pnpm test")"
+assert_exit 0 "git-block: time non-git command passes through"
+
+run_git_block "$(make_bash_input "! false")"
+assert_exit 0 "git-block: negated non-git command passes through"
+
+run_git_block "$(make_bash_input "printf 'g\$G push'")"
+assert_exit 0 "git-block: embedded expansion in non-git argument passes through"
+
+run_git_block "$(make_bash_input "printf value > git")"
+assert_exit 0 "git-block: redirection to a file named git passes through"
 
 # --- Codex local_shell git-block ---
 
@@ -880,6 +951,9 @@ assert_exit 0 "local_shell git-block: array git branch inspection allowed"
 # Codex 4: string-form git commit is blocked
 run_local_shell_block "$(make_local_shell_input_string "git commit -m foo")"
 assert_exit 2 "local_shell git-block: string git commit blocked"
+
+run_local_shell_block "$(make_local_shell_input_string "cd /tmp && git commit -m foo")"
+assert_exit 2 "local_shell git-block: compound git commit blocked"
 
 # Codex 5: array-form non-git command passes through
 run_local_shell_block "$(make_local_shell_input_array '["ls","-la"]')"
@@ -977,7 +1051,74 @@ assert_contains "$HEAD_FILES" "added-by-codex.txt" "codex apply_patch add: new f
 REMOTE_FILES=$(git -C "$REMOTE" ls-tree --name-only -r "$SYNC_BRANCH")
 assert_contains "$REMOTE_FILES" "added-by-codex.txt" "codex apply_patch add: new file reached the remote"
 
+setup_repos
+echo "remote version" > "$WT_B/seed.txt"
+cd "$WT_B"
+run_hook "$(make_input "$WT_B/seed.txt" "remote-session" "Edit" "")"
+
+echo "local version" > "$WT_A/seed.txt"
+cd "$WT_A"
+run_hook "$(make_apply_patch_input "codex-merge-session")"
+assert_exit 2 "codex conflict recovery: conflict created"
+
+echo "resolved by codex" > "$WT_A/seed.txt"
+run_hook "$(make_apply_patch_input "codex-merge-session")"
+assert_exit 0 "codex conflict recovery: hook exits 0"
+
+LOCAL_HEAD=$(git -C "$WT_A" rev-parse HEAD)
+REMOTE_HEAD=$(git -C "$REMOTE" rev-parse "$SYNC_BRANCH")
+assert_equals "$LOCAL_HEAD" "$REMOTE_HEAD" "codex conflict recovery: merge reached remote"
+
+MERGE_PARENT_COUNT=$(git -C "$WT_A" rev-list --parents -n 1 HEAD | awk '{print NF - 1}')
+MERGE_BODY=$(last_body "$WT_A")
+TEST_NUM=$((TEST_NUM + 1))
+if [[ "$MERGE_PARENT_COUNT" -eq 2 && "$MERGE_BODY" == *"Session: codex-merge-session"* && "$MERGE_BODY" == *"Agent: codex"* ]]; then
+  echo "ok $TEST_NUM - codex conflict recovery: merge records Codex provenance"
+  PASS=$((PASS + 1))
+else
+  echo "not ok $TEST_NUM - codex conflict recovery: merge records Codex provenance"
+  FAIL=$((FAIL + 1))
+fi
+
 # ── Timecards: automatic clock-in and clock-out ──────────────────────────────
+
+setup_repos
+cd "$WT_A"
+mkdir -p "$WT_A/.trunk-sync/timeclock"
+ISOLATION_NOW=$(node -e 'console.log(new Date().toISOString())')
+printf '{"sessionId":"staged-card","hostname":"host","clockedInAt":"%s","lastActiveAt":"%s","branch":"%s"}' "$ISOLATION_NOW" "$ISOLATION_NOW" "$SYNC_BRANCH" > "$WT_A/.trunk-sync/timeclock/staged-card.json"
+echo "staged source" > "$WT_A/staged-source.txt"
+git -C "$WT_A" add .trunk-sync/timeclock/staged-card.json staged-source.txt
+printf '{"sessionId":"unstaged-card","hostname":"host","clockedInAt":"%s","lastActiveAt":"%s","branch":"%s"}' "$ISOLATION_NOW" "$ISOLATION_NOW" "$SYNC_BRANCH" > "$WT_A/.trunk-sync/timeclock/unstaged-card.json"
+echo "unstaged source" > "$WT_A/seed.txt"
+run_session_start "$WT_A" "isolated-session" >/dev/null
+ISOLATION_START_FILES=$(git -C "$WT_A" diff-tree --no-commit-id --name-only -r HEAD)
+assert_equals ".trunk-sync/timeclock/isolated-session.json" "$ISOLATION_START_FILES" "session-start isolation: lifecycle commit contains only the target card"
+ISOLATION_STAGED=$(git -C "$WT_A" diff --cached --name-only)
+assert_equals $'.trunk-sync/timeclock/staged-card.json\nstaged-source.txt' "$ISOLATION_STAGED" "session-start isolation: unrelated staged paths remain staged"
+ISOLATION_STATUS=$(git -C "$WT_A" status --porcelain)
+TEST_NUM=$((TEST_NUM + 1))
+if [[ "$ISOLATION_STATUS" == *"?? .trunk-sync/timeclock/unstaged-card.json"* && "$ISOLATION_STATUS" == *" M seed.txt"* ]]; then
+  echo "ok $TEST_NUM - session-start isolation: unrelated unstaged paths remain uncommitted"
+  PASS=$((PASS + 1))
+else
+  echo "not ok $TEST_NUM - session-start isolation: unrelated unstaged paths remain uncommitted"
+  FAIL=$((FAIL + 1))
+fi
+run_stop "$WT_A" "isolated-session" >/dev/null
+ISOLATION_STOP_FILES=$(git -C "$WT_A" diff-tree --no-commit-id --name-only -r HEAD)
+assert_equals ".trunk-sync/timeclock/isolated-session.json" "$ISOLATION_STOP_FILES" "stop isolation: lifecycle commit contains only the target card"
+ISOLATION_STAGED=$(git -C "$WT_A" diff --cached --name-only)
+assert_equals $'.trunk-sync/timeclock/staged-card.json\nstaged-source.txt' "$ISOLATION_STAGED" "stop isolation: unrelated staged paths remain staged"
+ISOLATION_STATUS=$(git -C "$WT_A" status --porcelain)
+TEST_NUM=$((TEST_NUM + 1))
+if [[ "$ISOLATION_STATUS" == *"?? .trunk-sync/timeclock/unstaged-card.json"* && "$ISOLATION_STATUS" == *" M seed.txt"* ]]; then
+  echo "ok $TEST_NUM - stop isolation: unrelated unstaged paths remain uncommitted"
+  PASS=$((PASS + 1))
+else
+  echo "not ok $TEST_NUM - stop isolation: unrelated unstaged paths remain uncommitted"
+  FAIL=$((FAIL + 1))
+fi
 
 # 31. Agent A clocks in and writes a timecard.
 setup_repos
@@ -986,7 +1127,7 @@ SS_A=$(run_session_start "$WT_A" "agentaaa")
 CARD="$WT_A/.trunk-sync/timeclock/agentaaa.json"
 assert_equals "" "$SS_A" "session-start: A is clocked in without own session context"
 assert_equals "agentaaa" "$(jq -r '.sessionId' "$CARD")" "timecard: sessionId written"
-assert_equals "trunk-sync/agent-a" "$(jq -r '.branch' "$CARD")" "timecard: branch written"
+assert_equals "$SYNC_BRANCH" "$(jq -r '.branch' "$CARD")" "timecard: branch written"
 OLD_ACTIVE=$(jq -r '.lastActiveAt' "$CARD")
 sleep 1
 echo "work" > "$WT_A/seed.txt"
@@ -1013,7 +1154,29 @@ REMOTE_CARD=$(git -C "$WT_A" show "origin/$SYNC_BRANCH:.trunk-sync/timeclock/age
 [[ -z "$REMOTE_CARD" ]] && REMOTE_CLOCKED_OUT=yes || REMOTE_CLOCKED_OUT=no
 assert_equals "yes" "$REMOTE_CLOCKED_OUT" "stop: timecard removal is synced to the remote"
 
+setup_repos
+printf '#!/bin/sh\necho lifecycle-rejected >&2\nexit 1\n' > "$REMOTE/hooks/pre-receive"
+chmod +x "$REMOTE/hooks/pre-receive"
+SS_FAILURE_STDERR="$TMPDIR_BASE/session-start-failure-stderr"
+run_session_start "$WT_A" "localonly" >/dev/null 2>"$SS_FAILURE_STDERR"
+[[ -f "$WT_A/.trunk-sync/timeclock/localonly.json" ]] && LOCAL_ONLY_CARD=yes || LOCAL_ONLY_CARD=no
+assert_equals "yes" "$LOCAL_ONLY_CARD" "session-start failure: local timecard is retained"
+assert_contains "$(cat "$SS_FAILURE_STDERR")" "presence is local-only" "session-start failure: local-only warning is reported"
+
+setup_repos
+run_session_start "$WT_A" "staleremote" >/dev/null
+printf '#!/bin/sh\necho lifecycle-rejected >&2\nexit 1\n' > "$REMOTE/hooks/pre-receive"
+chmod +x "$REMOTE/hooks/pre-receive"
+STOP_FAILURE_STDERR="$TMPDIR_BASE/stop-failure-stderr"
+STOP_FAILURE_EXIT=0
+run_stop "$WT_A" "staleremote" >/dev/null 2>"$STOP_FAILURE_STDERR" || STOP_FAILURE_EXIT=$?
+assert_equals "0" "$STOP_FAILURE_EXIT" "stop failure: the stop hook still exits 0"
+assert_contains "$(git -C "$WT_A" log -1 --format=%s)" "clock-out" "stop failure: local clock-out is committed"
+assert_contains "$(cat "$STOP_FAILURE_STDERR")" "remote may still show this session as active" "stop failure: stale-remote warning is reported"
+
 # 34. A stale card is omitted at SessionStart because timecards are presence only.
+setup_repos
+cd "$WT_A"
 mkdir -p "$WT_A/.trunk-sync/timeclock"
 STALE_HB=$(node -e 'console.log(new Date(Date.now()-2*60*60*1000).toISOString())')  # 2h ago
 STALE_CARD="$WT_A/.trunk-sync/timeclock/staleagent.json"

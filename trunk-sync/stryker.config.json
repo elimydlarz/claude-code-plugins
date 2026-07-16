@@ -1,0 +1,42 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "mutate": [
+    "src/lib/hook-plan.ts:1-125",
+    "src/lib/entry-input.ts:1-9",
+    "src/lib/command-guard.ts"
+  ],
+  "plugins": [
+    "@stryker-mutator/tap-runner",
+    "@stryker-mutator/typescript-checker"
+  ],
+  "testRunner": "tap",
+  "tap": {
+    "testFiles": [
+      "dist/lib/hook-plan.scenarios.js",
+      "dist/lib/command-guard.domain.test.js"
+    ]
+  },
+  "buildCommand": "pnpm run build",
+  "checkers": [
+    "typescript"
+  ],
+  "tsconfigFile": "tsconfig.json",
+  "coverageAnalysis": "perTest",
+  "mutator": {
+    "excludedMutations": [
+      "Regex"
+    ]
+  },
+  "reporters": [
+    "clear-text",
+    "progress",
+    "json"
+  ],
+  "thresholds": {
+    "high": 100,
+    "low": 90,
+    "break": 90
+  },
+  "concurrency": 4,
+  "timeoutMS": 10000
+}

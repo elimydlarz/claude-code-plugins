@@ -12,6 +12,7 @@ function verifies(pattern: string): () => void {
       env: { ...process.env, NODE_TEST_CONTEXT: undefined },
     });
     assert.equal(result.status, 0, result.stdout + result.stderr);
+    assert.doesNotMatch(result.stdout, /^1\.\.0$/m, `No scenario matched ${pattern}`);
     assert.match(result.stdout, /# pass [1-9]/, result.stdout);
   };
 }
@@ -24,8 +25,8 @@ describe("Domain: hook-plan", () => {
     describe("when called with input missing optional fields", () => {
       it("then those fields default to null", verifies("defaults missing fields to null"));
     });
-    describe("if the input is not valid JSON", () => {
-      it("then it throws", verifies("throws on invalid JSON"));
+    describe("if the input is syntactically invalid or its object fields have invalid types", () => {
+      it("then it throws", verifies("throws on invalid or non-object JSON"));
     });
   });
 
@@ -44,10 +45,18 @@ describe("Domain: hook-plan", () => {
   describe("planHook merge state", () => {
     describe("while a merge is in progress", () => {
       describe("when the session is known", () => {
-        it("then the plan is commit-merge with a session prefix", verifies("produces commit-merge with session prefix"));
+        it("then the plan is commit-merge with a session prefix and session and agent provenance", verifies("produces commit-merge with session prefix and provenance"));
       });
       describe("when the session is unknown", () => {
         it("then the plan is commit-merge without a session prefix", verifies("produces commit-merge without session prefix"));
+      });
+      describe("when Codex provides no file_path", () => {
+        it("then the plan includes every detected resolved path", verifies("includes every detected resolved path for Codex merge recovery"));
+        it("and the subject summarizes the detected resolved paths", verifies("summarizes detected resolved paths when no file_path is available"));
+      });
+      describe("when the resolution is already staged and no working-tree changes remain", () => {
+        it("then the plan is still commit-merge", verifies("plans an already-staged merge before the ordinary skip"));
+        it("and the subject identifies resolved files", verifies("uses resolved files when an already-staged merge has no detected path"));
       });
       describe("when a remote is configured", () => {
         it("then a sync plan is included", verifies("includes sync plan when remote exists"));
@@ -82,8 +91,8 @@ describe("Domain: hook-plan", () => {
     describe("when no remote is configured", () => {
       it("then sync is null", verifies("planHook normal commit.*sync is null when no remote"));
     });
-    describe("when the current branch is a worktree branch (not the target)", () => {
-      it("then a sync plan is still included", verifies("includes sync plan on worktree branch"));
+    describe("when a remote is configured", () => {
+      it("then the sync plan identifies the current branch", verifies("includes sync plan on the current branch"));
     });
     describe("when no session id and no transcript_path are present", () => {
       it("then the commit body is null", verifies("body is null when no session or transcript"));
@@ -100,6 +109,7 @@ describe("Domain: hook-plan", () => {
     describe("when a task is provided", () => {
       it("then the task is used as the commit subject", verifies("uses task as subject when provided"));
       it("and the commit body retains its file, session, and agent provenance", verifies("the commit body retains its file, session, and agent provenance"));
+      it("and detected paths are summarized when file and session metadata are absent", verifies("summarizes every detected path in an enriched commit without file_path or session provenance"));
     });
     describe("when the task is null", () => {
       it("then the default plan subject is used", verifies("falls back to default plan when task is null"));
@@ -143,8 +153,8 @@ describe("Domain: hook-plan", () => {
     describe("if a user message starts with `Implement the following plan:`", () => {
       it("then the header is skipped", verifies("skips 'Implement the following plan:' header"));
     });
-    describe("if a user message contains XML tags", () => {
-      it("then the tags are stripped", verifies("skips XML tags"));
+    describe("if a user message starts with a standalone XML tag line", () => {
+      it("then that tag line is skipped", verifies("skips only a standalone XML tag line"));
     });
     describe("if a user message starts with markdown headers", () => {
       it("then the headers are stripped", verifies("strips markdown headers"));
@@ -152,8 +162,8 @@ describe("Domain: hook-plan", () => {
     describe("when the extracted task exceeds 72 chars", () => {
       it("then it is truncated at 72 chars", verifies("truncates at 72 chars"));
     });
-    describe("when the user message content is an array", () => {
-      it("then array content is handled", verifies("handles array content"));
+    describe("when the user message content is an array of strings or text blocks", () => {
+      it("then the first task text is returned", verifies("handles array content"));
     });
     describe("if a transcript entry is not a user message", () => {
       it("then it is skipped", verifies("skips non-user messages"));
