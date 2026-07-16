@@ -28,11 +28,13 @@ Once the plugin is installed, repository changes made through the hooked agent t
 
 ## Configure
 
-trunk-sync has no required configuration file. It acts on the repository containing the tool event, synchronizes the currently checked-out branch with the same-named branch at `origin`, and commits locally when `origin` is absent. Configure Git's `user.name`, `user.email`, credentials, and `origin` as you would for normal command-line use.
+trunk-sync has no required configuration file. It acts on the repository containing the tool event, synchronizes the currently checked-out branch with the same-named branch at `origin`, and commits locally when `origin` is absent. Configure Git's `user.name`, `user.email`, credentials, and `origin` as you would for normal command-line use. Keep a branch checked out: detached `HEAD` cannot provide a branch for presence or remote synchronization.
 
 ## How it works
 
-After every `Edit`, `Write`, `Bash`, `apply_patch`, or `local_shell` use, the hook stages eligible repository changes and commits them. With `origin` configured, it then pulls and pushes the checked-out branch. Files outside the repository, ignored files, and tool uses that leave no changes are skipped.
+After every `Edit`, `Write`, `Bash`, `apply_patch`, or `local_shell` use, the hook stages eligible repository changes and commits them. Path-aware tool events stage the reported path. Events without a path, including shell commands and Codex patches, stage all detected modified, deleted, and untracked repository paths. Ignored files, files outside the repository, and tool uses that leave no changes are skipped.
+
+With `origin` configured, trunk-sync pulls and pushes the checked-out branch after each commit. If a push is rejected, it pulls and retries once. Conflicts and other remote failures are returned to the agent as actionable hook feedback.
 
 Agents can still inspect Git with standalone commands such as `git status`, `git log`, `git show`, `git diff`, `git blame`, and read-only branch, tag, remote, worktree, stash, reflog, and config queries. Shell composition around Git, including `cd repo && git status`, is rejected; use a standalone form such as `git -C repo status`. Direct write-side Git commands are rejected so the hook remains the sync owner.
 
@@ -54,11 +56,11 @@ Independent clones isolate in-progress files, the Git index, and merge state whi
 
 Linked worktrees remain branch-distinct checkouts. Git normally rejects checking out one branch in multiple linked worktrees; overriding that protection with `git worktree add --force` leaves separate indexes behind one moving branch ref. Use independent clones for same-branch collaboration.
 
-Start each session from a clean index. Session start immediately creates a clock-in commit, and Git includes changes that were already staged in that commit.
+Session lifecycle commits are isolated: clock-in and clock-out commit only the current session's timecard, while unrelated staged and unstaged changes retain their existing state.
 
 Outside a Git repository, clock-in, synchronization, and clock-out exit without acting. The command guard still rejects write-side `git` commands in that session.
 
-## Clocking In — agents that know about each other
+## Presence — agents that know about each other
 
 Agents receive presence through the branch content they synchronize. On session start, the hook writes a presence-only timecard recording the agent's session, host, branch, clock-in time, and heartbeat. Timecards are committed locally and trunk-sync attempts to push them with that branch. On each later committed edit, the hook refreshes that card's `lastActiveAt` timestamp alongside the code change.
 
@@ -70,11 +72,13 @@ TRUNK-SYNC ACTIVE: 1 other agent active. Continue your work as planned — no ac
 If you share resources (ports, test databases, build locks), coordinate accordingly. Otherwise, ignore this message.
 ```
 
-An agent clocks in automatically on SessionStart and clocks out automatically when the Stop hook fires by removing its local timecard and attempting to sync that removal. If a session is disrupted before Stop runs, liveness falls back to the heartbeat age: within an hour it is active; after an hour it is stale and omitted from presence rosters; after 14 days it is reaped. There are no process IDs to check.
+An agent clocks in automatically on SessionStart and clocks out automatically when the Stop hook fires by removing its local timecard and attempting to sync that removal. If either lifecycle sync cannot reach `origin`, trunk-sync warns that presence is local-only or may remain visible remotely.
+
+If a session is disrupted before Stop runs, liveness falls back to the heartbeat age: within an hour it is active; after an hour it is stale and omitted from presence rosters; after 14 days it is reaped. There are no process IDs to check.
 
 Failing tests — not the timecard — are the authoritative signal of unfinished work. Timecards are advisory presence context for coordinating around currently active sessions.
 
-## Session Start — see active sessions
+### Session-start feedback
 
 At session start the hook surfaces active committed timecards visible in the checkout:
 
