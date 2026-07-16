@@ -1,6 +1,6 @@
 {
   "name": "contree",
-  "version": "2.0.0+codex.20260714045536",
+  "version": "3.0.0",
   "description": "Test trees as living requirements — TDD with auto-synced specifications in TEST_TREES.md",
   "homepage": "https://github.com/elimydlarz/claude-code-plugins",
   "repository": "https://github.com/elimydlarz/claude-code-plugins",
