@@ -110,16 +110,20 @@ describe("Adapter: hook-execute", () => {
     describe("if the retried push also fails", () => {
       it("then exit 2 is returned with safe push-failure feedback", verifies("returns exit 2 with push-failure feedback when the retried push also fails"));
       it("and the feedback asks the agent to retry after the underlying condition is corrected without prescribing Git writes", verifies("returns safe retry guidance without prescribing Git writes"));
+      it("and Git's own output is wrapped in a tag marking its advice as not to be followed", verifies("wraps Git output in a do-not-follow tag in push-failure feedback"));
     });
     describe("if pull produces a merge conflict", () => {
       describe("when Git reports unmerged paths", () => {
         it("then exit 2 is returned with conflict feedback", verifies("returns exit 2 on merge conflict during pull"));
         it("and the feedback uses tool-neutral file-edit guidance", verifies("returns exit 2 on merge conflict during pull"));
+        it("and Git's own output is wrapped in a tag marking its advice as not to be followed", verifies("wraps Git output in a do-not-follow tag in conflict feedback"));
       });
     });
     describe("if pull fails without unmerged paths", () => {
       it("then exit 2 is returned with generic remote-failure feedback", verifies("returns generic remote failure when pull fails without unmerged paths"));
       it("and no conflict markers are claimed", verifies("does not claim conflict markers for a generic pull failure"));
+      it("and Git's own output is wrapped in a tag marking its advice as not to be followed", verifies("wraps Git output in a do-not-follow tag in remote-failure feedback"));
+      it("and Git's suggestion to commit or stash the blocking changes is explicitly countermanded", verifies("countermands Git's commit-or-stash hint when local changes block the pull"));
     });
     describe("if Git cannot inspect unmerged paths after a pull failure", () => {
       it("then the inspection failure is propagated", verifies("propagates an unmerged-path inspection failure"));

@@ -225,13 +225,17 @@ Adapter: hook-execute (src: src/lib/hook-execute.ts, src/lib/entry-input.ts; ada
     if the retried push also fails
       then exit 2 is returned with safe push-failure feedback
       and the feedback asks the agent to retry after the underlying condition is corrected without prescribing Git writes
+      and Git's own output is wrapped in a tag marking its advice as not to be followed
     if pull produces a merge conflict
       when Git reports unmerged paths
         then exit 2 is returned with conflict feedback
         and the feedback uses tool-neutral file-edit guidance
+        and Git's own output is wrapped in a tag marking its advice as not to be followed
     if pull fails without unmerged paths
       then exit 2 is returned with generic remote-failure feedback
       and no conflict markers are claimed
+      and Git's own output is wrapped in a tag marking its advice as not to be followed
+      and Git's suggestion to commit or stash the blocking changes is explicitly countermanded
     if Git cannot inspect unmerged paths after a pull failure
       then the inspection failure is propagated
     if the checked-out branch does not exist on the remote yet
